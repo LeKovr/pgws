@@ -1,0 +1,17 @@
+[% META
+  description = 'Главная страница пилота'
+%]
+<ul>
+[%   IF !session.sid
+%][%  IF req.cookie
+%][%    s = api('app.sid_info_cook', cook => req.cookie)
+%][%    IF s.sid
+          %]<li><a href="[% page.req %]?sid=[% s.sid %]">[% l('Авторизованный режим') %]</a>[%
+        ELSE
+          %]<i>[% l('Для подключения авторизованного режима надо авторизоваться') %]</i>[%
+        END
+%][%  END
+%][% ELSE
+      %]<li> <a href="[% page.req %]">[% l('Анонимный режим') %]</a>[%
+%][% END
+%]

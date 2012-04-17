@@ -1,0 +1,97 @@
+[% META
+  description = 'Блок отладки, подключается при conf/frontend.json:tmpl.debug=1'
+%]<pre>
+[%# USE dumper(indent=1, pad="  ") %]
+[%# dumper.dump(    req ) %]
+</pre>
+[% IF page.code != 'main'
+  %][% u = uri(code => 'main') %]
+<center>
+<a href="[% uri_mk(u.req) %]">[% u.name %]</a>
+<hr style="margin:15px 0px;" />
+</center>
+[% END %]
+
+<script type="text/javascript"><!--
+function toggleSpan(id) {  var s = document.getElementById(id).style;  s.display = (s.display == 'none') ? 'inline' : 'none' }
+--></script>
+<div style="text-align: right">
+<input type="checkbox" id="envt" onclick="toggleSpan('debug'); return true;" title="DEBUG">
+</div>
+<style type="text/css">
+table.debug {
+  width: 90%;
+  border-width: 1px 1px 1px 1px;
+  border-collapse: collapse;
+}
+table.debug th, table.debug td {
+  border-width: 1px 1px 1px 1px;
+  padding: 1px 1px 1px 1px;
+  border-style: inset;
+}
+</style>
+
+<div style="display: none;" id="debug" >
+[% IF meta.api %]
+<form id="debug-form">
+<table class="debug">
+<tr><th align="left" colspan="5">[% l('JSON-RPC debug levels') %]</th></tr>
+<tr><th>[% l('Stage') %]</th><th>[% l('Default') %]</th><th>[% l('No data') %]</th><th>[% l('Debug') %]</th><th>[% l('Dump') %]</th></tr>
+  <tr><th>[% l('default') %]</th>
+    <td class="centering">[% debug.default %]<input type="radio" name="default" value="[% debug.default %]" checked></td>
+    <td class="centering">4<input type="radio" name="default" value="4"></td>
+    <td class="centering">5<input type="radio" name="default" value="5"></td>
+    <td class="centering">6<input type="radio" name="default" value="6"></td>
+  </tr>
+  <tr><th>[% l('call') %]</th>
+    <td class="centering">[% debug.call %]<input type="radio" name="call" value="[% debug.call %]" checked></td>
+    <td class="centering">4<input type="radio" name="call" value="4"></td>
+    <td class="centering">5<input type="radio" name="call" value="5"></td>
+    <td class="centering">6<input type="radio" name="call" value="6"></td>
+  </tr>
+  <tr><th>[% l('sid') %]</th>
+    <td class="centering">[% debug.sid %]<input type="radio" name="sid" value="[% debug.sid %]" checked></td>
+    <td class="centering">4<input type="radio" name="sid" value="4"></td>
+    <td class="centering">5<input type="radio" name="sid" value="5"></td>
+    <td class="centering">6<input type="radio" name="sid" value="6"></td>
+  </tr>
+  <tr><th>[% l('acl') %]</th>
+    <td class="centering">[% debug.acl %]<input type="radio" name="acl" value="[% debug.acl %]" checked></td>
+    <td class="centering">4<input type="radio" name="acl" value="4"></td>
+    <td class="centering">5<input type="radio" name="acl" value="5"></td>
+    <td class="centering">6<input type="radio" name="acl" value="6"></td>
+  </tr>
+  <tr><th>[% l('cache') %]</th>
+    <td class="centering">[% debug.cache %]<input type="radio" name="cache" value="[% debug.cache %]" checked></td>
+    <td class="centering">4<input type="radio" name="cache" value="4"></td>
+    <td class="centering">5<input type="radio" name="cache" value="5"></td>
+    <td class="centering">6<input type="radio" name="cache" value="6"></td>
+  </tr>
+  <tr><th>[% l('validate') %]</th>
+    <td class="centering">[% debug.validate %]<input type="radio" name="validate" value="[% debug.validate %]" checked></td>
+    <td class="centering">4<input type="radio" name="validate" value="4"></td>
+    <td class="centering">5<input type="radio" name="validate" value="5"></td>
+    <td class="centering">6<input type="radio" name="validate" value="6"></td>
+  </tr>
+  <tr><th align="left" colspan="4">[% l('Request logs') %]</th>
+    <td align="right"><a href="#" onclick="$('#debug-console').html(''); return false;">(clear)</a></td>
+  </tr>
+</table>
+</form>
+[% END %]
+<div id="debug-console">
+[% IF debug_data %]
+<table class="debug">
+[% FOR row IN debug_data %]
+  <tr class="[% (loop.count mod 2) ? 'even' : 'odd' %]">
+    <td nowrap valign="top" width="30%">[ [% row.source %] / [% row.stage %] / [% row.level %] ] [% row.caller %] / [% row.line %]</td>
+    <td>[% (row.message) ? row.message : '<pre style="font-size:9px; color: grey">' _ row.data _ '</pre>' %]</td>
+  </tr>
+[% END %]
+</table>
+[% END %]
+</div>
+</div>
+<script type="text/javascript"><!--
+if (document.getElementById('envt')) { document.getElementById('envt').checked=false; }
+--></script>

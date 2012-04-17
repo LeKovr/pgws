@@ -1,0 +1,3 @@
+[% META
+  description = 'Стандартный шаблон страницы'
+%][% SET meta.skin = 'user' %][% INCLUDE layout/default.tt2 %]

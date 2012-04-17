@@ -1,0 +1,14 @@
+{
+    "enc": "UTF-8",
+    "key": "frontend_auth_key_does_not_used_in_current_call_mode",
+    "default_level": "6",
+    "syslog": {
+      "default": { "default": 6, "call": 6, "acl": 3, "cache": 3, "validate": 2 },
+      "post":    { "default": 3, "call": 3, "acl": 3, "cache": 3, "validate": 2 },
+    },
+    "debug": {
+      "post":    { "default": 3, "call": 3, "sid": 3, "acl": 3, "cache": 3, "validate": 3 },
+      "get":     { "default": 4, "call": 3, "sid": 3, "acl": 3, "cache": 3, "validate": 3 },
+      "tmpl":    { "default": 3, "call": 3, "sid": 3, "acl": 3, "cache": 3, "validate": 3 },
+    },
+}

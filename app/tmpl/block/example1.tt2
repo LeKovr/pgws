@@ -1,0 +1,30 @@
+[% META
+  description = 'Пример блока вызова функции'
+%][% meta.api = 1 
+%]
+<form id="form1" onsubmit="return false;">
+<div id="form1___err" style="color:red"></div>
+<table>
+<tr><td>a=</td><td>
+<select onchange="if (this.value != 0) { this.form.a.value = this.value }">
+<option value="0">by value:</option>
+<option value="-1">System level unhandled error (-1) </option>
+<option value="-2">System level error (no access) (-2) </option>
+<option value="-3">App level form error test (-3) </option>
+<option value="-4">Not found (app level error) (-4) </option>
+<option value="1">Just 1</option>
+</select>
+<input type="text" name="a" size="5" value="4">
+</td><td><div id="form1_a_err" style="color:red"></div></td></tr>
+<tr><td>b=</td><td><input type="text" name="b" size="5" value="3"></td><td><div id="form1_b_err" style="color:red"></div></td></tr>
+<tr ><td colspan=3><div id="form1_result" style="height:20px"></div></td></tr>
+</table>
+<script type="text/javascript">
+//<![CDATA[
+var form1ok = function(formid, res) {
+  $(formid + '_result').text( 'result: ' + res );
+};
+//]]>
+</script>
+  <button id="myB" onClick="$('#result1').text(''); $('#form1___err').text(''); api_form('info.add','#form1',form1ok); return false;">Click</button>
+</form>

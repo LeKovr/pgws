@@ -1,0 +1,5 @@
+[% META
+  description = 'Начало таблицы с парами имя_значение'
+%]<div align="right"><a href="#top">[TOP]</a></div>
+<h2><a name='[% name %]' class="name">[% value %]</a></h2>
+<table class="baseTable">

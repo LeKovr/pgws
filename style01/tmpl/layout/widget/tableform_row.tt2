@@ -1,0 +1,8 @@
+[% META
+  description = 'Строка таблицы'
+%]<tr><th>[% name %]: </th><td>[%
+IF href;
+  %]<a href='[% href %]'>[% value %]</a>[%
+ELSE;
+  value;
+END %][% anno %]</td></tr>

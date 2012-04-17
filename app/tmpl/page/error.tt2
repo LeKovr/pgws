@@ -1,0 +1,23 @@
+[% META
+  description = 'Страница ошибки';
+  IF status == '403'; 
+    note = l('Недостаточно прав. Войдите в систему, воспользовавшись формой ниже.'); 
+    SET resp.title = l("Вход для зарегистрированных пользователей"); 
+    SET meta.login_css = 1;
+  ELSE;
+    IF status == '404'; 
+      note = l('Страница не найдена'); 
+    ELSIF status == '405'; 
+      note = l('Недопустимый метод'); 
+    ELSE; 
+      note = l('Сервис недоступен'); 
+    END; 
+    SET resp.title = l("Ошибка [_1]. [_2]", status, note);
+  END;
+  SET meta.nosiblings = 1;
+  SET meta.nochilds = 1;
+  SET meta.nopath = 1;
+%][%  IF status == '403' 
+%]
+[%  END 
+%]

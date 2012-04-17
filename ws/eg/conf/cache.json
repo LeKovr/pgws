@@ -1,0 +1,32 @@
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+{
+    "meta": {
+      "share_file": "meta.pgws",
+      "cache_size": "1024k",
+      "unlink_on_exit": 0,
+      "enable_stats": 1
+    },
+    "short": {
+      "share_file": "short.pgws",
+      "cache_size": "1024k",
+      "unlink_on_exit": "0",
+      "expire_time": "30s",
+      "enable_stats": 1
+    },
+    "session": {
+      "share_file": "session.pgws",
+      "cache_size": "1024k",
+      "unlink_on_exit": "0",
+      "expire_time": "10s",
+      "enable_stats": 1
+    },
+    "big": {
+      "share_file": "big.pgws",
+      "cache_size": "4096k",
+      "page_size": "64k",
+      "unlink_on_exit": "0",
+      "expire_time": "10m",
+      "enable_stats": 1
+    },
+}

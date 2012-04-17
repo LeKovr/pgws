@@ -1,0 +1,39 @@
+[% META
+  description = 'Пример блока вызова функции'
+%][% meta.api = 1
+%]Class by ID:
+<form id="form2" onsubmit="return false;">
+<div id="form2___err" style="color:red"></div>
+ID:<input type="text" name="id" size="3" value="2">
+<div id="form2_id_err" style="color:red; height:15px"></div>
+<p id="form2_result" style="height:15px"></p>
+<button id="send" onClick="form2send();">Get class</button>
+</form>
+<script type="text/javascript">
+//<![CDATA[
+function form2send() {
+  $('#form2_result').text('');
+  $('#form2___err').text('');
+  api_form('ws.class:7','#form2', form2ok);
+  return false;
+};
+var cname;
+var form2ok = function(formid, res) {
+  $(formid + '_result').html( l('[% l('Найден класс "[_1]"') %]', res[0].name) );
+  cid = res[0].code;
+  cname = res[0].name;
+  par = {
+    code: 'api.class',
+    id: res[0].id
+  };
+  api('ws.page_by_code', formid, form2ok1 ,par);
+};
+
+var form2ok1 = function(formid, res) {
+  $(formid + '_result').html( '<a href="[% req.prefix %]/'+res.req+'[% session.sid_arg%]'+ '#'+cid+'">'+cname+'</a>');
+};
+
+//]]>
+</script>
+
+

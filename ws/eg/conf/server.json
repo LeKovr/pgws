@@ -1,0 +1,62 @@
+{
+  "plugin_pefix": "PGWS::Plugin",
+  "check_prefix": "check:",
+  "acl_prefix": "acl:",
+  "nocache_prefix": "nc:",
+  "db_noacc_code": "42501", # database error code for "access forbidden"
+
+  "lang": {
+    "allowed": ["ru", "en", "ua"],
+    "default": "ru",
+    "sql": {
+      "default": "SET search_path TO i18n_def, public",
+      "other": "SET search_path TO i18n_%s, i18n_def, public",
+    }
+  },
+
+  "def_method" : {
+    "code": "ws.method_by_code",
+    "code_real": "ws.method_by_code",
+    "is_sql": 1,
+    "rvf_id": 3,
+  },
+
+  "def": {
+    "class":    "ws.class",
+    "cache":    "ws.cache",
+    "sid":      "app.sid_info",
+    "err":      "ws.error_info",
+    "acl":      "info.acl_check",
+    "acl_eff":  "ws.acls_eff",
+    "dt":       "ws.dt",
+    "dt_part":  "ws.dt_part",
+    "dt_facet": "ws.dt_facet",
+    "facet":    "ws.facet",
+  },
+
+  "def_suffix": {
+    "status": ".status",
+    "acl": ".acl",
+  },
+
+  "error": {
+    # see "http://groups.google.com/group/json-rpc/web/json-rpc-2-0"
+    "bad_json": { "code": "-32700", "message": "Parse error", "data": "Invalid JSON was received by the server."},
+    "bad_req":  { "code": "-32600", "message": "Invalid Request", "data": "The JSON sent is not a valid Request object."},
+    "no_mtd":   { "code": "-32601", "message": "Method not found", "data": "The method does not exist / is not available."},
+    "bad_args": { "code": "-32602", "message": "Invalid params", "data": "Invalid method parameter(s)."},
+    "int_err":  { "code": "-32603", "message": "Internal error", "data": "Internal JSON-RPC error."},
+
+    "no_data":    { "code": "-32001", "message": "Empty request", "data": "The request contains no data"},
+    "srv_error":  { "code": "-32002", "message": "Server error", "data": "Unhandled server error"},
+    "db_error":   { "code": "-32003", "message": "DB error", "data": "Unhandled database error"},
+    "pl_error":   { "code": "-32004", "message": "Plugin error", "data": "Unhandled plugin error"},
+    "ws_bad_bt":  { "code": "-32011", "message": "Base type error", "data": "Error found in base type definition"},
+    "ws_bad_mt":  { "code": "-32012", "message": "Argument type", "data": "Error found in argument type definition"},
+    "ws_no_acc":  { "code": "-32031", "message": "Access forbidden", "data": "Access to this method is forbidden"},
+    "db_no_acc":  { "code": "-32032", "message": "Access forbidden", "data": "Access to this method is forbidden"},
+    "no_error":   { "code": "-32099", "message": "Last error", "data": "Reserved as last error code"},
+    },
+
+}
+

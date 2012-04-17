@@ -1,0 +1,25 @@
+[%
+  uris = api('ws.page_childs', code => target.code, id => target.args.0, id1 => target.args.1, id2 => target.args.2);
+  list = 0;
+  FOR u IN uris;
+    NEXT IF !uri_allowed(u);
+    IF !list;
+      %]<ul>[%
+      list = 1;
+    END;
+    %]<li><span class="bg"><a href="[% uri_mk(u.req) %]"[% IF u.target %] target="[% u.target %]"[% END %]>[% u.name %]</a></span></li>[%
+  END;
+  IF meta.page_childs;
+    FOR u IN meta.page_childs;
+#    NEXT IF !uri_allowed(u)
+      IF !list
+        %]<ul>[%
+        list = 2;
+      END;
+      %]<li><span class="bg"><a href="[% u.uri %]"[% IF u.target %] target="[% u.target %]"[% END %]>[% u.name %]</a></span></li>[%
+    END;
+  END;
+  IF list;
+    %]</ul>[%
+  END;
+%]

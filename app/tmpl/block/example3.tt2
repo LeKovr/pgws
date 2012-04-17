@@ -1,0 +1,28 @@
+[% META
+  description = 'Пример блока вызова функции'
+%][% meta.api = 1
+%]
+<form id="form3" onsubmit="return false;">
+<div id="form3___err" style="color:red"></div>
+<div id="form3_code_err" style="color:red"></div>
+ID:<input type="text" name="code" size="10" value="api.smd"><div id="form3_id_err" style="color:red; height:15px"></div>
+<p id="form3_result" style="height:15px"></p>
+<button id="myB3" onClick="return form3send()">Get page</button>
+<script type="text/javascript">
+//<![CDATA[
+function form3send() {
+  $('#form3_result').text('');
+  $('#form3___err').text('');
+  api_form('ws.page_by_code', '#form3', form3ok);
+  return false;
+};
+var form3ok = function(formid, res) {
+  $(formid + '_result').html( '<a href="[% req.prefix %]/'+res.req+'[% session.sid_arg %]">'+res.name+'</a>');
+};
+
+//]]>
+</script>
+
+</form>
+
+

@@ -1,0 +1,96 @@
+html, body, input, select {
+  font-size: 10pt;
+  font-family: Tahoma, Helvetica;
+}
+
+#content {
+  min-height:400px;
+  height:auto!important;
+  height:400px;
+}
+
+h1 a {
+  text-decoration: none;
+  font-size: 10pt;
+  color: Grey;
+}
+
+table {
+  width: 80%;
+  margin-left:10%;
+}
+
+table.inc {
+  width: 100%;
+  margin-left:0%;
+}
+
+input[type=text] {
+  width: 200px;
+}
+
+input.label {
+  margin-left: 200px;
+}
+
+label {
+  display:inline-block;
+  width: 150px;
+  margin-left:50px;
+  font-weight: bold;
+}
+th {
+  text-align: left;
+  background-color: LightGrey;
+}
+
+tr.odd {
+  background-color: ghostwhite;
+}
+
+table.form th {
+  width: 200px;
+}
+
+.bottom {
+  text-align: center;
+}
+
+.top {
+  text-align: right;
+  background-color: LightGrey;
+  padding-right: 5px;
+}
+
+code {
+  padding-left: 20px;
+  background-color: ghostwhite;
+  font-size: 7pt;
+}
+
+
+#bo, button {
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+}
+
+H1,H2,H3,H4,H5 {
+  font-family: Georgia, "Bitstream Vera Serif", "New York", Palatino, serif;
+}
+
+H1 {
+  font-size: 120%;
+  color: #234764;
+  text-decoration: none;
+  margin:3px;
+}
+H2 {
+  font-size: 110%;
+  margin-bottom:2px;
+  border-bottom: 1px solid grey;
+}
+H3 {
+  font-size: 100%;
+  margin-bottom:2px;
+}

@@ -1,0 +1,19 @@
+[% 
+  IF !session.sid 
+    %]<a href="/" title="[% l('Главная') %]">Tender.Pro</a> //[%
+  END;
+  IF !meta.nopath;
+  uris = api('ws.page_path', code => page.up_code, id => page.args.0, id1 => page.args.1, id2 => page.args.2);
+    FOR u IN uris.reverse;
+      IF u.group_id;
+        %]&nbsp;[% u.group_name %]</a> //[%
+      END;
+      IF u.up_code;
+        %]&nbsp;<a href="[% uri_mk(u.req) %]">[% u.name %]</a> //[%
+      END;
+    END;
+    IF page.group_id;
+      %]&nbsp;[% page.group_name %]</a> //[%
+    END;
+  END;
+%]&nbsp;[% resp.title %]

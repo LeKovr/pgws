@@ -1,0 +1,10 @@
+[% META
+  description = 'Таблица имя-значение';
+
+mc = 'layout/' _ resp.layout _ '/widget';
+
+MACRO tableform_row   INCLUDE "$mc/tableform_row.tt2";
+MACRO tableform_begin INCLUDE "$mc/tableform_begin.tt2";
+MACRO tableform_end   INCLUDE "$mc/tableform_end.tt2";
+
+%]
