@@ -1,9 +1,9 @@
 {
     "enc": "UTF-8",
     "key": "frontend_auth_key_does_not_used_in_current_call_mode",
-    "default_level": "6",
+    "default_level": "3",
     "syslog": {
-      "default": { "default": 6, "call": 6, "acl": 3, "cache": 3, "validate": 2 },
+      "default": { "default": 3, "call": 3, "acl": 3, "cache": 3, "validate": 2 },
       "post":    { "default": 3, "call": 3, "acl": 3, "cache": 3, "validate": 2 },
     },
     "debug": {
