@@ -18,12 +18,14 @@
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
 */
---  00_drop.sql - Удаление схем
+-- 90_test.sql - Тесты
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:00_drop.sql / 23 --'
+\qecho '-- FD: app:app:90_test.sql / 9 --'
 
-DROP SCHEMA ws CASCADE;
-DROP SCHEMA i18n_def CASCADE;
+SELECT code, class_id, action_id, cache_id, rvf_id, is_write, is_i18n, is_sql, code_real
+  , (ws.dt(arg_dt_id)).code as arg_dt, (ws.dt(rv_dt_id)).code as rv_dt, name, args_exam, args 
+  FROM ws.method_by_code('info.add')
+;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:00_drop.sql / 29 --'
+-- No end qecho

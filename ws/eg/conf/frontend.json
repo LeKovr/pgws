@@ -27,7 +27,7 @@
     "skin_default": "default",
 
     "lang": {
-      "allowed": ["ru", "en", "ua"],
+      "allowed": ["ru", "en"],
       "default": "ru",
     },
 

@@ -18,12 +18,14 @@
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
 */
---  00_drop.sql - Удаление схем
+-- 11_deps.sql - Контроль зависимостей
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:00_drop.sql / 23 --'
+\qecho '-- FD: app:app:11_deps.sql / 9 --'
 
-DROP SCHEMA ws CASCADE;
-DROP SCHEMA i18n_def CASCADE;
+SET LOCAL search_path = app, ws, i18n_def, public;
+
+SELECT ws.pkg_require('pgws');
+
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:00_drop.sql / 29 --'
+\qecho '-- FD: app:app:11_deps.sql / 17 --'

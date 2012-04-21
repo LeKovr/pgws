@@ -18,12 +18,23 @@
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
 */
---  00_drop.sql - Удаление схем
+-- 89_reg.sql - Регистрация методов и страниц
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:00_drop.sql / 23 --'
-
-DROP SCHEMA ws CASCADE;
-DROP SCHEMA i18n_def CASCADE;
+\qecho '-- FD: app:app:89_reg.sql / 9 --'
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:00_drop.sql / 29 --'
+INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real, args_exam)
+  VALUES ('info.add', 2, 1, 2, 2, pg_cs('add'), 'a=37, b=-37');
+
+SELECT
+  pg_c('a','z_ws.add.a','Слагаемое 1')
+  , pg_c('a','z_ws.add.b','Слагаемое 2')
+;
+
+/* ------------------------------------------------------------------------- */
+INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
+ ('api.test', 'main', 2, 1, 7, 'docs/test$',   'app/test',           'Тестовая страница')
+;
+
+/* ------------------------------------------------------------------------- */
+\qecho '-- FD: app:app:89_reg.sql / 26 --'

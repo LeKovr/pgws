@@ -1,0 +1,477 @@
+# PGWS Database translation.
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is distributed under the same license as the PGWS package.
+# Alexey Kovrizhkin <lekovr@gmail.com>, 2011.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"POT-Creation-Date: 2011-06-01 00:00+0300\n"
+"PO-Revision-Date: 2011-07-25 07:48+0300\n"
+"Last-Translator: Alexey Kovrizhkin <lekovr@gmail.com>\n"
+"Language-Team: Tender.Pro IT dept <adm-group@tender.pro>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+#: var/build/i18n_def.i18n:200
+msgid "1 год"
+msgstr ""
+
+#: var/build/i18n_def.i18n:118
+msgid "1 копейка"
+msgstr ""
+
+#: var/build/i18n_def.i18n:114
+msgid "11 копеек"
+msgstr ""
+
+#: var/build/i18n_def.i18n:115
+msgid "12 копеек"
+msgstr ""
+
+#: var/build/i18n_def.i18n:116
+msgid "13 копеек"
+msgstr ""
+
+#: var/build/i18n_def.i18n:117
+msgid "14 копеек"
+msgstr ""
+
+#: var/build/i18n_def.i18n:119
+msgid "2 копейки"
+msgstr ""
+
+#: var/build/i18n_def.i18n:120
+msgid "3 копейки"
+msgstr ""
+
+#: var/build/i18n_def.i18n:121
+msgid "4 копейки"
+msgstr ""
+
+#: var/build/i18n_def.i18n:318
+msgid "ID акции, к которой относится страница"
+msgstr "Action ID page corresponds with"
+
+#: var/build/i18n_def.i18n:412
+msgid "ID группы"
+msgstr "Group ID"
+
+#: var/build/i18n_def.i18n:325
+msgid "ID группы страниц для меню"
+msgstr "Manu page group ID"
+
+#: var/build/i18n_def.i18n:311
+msgid "ID класса, к которому относится страница"
+msgstr "Class ID page corresponds with"
+
+#: var/build/i18n_def.i18n:353
+msgid "ID объекта взять из этого поля сессии"
+msgstr "Session field to get object ID from"
+
+#: var/build/i18n_def.i18n:374
+msgid "regexp URI, вычисляется триггером при insert/update"
+msgstr "regexp for URI, calculated by insert/update trigger"
+
+#: var/build/i18n_def.i18n:405
+msgid "Группа страниц для меню"
+msgstr "Menu page group"
+
+#: var/build/i18n_def.i18n:388
+msgid "Заголовок страницы в карте сайта"
+msgstr "Sitemap page title"
+
+#: var/build/i18n_def.i18n:360
+msgid "Запрет включения в разметку страницы внешних блоков"
+msgstr ""
+
+#: var/build/i18n_def.i18n:297
+msgid "Идентификатор страницы"
+msgstr "Page ID"
+
+#: var/build/i18n_def.i18n:187
+msgid "Название даты вида \"01 января 2007\""
+msgstr ""
+
+#: var/build/i18n_def.i18n:169
+msgid "Название даты вида \"1 января 2007\""
+msgstr ""
+
+#: var/build/i18n_def.i18n:237
+msgid "Название месяца вида \"январь 2007\""
+msgstr ""
+
+#: var/build/i18n_def.i18n:213
+msgid "Название периода из заданного числа месяцев (252 max)"
+msgstr ""
+
+#: var/build/i18n_def.i18n:466
+msgid "Описание API"
+msgstr "API docs"
+
+#: var/build/i18n_def.i18n:472
+msgid "Описание класса"
+msgstr "Class"
+
+#: var/build/i18n_def.i18n:470
+msgid "Описание классов"
+msgstr "Classes"
+
+#: var/build/i18n_def.i18n:467
+msgid "Описание методов"
+msgstr "Methods"
+
+#: var/build/i18n_def.i18n:471
+msgid "Описание методов (JS)"
+msgstr "Methods via JS"
+
+#: var/build/i18n_def.i18n:265
+msgid "Описание ошибки"
+msgstr "Error description"
+
+#: var/build/i18n_def.i18n:468
+msgid "Описание страниц"
+msgstr "Pages"
+
+#: var/build/i18n_def.i18n:469
+msgid "Описание типов"
+msgstr "Types"
+
+#: var/build/i18n_def.i18n:290
+msgid "Страница сайта"
+msgstr "Site page"
+
+#: var/build/i18n_def.i18n:144
+msgid "Сумма прописью в рублях и копейках"
+msgstr ""
+
+#: var/build/i18n_def.i18n:473
+msgid "Тестовая страница"
+msgstr "Test page"
+
+#: var/build/i18n_def.i18n:446
+msgid "This login already exists. Choose another"
+msgstr ""
+
+#: var/build/i18n_def.i18n:448
+msgid "external access to method \"%s\" is forbidden"
+msgstr ""
+
+#: var/build/i18n_def.i18n:75
+msgid "восемнадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:92
+msgid "восемь"
+msgstr ""
+
+#: var/build/i18n_def.i18n:85
+msgid "восемьдесят"
+msgstr ""
+
+#: var/build/i18n_def.i18n:64
+msgid "восемьсот"
+msgstr ""
+
+#: var/build/i18n_def.i18n:199
+msgid "года"
+msgstr ""
+
+#: var/build/i18n_def.i18n:108
+msgid "два миллиарда"
+msgstr ""
+
+#: var/build/i18n_def.i18n:104
+msgid "два миллиона"
+msgstr ""
+
+#: var/build/i18n_def.i18n:96
+msgid "два рубля"
+msgstr ""
+
+#: var/build/i18n_def.i18n:79
+msgid "двадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:100
+msgid "две тысячи"
+msgstr ""
+
+#: var/build/i18n_def.i18n:69
+msgid "двенадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:58
+msgid "двести"
+msgstr ""
+
+#: var/build/i18n_def.i18n:86
+msgid "девяносто"
+msgstr ""
+
+#: var/build/i18n_def.i18n:76
+msgid "девятнадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:93
+msgid "девять"
+msgstr ""
+
+#: var/build/i18n_def.i18n:65
+msgid "девятьсот"
+msgstr ""
+
+#: var/build/i18n_def.i18n:67
+msgid "десять"
+msgstr ""
+
+#: var/build/i18n_def.i18n:367
+msgid "значение атрибута target в формируемых ссылках"
+msgstr "value of target attribute in generated links"
+
+#: var/build/i18n_def.i18n:441
+msgid "значение не соответствует условию \"%s %s\""
+msgstr "value does not conform to condition \"%s %s\""
+
+#: var/build/i18n_def.i18n:442
+msgid "значение не соответствует шаблону \"%s\""
+msgstr "value does not conform to template \"%s %s\""
+
+#: var/build/i18n_def.i18n:304
+msgid "идентификатор страницы верхнего уровня"
+msgstr "id of parent level page"
+
+#: var/build/i18n_def.i18n:113 var/build/i18n_def.i18n:130
+msgid "коп"
+msgstr ""
+
+#: var/build/i18n_def.i18n:122
+msgid "копеек"
+msgstr ""
+
+#: var/build/i18n_def.i18n:201
+msgid "лет"
+msgstr ""
+
+#: var/build/i18n_def.i18n:198
+msgid "месяц"
+msgstr ""
+
+#: var/build/i18n_def.i18n:202
+msgid "месяца"
+msgstr ""
+
+#: var/build/i18n_def.i18n:203
+msgid "месяцев"
+msgstr ""
+
+#: var/build/i18n_def.i18n:339
+msgid "мета-маска с именами переменных, которой должен соответствовать URI запроса"
+msgstr "metamask with variable names for request uri lookup"
+
+#: var/build/i18n_def.i18n:127
+msgid "миллиардов"
+msgstr ""
+
+#: var/build/i18n_def.i18n:126
+msgid "миллионов"
+msgstr ""
+
+#: var/build/i18n_def.i18n:419
+msgid "название"
+msgstr "name"
+
+#: var/build/i18n_def.i18n:440
+msgid "не задано обязательное значение"
+msgstr "required value does not given"
+
+#: var/build/i18n_def.i18n:451
+msgid "не найдена проверка для acl \"%s\""
+msgstr "no check for acl \"%s\""
+
+#: var/build/i18n_def.i18n:447
+msgid "недопустимый код acl \"%s\""
+msgstr "incorrect acl code \"%s\""
+
+#: var/build/i18n_def.i18n:450
+msgid "некорректный идентификатор сессии \"%s\""
+msgstr "incorrect session id \"%s\""
+
+#: var/build/i18n_def.i18n:452
+msgid "некорректный идентификатор статуса \"%s\""
+msgstr "incorrect status id \"%s\""
+
+#: var/build/i18n_def.i18n:449
+msgid "необходима авторизация (не задан идентификатор сессии)"
+msgstr "authorization required (no session id)"
+
+#: var/build/i18n_def.i18n:443
+msgid "нет данных"
+msgstr "no data"
+
+#: var/build/i18n_def.i18n:445
+msgid "нет данных по a = %i"
+msgstr "no data for a = %i"
+
+#: var/build/i18n_def.i18n:444
+msgid "нет доступа к результату суммы при а = %i"
+msgstr "no access to sum result when a = %i"
+
+#: var/build/i18n_def.i18n:107
+msgid "один миллиард"
+msgstr ""
+
+#: var/build/i18n_def.i18n:103
+msgid "один миллион"
+msgstr ""
+
+#: var/build/i18n_def.i18n:95
+msgid "один рубль"
+msgstr ""
+
+#: var/build/i18n_def.i18n:68
+msgid "одиннадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:99
+msgid "одна тысяча"
+msgstr ""
+
+#: var/build/i18n_def.i18n:332
+msgid "порядок сортировки в меню страниц одного уровня (NULL - нет в меню)"
+msgstr "page order in one level menu"
+
+#: var/build/i18n_def.i18n:72
+msgid "пятнадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:89
+msgid "пять"
+msgstr ""
+
+#: var/build/i18n_def.i18n:82
+msgid "пятьдесят"
+msgstr ""
+
+#: var/build/i18n_def.i18n:61
+msgid "пятьсот"
+msgstr ""
+
+#: var/build/i18n_def.i18n:124
+msgid "рублей"
+msgstr ""
+
+#: var/build/i18n_def.i18n:74
+msgid "семнадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:91
+msgid "семь"
+msgstr ""
+
+#: var/build/i18n_def.i18n:84
+msgid "семьдесят"
+msgstr ""
+
+#: var/build/i18n_def.i18n:63
+msgid "семьсот"
+msgstr ""
+
+#: var/build/i18n_def.i18n:81
+msgid "сорок"
+msgstr ""
+
+#: var/build/i18n_def.i18n:57
+msgid "сто"
+msgstr ""
+
+#: var/build/i18n_def.i18n:381
+msgid "строка формата для генерации URI, вычисляется триггером при insert/update"
+msgstr "format string for URI generation, filled by insert/update trigger"
+
+#: var/build/i18n_def.i18n:109
+msgid "три миллиарда"
+msgstr ""
+
+#: var/build/i18n_def.i18n:105
+msgid "три миллиона"
+msgstr ""
+
+#: var/build/i18n_def.i18n:97
+msgid "три рубля"
+msgstr ""
+
+#: var/build/i18n_def.i18n:101
+msgid "три тысячи"
+msgstr ""
+
+#: var/build/i18n_def.i18n:80
+msgid "тридцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:70
+msgid "тринадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:59
+msgid "триста"
+msgstr ""
+
+#: var/build/i18n_def.i18n:125
+msgid "тысяч"
+msgstr ""
+
+#: var/build/i18n_def.i18n:346
+msgid "файл шаблона (NULL для внешних адресов)"
+msgstr "template file (NULL for external URL)"
+
+#: var/build/i18n_def.i18n:110
+msgid "четыре миллиарда"
+msgstr ""
+
+#: var/build/i18n_def.i18n:106
+msgid "четыре миллиона"
+msgstr ""
+
+#: var/build/i18n_def.i18n:98
+msgid "четыре рубля"
+msgstr ""
+
+#: var/build/i18n_def.i18n:102
+msgid "четыре тысячи"
+msgstr ""
+
+#: var/build/i18n_def.i18n:60
+msgid "четыреста"
+msgstr ""
+
+#: var/build/i18n_def.i18n:71
+msgid "четырнадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:73
+msgid "шестнадцать"
+msgstr ""
+
+#: var/build/i18n_def.i18n:90
+msgid "шесть"
+msgstr ""
+
+#: var/build/i18n_def.i18n:83
+msgid "шестьдесят"
+msgstr ""
+
+#: var/build/i18n_def.i18n:62
+msgid "шестьсот"
+msgstr ""
+
+#: var/build/i18n_def.i18n:224
+msgid "январь февраль март апрель май июнь июль август сентябрь октябрь ноябрь декабрь"
+msgstr "january february march april may june july august september october november december"
+
+#: var/build/i18n_def.i18n:155
+msgid "января февраля марта апреля мая июня июля августа сентября октября ноября декабря"
+msgstr "january february march april may june july august september october november december"

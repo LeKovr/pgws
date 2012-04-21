@@ -63,10 +63,21 @@ db_run() {
   local src=$1 ; shift
   local pkg=$@
 
+  [[ "$src" ]] || src="pgws"
+  if [ "$src" == "pgws" ] ; then
+    src=$PGWS
+    [[ "$pkg" != "" ]] || pkg=$PGWS_PKG
+  else
+    src=$PGWS_APP
+    [[ "$pkg" ]] || pkg=$PGWS_APP_PKG
+  fi
+
   # TODO
   local ver="000"
 
-  echo "Logfile: $LOGFILE"
+  echo "DB source:   $src"
+  echo "DB package:  $pkg"
+  echo "Logfile:     $LOGFILE"
 
   schema_mask="??_*"
   db_run_sql_begin $BLD/build.sql
@@ -85,7 +96,7 @@ db_run() {
     if [ -d "$tag/sql" ] ; then
       for s in $tag/sql/$schema_mask ; do
         echo "Found: $s"
-        echo $s >> $dirs
+        echo "$tag $s" >> $dirs
       done
     fi
   done
@@ -94,18 +105,18 @@ db_run() {
   if [[ "$run_op" == "del" ]] ; then
     cat_cmd="tac"
     local is_tac=$(whereis -b $cat_cmd)
-    [[ "$D" == "$cat_cmd:" ]] && cat_cmd="tail -r"
+    [[ "$is_tac" == "$cat_cmd:" ]] && cat_cmd="tail -r"
   fi
-  for s in $($cat_cmd $dirs) ; do
+  local p_pre=""
+  $cat_cmd $dirs | while read p s ; do
     pn=${s%%/sql*}    # package name
     sn=${s#*/sql/??_} # schema name
     bd=$pn-${s#*/sql/} # build dir
-##echo "SM=$sn LOG=$log_end OP=$run_op"
-    [[ ! "$log_end" ]] && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+    [[ "$p" != "$p_pre" ]] && echo "\\qecho '-- ******* Package: $pn --'" >> $BLD/build.sql
 
-#    [[ ! "$log_end" ]] && [[ "$sn" != "ws" ]] && echo "SET LOCAL search_path = $sn, i18n_def, ws, public;" >> $BLD/build.sql
-#    [[ ! "$log_end" ]] && [[ "$sn" == "ws" ]] && echo "SET LOCAL search_path = ws, i18n_def, public;" >> $BLD/build.sql
+    [[ "$p" != "$p_pre" ]] && [[ "$pn" != "pg" ]] && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
 
+    echo "\\qecho '-- ------- Schema: $sn'" >> $BLD/build.sql
     [ -d "$BLD/$bd" ] || mkdir $BLD/$bd
 
     for f in $s/$file_mask ; do
@@ -137,7 +148,9 @@ db_run() {
     fi
 
     [[ -f "$BLD/keep_sql" ]] || echo "\! rm -rf $bd" >> $BLD/build.sql
-    [[ "$log_end" ]] && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+    [[ "$p" != "$p_pre" ]] && [[ "$pn" == "pg" ]] && [[ "$run_op" == "add" ]] \
+      && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+    p_pre=$p
   done
   popd > /dev/null
 
@@ -158,14 +171,41 @@ db_run() {
 }
 
 # ------------------------------------------------------------------------------
+db_dump() {
+  local schema=$1
+  [[ "$schema" ]] || schema="i18n_def"
+  local file=$BLD/$schema.sql
+  [ -f $file ] && rm -f $file
+  pg_dump -F p -f $file -n $schema -O --inserts --no-tablespaces -E UTF-8 "$CONN";
+  echo "Dump of $schema saved to $file"
+}
+
+# ------------------------------------------------------------------------------
+db_doc() {
+  local schema=$1
+  [[ "$schema" ]] || schema="ws"
+
+  local bin="postgresql_autodoc"
+  local has_bin=$(whereis -b $bin)
+  if [[ "$has_bin" == "$bin:" ]] ; then
+    echo "$bin must be installed to use doc feature"
+    exit
+  fi
+  c=${CONN#dbname=}
+  postgresql_autodoc -s $schema -f $BLD/$schema -d "$c"
+}
+# ------------------------------------------------------------------------------
 db_help() {
 cat <<EOF
 'dbhelp'
-Usage: $0 db (init|make|drop) [SRC] [PKG]
+Usage: 
+  $0 db (init|make|drop|doc) [SRC] [PKG]
   Where
     init - create DB objects
     make - compile code
     drop - drop DB objects
+    doc  - make docs for schema SRC (Default: ws)
+    dump - dump schema SRC (Default: i18n_def)
 
     SRC  - pgws|pkg. Default: pgws
     PKG  - dirname(s) from SRC. Default: "$PGWS_PKG" (if SRC=pgws) or "$PGWS_APP_PKG"
@@ -177,6 +217,7 @@ CONN=$(perl $PGWS_ROOT/$PGWS/$PGWS_WS/bin/json2conninfo.pl < $PGWS_ROOT/conf/db.
 [[ "$CONN" ]] || { echo "Fatal: No DB connect info"; exit 1; }
 
 DO_SQL=1
+BLD=$PGWS_ROOT/var/build
 
 echo "DB connect:  $CONN"
 echo "DB Command:  $@"
@@ -187,20 +228,6 @@ src=$1
 shift
 pkg=$@
 
-[[ "$src" ]] || src="pgws"
-if [ "$src" == "pgws" ] ; then
-  src=$PGWS
-  [[ "$pkg" != "" ]] || pkg=$PGWS_PKG
-else
-  src=$PGWS_APP
-  [[ "$pkg" ]] || pkg=$PGWS_APP_PKG
-fi
-
-echo "DB source:   $src"
-echo "DB package:  $pkg"
-
-BLD=$PGWS_ROOT/var/build
-
 case "$cmd" in
   init)
     db_run add "[1-8]?_*.sql" $src "$pkg"
@@ -210,6 +237,12 @@ case "$cmd" in
     ;;
   make)
     db_run make "11_*.sql [3-6]?_*.sql" $src "$pkg"
+    ;;
+  doc)
+    db_doc $src
+    ;;
+  dump)
+    db_dump $src
     ;;
   *)
     db_help

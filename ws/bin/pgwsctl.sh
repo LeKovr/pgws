@@ -25,49 +25,9 @@ lookup_sudo() {
   if [[ "$sudo" == "sudo:" ]] ; then
     sudo="su -l $PGWS_RUNAS -c "
   else
-    sudo="sudo -u $PGWS_RUNAS /bin/bash -c "
+    sudo="sudo -u $PGWS_RUNAS /usr/bin/env bash -c "
   fi
   echo "$sudo"
-}
-
-# ------------------------------------------------------------------------------
-init_path() {
-  local path=$1
-  local nogit=$2
-  [ -d $path ] && return 1
-  echo "mkdir $PGWS_ROOT/$path"
-  mkdir -m g+w -p $PGWS_ROOT/$path
-  [[ "$nogit" == "nogit" ]] || return 2
-  [ -f $PGWS_ROOT/.gitignore ] && grep -E "^$path$" $PGWS_ROOT/.gitignore && return 3
-  echo $path >> $PGWS_ROOT/.gitignore
-}
-
-# ------------------------------------------------------------------------------
-init_conf() {
-  local src=$1
-  local dest=$PGWS_ROOT/conf
-  pushd $PGWS_ROOT/$src/eg/conf > /dev/null
-  for f in * ; do
-    [ -s $dest/$f ] || { echo "conf: $f" ; ln -s $PWD/$f $dest/$f ; }
-  done
-  popd > /dev/null
-}
-
-# ------------------------------------------------------------------------------
-init() {
-  echo 'init'
-
-  { while read path ; do init_path $path nogit ; done } <<EOF
-conf
-var/build
-var/cache
-var/log
-var/run
-var/tmpl
-var/tmpc
-EOF
-
-  init_conf $PGWS/$PGWS_WS
 }
 
 # ------------------------------------------------------------------------------
@@ -131,12 +91,16 @@ init_lib() {
 fcgi_cmd() {
   local cmd=$1
 
-  [[ "$PGWS_APP_PKG" ]] && init_tmpl $PGWS_APP "$PGWS_APP_PKG"
-  init_tmpl $PGWS "$PGWS_PKG"
+  if [[ "$cmd" == "start" || "$cmd" == "restart" ]] ; then
+    [[ "$PGWS_APP_PKG" ]] && init_tmpl $PGWS_APP "$PGWS_APP_PKG"
+    init_tmpl $PGWS "$PGWS_PKG"
 
-  [[ "$PGWS_APP_PKG" ]] && init_lib $PGWS_APP "$PGWS_APP_PKG"
-  init_lib $PGWS "$PGWS_PKG"
+    [[ "$PGWS_APP_PKG" ]] && init_lib $PGWS_APP "$PGWS_APP_PKG"
+    init_lib $PGWS "$PGWS_PKG"
 
+    [ -s $PGWS_ROOT/var/i18n ] || { echo "var: i18n" ; ln -s $PGWS_ROOT/pkg/i18n/src/templates $PGWS_ROOT/var/i18n; }
+
+  fi
   local bin=$PGWS_ROOT/$PGWS/$PGWS_WS/bin
   case "$cmd" in
     restart)
@@ -177,11 +141,24 @@ tm_cmd() {
 # ------------------------------------------------------------------------------
 help() {
 cat <<EOF
-'help'
-PGWS:        $PGWS
-APP:         $PGWS_APP
-PGWS PKG:    $PGWS_PKG
-PGWS_APP:    $PGWS_APP_PKG
+Vars:
+  PGWS:        $PGWS
+  APP:         $PGWS_APP
+  PGWS PKG:    $PGWS_PKG
+  PGWS_APP:    $PGWS_APP_PKG
+
+Usage:
+    $0 (db|fcgi|tm|cache|i18n) CMD [AGRS]
+
+  Where
+
+    db    - Database control module. See $0 db help
+    fcgi  - FastCGI daemon control. See $0 fcgi help
+    tm    - Task Manager daemon control. See $0 tm help
+    cache - Cache control. See $0 cache help
+    i18n  - i18n control
+
+
 EOF
 }
 
@@ -194,6 +171,8 @@ STAMP=$(date +%y%m%d-%H%m)-$$
 LOGFILE=$LOG/$CMD-$STAMP.log
 
 DBCTL=$PGWS_ROOT/$PGWS/$PGWS_WS/bin/${PGWS_DB}ctl.sh
+I18NCTL=$PGWS_ROOT/$PGWS/$PGWS_WS/bin/i18nctl.sh
+
 SUDO_CMD=$(lookup_sudo)
 cat <<EOF
   =========================================================
@@ -214,6 +193,9 @@ case "$CMD" in
     ;;
   db)
     . $DBCTL "$@"
+    ;;
+  i18n)
+    . $I18NCTL "$@"
     ;;
   fcgi)
     fcgi_cmd $1

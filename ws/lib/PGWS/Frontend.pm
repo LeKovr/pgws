@@ -31,8 +31,13 @@ use strict;
 # проверка зависимостей
 use Locale::Maketext::Lexicon;
 
-use FindBin qw($Bin);
-use Locale::Maketext::Simple('Path' => $Bin.'/i18n/PGWS');
+use Cwd;
+our $dir;
+BEGIN {
+    $dir = getcwd;
+}
+
+use Locale::Maketext::Simple('Path' => $dir.'/var/i18n');
 
 # Доступный извне номер версии
 our $VERSION = $PGWS::VERSION;

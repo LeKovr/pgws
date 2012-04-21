@@ -1,0 +1,330 @@
+# PGWS Frontend template translation.
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is distributed under the same license as the PGWS package.
+# Alexey Kovrizhkin <lekovr@gmail.com>, 2011.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"POT-Creation-Date: 2011-06-01 00:00+0300\n"
+"PO-Revision-Date: 2011-07-25 07:48+0300\n"
+"Last-Translator: Alexey Kovrizhkin <lekovr@gmail.com>\n"
+"Language-Team: Tender.Pro IT dept <adm-group@tender.pro>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+#: pkg/style01/tmpl/block/debug.tt2:39
+msgid "Debug"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:39
+msgid "Default"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:39
+msgid "Dump"
+msgstr ""
+
+#: pgws/apidoc/tmpl/page/class.tt2:58
+msgid "ID"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:38
+msgid "JSON-RPC debug levels"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:39
+msgid "No data"
+msgstr ""
+
+#: pkg/style01/tmpl/config.tt2:3
+msgid "PGWS"
+msgstr ""
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:46
+#: pgws/apidoc/tmpl/page/smd.tt2:63
+msgid "Read-only"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:76
+msgid "Request logs"
+msgstr ""
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:47
+#: pgws/apidoc/tmpl/page/smd.tt2:64
+#: pgws/apidoc/tmpl/page/xsd.tt2:60
+msgid "SQL"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:39
+msgid "Stage"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:58
+msgid "acl"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:64
+msgid "cache"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:46
+msgid "call"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:40
+msgid "default"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:52
+msgid "sid"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:70
+msgid "validate"
+msgstr ""
+
+#: pkg/app/tmpl/page/index.tt2:9
+msgid "Авторизованный режим"
+msgstr ""
+
+#: pgws/apidoc/tmpl/page/class.tt2:54
+msgid "Акции"
+msgstr "Actions"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:43
+#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+#: pgws/apidoc/tmpl/page/smd.tt2:60
+msgid "Акция"
+msgstr "Action"
+
+#: pkg/app/tmpl/page/index.tt2:15
+msgid "Анонимный режим"
+msgstr "Anomymous mode"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:36
+msgid "Базовый"
+msgstr "Base"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:47
+msgid "Базовый тип"
+msgstr "Base type"
+
+#: pkg/app/tmpl/page/error.tt2:1
+msgid "Вход для зарегистрированных пользователей"
+msgstr "Entry for authorized users"
+
+#: pkg/style01/tmpl/block/page_path.tt2:3
+msgid "Главная"
+msgstr "Main page"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:46
+#: pgws/apidoc/tmpl/block/smd_table.tt2:47
+#: pgws/apidoc/tmpl/page/smd.tt2:63
+#: pgws/apidoc/tmpl/page/smd.tt2:64
+#: pgws/apidoc/tmpl/page/xsd.tt2:57
+#: pgws/apidoc/tmpl/page/xsd.tt2:60
+msgid "Да"
+msgstr "Yes"
+
+#: pkg/app/tmpl/page/index.tt2:11
+msgid "Для подключения авторизованного режима надо авторизоваться"
+msgstr ""
+
+#: pkg/app/tmpl/page/blank.tt2:1
+msgid "Извините, мы пока не готовы показать содержимое этой страницы"
+msgstr "Sorry, we are not ready to show this page yet"
+
+#: pgws/apidoc/tmpl/page/smd1.tt2:219
+msgid "Имя метода:"
+msgstr "Method name:"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:42
+#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+#: pgws/apidoc/tmpl/page/smd.tt2:59
+msgid "Класс"
+msgstr "Class"
+
+#: pgws/apidoc/tmpl/page/class.tt2:44
+msgid "Код"
+msgstr "Code"
+
+#: pgws/apidoc/tmpl/page/class.tt2:45
+msgid "Количество ID экземпляра"
+msgstr "The number of instance IDs"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:35
+msgid "Конструктор"
+msgstr "Constructor"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:45
+#: pgws/apidoc/tmpl/page/smd.tt2:62
+msgid "Кэш"
+msgstr "Cache"
+
+#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+msgid "Маска URI"
+msgstr "URI mask"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:35
+msgid "Массив"
+msgstr "Array"
+
+#: pgws/apidoc/tmpl/page/class.tt2:100
+msgid "Методы"
+msgstr "Methods"
+
+#: pgws/apidoc/tmpl/page/class.tt2:58
+msgid "Название"
+msgstr "Name"
+
+#: pkg/app/tmpl/block/example2.tt2:22
+msgid "Найден класс \"%1\""
+msgstr "Class found: \"%1\""
+
+#: pgws/apidoc/tmpl/page/smd1.tt2:153
+#: pgws/apidoc/tmpl/page/smd1.tt2:221
+msgid "Найти"
+msgstr "Find"
+
+#: pkg/app/tmpl/page/error.tt2:1
+msgid "Недопустимый метод"
+msgstr "Incorrect request method"
+
+msgid "Недостаточно прав"
+msgstr "Insufficient privileges"
+
+#: pkg/app/tmpl/page/error.tt2:1
+msgid "Недостаточно прав. Войдите в систему, воспользовавшись формой ниже."
+msgstr ""
+
+msgid "Необходима авторизация"
+msgstr "Authorisation required"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:46
+#: pgws/apidoc/tmpl/block/smd_table.tt2:47
+#: pgws/apidoc/tmpl/page/smd.tt2:63
+#: pgws/apidoc/tmpl/page/smd.tt2:64
+#: pgws/apidoc/tmpl/page/xsd.tt2:60
+msgid "Нет"
+msgstr "No"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:79
+msgid "Ограничения"
+msgstr "Restrictions"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:35
+#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+#: pgws/apidoc/tmpl/page/smd.tt2:52
+#: pgws/apidoc/tmpl/page/xsd.tt2:34
+msgid "Описание"
+msgstr "Description"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:57
+msgid "Опционален"
+msgstr "Optional"
+
+#. (status, note)
+#: pkg/app/tmpl/page/error.tt2:1
+msgid "Ошибка %1. %2"
+msgstr "Error %1. %2"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:53
+msgid "По умолчанию"
+msgstr "Default"
+
+#: pgws/apidoc/tmpl/page/smd1.tt2:153
+msgid "Показать все"
+msgstr "Show all"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:64
+msgid "Поля"
+msgstr "Fields"
+
+#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+#: pgws/apidoc/tmpl/page/xsd.tt2:42
+msgid "Предок"
+msgstr "Parent"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:49
+#: pgws/apidoc/tmpl/page/smd.tt2:66
+msgid "Пример вызова"
+msgstr "Example"
+
+#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+msgid "Пример страницы"
+msgstr "Page example"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:36
+msgid "Производный"
+msgstr "Derivative"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:36
+#: pgws/apidoc/tmpl/page/smd.tt2:53
+msgid "Сервис"
+msgstr "Service"
+
+#: pkg/app/tmpl/page/error.tt2:1
+msgid "Сервис недоступен"
+msgstr "Service unavailable"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:35
+msgid "Скаляр"
+msgstr "Scalar"
+
+#: pgws/apidoc/tmpl/page/class.tt2:81
+msgid "Статус"
+msgstr "Status"
+
+#: pkg/app/tmpl/page/error.tt2:1
+msgid "Страница не найдена"
+msgstr "Page not found"
+
+#: pgws/apidoc/tmpl/page/class.tt2:92
+msgid "Страницы"
+msgstr "Pages"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:35
+msgid "Структура"
+msgstr "Structure"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:36
+msgid "Тип"
+msgstr "Type"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:38
+#: pgws/apidoc/tmpl/page/smd.tt2:55
+msgid "Тип аргументов"
+msgstr "Arguments type"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:41
+#: pgws/apidoc/tmpl/page/smd.tt2:58
+msgid "Тип результата"
+msgstr "Result type"
+
+#: pgws/apidoc/tmpl/page/class.tt2:81
+msgid "Уровень доступа"
+msgstr "Access level"
+
+#: pgws/apidoc/tmpl/block/smd_table.tt2:44
+#: pgws/apidoc/tmpl/page/smd.tt2:61
+msgid "Формат результата"
+msgstr "Result format"
+
+#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+msgid "Шаблон"
+msgstr "Template"
+
+msgid "Это главная страница проекта по умолчанию"
+msgstr "This is default project main page"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:69
+msgid "обязателен"
+msgstr "required"
+
+#: pgws/apidoc/tmpl/page/xsd.tt2:69
+msgid "по умолчанию"
+msgstr "default"
