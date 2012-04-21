@@ -1,0 +1,54 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Таблица результатов поиска'
+%]
+[% IF get.code;
+     data = api('ws.method_by_code', 'code' => get.code);
+   END;
+   classes = api('ws.class');
+   caches = api('ws.cache');
+   rvf = api('ws.method_rvf');
+   dts = api('ws.dt_by_code:5');
+   u_xsd = uri(code => 'api.xsd');
+   u_cla = uri(code => 'api.class');
+%]
+[%# cli = 0 %]
+[% USE String(get.code) ;
+m.code_div=String.replace('\.', '_')  %]
+<div id='[% m.code_div %]1'>
+
+
+<style type="text/css">
+  a.name { text-decoration: none; }
+  .baseTable th { width: 10%; }
+  h2 { font-size: 90%;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #000000;
+  }
+</style>
+
+[% FOR m IN data %]
+[% SET ac = api('ws.class_action', 'class_id' => m.class_id, 'id' => m.action_id ) %]
+<table class="baseTable">
+<tr><th>[% l('Описание') %]:</th><td>[% m.name %]</td></tr>
+<tr><th>[% l('Сервис') %]:</th><td>[% m.code_real %]([% m.args %])</td></tr>
+[% IF m.arg_dt_id %]
+<tr><th>[% l('Тип аргументов') %]:</th><td><a href='[% uri_mk(u_xsd.req, undef, dts.${m.arg_dt_id}.code) %]'>[% dts.${m.arg_dt_id}.code %]</a></td></tr>
+[% END %]
+
+<tr><th>[% l('Тип результата') %]:</th><td><a href='[% uri_mk(u_xsd.req, undef, dts.${m.rv_dt_id}.code) %]'>[% dts.${m.rv_dt_id}.code %]</a></td></tr>
+<tr><th>[% l('Класс') %]:   </th><td><a href='[% uri_mk(u_cla.req, undef, classes.${m.class_id}.code) %]'>[% classes.${m.class_id}.name %]</a></td></tr>
+<tr><th>[% l('Акция') %]:   </th><td><a href='[% uri_mk(u_cla.req, undef, classes.${m.class_id}.code) %]-action-[% m.action_id %]'>[% m.action_id %]. [% ac.name %]</a></td></tr>
+<tr><th>[% l('Формат результата') %]:</th><td>[% m.rvf_id %]. [% rvf.${m.rvf_id} %]</td></tr>
+<tr><th>[% l('Кэш') %]:     </th><td>[% caches.${m.cache_id}.name %]</td></tr>
+<tr><th>[% l('Read-only') %]:</th><td>[% IF m.is_write %][% l('Нет') %][% ELSE %][% l('Да') %][% END %]</td></tr>
+<tr><th>[% l('SQL') %]:</th><td>[% IF m.is_sql %][% l('Да') %][% ELSE %][% l('Нет') %][% END %]</td></tr>
+[% IF m.args_exam.defined %]
+<tr><th>[% l('Пример вызова') %]:</th><td><a href='[% uri_mk("_${m.code}.json", m.args_exam.replace(',\s*','&')) %]'>[% m.code %]([% m.args_exam %])</a></td></tr>
+[% END %]
+</table>
+</div>
+[% END %]
+
