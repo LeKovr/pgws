@@ -9,25 +9,79 @@ html, body, input, select {
   height:400px;
 }
 
-h1 a {
+h1, h2, h3, h4, h5 {
+  font-family: Georgia, "Bitstream Vera Serif", "New York", Palatino, serif;
+}
+
+h1 {
+  font-size: 120%;
+  color: #234764;
   text-decoration: none;
-  font-size: 10pt;
-  color: Grey;
+  margin:3px;
 }
 
-table {
-  width: 80%;
-  margin-left:10%;
+h1 img {
+  vertical-align: middle;/*was -8px;*/
+  margin-right: 5px;
 }
 
+h1 a {
+  margin-right: 100px;
+}
+
+div#top {
+  text-align: right;
+  background-color: LightGrey;
+  padding-right: 5px;
+}
+
+.center {
+  text-align: center;
+}
+
+input[disabled], input[readonly], select[disabled], select[readonly], checkbox[disabled], checkbox[readonly], textarea[disabled], textarea[readonly] {
+  background-color: #FFF8C6;
+  border: #3532ff 1px solid;
+  color: #000000;
+  cursor: default;
+}
+
+.error {
+  color: red;
+}
+
+h2 {
+  font-size: 110%;
+  margin-bottom:2px;
+  border-bottom: 1px solid grey;
+}
+
+h3 {
+  font-size: 100%;
+  margin-bottom:2px;
+}
+
+th {
+  text-align: left;
+  background-color: LightGrey;
+}
+
+tr.odd {
+  background-color: ghostwhite;
+}
+
+input[type=text].slim {
+  width: 200px;
+}
+
+/* verify point */
+
+/*
 table.inc {
   width: 100%;
   margin-left:0%;
 }
 
-input[type=text] {
-  width: 200px;
-}
 
 input.label {
   margin-left: 200px;
@@ -39,58 +93,12 @@ label {
   margin-left:50px;
   font-weight: bold;
 }
-th {
-  text-align: left;
-  background-color: LightGrey;
-}
-
-tr.odd {
-  background-color: ghostwhite;
-}
 
 table.form th {
   width: 200px;
 }
 
-.bottom {
-  text-align: center;
-}
-
-.top {
-  text-align: right;
-  background-color: LightGrey;
-  padding-right: 5px;
-}
-
-code {
-  padding-left: 20px;
-  background-color: ghostwhite;
-  font-size: 7pt;
-}
 
 
-#bo, button {
-  margin: 0;
-  padding: 0;
-  font-size: 12px;
-}
 
-H1,H2,H3,H4,H5 {
-  font-family: Georgia, "Bitstream Vera Serif", "New York", Palatino, serif;
-}
-
-H1 {
-  font-size: 120%;
-  color: #234764;
-  text-decoration: none;
-  margin:3px;
-}
-H2 {
-  font-size: 110%;
-  margin-bottom:2px;
-  border-bottom: 1px solid grey;
-}
-H3 {
-  font-size: 100%;
-  margin-bottom:2px;
-}
+*/

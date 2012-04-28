@@ -43,6 +43,7 @@ $Data::Dumper::Useqq = 1;
 sub setip     { $_[0]->{'ip'}   = $_[1] }
 sub keyoff    { $_[0]->{'key'}  = undef }
 sub setsid    { $_[0]->{'sid'}  = $_[1] }
+sub setcook   { $_[0]->{'cook'}  = $_[1] }
 sub setenc    { $_[0]->{'enc'}  = $_[1] }
 sub setlang   { $_[0]->{'lang'} = $_[1] }
 

@@ -1,0 +1,19 @@
+login
+ login | status_id |     email     | psw 
+-------+-----------+---------------+-----
+ user  |         1 | user@email.to | ***
+
+can_create
+ can_create 
+------------
+ t
+
+doc tests
+ group_id_by_code 
+------------------
+                1
+
+ id | group_id 
+----+----------
+  1 |        1
+

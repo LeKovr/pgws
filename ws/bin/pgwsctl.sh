@@ -44,7 +44,7 @@ init_tmpl() {
       for f in * ; do
         if [ -d $f ] && [[ "$f" != "macro" ]] ; then
           [ -d $dest/$f ] || { echo "mkdir $f" ; mkdir -p $dest/$f ; }
-          [ -s $dest/$f/$n ] || { echo "$n: $f" ; ln -s $PWD/$f $dest/$f/$n ; }
+          [ -e $dest/$f/$n ] || { echo "$n: $f" ; ln -s $PWD/$f $dest/$f/$n ; }
         fi
       done
       [ -f config.tt2 ] && [ ! -s $dest/config.tt2 ] && { echo "$n: config.tt2" ; ln -sf $PWD/config.tt2 $dest/config.tt2; }
@@ -56,7 +56,7 @@ init_tmpl() {
     [ -d $dest/macro ] || { echo "mkdir macro" ; mkdir -p $dest/macro ; }
     pushd $d > /dev/null
     for f in * ; do
-      [ -s $dest/macro/$f ] || { echo "$d: $f" ; ln -s $PWD/$f $dest/macro/$f ; }
+      [ -e $dest/macro/$f ] || { echo "$d: $f" ; ln -s $PWD/$f $dest/macro/$f ; }
     done
     popd > /dev/null
   fi
@@ -79,7 +79,7 @@ init_lib() {
         local n=${d0#lib}
         local f=${file#$d0/}
         [ -d $dest$n ] || { echo "mkdir $n" ; mkdir -p $dest$n ; }
-        [ -s $dest$n/$f ] || { echo "$n: $f" ; ln -s $PWD/lib$n/$f $dest$n/$f ; }
+        [ -e $dest$n/$f ] || { echo "$n: $f" ; ln -s $PWD/lib$n/$f $dest$n/$f ; }
       done
       popd > /dev/null
     fi
@@ -204,7 +204,7 @@ case "$CMD" in
     tm_cmd $1
     ;;
   cache)
-    $SUDO_CMD "cd $PGWS_ROOT && perl $PGWS_ROOT/$PGWS/$PGWS_WS/bin/cachectl.pl \"$@\""
+    $SUDO_CMD cd $PGWS_ROOT && perl $PGWS_ROOT/$PGWS/$PGWS_WS/bin/cachectl.pl $@
     ;;
   *)
     help

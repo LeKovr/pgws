@@ -40,6 +40,7 @@ my $tag = shift || '*';       # cache tag
 my $dirtag = shift || '';    # directory prefix
 my $enc = 'UtF-8';     # encoding (will be language)
 
+#print "Got: $cmd, $tag. $dirtag\n";
 #----------------------------------------------------------------------
 # End of config
 
@@ -131,8 +132,8 @@ sub clear {
 #----------------------------------------------------------------------
 sub save {
   -d $dir || mkdir $dir || die "No access to dir $dir";
-  my $c = init($tag);
   printf 'Saving cache %s to dir %s...', $tag, $dir; 
+  my $c = init($tag);
   my $defs = {};
 
   my @keys = $c->get_keys();
@@ -211,9 +212,9 @@ Usage: $0 cmd tag DIR
     DIR - directory for save/load
 
 Example:
-# perl $0 save meta e11
-# perl $0 load meta e11
-# perl $0 stat meta 
+    pgws.sh cache save meta e11
+    pgws.sh cache load meta e11
+    pgws.sh cache stat meta 
 TEXT
 }
 

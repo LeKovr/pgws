@@ -20,16 +20,11 @@
 */
 -- 89_reg.sql - Регистрация методов и страниц
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:89_reg.sql / 9 --'
+\qecho '-- FD: app:app:89_reg.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real, args_exam)
   VALUES ('info.add', 2, 1, 2, 2, pg_cs('add'), 'a=37, b=-37');
-
-SELECT
-  pg_c('a','z_ws.add.a','Слагаемое 1')
-  , pg_c('a','z_ws.add.b','Слагаемое 2')
-;
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
@@ -37,4 +32,4 @@ INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, 
 ;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:89_reg.sql / 26 --'
+\qecho '-- FD: app:app:89_reg.sql / 35 --'

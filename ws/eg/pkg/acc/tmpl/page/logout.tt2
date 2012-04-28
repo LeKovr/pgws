@@ -1,0 +1,23 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Страница завершения авторизации пользователя';
+  meta.nosiblings = 1;
+  root_page = uri(code => 'main');
+  root_href = uri_mk(root_page.req);
+  IF session.sid;
+    cnt = api('acc.logout');
+    temp_session = api('nc:acc.sid_info');
+    session.sid = undef;
+    '<p>' _ l('Авторизованная сессия завершена. Спасибо, что были с нами, приходите еще.') _ '</p>';
+    '<p><i>(' _ l('Общее количество завершенных сессий') _ ': ' _ cnt _')</i></p>';
+  ELSE;
+    '<p>' _ l('Похоже, сессия была завершена ранее.') _ '</p>';
+  END;
+  '<p>' _ l('Вы будете переадресованы на главную страницу автоматически через 5 секунд.') _ '</p>';
+%]
+<script type="text/javascript">
+//<![CDATA[
+setTimeout("window.location.pathname = '[% root_href %]';", 5000);
+//]]>
+</script>

@@ -69,24 +69,19 @@ sub new {
   $file = $PGWS_root.($ENV{'PGWS_RPC'} || '/conf/rpc.json');
   $self->{'cfg'}{'rpc'} = PGWS::Utils::data_load($file);
 
-  my $path = ["$PGWS_root/var/tmpl"];
-  my $p = $cfg->{'tmpl'}{'include'} || [];
-  foreach my $pp (@$p) {
-    unshift @$path, "$root/$pp"
-  }
-  # TODO: get args from config
-  $self->{'template'} = Template->new({
-    INCLUDE_PATH => $path,
-    COMPILE_DIR  => "$PGWS_root/var/tmpc",
-    PRE_PROCESS  => $cfg->{'tmpl'}{'config'}.$cfg->{'tmpl'}{'ext'},
-    CACHE_SIZE   => '100',
-    COMPILE_EXT => '.pm',
-    EVAL_PERL => 0,
-    ENCODING => 'utf-8',
-    PRE_CHOMP  => 1,
-    POST_CHOMP => 1,
-
-  });
+  my %template_config = (
+    INCLUDE_PATH  => "$PGWS_root/var/tmpl",
+    COMPILE_DIR   => "$PGWS_root/var/tmpc",
+    PRE_PROCESS   => 'config.tt2',
+    CACHE_SIZE    => '100',
+    COMPILE_EXT   => '.pm',
+    EVAL_PERL     => 0,
+    ENCODING      => 'utf-8',
+    PRE_CHOMP     => 1,
+    POST_CHOMP    => 1,
+    %{$cfg->{'tmpl'}{'config'}}
+  );
+  $self->{'template'} = Template->new(%template_config);
   {
     no warnings 'once';
     $Template::Stash::PRIVATE = undef;   # now you can thing._private
@@ -103,7 +98,7 @@ sub run {
   my %meta = %{$self->cfg->{'rpc'}};
   my $meta = PGWS::Meta->new(\%meta);
   $meta->setip($req->user_ip);
-
+  $meta->setcook($req->cookie); # $cookie ...
   if ($req->method eq 'OPTIONS') {
     $req->options_header;
   } elsif ($req->method eq 'POST' and $req->type =~m |application/json|) {
@@ -260,8 +255,11 @@ sub response {
 
   my $session = $self->load_session($ws, $meta, $params, $errors);
   my $sid = $session->{'sid'}; # value or undef
-  $session->{'sid_arg'} = $sid?"?sid=$sid":'';
-  $session->{'sid_pre'} = $sid?"?sid=$sid&":'?';
+  my $sid_name = $self->{'cfg'}{'sid_arg'};
+  my $have_sid_arg = ($sid_name and $sid);
+
+  $session->{'sid_arg'} = $have_sid_arg?"?$sid_name=$sid":'';
+  $session->{'sid_arg'} = $have_sid_arg?"?$sid_name=$sid&":'?';
 
   my $page = $self->api($ws, $errors, $meta, 'uri', $self->def_uri, {'uri' => $req->uri });
 
@@ -276,13 +274,13 @@ sub response {
     $page->{'req'} = $req->prefix.$page->{'req'} if($page and $page->{'req'});
     $page->{'is_hidden'} ||= $cfg->{'site_is_hidden'}; # закрываем незакрытое если весь сайт закрыт (не production)
   }
-  my $stg_args = $sid?"sid=$sid":'';
+  my $stg_args = $have_sid_arg?"$sid_name=$sid":'';
   if ($session->{'lang_used'}) {
-    $stg_args = ($sid?$stg_args.'&':'').'lang='.$session->{'lang'};
-    $session->{'sid_arg'} .= ($sid?'&':'?').'lang='.$session->{'lang'};
+    $stg_args = ($have_sid_arg?$stg_args.'&':'').'lang='.$session->{'lang'};
+    $session->{'sid_arg'} .= ($have_sid_arg?'&':'?').'lang='.$session->{'lang'};
     $session->{'sid_pre'} .= 'lang='.$session->{'lang'}.'&';
   }
-  my $tmpl_meta = { 'status' => '200' };
+  my $tmpl_meta = { 'status' => '200', 'html_headers' => [] };
   my $vars = {
     'api'         => sub { api($self, $ws, $errors, $meta, undef, @_) },
     'uri'         => sub { api($self, $ws, $errors, $meta, undef, $self->def_code, @_); },
@@ -382,7 +380,12 @@ sub load_session {
   my ($self, $ws, $meta, $params, $errors) = @_;
 
   $meta->stage_in('sid');
-  my $sid = delete $params->{'sid'}; # sid - только в session.sid
+  my $sid;
+  if ($self->{'cfg'}{'sid_arg'}) {
+    $sid = delete $params->{$self->{'cfg'}{'sid_arg'}}; # sid - только в session.sid
+  } else {
+    $sid = $meta->{'cook'}; # TODO: геттер или иначе брать
+  }
   $meta->setsid($sid); # sid до валидации
 
   my $lang = delete $params->{'lang'}; # lang - всегда в meta.lang и в session.lang если нужен в ссылках

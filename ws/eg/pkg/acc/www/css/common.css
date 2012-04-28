@@ -1,0 +1,39 @@
+.borderedBox {
+  -moz-box-shadow: 3px 3px 5px #DFDFDF;
+  -webkit-box-shadow: 3px 3px 5px #DFDFDF;
+  -khtml-box-shadow: 3px 3px 5px #DFDFDF;
+  -o-box-shadow: 3px 3px 5px #DFDFDF;
+  box-shadow: 3px 3px 5px #DFDFDF;
+
+  color:black;
+  border-width: 1px;
+  border-style: solid;
+  overflow: auto;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  -khtml-border-radius: 8px;
+  border-radius: 8px;
+}
+
+.single {
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
+}
+
+.slim {
+  width: 30%;
+}
+
+.single .btn {
+  text-align: center;
+}
+
+.singleform label, .singleform input {
+  display:inline-block;
+}
+
+.singleform label {
+  width:100px; /* or whatever size you want them */
+}
+

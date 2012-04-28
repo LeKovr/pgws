@@ -20,7 +20,7 @@
 */
 -- 11_deps.sql - Контроль зависимостей
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:11_deps.sql / 9 --'
+\qecho '-- FD: app:app:11_deps.sql / 23 --'
 
 SET LOCAL search_path = app, ws, i18n_def, public;
 
@@ -28,4 +28,4 @@ SELECT ws.pkg_require('pgws');
 
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:11_deps.sql / 17 --'
+\qecho '-- FD: app:app:11_deps.sql / 31 --'

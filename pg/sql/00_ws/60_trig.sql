@@ -23,8 +23,8 @@
 \qecho '-- FD: pg:ws:60_trig.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS 
-$_$  -- FD: pg:ws:60_trig.sql / 27 -- 
+CREATE OR REPLACE FUNCTION dt_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
+$_$  -- FD: pg:ws:60_trig.sql / 27 --
   DECLARE
     v_id ws.d_id32;
   BEGIN
@@ -56,8 +56,8 @@ $_$  -- FD: pg:ws:60_trig.sql / 27 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_part_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS 
-$_$  -- FD: pg:ws:60_trig.sql / 60 -- 
+CREATE OR REPLACE FUNCTION dt_part_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
+$_$  -- FD: pg:ws:60_trig.sql / 60 --
   DECLARE
     v_id ws.d_id32;
   BEGIN
@@ -78,8 +78,8 @@ $_$  -- FD: pg:ws:60_trig.sql / 60 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_facet_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS 
-$_$  -- FD: pg:ws:60_trig.sql / 82 -- 
+CREATE OR REPLACE FUNCTION dt_facet_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
+$_$  -- FD: pg:ws:60_trig.sql / 82 --
   DECLARE
     v_id ws.d_id32;
   BEGIN
@@ -93,19 +93,22 @@ $_$  -- FD: pg:ws:60_trig.sql / 82 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION page_insupd_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS 
-$_$  -- FD: pg:ws:60_trig.sql / 97 -- 
+CREATE OR REPLACE FUNCTION page_insupd_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
+$_$  -- FD: pg:ws:60_trig.sql / 97 --
   BEGIN
     IF NEW.uri_re IS NULL THEN
-      NEW.uri_re = regexp_replace(NEW.uri, ':i', E'(\\d+)', 'g');
-      NEW.uri_re = regexp_replace(NEW.uri_re, ':s', '([^/:]+)', 'g');
-      NEW.uri_re = regexp_replace(NEW.uri_re, E'\\?', E'\\?', 'g');
+      NEW.uri_re := regexp_replace(NEW.uri_re, E'\\?', E'\\?', 'g');
+      NEW.uri_re := regexp_replace(NEW.uri, ':i', E'(\\d+)', 'g');
+      NEW.uri_re := regexp_replace(NEW.uri_re, ':s', '([^/:]+)', 'g');
+      NEW.uri_re := regexp_replace(NEW.uri_re, ':u', '((?:/[^/]+)*)', 'g');
     END IF;
     IF NEW.uri_fmt IS NULL THEN
-      NEW.uri_fmt = regexp_replace(NEW.uri, '%', '%%', 'g');
-      NEW.uri_fmt = regexp_replace(NEW.uri_fmt, ':i', '%i', 'g');
-      NEW.uri_fmt = regexp_replace(NEW.uri_fmt, ':s', '%s', 'g');
-      NEW.uri_fmt = regexp_replace(NEW.uri_fmt, E'\\$$', '');
+      NEW.uri_fmt := regexp_replace(NEW.uri, '%', '%%', 'g');
+      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, ':i', '%i', 'g');
+      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, ':s', '%s', 'g');
+      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, ':u', '%s', 'g');
+      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, E'\\$$', '');
+      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, E'[()]', '','g');
     END IF;
     RAISE NOTICE 'New page: %', NEW.uri_re;
     RETURN NEW;
@@ -113,10 +116,10 @@ $_$  -- FD: pg:ws:60_trig.sql / 97 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION method_insupd_trigger() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS 
-$_$  -- FD: pg:ws:60_trig.sql / 117 -- 
+CREATE OR REPLACE FUNCTION method_insupd_trigger() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
+$_$  -- FD: pg:ws:60_trig.sql / 120 --
   DECLARE
-    r_proc ws.t_pg_proc_info;  
+    r_proc ws.t_pg_proc_info;
     v_code text;
     v_dt_id ws.d_id32;
   BEGIN
@@ -131,7 +134,7 @@ $_$  -- FD: pg:ws:60_trig.sql / 117 --
       END IF;
 
       v_code := r_proc.rt_name;
-      IF r_proc.schema = ws.pg_cs('') THEN 
+      IF r_proc.schema = ws.pg_cs('') THEN
          -- в этом случае схемы в имени не будет
          v_code := r_proc.schema || '.'|| v_code;
       END IF;
@@ -170,4 +173,4 @@ $_$  -- FD: pg:ws:60_trig.sql / 117 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:60_trig.sql / 173 --'
+\qecho '-- FD: pg:ws:60_trig.sql / 176 --'

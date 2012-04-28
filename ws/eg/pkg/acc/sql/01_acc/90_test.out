@@ -1,0 +1,15 @@
+1. login
+ login | status_id |     email     | psw 
+-------+-----------+---------------+-----
+ user  |         1 | user@email.to | ***
+
+2. session
+    ip     | sid 
+-----------+-----
+ 127.0.0.1 | xx
+
+3. profile
+ id | group_id | status_id | login |     email     | psw | name  | group_name 
+----+----------+-----------+-------+---------------+-----+-------+------------
+  1 |        2 |         1 | user  | user@email.to | *** | Admin | Writers
+

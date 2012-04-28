@@ -46,7 +46,7 @@ SET search_path = i18n_en, pg_catalog;
 
 CREATE FUNCTION amount2words(source numeric, up_mode integer) RETURNS text
     LANGUAGE plpgsql IMMUTABLE
-    AS $$  -- FD: pg:ws:51_i18n.sql / 62 --
+    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 49 --
 /*
   Сумма прописью в рублях и копейках
   up_mode = 0 - все символы строчные
@@ -172,7 +172,7 @@ COMMENT ON FUNCTION amount2words(source numeric, up_mode integer) IS 'Сумма
 
 CREATE FUNCTION date_name(a_date date) RETURNS text
     LANGUAGE plpgsql IMMUTABLE
-    AS $$  -- FD: pg:ws:51_i18n.sql / 13 --
+    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 175 --
   DECLARE
     m_names TEXT := 'january february march april may june july august september october november december';
   BEGIN
@@ -197,7 +197,7 @@ COMMENT ON FUNCTION date_name(a_date date) IS 'Название даты вид�
 
 CREATE FUNCTION date_name_doc(a_date date) RETURNS text
     LANGUAGE sql IMMUTABLE
-    AS $_$  -- FD: pg:ws:51_i18n.sql / 27 --
+    AS $_$  -- FD: i18n:i18n_en:20_dump.sql / 200 --
   SELECT CASE WHEN date_part('day', $1) < 10 THEN '0' ELSE '' END || date_name($1)
 $_$;
 
@@ -215,7 +215,7 @@ COMMENT ON FUNCTION date_name_doc(a_date date) IS 'Название даты в�
 
 CREATE FUNCTION month_amount_name(a_id integer) RETURNS text
     LANGUAGE sql IMMUTABLE
-    AS $_$  -- FD: pg:ws:51_i18n.sql / 47 --
+    AS $_$  -- FD: i18n:i18n_en:20_dump.sql / 218 --
   SELECT CASE
     WHEN $1 % 10 = 1 AND $1 <> 11 THEN $1::text || ' ' || 'месяц'
     WHEN $1 IN (24,36,48) THEN $1/12 || ' ' || 'года'
@@ -241,7 +241,7 @@ COMMENT ON FUNCTION month_amount_name(a_id integer) IS 'Название пер�
 
 CREATE FUNCTION month_name(a_date date) RETURNS text
     LANGUAGE plpgsql IMMUTABLE
-    AS $$  -- FD: pg:ws:51_i18n.sql / 34 --
+    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 244 --
   DECLARE
     m_names TEXT := 'january february march april may june july august september october november december';
   BEGIN

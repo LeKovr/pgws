@@ -1,14 +1,15 @@
 {
-  "cookie_mask": "PGWS_SID=([\\d\\.]+)(;|$)",
+  "cookie_mask": "PGWS_SID=([\\w+]+)==",
+  "sid_arg":  "",
   "error_500": "/error/",
   "site_is_hidden": 1,
-  "post": { 
+  "post": {
     "/pwl": "/pwl",
     "/api": "/api",
     "/api_cgi": "/cgi-bin/pwl.pl",
   },
   "def": {
-    "sid": "app.sid_info",
+    "sid": "acc.sid_info",
     "acl": "info.acl_check",
     "uri": "ws.page_by_uri",
     "code": "ws.page_by_code",
@@ -19,8 +20,6 @@
     "enc": "charset=utf-8",
 
     "error": "app/error",
-    "config": "config",
-
     "pages": "page/",
 
     "layout_default": "style01",
@@ -31,6 +30,18 @@
       "default": "ru",
     },
 
-    "include1": ["pkg/skindef/tmpl"]
+    "config": {
+      "PRE_PROCESS": "config.tt2",
+      "ENCODING":    "utf-8",
+      "CACHE_SIZE":  100,
+      "COMPILE_EXT": ".pm",
+      "EVAL_PERL":   0,
+      "PRE_CHOMP":   1,
+      "POST_CHOMP":  1,
+      "PLUGINS": {
+        "Textile": "Template::Plugin::Textile",
+
+      }
+    }
   }
 }

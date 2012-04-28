@@ -20,7 +20,6 @@
 */
 -- 90_test.sql - Тесты
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:90_test.sql / 9 --'
 
 SELECT code, class_id, action_id, cache_id, rvf_id, is_write, is_i18n, is_sql, code_real
   , (ws.dt(arg_dt_id)).code as arg_dt, (ws.dt(rv_dt_id)).code as rv_dt, name, args_exam, args 

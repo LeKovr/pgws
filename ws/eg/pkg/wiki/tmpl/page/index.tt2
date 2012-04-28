@@ -1,0 +1,28 @@
+[% META
+  description = 'Просмотр статей wiki';
+
+  group_code = page.args.0;
+  doc_path = page.args.1;
+ meta.html_headers.push(
+   '<link rel="stylesheet" type="text/css" href="/css/wiki/common.css" />'
+   , '<script src="http://yandex.st/highlightjs/6.2/highlight.min.js"></script>'
+   , '<script>hljs.initHighlightingOnLoad();</script>'
+ );
+
+  code = doc_path.remove('^/');
+  ids = api('wiki.ids_by_code', group_code => group_code, code => code || undef);
+  edit_uri = uri(code => page.code _ '.edit', id => doc_path );
+  IF !ids.id;
+    meta.redirect = edit_uri.req;
+    STOP;
+  END;
+  info = api('wiki.doc_info', id => ids.id);
+  resp.title = info.name;
+# place for INSERT
+  src = api('wiki.doc_src', id => ids.id);
+  page = api('wiki.format', uri => req.prefix _ '/' _ group_code, code => code, src => src, extended => 1);
+  page.html;
+%]
+<hr />
+<a href="[% uri_mk(edit_uri.req) %]">[% l('Редактировать') %]</a>
+

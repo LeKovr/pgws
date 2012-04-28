@@ -137,7 +137,7 @@ INSERT INTO dt (code, parent_id, anno, is_list) VALUES (pg_cs('d_emails'), dt_id
 INSERT INTO dt_facet (id, facet_id, value, anno) VALUES (dt_id('d_emails'), facet_id('pattern'), E'(?:^$|^[^ ]+@[^ ]+\\.[^ ]{2,6}$)','your@email.ru');
 
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_path'), dt_id('text'), 'Относительный путь');
-INSERT INTO dt_facet VALUES (dt_id('d_path'), facet_id('pattern'), E'^[a-z\\d_][a-z\\d\\.\\-_/]+$');
+INSERT INTO dt_facet VALUES (dt_id('d_path'), facet_id('pattern'), E'^(|[a-z\\d_][a-z\\d\\.\\-_/]+)$');
 
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_class'), dt_id('d_id32'), 'ID класса');
 

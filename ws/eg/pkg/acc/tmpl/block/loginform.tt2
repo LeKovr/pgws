@@ -1,0 +1,57 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Форма авторизации пользователя';
+  meta.nosiblings = 1;
+  meta.api = 1;
+  meta.html_headers.push(
+    '<link rel="stylesheet" type="text/css" href="/css/acc/common.css" />'
+  );
+%]
+<div class="borderedBox single slim">
+  <form id="main-form" action="js_required_but_not_available" onsubmit="return false;">
+    <input type="hidden" name="uri" value="[% group_code %]">
+    <fieldset id="o-bs-sum-buginfo" class="singleform">
+      <div>
+        <label for "fld-login">[% l("Логин:") %]</label>
+        <input type="text" id="fld-login" name="login">
+      </div>
+      <div>
+        <label for "fld-psw">[% l("Пароль:") %]</label>
+        <input type="password" id="fld-psw" name="psw">
+      </div>
+    </fieldset>
+    <div class="single btn">
+      <button  onClick="return formSend('main', 'acc.login')">[% l("Войти") %]</button>
+    </div>
+    <div id="status"></div>
+    <div id="errors" class="error"></div>
+    <div id="main-form__err" class="error"></div>
+  </form>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+
+function formSend(id, action) {
+  $('#status').text('');
+  $('#main-form___err').text('');
+  var form_id = '#' + id + '-form';
+  api_form(action, form_id, formOK);
+  return false;
+};
+
+var formOK = function(formid, res) {
+  $('#status').html('[% l("Добро пожаловать") %]' + ', ' + res.name);
+[%
+  IF page.code == 'login';
+  root_page = uri(code => 'main');
+  root_href = uri_mk(root_page.req);
+%]
+window.location.pathname = '[% root_href %]';
+[% ELSE; %]window.location.reload(true);[% END; %]
+
+};
+
+//]]>
+</script>

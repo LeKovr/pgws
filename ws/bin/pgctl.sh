@@ -118,16 +118,18 @@ db_run() {
 
     echo "\\qecho '-- ------- Schema: $sn'" >> $BLD/build.sql
     [ -d "$BLD/$bd" ] || mkdir $BLD/$bd
-
-    for f in $s/$file_mask ; do
+    echo -n > $BLD/errors.diff
+    pushd $s > /dev/null
+    for f in $file_mask ; do
       if [ -f "$f" ] ; then
         n=$(basename $f)
-        echo "Found: $f"
-        echo "Processing file: $f" >> $LOGFILE
+        echo "Found: $s/$f"
+        echo "Processing file: $s/$f" >> $LOGFILE
         awk "{gsub(/-- FD:(.*)--/, \"-- FD: $pn:$sn:$n / \" FNR \" --\")}; 1" $f > $BLD/$bd/$n
         echo "\i $bd/$n" >> $BLD/build.sql
       fi
     done
+    popd > /dev/null
     if [[ "$run_op" != "del" ]] ; then
       echo "SET LOCAL search_path = i18n_def, public;" >> $BLD/build.sql
 
@@ -135,13 +137,14 @@ db_run() {
       for f in $s/9?_*.sql ; do
         [ -s "$f" ] || continue
         n=$(basename $f)
+        echo "Found test: $f"
         echo "Processing file: $f" >> $LOGFILE
         awk "{gsub(/-- FD:(.*)--/, \"-- FD: $pn:$sn:$n / \" FNR \" --\")}; 1" $f > $BLD/$bd/$n
         n1=${n%.sql} # remove ext
         echo "\o $bd/$n1.out" >> $BLD/build.sql
         echo "\i $bd/$n" >> $BLD/build.sql
-        cp $s/$n1.out $BLD/$n1.out.orig
-        echo "\! diff -c $n1.out.orig $n1.out | tr \"\t\" \" \" > errors.diff" >> $BLD/build.sql
+        cp $s/$n1.out $BLD/$bd/$n1.out.orig 2>>  $BLD/errors.diff
+        echo "\! diff -c $bd/$n1.out.orig $bd/$n1.out | tr \"\t\" \" \" >> errors.diff" >> $BLD/build.sql
         db_run_test_end $BLD/build.sql
       done
 
@@ -164,8 +167,10 @@ db_run() {
     echo "Complete"
     [ -f "$BLD/errors.diff" ] && rm "$BLD/errors.diff"
   else
-    echo "*** Errors found:"
+    echo "*** Errors:"
     grep ERROR $LOGFILE
+    echo "*** Diff:"
+    [ -e "$BLD/errors.diff" ] && cat "$BLD/errors.diff"
   fi
 
 }
@@ -230,7 +235,7 @@ pkg=$@
 
 case "$cmd" in
   init)
-    db_run add "[1-8]?_*.sql" $src "$pkg"
+    db_run add "[1-9]?_*.sql" $src "$pkg"
     ;;
   drop)
     db_run del "0?_*.sql" $src "$pkg"

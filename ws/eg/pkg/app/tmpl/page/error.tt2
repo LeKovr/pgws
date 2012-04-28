@@ -1,23 +1,31 @@
-[% META
-  description = 'Страница ошибки';
-  IF status == '403'; 
-    note = l('Недостаточно прав. Войдите в систему, воспользовавшись формой ниже.'); 
-    SET resp.title = l("Вход для зарегистрированных пользователей"); 
-    SET meta.login_css = 1;
+[% META description = 'Страница ошибки';
+  IF status == '403';
+    IF session.sid;
+      note = l('Ваша учетная запись имеет недостаточно прав для просмотра этой страницы.');
+    ELSE;
+      note = l('Эта страница доступна только для авторизованных пользователей.');
+    END;
+    resp.title = l("403. Необходима авторизация");
   ELSE;
-    IF status == '404'; 
-      note = l('Страница не найдена'); 
-    ELSIF status == '405'; 
-      note = l('Недопустимый метод'); 
-    ELSE; 
-      note = l('Сервис недоступен'); 
-    END; 
-    SET resp.title = l("Ошибка [_1]. [_2]", status, note);
+    IF status == '404';
+      note = l('Страница не найдена');
+    ELSIF status == '405';
+      note = l('Недопустимый метод');
+    ELSE;
+      note = l('Сервис недоступен');
+    END;
+    SET resp.title = l("[_1]. [_2]", status, note);
   END;
-  SET meta.nosiblings = 1;
-  SET meta.nochilds = 1;
-  SET meta.nopath = 1;
-%][%  IF status == '403' 
-%]
-[%  END 
+  meta.nosiblings = 1;
+  meta.nochilds = 1;
+  meta.nopath = 1;
+  '<p>' _ note _ '</p>';
+  '<p><i>(' _  meta.status_note _ ')</i></p>';
+
+  IF status == '403';
+    u = uri(code => 'login');
+    IF u;
+      INCLUDE block/acc/loginform.tt2;
+    END;
+  END;
 %]

@@ -1,0 +1,143 @@
+[% META
+  description = 'Просмотр статей wiki';
+
+  meta.api = 1;
+  group_code = page.args.0;
+  doc_path = page.args.1;
+  meta.html_headers.push(
+    '<link rel="stylesheet" type="text/css" href="/css/wiki/common.css" />'
+    '<link rel="stylesheet" type="text/css" href="/css/wiki/edit.css" />'
+  );
+
+  code = doc_path.remove('^/');
+  ids = api('wiki.ids_by_code', group_code => group_code, code => code);
+  IF !ids.id;
+    can_do = api('wiki.can_create', group_id => ids.group_id, code => code);
+    IF !can_do;
+      meta.status = '403';
+      meta.status_note = 'No access to create';
+      STOP;
+    END;
+    src=l("Title: Заголовок\nTOC:   UnOrdered\n\nАннотация\n<!-- CUT -->\nТекст");
+  ELSE;
+    can_do = api('wiki.can_create', group_id => ids.group_id, code => code);
+    # can_do = api('acl:wiki.save', id => ids.id); # TODO: при переносе в ACL изменить на acl:wiki.save
+    IF !can_do;
+      meta.status = '403';
+      meta.status_note = 'No access to save';
+      STOP;
+    END;
+    info=api('wiki.doc_info', id => ids.id);
+    resp.title = info.name;
+    src=api('wiki.doc_src', id => ids.id);
+  END;
+%]
+<div id="accordion">
+  <div class="d">
+    <p class="dd"  style="background-color: #87AFC7">E D I T</p>
+    <div class="cent" id="p-edit">
+      <form id="main-form" action="js_required_but_not_available" onsubmit="return false;">
+        <input type="hidden" name="uri" value="[% req.prefix _ '/' _ group_code  %]">
+        <input type="hidden" name="code" value="[% code %]">
+        <input type="hidden" name="group_id" value="[% ids.group_id %]">
+        <input type="hidden" name="id" value="[% ids.id %]">
+        <input type="hidden" name="extended" value="1">
+        <button id="btnSave0" onClick="return formSend('main', 'wiki.save')">[% l("Сохранить") %]</button>
+        <button id="btnFormat0" onClick="return formSend('main', 'wiki.format')">[% l("Предварительный просмотр") %]</button>
+        <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view0" checked onClick="return toggleChk(this, 1)"></label>
+        <textarea name="src" style="width:100%" rows="60" >[% src %]</textarea>
+        <button id="btnSave1" onClick="return formSend('main', 'wiki.save')">[% l("Сохранить") %]</button>
+        <button id="btnFormat1" onClick="return formSend('main', 'wiki.format')">[% l("Предварительный просмотр") %]</button>
+        <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view1" checked onClick="return toggleChk(this,0)"></label>
+        <div id="status"></div>
+        <div id="errors" class="error"></div>
+        <div id="main-form__err" class="error"></div>
+        <div id="main-form_src_err" class="error"></div>
+      </form>
+    </div>
+  </div>
+  <div class="d">
+    <p class="dd"   style="background-color: #C6AEC7">P A G E</p>
+    <div class="cent" id="p-html"></div>
+  </div>
+  <div class="d">
+    <p class="dd" style="background-color: #9E7BFF">S O U R C E</p>
+    <div class="cent" id="p-src"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+
+function toggleChk(b,idx) {
+  c=$("#is_view"+idx);
+  c.attr("checked", $(b).attr("checked"));
+  return true;
+}
+
+var page_html='[% l("нет данных") %]';
+
+function formSend(id, action) {
+  $('#status').text('');
+  $('#main-form___err').text('');
+  var form_id = '#' + id + '-form';
+  api_form(action, form_id, formOK);
+  return false;
+};
+
+var formOK = function(formid, res) {
+  if (typeof res == 'number') {
+    // redirect to view page
+    var m = (res == 1)?'[% l("Документ создан") %]':'[% l("Документ изменен") %]';
+    m = m + '. ' + '[% l("Загружается страница просмотра") %]';
+    var u = "[% req.prefix _ '/' _ group_code _ doc_path %]";
+    $('#status').text(m);
+    window.location.pathname = u;
+  } else {
+    document.title = res.title;
+    page_html = res.html;
+    if ($('#is_view0').is(':checked')) {
+      $(activeItem).next().children("p.dd").click();
+      $('html, body').scrollTop(0);
+    }
+  }
+};
+
+var animation_complete = function(t) {
+  if ($(activeItem).children("div.cent").height()>200) {
+    $("#accordion>div.d>p.dd").height($(activeItem).children("div.cent").height());
+  }
+}
+
+$(document).ready(function(){
+
+  // http://www.designchemical.com/blog/index.php/jquery/jquery-simple-horizontal-accordion/
+  activeItem = $("#accordion div.d:first");
+  $(activeItem).addClass('active');
+
+  $("#accordion div.d p.dd").click(function(){
+
+    activeDiv=$(activeItem).children("div.cent");
+
+    $(activeItem).animate({width: "15px"}, {duration:300, queue:false});
+    $(this).parent().animate({width: "97%"}, {duration:300, queue:false, complete: animation_complete});
+
+    if (activeDiv.attr('id') == 'p-html' || activeDiv.attr('id') == 'p-src') {
+      activeDiv.html('');
+    }
+
+    activeItem = $(this).parent();
+
+    activeDiv=$(activeItem).children("div.cent");
+    if (activeDiv.attr('id') == 'p-html') {
+      activeDiv.html(page_html);
+    } else if (activeDiv.attr('id') == 'p-src') {
+      activeDiv.html('<textarea id="df"  style="width:100%" rows="60" disabled><textarea>');
+      activeDiv.children("#df").text(page_html);
+    }
+  });
+});
+
+//]]>
+</script>
+

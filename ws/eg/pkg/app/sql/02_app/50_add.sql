@@ -20,11 +20,11 @@
 */
 -- 50_add.sql - Метод API add
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:50_add.sql / 9 --'
+\qecho '-- FD: app:app:50_add.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION add (a INTEGER, b INTEGER DEFAULT 0) RETURNS INTEGER STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: app:app:50_add.sql / 13 --
+$_$  -- FD: app:app:50_add.sql / 27 --
   -- a: Слагаемое 1
   -- b: Слагаемое 2
 BEGIN
@@ -48,4 +48,4 @@ $_$;
 SELECT pg_c('f', 'add', 'Сумма 2х целых');
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:50_add.sql / 37 --'
+\qecho '-- FD: app:app:50_add.sql / 51 --'

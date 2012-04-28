@@ -4,9 +4,10 @@
   "acl_prefix": "acl:",
   "nocache_prefix": "nc:",
   "db_noacc_code": "42501", # database error code for "access forbidden"
+  "acl_trigger":   "acc.login", # code for method which upgrade acl
 
   "lang": {
-    "allowed": ["ru", "en", "ua"],
+    "allowed": ["ru", "en"],
     "default": "ru",
     "sql": {
       "default": "SET search_path TO i18n_def, public",
@@ -24,7 +25,7 @@
   "def": {
     "class":    "ws.class",
     "cache":    "ws.cache",
-    "sid":      "app.sid_info",
+    "sid":      "acc.sid_info",
     "err":      "ws.error_info",
     "acl":      "info.acl_check",
     "acl_eff":  "ws.acls_eff",

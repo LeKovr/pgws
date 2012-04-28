@@ -20,11 +20,11 @@
 */
 -- 11_deps.sql - Контроль зависимостей
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: apidoc:ws:11_deps.sql / 9 --'
+\qecho '-- FD: i18n:i18n_en:11_deps.sql / 23 --'
 
 SET LOCAL search_path = i18n_en, ws, i18n_def, public;
 
 SELECT ws.pkg_require('pgws');
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: apidoc:ws:11_deps.sql / 16 --'
+\qecho '-- FD: i18n:i18n_en:11_deps.sql / 30 --'

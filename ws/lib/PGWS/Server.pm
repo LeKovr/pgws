@@ -282,9 +282,10 @@ sub _process {
 
   # системные аргументы
   my $info = {
-    '_ip'   => $meta->{'ip'},
-    '_sid'  => $meta->{'sid'},
-    '_lang' => $meta->{'lang'},
+    '_ip'    => $meta->{'ip'},
+    '_sid'   => $meta->{'sid'},
+    '_lang'  => $meta->{'lang'},
+    '_cook'  => $meta->{'cook'},
   };
   my %params = (%$params, %$info);
   # получить acl
@@ -326,14 +327,28 @@ sub _process {
   # текущий список acl
   my @acls = keys %$acl;
   $params{'_acl'} = \@acls;
-
+  $meta->debug('ACL check complete');
   # валидировать все аргументы метода
+  if ($mtd_def->{'code_real'} eq $self->def_acl->{'code_real'}) {
+    # исключение - если вызван check_acl, надо оставить в аргументах столько id, сколько надо проверяемому классу
+    # TODO: этот код похож на кусок выше, вынести в функцию
+    my $class1 = $self->class_list->{$params{'class_id'}};
+    # выбрать только те id, которые нужны для идентификации экземпляра
+    if ($class1->{'id_count'} < 2) {
+      for my $i ($class1->{'id_count'}..2) {
+        my $k = 'id'.($i || '');
+        delete $params{$k} if exists($params{$k});
+      }
+    }
+    $meta->dump({'acl_args' => \%params});
+  }
   ($errors, $args, $args_hash) = $self->_validate($meta, $mtd_def, \%params);
   if ($check_mode != 1 and scalar(@$errors)) {
     $res->{'result'} = { 'error' => $errors, 'args' => $args_hash };
     $meta->dump({'acl_error' => $res});
     return $res;
   }
+  $meta->debug('Validation complete');
   if ($check_mode == 1) {
     # TODO: если метод имеет аргумент "a__chk" - его можно вызвать с этим флагом
     $res->{'result'} = {};
@@ -356,6 +371,26 @@ sub _process {
   if (exists($res->{'result'}) and exists($res->{'result'}{'data'})) {
     $res->{'success'} = 'true';
     $meta->dump({'call_ok' => $res });
+    if ($mtd_def->{'code'} eq $self->cfg->{'acl_trigger'}) {
+      # исключение - успешное выполнение авторизации, надо сбросить кэш для def_acl(sid)
+      # TODO: продумать блок
+      my $def = $self->_explain_def($self->def_sid, $meta);
+      my $cache_id = $def->{'cache_id'};
+      if ($self->cache and exists($self->cache->{$cache_id})) {
+        my $c = $self->cache->{$cache_id};
+        my @keys = $c->get_keys();
+        my $removed = 0;
+        foreach my $k (@keys) {
+          if (index($k, $def->{'code'}) > 0 and index($k, $meta->{'cook'}) > 0) {
+            # index не вернет 0 при успехе, т.к. $k - JSON и начинается с [
+            $c->remove($k);
+            $removed++;
+          }
+        }
+        $meta->debug('reset acl cache %i for mask ("%s" and "%s") with count=%i'
+          , $cache_id, $def->{'code'}, $meta->{'cook'}, $removed);
+      }
+    }
   } else {
     $meta->dump({'call_error' => $res });
   }

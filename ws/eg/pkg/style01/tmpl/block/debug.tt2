@@ -1,17 +1,20 @@
 [% META
-  description = 'Блок отладки, подключается при conf/frontend.json:tmpl.debug=1'
-%]<pre>
-[%# USE dumper(indent=1, pad="  ") %]
-[%# dumper.dump(    req ) %]
-</pre>
-[% IF page.code != 'main'
-  %][% u = uri(code => 'main') %]
-<center>
-<a href="[% uri_mk(u.req) %]">[% u.name %]</a>
+  description = 'Блок отладки, подключается при conf/frontend.json:tmpl.debug=1';
+  IF 0;
+    %]<pre>[%
+    USE dumper(indent=1, pad="  ");
+    dumper.dump(    req ) %];
+    %]</pre>[%
+  END;
+  IF page.code != 'main'; root_page = uri(code => 'main'); root_href = uri_mk(root_page.req); END;
+  IF root_href;
+    %]<div class="center">
+<a href="[% root_href %]">[% root_page.name %]</a>
 <hr style="margin:15px 0px;" />
-</center>
-[% END %]
-
+</div>
+[%
+  END;
+%]
 <script type="text/javascript"><!--
 function toggleSpan(id) {  var s = document.getElementById(id).style;  s.display = (s.display == 'none') ? 'inline' : 'none' }
 --></script>
@@ -78,6 +81,8 @@ table.debug th, table.debug td {
   </tr>
 </table>
 </form>
+[% ELSE %]
+<div id="top">API is not active</div>
 [% END %]
 <div id="debug-console">
 [% IF debug_data %]

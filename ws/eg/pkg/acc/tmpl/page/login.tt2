@@ -1,0 +1,7 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Страница авторизации пользователя';
+  meta.nosiblings = 1;
+  INCLUDE block/acc/loginform.tt2;
+%]

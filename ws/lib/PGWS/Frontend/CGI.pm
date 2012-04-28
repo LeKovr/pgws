@@ -56,6 +56,7 @@ sub method  { $_[0]->{'method'}   }
 sub uri     { $_[0]->{'uri'}      }
 sub prefix  { $_[0]->{'prefix'}   }
 sub accept  { $_[0]->{'accept'}   }
+sub cookie  { $_[0]->{'cookie'}   }
 
 #----------------------------------------------------------------------
 
@@ -85,8 +86,9 @@ sub new {
   my $uri = $self->{'uri'} || $ENV{'PATH_INFO'} || $ENV{'REDIRECT_PINFO'} || '';
   my $uri_full = $ENV{'REDIRECT_URL'};
   my $prefix = '';
-  if ($uri_full and $uri_full =~ /^(.*)$uri$/) {
-    $prefix = $1;
+  my $i = rindex($uri_full, $uri);
+  if ($uri_full and $i > 0 ) {
+    $prefix = substr($uri_full, 0, $i);
   }
   $uri =~ s |^/||;
   $self->{'uri'} = $uri;
@@ -111,8 +113,9 @@ sub run {
 #----------------------------------------------------------------------
 sub fetch_cook {
   my ($self, $mask) = @_;
-  if ($mask and $ENV{'HTTP_COOKIE'} and $ENV{'HTTP_COOKIE'} =~ /$mask/) {
-    $self->{'cookie'} = $1;
+
+  if ($mask and $ENV{'HTTP_COOKIE'} and $ENV{'HTTP_COOKIE'} =~ /(^| )$mask(;|$)/) {
+    $self->{'cookie'} = $2;
   }
 }
 
@@ -190,7 +193,9 @@ sub print {
 sub redirect {
   my $self = shift;
   my $r = $self->{'req'};
-  print $self->{'_q'}->redirect(shift);
+  my $u=shift;
+  my $p=($u =~ m|^/|)?'':$self->{'prefix'}.'/';
+  print $self->{'_q'}->redirect("$p$u");
 }
 
 #----------------------------------------------------------------------

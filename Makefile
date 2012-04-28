@@ -32,7 +32,7 @@ popd > /dev/null
 pkg:
 	pushd .. > /dev/null ; [ -d pkg ] || mkdir pkg ; root=$$PWD ; popd > /dev/null ; \
 pushd ws/eg > /dev/null ; \
-for p in pkg/* ; do [ -f $$root/$$p ] || cp -pr $$p $$root/pkg/ ; done ; \
+for p in pkg/* ; do [ -e $$root/$$p ] || ln -s $$PWD/$$p $$root/$$p ; done ; \
 popd > /dev/null
 
 var:

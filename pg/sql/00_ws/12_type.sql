@@ -69,7 +69,7 @@ CREATE DOMAIN d_code_like AS TEXT CHECK (VALUE ~ E'^[a-z\\d\\.\\-_\\%]+$');
 
 CREATE DOMAIN d_sub AS TEXT CHECK (VALUE ~ E'^([a-z\\d][a-z\\d\\.\\-_]+)|([A-Z\\d][a-z\\d\\.\\-_\:A-Z]+)$') ;
 
-CREATE DOMAIN d_path AS TEXT CHECK (VALUE ~ E'^[a-z\\d_][a-z\\d\\.\\-_/]+$') ;
+CREATE DOMAIN d_path AS TEXT CHECK (VALUE ~ E'^(|[a-z\\d_][a-z\\d\\.\\-_/]+)$') ;
 
 CREATE DOMAIN d_sort AS INTEGER CHECK (VALUE > -32768 AND VALUE < 32767);
 
