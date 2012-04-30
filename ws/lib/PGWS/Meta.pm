@@ -111,8 +111,7 @@ sub _store {
   };
   if ($level == DMP_LEVEL) {
     my ($d) = (@_);
-#    $ret->{'data'} = (ref ($d) eq 'SCALAR')?$d: Dumper($d);
-    $ret->{'data'} = Dumper($d);
+    $ret->{'data'} = (ref(\$d) eq 'SCALAR')?$d: Dumper($d);
   } else {
     $ret->{'message'} = PGWS::Utils::format_message(@_);
   }

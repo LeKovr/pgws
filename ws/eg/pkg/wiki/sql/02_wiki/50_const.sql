@@ -18,29 +18,25 @@
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
 */
--- 21_main.sql - Таблицы API
+-- 50_const.sql - Вспомогательные функции
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:40_auth.sql / 23 --'
+\qecho '-- FD: wiki:wiki:50_const.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE VIEW account_info AS SELECT
-  a.*
-  , ag.name AS group_name
-  FROM wiki.account a
-  JOIN wiki.account_group ag ON (a.group_id = ag.id)
-;
+CREATE OR REPLACE FUNCTION const(a_tag TEXT) RETURNS TEXT IMMUTABLE STRICT LANGUAGE 'plpgsql' AS
+$_$  -- FD: wiki:wiki:50_const.sql / 27 --
+  DECLARE
+    CLASS_WIKI   CONSTANT ws.d_classcode := '99';
+    v TEXT;
+  BEGIN
+    IF    a_tag = 'WIKI_ERR_NOGROUPCODE'  THEN v := CLASS_WIKI || '01';
+    ELSIF a_tag = 'WIKI_ERR_NOREVISION'   THEN v := CLASS_WIKI || '02';
+    ELSIF a_tag = 'WIKI_ERR_CODEEXISTS'   THEN v := CLASS_WIKI || '03';
+    ELSIF a_tag = 'WIKI_ERR_NOCHGTOSAVE'  THEN v := CLASS_WIKI || '04'; -- вызывается из perl-кода
+    ELSE RAISE EXCEPTION 'ERROR: Unknown tag %', a_tag;
+    END IF;
+    RETURN v;
+  END
+$_$;
 
-/* ------------------------------------------------------------------------- */
-CREATE OR REPLACE VIEW account_info_pub AS SELECT
-  a.id
-  , group_id
-  , status_id
-  , a.name
-  , created_at
-  , ag.name AS group_name
-  FROM wiki.account a
-  JOIN wiki.account_group ag ON (a.group_id = ag.id)
-;
-
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:40_auth.sql / 46 --'
+\qecho '-- FD: wiki:wiki:50_const.sql / 42 --'

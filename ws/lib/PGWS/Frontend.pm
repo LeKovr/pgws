@@ -259,7 +259,7 @@ sub response {
   my $have_sid_arg = ($sid_name and $sid);
 
   $session->{'sid_arg'} = $have_sid_arg?"?$sid_name=$sid":'';
-  $session->{'sid_arg'} = $have_sid_arg?"?$sid_name=$sid&":'?';
+  $session->{'sid_pre'} = $have_sid_arg?"?$sid_name=$sid&":'?';
 
   my $page = $self->api($ws, $errors, $meta, 'uri', $self->def_uri, {'uri' => $req->uri });
 
@@ -271,7 +271,7 @@ sub response {
       $meta->debug('setup id %s from session field %s', $page->{'args'}[0], $page->{'id_source'});
     }
     $acl = $self->acl($ws, $errors, $meta, $session, $page, $params);
-    $page->{'req'} = $req->prefix.$page->{'req'} if($page and $page->{'req'});
+    $page->{'req'} = $req->prefix.'/'.$page->{'req'} if($page and $page->{'req'});
     $page->{'is_hidden'} ||= $cfg->{'site_is_hidden'}; # закрываем незакрытое если весь сайт закрыт (не production)
   }
   my $stg_args = $have_sid_arg?"$sid_name=$sid":'';

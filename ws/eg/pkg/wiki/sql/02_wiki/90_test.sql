@@ -24,7 +24,7 @@
 -- TODO: insert into wiki.account
 
 \qecho 'login'
-select login, status_id, email, psw FROM wiki.login('xx','127.0.0.1','user','nimda');
+select login, status_id, email, psw FROM acc.login('xx','127.0.0.1','user','nimda');
 
 \qecho 'can_create'
 SELECT wiki.can_create('xx', 1, 'definitely/new/page');
@@ -33,7 +33,15 @@ SELECT wiki.can_create('xx', 1, 'definitely/new/page');
 
 SELECT wiki.group_id_by_code('wk');
 
+
+/* ------------------------------------------------------------------------- */
+
+/*
+INSERT INTO doc (group_id, code, created_by, name, src) VALUES
+  (1, 'p1', 1, 'Brief test', '# sdfsdsdfdsf\n\n## dfd\n## sss\n\nttt\n---\n[wewew](http://ddd)\n\n* dsds\n* sdssd\n\n[dfdf]\n')
+;
 SELECT * FROM wiki.ids_by_code('wk','p1');
+*/
 
 -- SELECT wiki.doc_create ('xx', 1, 'index', 'Welcome','Welcome to our wiki','Title: Welcome\n\nWelcome to our wiki!\n## Test page working\n');
 

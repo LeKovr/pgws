@@ -18,20 +18,24 @@
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
 */
--- 80_class.sql - Данные классов и акций
+-- 50_const.sql - Вспомогательные функции
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:80_auth.sql / 23 --'
+\qecho '-- FD: app:app:50_const.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO account_group (id, name, anno) VALUES
-  (1, 'Readers', '')
-  , (2, 'Writers', '')
-;
+CREATE OR REPLACE FUNCTION const(a_tag TEXT) RETURNS TEXT IMMUTABLE STRICT LANGUAGE 'plpgsql' AS
+$_$  -- FD: app:app:50_const.sql / 27 --
+  DECLARE
+    CLASS_APP    CONSTANT ws.d_classcode := '00'; -- номер класса из class_id
+    v TEXT;
+  BEGIN
 
-/* ------------------------------------------------------------------------- */
-INSERT INTO account (id, group_id, login, email, psw, name) VALUES
-  (1, 2, 'user', 'user@email.to', 'ee10c315eba2c75b403ea99136f5b48d', 'Admin') -- user / nimda
-;
+    IF    a_tag = 'APP_ERR_NOINTERNAL'   THEN v := CLASS_CORE || '21';
+    ELSIF a_tag = 'APP_ERR_NOTFOUND'   THEN v := CLASS_CORE || '22';
+    ELSE RAISE EXCEPTION 'ERROR: Unknown tag %', a_tag;
+    END IF;
+    RETURN v;
+  END
+$_$;
 
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:80_auth.sql / 37 --'
+\qecho '-- FD: app:app:50_const.sql / 41 --'
