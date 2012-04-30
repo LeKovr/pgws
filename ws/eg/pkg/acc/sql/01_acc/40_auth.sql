@@ -27,19 +27,19 @@ CREATE OR REPLACE VIEW account_info AS SELECT
   a.*
   , ag.name AS group_name
   FROM acc.account a
-  JOIN acc.account_group ag ON (a.group_id = ag.id)
+    JOIN acc.account_group ag ON (a.group_id = ag.id)
 ;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW account_info_pub AS SELECT
   a.id
-  , group_id
-  , status_id
+  , a.group_id
+  , a.status_id
   , a.name
-  , created_at
+  , a.created_at
   , ag.name AS group_name
   FROM acc.account a
-  JOIN acc.account_group ag ON (a.group_id = ag.id)
+    JOIN acc.account_group ag ON (a.group_id = ag.id)
 ;
 
 /* ------------------------------------------------------------------------- */
@@ -50,8 +50,8 @@ CREATE OR REPLACE VIEW session_info AS SELECT
   , ag.id AS group_id
   , ag.name AS group_name
   FROM acc.session s
-  JOIN acc.account a ON (s.account_id = a.id)
-  JOIN acc.account_group ag ON (a.group_id = ag.id)
+    JOIN acc.account a ON (s.account_id = a.id)
+    JOIN acc.account_group ag ON (a.group_id = ag.id)
 ;
 
 /* ------------------------------------------------------------------------- */

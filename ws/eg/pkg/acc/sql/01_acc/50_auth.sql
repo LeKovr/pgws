@@ -34,8 +34,8 @@ SELECT pg_c('f', 'sid_info', 'Атрибуты своей сессии');
 CREATE OR REPLACE FUNCTION sid_info_cook(a_cook TEXT, a__ip INET) RETURNS SETOF acc.session STABLE LANGUAGE 'sql' AS
 $_$  -- FD: acc:acc:50_auth.sql / 35 --
 -- TODO: изменить a_cook на a__cook при переходе на тотальное использование cookie
-    SELECT * FROM acc.session WHERE deleted_at IS NULL AND sid = $1 /*AND ($2 IS NULL OR ip = $2)*/
-      ORDER BY updated_at DESC LIMIT 1
+  SELECT * FROM acc.session WHERE deleted_at IS NULL AND sid = $1 /*AND ($2 IS NULL OR ip = $2)*/
+    ORDER BY updated_at DESC LIMIT 1
 $_$;
 SELECT pg_c('f', 'sid_info_cook', 'Атрибуты своей сессии по cookie');
 
@@ -73,46 +73,46 @@ $_$  -- FD: acc:acc:50_auth.sql / 70 --
   -- a_login: пароль
   -- a_psw: пароль
   -- a__sid: ID сессии, если есть
-DECLARE
-  r_account_info acc.account_info;
-  v_key text;
-BEGIN
-  SELECT INTO r_account_info
-    *
-    FROM acc.account
-    WHERE login = a_login
-  ;
-  IF FOUND THEN
-    RAISE DEBUG 'Account % found', a_login;
+  DECLARE
+    r_account_info acc.account_info;
+    v_key text;
+  BEGIN
+    SELECT INTO r_account_info
+      *
+      FROM acc.account
+      WHERE login = a_login
+    ;
+    IF FOUND THEN
+      RAISE DEBUG 'Account % found', a_login;
 
-    -- TODO: контроль IP
-    IF r_account_info.psw = md5(a_psw) THEN
-      RAISE DEBUG 'Password matched for %', a_login;
-      -- прячем пароль
-      r_account_info.psw := '***';
-      -- определяем ключ авторизации
-      IF a__sid IS NOT NULL THEN
-        v_key = a__sid;
+      -- TODO: контроль IP
+      IF r_account_info.psw = md5(a_psw) THEN
+        RAISE DEBUG 'Password matched for %', a_login;
+        -- прячем пароль
+        r_account_info.psw := '***';
+        -- определяем ключ авторизации
+        IF a__sid IS NOT NULL THEN
+          v_key = a__sid;
+        ELSE
+          v_key = a__cook;
+        END IF;
+        -- закрываем все сессии для этого v_key
+        PERFORM acc.logout(v_key, a__ip);
+
+        -- создаем сессию
+        INSERT INTO acc.session (account_id, ip, sid)
+          VALUES (r_account_info.id, a__ip, v_key)
+        ;
+        RETURN NEXT r_account_info;
       ELSE
-        v_key = a__cook;
+        -- TODO: журналировать потенциальный подбор пароля
+        RAISE DEBUG 'Password does not match for %', a_login;
       END IF;
-      -- закрываем все сессии для этого v_key
-      PERFORM acc.logout(v_key, a__ip);
-
-      -- создаем сессию
-      INSERT INTO acc.session (account_id, ip, sid)
-        VALUES (r_account_info.id, a__ip, v_key)
-      ;
-      RETURN NEXT r_account_info;
     ELSE
-      -- TODO: журналировать потенциальный подбор пароля
-      RAISE DEBUG 'Password does not match for %', a_login;
+      RAISE DEBUG 'Unknown account %', a_login;
     END IF;
-  ELSE
-    RAISE DEBUG 'Unknown account %', a_login;
-  END IF;
-  RETURN;
-END;
+    RETURN;
+  END;
 $_$;
 
 SELECT pg_c('f', 'login', 'Авторизация пользователя');
@@ -122,31 +122,31 @@ CREATE OR REPLACE FUNCTION profile (a__sid TEXT, a__ip TEXT) RETURNS SETOF accou
 $_$  -- FD: acc:acc:50_auth.sql / 122 --
   -- a__sid: ID сессии
   -- a__ip: IP-адреса сессии
-DECLARE
-  v_account_id ws.d_id;
-  r_account_info acc.account_info;
-BEGIN
-  -- TODO: контроль IP?
+  DECLARE
+    v_account_id ws.d_id;
+    r_account_info acc.account_info;
+  BEGIN
+    -- TODO: контроль IP?
 
-  SELECT INTO v_account_id
-    account_id
-    FROM acc.session
-    WHERE sid = a__sid
-      AND deleted_at IS NULL
-  ;
-  IF FOUND THEN
-    SELECT INTO r_account_info
-      *
-      FROM acc.account_info
-      WHERE id = v_account_id
+    SELECT INTO v_account_id
+      account_id
+      FROM acc.session
+      WHERE sid = a__sid
+        AND deleted_at IS NULL
     ;
-    -- прячем пароль
-    r_account_info.psw := '***';
-    RETURN NEXT r_account_info;
-  END IF;
+    IF FOUND THEN
+      SELECT INTO r_account_info
+        *
+        FROM acc.account_info
+        WHERE id = v_account_id
+      ;
+      -- прячем пароль
+      r_account_info.psw := '***';
+      RETURN NEXT r_account_info;
+    END IF;
 
-  RETURN;
-END;
+    RETURN;
+  END;
 $_$;
 
 SELECT pg_c('f', 'profile', 'Профиль текущего пользователя');

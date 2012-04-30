@@ -25,20 +25,23 @@
 /* ------------------------------------------------------------------------- */
 
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id) VALUES
-   ('acc.sid_info',                  2, 1, 3,  3)
-  ,('acc.sid_info_cook',             2, 1, 3,  3)
-  , ('acc.login',            2, 1, 3, 3)
-  , ('acc.logout',           2, 1, 3, 2)
-  , ('acc.profile',          2, 1, 3, 3)
+  ('acc.sid_info',          2, 1, 3, 3)
+  , ('acc.sid_info_cook',   2, 1, 3, 3)
+  , ('acc.profile',         2, 1, 3, 3)
+;
+
+INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, is_write) VALUES
+  ('acc.login',             2, 1, 3, 3, true)
+  , ('acc.logout',          2, 1, 3, 2, true)
 ;
 
 /* ------------------------------------------------------------------------- */
 
 INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-  ('login',     'main', 2, 1, null, 'login$',      'acc/login',          'Вход')
-  , ('logout',  'main', 2, 1, null, 'logout$',      'acc/logout',          'Выход')
+  ('login',     'main', 2, 1, null, 'login$',     'acc/login',    'Вход')
+  , ('logout',  'main', 2, 1, null, 'logout$',    'acc/logout',   'Выход')
 ;
 
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: acc:acc:89_reg.sql / 44 --'
+\qecho '-- FD: acc:acc:89_reg.sql / 47 --'
