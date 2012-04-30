@@ -75,9 +75,12 @@ db_run() {
   # TODO
   local ver="000"
 
-  echo "DB source:   $src"
-  echo "DB package:  $pkg"
-  echo "Logfile:     $LOGFILE"
+  cat <<EOF
+  DB Source:   $src
+  DB Package:  $pkg
+  Logfile:     $LOGFILE
+  ---------------------------------------------------------
+EOF
 
   schema_mask="??_*"
   db_run_sql_begin $BLD/build.sql
@@ -147,7 +150,6 @@ db_run() {
         echo "\! diff -c $bd/$n1.out.orig $bd/$n1.out | tr \"\t\" \" \" >> errors.diff" >> $BLD/build.sql
         db_run_test_end $BLD/build.sql
       done
-
     fi
 
     [[ -f "$BLD/keep_sql" ]] || echo "\! rm -rf $bd" >> $BLD/build.sql
@@ -164,13 +166,20 @@ db_run() {
   RETVAL=$?
   popd > /dev/null
   if [[ $RETVAL -eq 0 ]] ; then
-    echo "Complete"
     [ -f "$BLD/errors.diff" ] && rm "$BLD/errors.diff"
+    local flag=$PGWS_ROOT/var/.build
+    if [[ "$src" == "pgws" ]] ; then
+      local flagfile=${flag}.pgws
+    else
+      local flagfile=${flag}.pkg
+    fi
+    [[ "$run_op" == "add" ]] && touch $flagfile
+    [[ "$run_op" == "del" ]] && [ -f $flagfile ] && rm $flagfile
+    echo "Complete"
   else
     echo "*** Errors:"
-    grep ERROR $LOGFILE
-    echo "*** Diff:"
-    [ -e "$BLD/errors.diff" ] && cat "$BLD/errors.diff"
+    grep ERROR $LOGFILE || echo "    None."
+    [ -s "$BLD/errors.diff" ] && { echo "*** Diff:" ; cat "$BLD/errors.diff" ; }
   fi
 
 }
@@ -202,9 +211,9 @@ db_doc() {
 # ------------------------------------------------------------------------------
 db_help() {
 cat <<EOF
-'dbhelp'
-Usage: 
-  $0 db (init|make|drop|doc) [SRC] [PKG]
+  Usage:
+    $0 db (init|make|drop|doc) [SRC] [PKG]
+
   Where
     init - create DB objects
     make - compile code
@@ -224,8 +233,11 @@ CONN=$(perl $PGWS_ROOT/$PGWS/$PGWS_WS/bin/json2conninfo.pl < $PGWS_ROOT/conf/db.
 DO_SQL=1
 BLD=$PGWS_ROOT/var/build
 
-echo "DB connect:  $CONN"
-echo "DB Command:  $@"
+cat <<EOF
+  DB Command:  $@
+  DB Connect:  $CONN
+  ---------------------------------------------------------
+EOF
 
 cmd=$1
 shift
