@@ -70,9 +70,29 @@ $_$  -- FD: pg:ws:50_pkg.sql / 65 --
     ;
 $_$;
 
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pkg_is_core_only() RETURNS BOOL STABLE LANGUAGE 'plpgsql' AS
+$_$  -- FD: pg:ws:50_pkg.sql / 76 --
+  DECLARE
+    v_pkgs TEXT;
+  BEGIN
+    SELECT INTO v_pkgs
+      array_to_string(array_agg(code),', ')
+      FROM ws.pkg
+      WHERE is_add AND rm_id IS NULL AND code <> 'pg'
+    ;
+    IF v_pkgs IS NOT NULL THEN
+      RAISE EXCEPTION '***************** There are app packages installed (%) *****************', v_pkgs;
+    END IF;
+    RETURN TRUE;
+  END;
+$_$;
+
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_make(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 75 --
+$_$  -- FD: pg:ws:50_pkg.sql / 95 --
   DECLARE
     r_pkg ws.pkg%ROWTYPE;
   BEGIN
@@ -92,7 +112,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_del(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 95 --
+$_$  -- FD: pg:ws:50_pkg.sql / 115 --
   DECLARE
     r_pkg ws.pkg%ROWTYPE;
     v_id  INTEGER;
@@ -118,7 +138,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_require(a_code TEXT) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 121 --
+$_$  -- FD: pg:ws:50_pkg.sql / 141 --
   BEGIN
     RAISE NOTICE 'TODO: function needs code';
     RETURN NULL;
@@ -126,4 +146,4 @@ $_$  -- FD: pg:ws:50_pkg.sql / 121 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:50_pkg.sql / 129 --'
+\qecho '-- FD: pg:ws:50_pkg.sql / 149 --'
