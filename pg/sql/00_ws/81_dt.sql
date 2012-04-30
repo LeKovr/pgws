@@ -186,8 +186,15 @@ INSERT INTO dt (code, parent_id, anno, is_list) VALUES (pg_cs('d_codea'), dt_id(
 INSERT INTO dt (code, parent_id, anno, is_list) VALUES (pg_cs('d_ida'), dt_id('d_id'), 'Массив d_id', true);
 INSERT INTO dt (code, parent_id, anno, is_list) VALUES (pg_cs('d_moneya'), dt_id('d_money'), 'Массив d_money', true);
 
+INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_uncache'), 'Аргументы функций cache_uncache', true);
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_uncache'), 1, 'code', dt_id('text'), 'код метода');
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_uncache'), 2, 'key', dt_id('text'), 'ключ кэша');
+
+/*
+  -- RESERVED
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_cache_reset'), 'Аргументы функций cache_reset', true);
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_cache_reset'), 1, 'keys', dt_id('text'), 'ключи');
+*/
 
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_acl_check'), 'Аргументы функций acl_check', true);
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_acl_check'), 1, '_sid', dt_id('text'), 'ID сессии');
@@ -229,4 +236,4 @@ INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('t_acl_ch
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('t_acl_check'), 4, 'name', dt_id('text'), '');
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:81_dt.sql / 232 --'
+\qecho '-- FD: pg:ws:81_dt.sql / 239 --'

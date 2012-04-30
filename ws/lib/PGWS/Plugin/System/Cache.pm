@@ -26,15 +26,47 @@ use PGWS::Utils;
 use base qw(PGWS::Plugin);
 
 #----------------------------------------------------------------------
+# удалить из кэша метода $method все записи, содержащие в ключе $key
+sub uncache {
+  my ($self, $srv, $meta, $args) = @_;
+  my $method = shift @$args; # название метода или его описание
+  my $key = shift @$args || '';
+
+  # получить описание метода
+  my $mtd_def = $srv->_explain_def($method, $meta); # при ошибке будет die
+
+  my $cache_id = $mtd_def->{'cache_id'};
+
+  my $removed = 0;
+  if ($srv->cache and exists($srv->cache->{$cache_id})) {
+    my $c = $srv->cache->{$cache_id};
+    my @keys = $c->get_keys();
+    foreach my $k (@keys) {
+      if (index($k, $mtd_def->{'code'}) > 0 and index($k, $key) > 0) {
+        # index не вернет 0 при успехе, т.к. $k - JSON и начинается с [
+        $c->remove($k);
+        $removed++;
+      }
+    }
+    $meta->debug(
+      'uncache method %s from cache %s with key %s removes %i rows'
+      , $mtd_def->{'code'}, $srv->cache->{'code'}, $key, $removed
+    );
+  }
+  return { 'result' => { 'data' => $removed } };
+
+}
+
+#----------------------------------------------------------------------
 sub reset {
-  my ($class, $self, $meta, $args) = @_;
+  my ($self, $srv, $meta, $args) = @_;
   my $cache_id = shift @$args;
 
   my $ret = 0;
   my $key = PGWS::Utils::json_out($args);
 
-  if ($self->cache and exists($self->cache->{$cache_id})) {
-    $self->cache->{$cache_id}->remove($key);
+  if ($srv->cache and exists($srv->cache->{$cache_id})) {
+    $srv->cache->{$cache_id}->remove($key);
     $ret = 1;
   }
 
@@ -44,14 +76,14 @@ sub reset {
 
 #----------------------------------------------------------------------
 sub reset_mask {
-  my ($class, $self, $meta, $args) = @_;
+  my ($self, $srv, $meta, $args) = @_;
   $meta->dump({ 'reset_mask' => $args });
   my $cache_id = shift @$args;
   $cache_id ||= 3; # app cache
   my $ret = 0;
 
-  if ($self->cache and exists($self->cache->{$cache_id})) {
-    my $c = $self->cache->{$cache_id};
+  if ($srv->cache and exists($srv->cache->{$cache_id})) {
+    my $c = $srv->cache->{$cache_id};
     my @keys = $c->get_keys();
     foreach my $k (@keys) {
       foreach my $m (@$args) {
@@ -76,14 +108,14 @@ sub reset_mask {
 
 #----------------------------------------------------------------------
 sub get_stats {
-  my ($class, $self, $meta, $args) = @_;
+  my ($self, $srv, $meta, $args) = @_;
   $meta->dump({ 'reset_mask' => $args });
   my $do_clear = shift @$args || 0;
   my @ids = @$args;
-  @ids = keys %{$self->cache} unless (scalar(@ids));
+  @ids = keys %{$srv->cache} unless (scalar(@ids));
   my $ret = {};
   foreach my $i (@ids) {
-    my ($nreads, $nreadhits) = $self->cache->{$i}->get_statistics($do_clear);
+    my ($nreads, $nreadhits) = $srv->cache->{$i}->get_statistics($do_clear);
     $ret->{$i} = { 'nreads' => $nreads, 'nreadhits' => $nreadhits};
   }
   return { 'result' => { 'data' => $ret } };

@@ -77,9 +77,13 @@ INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VAL
 
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real, is_sql, arg_dt_id, rv_dt_id, name) VALUES
    ('info.acl_check',      2, 1, 4, 3, 'System::ACL::check',        false, dt_id('z_acl_check'),   dt_id('d_acls'), 'Получение acl на объект')
+  ,('ws.uncache',          2, 1, 1, 2, 'System::Cache::uncache',    false, dt_id('z_uncache'), dt_id('d_id'), 'Сброс кэша метода')
+/*
+  -- RESERVED
   ,('ws.cache_reset1',     2, 1, 1, 2, 'System::Cache::reset',      false, dt_id('z_cache_reset'), dt_id('d_id32'), 'Сброс кэша по 1 ключу')
   ,('ws.cache_reset2',     2, 1, 1, 2, 'System::Cache::reset',      false, dt_id('z_cache_reset'), dt_id('d_id32'), 'Сброс кэша по 2 ключам')
   ,('ws.cache_reset_mask', 2, 1, 1, 2, 'System::Cache::reset_mask', false, dt_id('z_cache_reset'), dt_id('d_id32'), 'Сброс кэша по маске')
+*/
 ;
 
 /* ------------------------------------------------------------------------- */
@@ -96,8 +100,6 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
   ,('Y0002', 2, 'значение не соответствует условию "%s %s"')
   ,('Y0003', 1, 'значение не соответствует шаблону "%s"')
   ,('Y0010', 0, 'нет данных')
-  ,('Y0021', 1, 'нет доступа к результату суммы при а = %i')
-  ,('Y0022', 1, 'нет данных по a = %i')
   ,('Y0051', 0, 'Указанный логин уже занят. Выберите другой логин')
   ,('Y0101', 1, 'недопустимый код acl "%s"')
   ,('Y0102', 1, 'внешний доступ к методу с "%s" запрещен')
@@ -107,4 +109,4 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
   ,('Y0106', 1, 'некорректный идентификатор статуса "%s"')
 ;
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:89_reg.sql / 110 --'
+\qecho '-- FD: pg:ws:89_reg.sql / 112 --'

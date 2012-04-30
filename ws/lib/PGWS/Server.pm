@@ -48,6 +48,7 @@ sub def_dt       { $_[0]->{'def'}{'dt'} || 'dt'}
 sub def_dt_part  { $_[0]->{'def'}{'dt_part'} || 'dt_part'}
 sub def_dt_facet { $_[0]->{'def'}{'dt_facet'} || 'dt_facet'}
 sub def_facet    { $_[0]->{'def'}{'facet'} || 'facet'}
+sub def_uncache  { $_[0]->{'def'}{'uncache'} || 'uncache'}
 
 sub class_list  { $_[0]->{'class_list'} }
 sub cache_list  { $_[0]->{'cache_list'} }
@@ -327,7 +328,7 @@ sub _process {
   # текущий список acl
   my @acls = keys %$acl;
   $params{'_acl'} = \@acls;
-  $meta->debug('ACL check complete');
+  $meta->dump('ACL check complete');
   # валидировать все аргументы метода
   if ($mtd_def->{'code_real'} eq $self->def_acl->{'code_real'}) {
     # исключение - если вызван check_acl, надо оставить в аргументах столько id, сколько надо проверяемому классу
@@ -348,7 +349,7 @@ sub _process {
     $meta->dump({'acl_error' => $res});
     return $res;
   }
-  $meta->debug('Validation complete');
+  $meta->dump('Validation complete');
   if ($check_mode == 1) {
     # TODO: если метод имеет аргумент "a__chk" - его можно вызвать с этим флагом
     $res->{'result'} = {};
@@ -371,25 +372,9 @@ sub _process {
   if (exists($res->{'result'}) and exists($res->{'result'}{'data'})) {
     $res->{'success'} = 'true';
     $meta->dump({'call_ok' => $res });
-    if ($mtd_def->{'code'} eq $self->cfg->{'acl_trigger'}) {
-      # исключение - успешное выполнение авторизации, надо сбросить кэш для def_acl(sid)
-      # TODO: продумать блок
-      my $def = $self->_explain_def($self->def_sid, $meta);
-      my $cache_id = $def->{'cache_id'};
-      if ($self->cache and exists($self->cache->{$cache_id})) {
-        my $c = $self->cache->{$cache_id};
-        my @keys = $c->get_keys();
-        my $removed = 0;
-        foreach my $k (@keys) {
-          if (index($k, $def->{'code'}) > 0 and index($k, $meta->{'cook'}) > 0) {
-            # index не вернет 0 при успехе, т.к. $k - JSON и начинается с [
-            $c->remove($k);
-            $removed++;
-          }
-        }
-        $meta->debug('reset acl cache %i for mask ("%s" and "%s") with count=%i'
-          , $cache_id, $def->{'code'}, $meta->{'cook'}, $removed);
-      }
+    if ($mtd_def->{'is_write'} and $mtd_def->{'code'} eq $self->cfg->{'acl_trigger'}) {
+      # успешное выполнение авторизации, надо сбросить кэш для def_sid($meta->{'cook'})
+      $self->_call_meta($self->def_uncache, $meta, $self->def_sid, $meta->{'cook'});
     }
   } else {
     $meta->dump({'call_error' => $res });

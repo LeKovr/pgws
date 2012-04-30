@@ -33,6 +33,7 @@
     "dt_part":  "ws.dt_part",
     "dt_facet": "ws.dt_facet",
     "facet":    "ws.facet",
+    "uncache":  "ws.uncache",
   },
 
   "def_suffix": {
