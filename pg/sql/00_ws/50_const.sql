@@ -24,16 +24,14 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const(a_tag TEXT) RETURNS TEXT IMMUTABLE STRICT LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_const.sql / 27 -- 
+$_$  -- FD: pg:ws:50_const.sql / 27 --
   DECLARE
     CLASS_CORE    CONSTANT ws.d_classcode := '00';
     CLASS_SYSTEM CONSTANT ws.d_classcode := '01';
     v TEXT;
   BEGIN
 
-    IF    a_tag = 'CORE_ERR_NOINTERNAL'   THEN v := CLASS_CORE || '21';
-    ELSIF a_tag = 'CORE_ERR_NOTFOUND'   THEN v := CLASS_CORE || '22';
-    ELSIF a_tag = 'RPC_ERR_NODATA'   THEN v := '02000';
+    IF    a_tag = 'RPC_ERR_NODATA'   THEN v := '02000';
     ELSIF a_tag = 'RPC_ERR_NOACCESS'   THEN v := '42501';
     ELSE RAISE EXCEPTION 'ERROR: Unknown tag %', a_tag;
     END IF;
@@ -41,4 +39,4 @@ $_$  -- FD: pg:ws:50_const.sql / 27 --
   END
 $_$;
 
-\qecho '-- FD: pg:ws:50_const.sql / 44 --'
+\qecho '-- FD: pg:ws:50_const.sql / 42 --'

@@ -24,7 +24,8 @@
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real, args_exam)
-  VALUES ('info.add', 2, 1, 2, 2, pg_cs('add'), 'a=37, b=-37');
+  VALUES ('info.add', 2, 1, 2, 2, pg_cs('add'), 'a=37, b=-37')
+;
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
@@ -32,4 +33,12 @@ INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, 
 ;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:89_reg.sql / 35 --'
+-- ошибки уровня приложения. Коды синхронизированы с кодами PostgreSQL
+-- см. "http://www.postgresql.org/docs/8.4/static/errcodes-appendix.html"
+
+INSERT INTO i18n_def.error (code, id_count, message) VALUES
+  (   'Y0021', 1, 'нет доступа к результату суммы при а = %i')
+  , ( 'Y0022', 1, 'нет данных по a = %i')
+;
+/* ------------------------------------------------------------------------- */
+\qecho '-- FD: app:app:89_reg.sql / 44 --'
