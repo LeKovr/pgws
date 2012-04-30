@@ -16,10 +16,10 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-# PGWS::Plugin::System::ACL - ACL check plugin
+# PGWS::Plugin::Wiki - Wiki plugin
 
 
-
+# Internal package for PGWS::Plugin::Wiki
 package PGWS::MultiMarkdown;
 
 use base qw(Text::MultiMarkdown);
@@ -56,8 +56,7 @@ sub _GenerateHeader {
     my $header = $self->_RunSpanGamut($id);
 
     # TODO: добавлять в метку все уровни выше для уникальности
-    $self->{'toc'} = [] unless exists($self->{toc});
-    push @{$self->{'toc'}}, [$level, $label, $header];
+    push @{$self->{_metadata}{'toc_list'}}, [$level, $label, $header];
 
     if ($label ne '') {
         $self->{_crossrefs}{$label} = "#$label";
@@ -76,15 +75,15 @@ sub _GenerateAnchor {
       if ($url =~ /^[^:]+:/) {
         $attributes = ' class="external"';
       } else {
-        $title ||= 'Титул';
-        $link_text ||= 'Некая локальная ссылка';
-        printf STDERR "VVQ> %s = %s\n",$url,$self->{'base_url'};
+        $title ||= 'Титул внутренней ссылкы';
+        $link_text ||= 'Название внутренней ссылки';
         if ($url !~ m|^/|) {
           # относительная ссылка, добавить $self->{'base_url'}
           $url = '/'.$url if ($url);
           $url = $self->{'base_url'}.$url;
           # TODO: отработать вариант, когда url содержит "?arg=val"
         }
+        $self->{_metadata}{'links'}{$url} = $link_text;
       }
     }
     # Allow automatic cross-references to headers
@@ -146,6 +145,7 @@ use PGWS::Utils;
 
 use base qw(PGWS::Plugin);
 
+use Text::Diff;
 use Data::Dumper;
 
 #----------------------------------------------------------------------
@@ -171,8 +171,8 @@ sub internal_link {
 
 #----------------------------------------------------------------------
 sub format {
-  my ($pkg, $self, $meta, $args) = @_;
-  my ($uri, $code, $src, $extended, @extra) = (@$args);
+  my ($self, $srv, $meta, $args) = @_;
+  my ($sid, $uri, $src, $extended, $id, @extra) = (@$args);
 
   my $m = PGWS::MultiMarkdown->new(
     tab_width => 2,
@@ -180,58 +180,126 @@ sub format {
     strip_metadata => 1,
     base_url => $uri,
   );
+  $m->{_metadata}{'links'} = {};
+  $m->{_metadata}{'toc_list'} = [];
   my $html = $m->markdown( $src );
 
   unless($extended) { # TODO: del "!"
     return { 'result' => { 'data' => {'html' => $html} }};
   }
+
+my @links = keys %{$m->{_metadata}{'links'}};
+# TODO: нужен ли список?  my $toc_join = join "\n", map { $_->[2] } @{$m->{_metadata}{'toc'}};
   my $res = {
-    'toc'   => $m->{'toc'},
-    'title' => $m->{_metadata}{'Title'},
+#    'toc'   => $toc_join,
+    'name' => $m->{_metadata}{'Title'},
+    'links' => \@links,
   };
   my $title = $m->{_metadata}{'Title'}?"<h1>$m->{_metadata}{'Title'}</h1>":'';
-  if ($src =~ /\A([\s\S]+)\n<!--\s+CUT\s+-->/m) {
+
+  if ($html =~ /\A([\s\S]+)\n\<\!\-\-\s+CUT\s+\-\-\>/m) {
     $res->{'anno'} = $1;
   }
 
   my $toc = '';
-  if ($m->{_metadata}{'TOC'} and $m->{'toc'}) {
+  if ($m->{_metadata}{'TOC'} and $m->{_metadata}{'toc_list'}) {
     my $is_ol = (lc($m->{_metadata}{'TOC'}) eq 'ordered');
-    my $toc_text = join "\n", map { _toc_link($is_ol, @{$_}) } @{$m->{'toc'}};
+    my $toc_text = join "\n", map { _toc_link($is_ol, @{$_}) } @{$m->{_metadata}{'toc_list'}};
     $toc = $m->markdown($toc_text);
     $toc =~ s/^<(o|u)l/<$1l class="toc"/;
   }
   $res->{'html'} = $title.$toc.$html;
+  $res->{'toc'} = $toc;
 
-  my $ret = {};
-  $ret->{'result'} = { 'data' => $res };
-  return $ret;
+  if ($extended and $id) {
+    my @args = ($sid, $src, $id);
+    my $diff = $self->mkdiff($srv, $meta, \@args);
+    my $d = $diff->{'result'}{'data'};
+    if ($d) {
+      my $df;
+      $d = "\n".$d;
+      $d =~ s|<|&lt;|gm;
+      $d =~ s|\n(?=\+)|</p><p class="add">|gm and $df=1;
+      $d =~ s|\n(?=\-)|</p><p class="del">|gm and $df=1;
+      $d =~ s|\n(?=\@\@)|</p><p class="hunk">|gm and $df=1;
+      $d =~ s|\n|</p><p>|gm and $df=1;
+      if ($df) { $d = "<p>$d</p>" };
+      $res->{'diff'} = $d;
+    }
+  }
+  $meta->dump($res);
+  return { 'result' => { 'data' => $res }};
 }
 
 #----------------------------------------------------------------------
 sub save {
   my ($self, $srv, $meta, $args) = @_;
-  my ($sid, $group_id, $uri, $code, $src, $id) = (@$args);
-
-  my $fmt_args = [$uri, $code, $src, 1];
-  my $ret = $self->format($srv, $meta, $fmt_args);
+  my ($sid, $group_id, $uri, $code, $src, $id, $rev) = (@$args);
 
   my $tag;
   my @ids = ($sid);
+  my $fmt_args = [$sid, $uri, $src, 1];
 
+  my @parsed_args = qw(name links anno toc);
   unless (defined($id)) {
     # create
     $tag = 'wiki.doc_create';
-    push @ids, $group_id, $code ||'',
+    push @ids, $group_id, $code ||'';
   } else {
     $tag = 'wiki.doc_update_src';
-    push @ids, $id,
+    push @ids, $id, $rev;
+    push @$fmt_args, $id;
+    push @parsed_args, 'diff';
   }
-  push @ids, map { $_ || '' } $ret->{'name'}, $ret->{'anno'}, $src;
 
-  my $status = $srv->_call_meta($tag, $meta, @ids);
-  return { 'result' => { 'data' => $status }};
+  my $wiki_def = $self->format($srv, $meta, $fmt_args);
 
+  if ($tag eq 'wiki.doc_update_src' and !$wiki_def->{'result'}{'data'}{'diff'}) {
+      return { 'result' => { 'error' => [{ 'code' => 'Y9904', 'message' => $srv->_error_fmt($meta, 'Y9904')}]}};
+  }
+
+  push @ids, $src;
+  push @ids, map { $wiki_def->{'result'}{'data'}{$_} || '' } @parsed_args;
+
+  $meta->dump({
+    'wiki_save_args' => \@ids,
+    'method' => $tag
+  });
+
+  my $mtd_def = $srv->_explain_def($tag, $meta);
+  my $res = $srv->_call_cached($mtd_def, $meta, \@ids);
+  unless ($res and exists($res->{'result'}) and exists($res->{'result'}{'data'})) {
+    return $res;
+  }
+  my $doc_id = $res->{'result'}{'data'};
+  # reset cache
+  $srv->_call_meta($srv->def_uncache, $meta, 'wiki.ids_by_code', $code);
+  $srv->_call_meta($srv->def_uncache, $meta, 'wiki.doc_info', $doc_id);
+  $srv->_call_meta($srv->def_uncache, $meta, 'wiki.doc_src', $doc_id);
+
+  return $res;
+
+}
+
+#----------------------------------------------------------------------
+sub mkdiff {
+  my ($self, $srv, $meta, $args) = @_;
+  my ($sid, $src, $id, $rev) = (@$args);
+
+  my @ids = ($id);
+  my $mtd_def = $srv->_explain_def('wiki.doc_src', $meta);
+  my $res = $srv->_call_cached($mtd_def, $meta, \@ids);
+  unless ($res and exists($res->{'result'}) and exists($res->{'result'}{'data'})) {
+    return $res;
+  }
+  my $src_orig = $res->{'result'}{'data'};
+
+  utf8::decode($src_orig);
+  utf8::decode($src);
+  $meta->dump({ 'from' => $src_orig, 'to' => $src});
+  my $diff = diff(\$src_orig, \$src, { STYLE => "Unified" });
+  $meta->dump($diff);
+  return { 'result' => { 'data' => $diff }};
 }
 
 1;

@@ -28,8 +28,8 @@ CREATE TYPE t_wiki_ids AS (
   , group_id d_id32
 );
 
-\qecho '-- FD: wiki:wiki:12_type.sql / 31 --'
-
+CREATE DOMAIN d_links  AS TEXT[]; -- список ссылок
+ --TODO: make like CHECK (VALUE = '' OR VALUE ~ E'^[^ ]+@[^ ]+\\.[^ ]{2,6}(,\\s+[^ ]+@[^ ]+\\.[^ ]{2,6})*');
 
 /* ------------------------------------------------------------------------- */
 \qecho '-- FD: wiki:wiki:12_type.sql / 35 --'

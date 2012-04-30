@@ -18,3 +18,8 @@ DELETE FROM ws.dt_part          WHERE id IN (SELECT id FROM ws.dt WHERE code LIK
 DELETE from ws.dt               WHERE code LIKE 'wiki.%';
 
 -- DELETE FROM ws.cache WHERE id IN (15, 16, 17);
+
+DELETE FROM ws.error_data WHERE code ~ E'^Y99';
+
+/* ------------------------------------------------------------------------- */
+\qecho '-- FD: wiki:wiki:00_cleanup.sql / 25 --'

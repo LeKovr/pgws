@@ -1,16 +1,17 @@
 [% META
   description = 'Просмотр статей wiki';
 
-  meta.api = 1;
-  group_code = page.args.0;
-  doc_path = page.args.1;
   meta.html_headers.push(
     '<link rel="stylesheet" type="text/css" href="/css/wiki/common.css" />'
     '<link rel="stylesheet" type="text/css" href="/css/wiki/edit.css" />'
   );
-
+  meta.api = 1;
+  group_code = page.args.0;
+  doc_path = page.args.1;
   code = doc_path.remove('^/');
   ids = api('wiki.ids_by_code', group_code => group_code, code => code);
+  view_uri = uri(code => page.up_code, id => doc_path);
+  view_pathname = uri_mk(view_uri.req);
   IF !ids.id;
     can_do = api('wiki.can_create', group_id => ids.group_id, code => code);
     IF !can_do;
@@ -27,114 +28,134 @@
       meta.status_note = 'No access to save';
       STOP;
     END;
-    info=api('wiki.doc_info', id => ids.id);
+    info = api('wiki.doc_info', id => ids.id);
     resp.title = info.name;
-    src=api('wiki.doc_src', id => ids.id);
+    src = api('wiki.doc_src', id => ids.id);
   END;
 %]
 <div id="accordion">
-  <div class="d">
-    <p class="dd"  style="background-color: #87AFC7">E D I T</p>
-    <div class="cent" id="p-edit">
+  <div class="acc-panel">
+    <p class="acc-nav acc-edit">[% l('редактор').replace('(.)','$1 ') %]</p>
+    <div class="acc-body" id="p-edit">
       <form id="main-form" action="js_required_but_not_available" onsubmit="return false;">
         <input type="hidden" name="uri" value="[% req.prefix _ '/' _ group_code  %]">
-        <input type="hidden" name="code" value="[% code %]">
         <input type="hidden" name="group_id" value="[% ids.group_id %]">
         <input type="hidden" name="id" value="[% ids.id %]">
+        <input type="hidden" name="code" value="[% code %]">
+        <input type="hidden" name="revision" value="[% info.revision %]">
         <input type="hidden" name="extended" value="1">
         <button id="btnSave0" onClick="return formSend('main', 'wiki.save')">[% l("Сохранить") %]</button>
         <button id="btnFormat0" onClick="return formSend('main', 'wiki.format')">[% l("Предварительный просмотр") %]</button>
         <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view0" checked onClick="return toggleChk(this, 1)"></label>
-        <textarea name="src" style="width:100%" rows="60" >[% src %]</textarea>
+        <textarea name="src">[% src %]</textarea>
         <button id="btnSave1" onClick="return formSend('main', 'wiki.save')">[% l("Сохранить") %]</button>
         <button id="btnFormat1" onClick="return formSend('main', 'wiki.format')">[% l("Предварительный просмотр") %]</button>
         <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view1" checked onClick="return toggleChk(this,0)"></label>
-        <div id="status"></div>
         <div id="errors" class="error"></div>
         <div id="main-form__err" class="error"></div>
         <div id="main-form_src_err" class="error"></div>
+        <div id="status"></div>
       </form>
     </div>
   </div>
-  <div class="d">
-    <p class="dd"   style="background-color: #C6AEC7">P A G E</p>
-    <div class="cent" id="p-html"></div>
+  <div class="acc-panel">
+    <p class="acc-nav acc-view">[% l('просмотр').replace('(.)','$1 ') %]</p>
+    <div class="acc-body" id="p-html"></div>
   </div>
-  <div class="d">
-    <p class="dd" style="background-color: #9E7BFF">S O U R C E</p>
-    <div class="cent" id="p-src"></div>
+  <div class="acc-panel">
+    <p class="acc-nav acc-diff">[% l('изменения').replace('(.)','$1 ') %]</p>
+    <div class="acc-body" id="p-diff"><div></div></div>
+  </div>
+  <div class="acc-panel">
+    <p class="acc-nav acc-src">[% l('html').replace('(.)','$1 ') %]</p>
+    <div class="acc-body" id="p-src"><textarea id="html-src" disabled></textarea></div>
   </div>
 </div>
 
 <script type="text/javascript">
 //<![CDATA[
 
+var msg_created = '[% l("Документ создан") %]';
+var msg_updated = '[% l("Документ изменен") %]';
+var msg_load    = '[% l("Загружается страница просмотра") %]'
+var view_name   = '[% l("Актуальная версия") %]';
+var view_path   = '[% view_pathname %]';
+
+var page_html   = '[% l("нет данных") %]';
+var page_diff   = '[% l("нет данных") %]';
+
 function toggleChk(b,idx) {
-  c=$("#is_view"+idx);
+  c=$("#is_view" + idx);
   c.attr("checked", $(b).attr("checked"));
   return true;
 }
 
-var page_html='[% l("нет данных") %]';
-
 function formSend(id, action) {
   $('#status').text('');
-  $('#main-form___err').text('');
+  $('div.error').text('');
   var form_id = '#' + id + '-form';
-  api_form(action, form_id, formOK);
+  api_form(action, form_id, formOK,formErr);
   return false;
 };
 
 var formOK = function(formid, res) {
   if (typeof res == 'number') {
     // redirect to view page
-    var m = (res == 1)?'[% l("Документ создан") %]':'[% l("Документ изменен") %]';
-    m = m + '. ' + '[% l("Загружается страница просмотра") %]';
-    var u = "[% req.prefix _ '/' _ group_code _ doc_path %]";
+    var m = (res == 1)?msg_created:msg_updated;
+    m = m + '. ' + msg_load;
     $('#status').text(m);
-    window.location.pathname = u;
+    window.location.pathname = view_path;
   } else {
-    document.title = res.title;
+    document.title = res.name;
     page_html = res.html;
+    page_diff = res.diff;
     if ($('#is_view0').is(':checked')) {
-      $(activeItem).next().children("p.dd").click();
+      $(activeItem).next().children("p.acc-nav").click();
       $('html, body').scrollTop(0);
     }
   }
 };
 
-var animation_complete = function(t) {
-  if ($(activeItem).children("div.cent").height()>200) {
-    $("#accordion>div.d>p.dd").height($(activeItem).children("div.cent").height());
+var formErr = function(formid, res) {
+  if (res.result && res.result.error) {
+    $('#errors').text(res.result.error[0].message);
   }
+$('#status').html('<a href="' + view_path + '">'+ view_name +'</a>');
+  $('html, body').scrollTop($("#errors").offset().top);
+};
+
+var animation_complete = function(t) {
+  new_height = $(activeItem).children("div.acc-body").height();
+  $("#accordion>div.acc-panel>p.acc-nav").height(new_height > 400?new_height:400 + 10);
 }
 
 $(document).ready(function(){
 
   // http://www.designchemical.com/blog/index.php/jquery/jquery-simple-horizontal-accordion/
-  activeItem = $("#accordion div.d:first");
+  activeItem = $("#accordion div.acc-panel:first");
   $(activeItem).addClass('active');
 
-  $("#accordion div.d p.dd").click(function(){
+  $("#accordion div.acc-panel p.acc-nav").click(function(){
 
-    activeDiv=$(activeItem).children("div.cent");
+    activeDiv=$(activeItem).children("div.acc-body");
 
     $(activeItem).animate({width: "15px"}, {duration:300, queue:false});
-    $(this).parent().animate({width: "97%"}, {duration:300, queue:false, complete: animation_complete});
+    $(this).parent().animate({width: "96%"}, {duration:300, queue:false, complete: animation_complete});
 
-    if (activeDiv.attr('id') == 'p-html' || activeDiv.attr('id') == 'p-src') {
-      activeDiv.html('');
-    }
+    activeDiv.hide();
 
     activeItem = $(this).parent();
 
-    activeDiv=$(activeItem).children("div.cent");
+    activeDiv=$(activeItem).children("div.acc-body");
     if (activeDiv.attr('id') == 'p-html') {
       activeDiv.html(page_html);
     } else if (activeDiv.attr('id') == 'p-src') {
-      activeDiv.html('<textarea id="df"  style="width:100%" rows="60" disabled><textarea>');
-      activeDiv.children("#df").text(page_html);
+      activeDiv.children("#html-src").val(page_html);
+    } else if (activeDiv.attr('id') == 'p-diff') {
+      activeDiv.children("div").html(page_diff);
     }
+    activeDiv.show();
+
   });
 });
 

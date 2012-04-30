@@ -28,17 +28,19 @@ CREATE OR REPLACE VIEW doc_info AS SELECT
   , d.status_id
   , d.group_id
   , d.code
-  , created_by
+  , d.revision
+  , d.created_by
   , d.created_at
+  , d.updated_by
   , d.updated_at
   , d.name
   , dg.name AS group_name
-  , a.name AS created_by_name
+  , a.name AS updated_by_name
   FROM wiki.doc d
-  JOIN wiki.doc_group dg ON (d.group_id = dg.id)
-  JOIN wiki.account a ON (d.created_by = a.id)
+    JOIN wiki.doc_group dg ON (d.group_id = dg.id)
+    JOIN acc.account a ON (d.created_by = a.id)
 ;
 
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:42_doc.sql / 44 --'
+\qecho '-- FD: wiki:wiki:42_doc.sql / 46 --'
