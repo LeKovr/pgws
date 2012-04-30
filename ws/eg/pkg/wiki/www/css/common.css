@@ -1,4 +1,5 @@
 pre code,
+ol.toc,
 ul.toc {
   -moz-box-shadow: 3px 3px 5px #DFDFDF;
   -webkit-box-shadow: 3px 3px 5px #DFDFDF;
@@ -16,6 +17,7 @@ ul.toc {
   border-radius: 8px;
 }
 
+ol.toc,
 ul.toc {
   padding: 2ex 2ex 20px 50px;
   margin: 2ex 20ex 2ex 2ex;
@@ -64,4 +66,8 @@ blockquote {
   border-left: 3px solid #e0e0e0;
   padding-left: 0.6em;
   margin-left: 2.4em;
+}
+
+div#wikibody {
+  min-height:400px;
 }

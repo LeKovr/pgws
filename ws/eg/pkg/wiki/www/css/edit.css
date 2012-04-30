@@ -6,7 +6,7 @@
   background: #F5F5F5;
 }
 
-#accordion div.d {
+#accordion div.acc-panel {
   float: left;
   display: block;
   width: 15px;
@@ -17,28 +17,52 @@
   line-height: 1.5em;
 }
 
-#accordion div p.dd {
-  font-weight:bold;
-  text-decoration:none;
-  font-size:12px;
+#accordion div p.acc-nav {
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 12px;
   width: 1em;
   float: left;
   margin: -15px 0px 0 0;
-  height: 950px;
+  height: 500px;
   cursor: pointer;
+  text-shadow: 0px 1px 1px #000;
+  text-transform: uppercase;
 }
 
-div.cent {
+#accordion div.acc-body {
   margin: 0 30px 0 15px;
   padding: 3px;
   width: 98%;
+  min-height: 400px;
   background-color: white;
   color: black;
 /*  height: 800px; */
 }
 
+#accordion div.acc-body textarea {
+ width:100%;
+ height: 410px;
+}
+
+#accordion p.acc-edit {
+  background-color: #87AFC7;
+}
+
+#accordion p.acc-view {
+  background-color: #C6AEC7;
+}
+
+#accordion p.acc-diff {
+ background-color: #B5EAAA;
+}
+
+#accordion p.acc-src {
+ background-color: #9E7BFF;
+}
+
 #accordion div.active {
-  width: 97%;
+  width: 96%;
 }
 
 label {
@@ -46,3 +70,16 @@ label {
   white-space:nowrap;
 }
 
+#p-diff div p{
+  margin: 0;
+}
+
+#p-diff div p.hunk {
+ background-color: #87AFC7;
+}
+#p-diff div p.add {
+ background-color: #B5EAAA;
+}
+#p-diff div p.del {
+ background-color: #C6AEC7;
+}

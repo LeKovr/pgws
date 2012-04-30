@@ -29,7 +29,7 @@ h1 a {
   margin-right: 100px;
 }
 
-div#top {
+div.bar {
   text-align: right;
   background-color: LightGrey;
   padding-right: 5px;
