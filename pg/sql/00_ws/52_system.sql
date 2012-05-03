@@ -30,7 +30,7 @@ $_$;
 SELECT pg_c('f', 'system_status', 'Статус системы');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION system_acl(a__sid d_sid) RETURNS SETOF d_acl STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION system_acl(a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'plpgsql' AS
 $_$  -- FD: pg:ws:52_system.sql / 34 --
   DECLARE
   BEGIN
