@@ -39,7 +39,7 @@ pre { padding-bottom:25px; overflow-y:hidden; }
 </head>
 <body>
 [% IF page.code != 'main'; root_page = uri(code => 'main'); root_href = uri_mk(root_page.req); END; %]
-<h1><a name="top"[% IF root_href; ' href="' _ root_href _ '"'; END; %]><img src="/img/style01/pgws-logo.png" alt="PGWS. Postgresql WebServices" /></a>[% resp.title %]</h1>
+<h1 class="title"><a name="top"[% IF root_href; ' href="' _ root_href _ '"'; END; %]><img src="/img/style01/pgws-logo.png" alt="PGWS. Postgresql WebServices" /></a>[% resp.title %]</h1>
 <div id="top" class="bar">
 [%
   # <!-- menu point -->
