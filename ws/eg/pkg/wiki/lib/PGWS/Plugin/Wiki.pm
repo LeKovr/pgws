@@ -195,7 +195,6 @@ my @links = keys %{$m->{_metadata}{'links'}};
     'name' => $m->{_metadata}{'Title'},
     'links' => \@links,
   };
-  my $title = $m->{_metadata}{'Title'}?"<h1>$m->{_metadata}{'Title'}</h1>":'';
 
   if ($html =~ /\A([\s\S]+)\n\<\!\-\-\s+CUT\s+\-\-\>/m) {
     $res->{'anno'} = $1;
@@ -208,7 +207,7 @@ my @links = keys %{$m->{_metadata}{'links'}};
     $toc = $m->markdown($toc_text);
     $toc =~ s/^<(o|u)l/<$1l class="toc"/;
   }
-  $res->{'html'} = $title.$toc.$html;
+  $res->{'html'} = $toc.$html;
   $res->{'toc'} = $toc;
 
   if ($extended and $id) {

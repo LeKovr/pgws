@@ -68,7 +68,7 @@
   </div>
   <div class="acc-panel">
     <p class="acc-nav acc-src">[% l('html').replace('(.)','$1 ') %]</p>
-    <div class="acc-body" id="p-src"><textarea id="html-src" disabled></textarea></div>
+    <div class="acc-body" id="p-src"><pre id="html-src"></pre></div>
   </div>
 </div>
 
@@ -150,7 +150,7 @@ $(document).ready(function(){
     if (activeDiv.attr('id') == 'p-html') {
       activeDiv.html(page_html);
     } else if (activeDiv.attr('id') == 'p-src') {
-      activeDiv.children("#html-src").val(page_html);
+      activeDiv.children("#html-src").text(page_html);
     } else if (activeDiv.attr('id') == 'p-diff') {
       activeDiv.children("div").html(page_diff);
     }

@@ -75,11 +75,22 @@ label {
 }
 
 #p-diff div p.hunk {
- background-color: #87AFC7;
+  background-color: #87AFC7;
 }
 #p-diff div p.add {
- background-color: #B5EAAA;
+  background-color: #B5EAAA;
 }
 #p-diff div p.del {
- background-color: #C6AEC7;
+  background-color: #C6AEC7;
+}
+
+pre#html-src {
+  font-size: 8pt;
+  line-height: 1.5;
+  width: 97%;
+  white-space: pre-wrap;
+  white-space: -pre-wrap !important;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
 }

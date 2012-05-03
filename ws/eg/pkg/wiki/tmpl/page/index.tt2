@@ -16,7 +16,7 @@
     STOP;
   END;
   info = api('wiki.doc_info', id => ids.id);
-  resp.title = info.name _ ' - ' _ info.group_name;
+  resp.title = info.name;
 # place for INSERT
   src = api('wiki.doc_src', id => ids.id);
   page = api('wiki.format', uri => req.prefix _ '/' _ group_code, code => code, src => src, extended => 1);
