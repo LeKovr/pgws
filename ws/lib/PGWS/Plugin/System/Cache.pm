@@ -41,8 +41,10 @@ sub uncache {
   if ($srv->cache and exists($srv->cache->{$cache_id})) {
     my $c = $srv->cache->{$cache_id};
     my @keys = $c->get_keys();
+    my $mkey=',"'.$mtd_def->{'code'}.'",';
     foreach my $k (@keys) {
-      if (index($k, $mtd_def->{'code'}) > 0 and index($k, $key) > 0) {
+      my $i;
+      if ($i = index($k, $mkey) > 0 and index($k, $key, $i) > 0) {
         # index не вернет 0 при успехе, т.к. $k - JSON и начинается с [
         $c->remove($k);
         $removed++;
