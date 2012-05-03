@@ -30,8 +30,8 @@ $_$  -- FD: app:app:50_const.sql / 27 --
     v TEXT;
   BEGIN
 
-    IF    a_tag = 'APP_ERR_NOINTERNAL'   THEN v := CLASS_CORE || '21';
-    ELSIF a_tag = 'APP_ERR_NOTFOUND'   THEN v := CLASS_CORE || '22';
+    IF    a_tag = 'APP_ERR_NOINTERNAL'   THEN v := CLASS_APP || '21';
+    ELSIF a_tag = 'APP_ERR_NOTFOUND'   THEN v := CLASS_APP || '22';
     ELSE RAISE EXCEPTION 'ERROR: Unknown tag %', a_tag;
     END IF;
     RETURN v;
