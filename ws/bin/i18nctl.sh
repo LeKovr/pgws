@@ -36,8 +36,10 @@ i18n_init() {
   BIN=$PGWS_ROOT/$PGWS/$PGWS_WS/bin
   DBCTL=$BIN/${PGWS_DB}ctl.sh
 
-  [ -f $BLD/$schema.sql ] || { echo "Dumping $schema" ; . $DBCTL dump $schema ; }
-  [ -f $BLD/$schema.tpl ] || { echo "Prepare tpl" ; perl $BIN/quotedump4po.pl < $BLD/$schema.sql > $BLD/$schema.i18n ; }
+  # [ -f $BLD/$schema.sql ] || 
+  { echo "Dumping $schema" ; . $DBCTL dump $schema ; }
+  # [ -f $BLD/$schema.tpl ] || 
+  { echo "Prepare tpl" ; perl $BIN/quotedump4po.pl < $BLD/$schema.sql > $BLD/$schema.i18n ; }
 
   # Parse templates
   pushd $PGWS_ROOT > /dev/null
@@ -46,8 +48,8 @@ i18n_init() {
   # TODO: simple but runs in shell only
   # local pkgs=${PGWS_APP_PKG// /,}
   # find pkg/{$pkgs}/tmpl/ -name *.tt2 2>/dev/null > $BLD/list.tpl
-  local pkgs=${PGWS_PKG// /|}
-  find pgws/*/tmpl/ -name *.tt2 | grep -E "^pgws/($pkgs)" > $BLD/${schema}.lst
+  # local pkgs=${PGWS_PKG// /|}
+  # find pgws/*/tmpl/ -name *.tt2 | grep -E "^pgws/($pkgs)" > $BLD/${schema}.lst
   local pkgs=${PGWS_APP_PKG// /|}
   find pkg/*/tmpl/ -name *.tt2 | grep -E "^pkg/($pkgs)" >> $BLD/${schema}.lst
 
