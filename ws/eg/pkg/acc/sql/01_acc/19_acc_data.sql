@@ -84,8 +84,8 @@ INSERT INTO acc_data.account_group (id, name, anno) VALUES
 ;
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO acc_data.account (id, group_id, login, email, psw, name) VALUES
-  (1, 2, 'admin', 'admin@pgws.local', ((random()*10^16)::bigint)::text, 'Admin')
+INSERT INTO acc_data.account (group_id, login, email, psw, name) VALUES
+  (2, 'admin', 'admin@pgws.local', ((random()*10^16)::bigint)::text, 'Admin')
 ;
 
 /* ------------------------------------------------------------------------- */
