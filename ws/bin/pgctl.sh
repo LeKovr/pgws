@@ -233,6 +233,7 @@ db_restoredata() {
   local file=$PGWS_ROOT/var/dbdump-$key.tar
   db_show_logfile
 
+  # [ -L $file.gz ] && { filegz=$(readlink $file.gz); file=${filegz%.gz} ; }
   echo "Restoring *_data from $file.gz..."
   [ -f $file ] || gunzip $file.gz
   pg_restore -d "$CONN" --single-transaction $file > $LOGFILE 2>&1

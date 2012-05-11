@@ -20,6 +20,7 @@
 
 
 # Internal package for PGWS::Plugin::Wiki
+#line 1 MultiMarkdown.pm
 package PGWS::MultiMarkdown;
 
 use base qw(Text::MultiMarkdown);
@@ -27,7 +28,7 @@ use base qw(Text::MultiMarkdown);
 use utf8;
 
 # code from http://phpsuxx.blogspot.com/2007/09/perl.html
-sub ts($) {
+sub ts {
   my $z = shift;
   my %hs = ('аА'=>'a' , 'бБ'=>'b'  , 'вВ'=>'v'  , 'гГ'=>'g', 'дД'=>'d' ,
   'еЕ'=>'e' , 'ёЁ'=>'jo' , 'жЖ'=>'zh' , 'зЗ'=>'z', 'иИ'=>'i' ,

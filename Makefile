@@ -142,5 +142,11 @@ popd > /dev/null
 uninstall: uninstall-db clean clean-lib clean-pkg clean-conf uninstall-dirs uninstallcomplete
 
 test:
-	perl ws/t/01-compile.t
-	pwd
+	CORELIB=$$PWD/ws/lib ; \
+	for f in ws/t/*.t ws/eg/pkg/*/t/*.t ; do \
+	d=$$(dirname $$f) ; \
+	n=$$(basename $$f) ; \
+	pushd $$d/.. ; \
+	perl -I$$CORELIB t/$$n ; \
+	popd ; \
+	done
