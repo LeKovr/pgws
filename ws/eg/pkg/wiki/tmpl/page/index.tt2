@@ -11,7 +11,11 @@
   code = doc_path.remove('^/');
   ids = api('wiki.ids_by_code', group_code => group_code, code => code || undef);
   edit_uri = uri(code => page.code _ '.edit', id => doc_path );
-  IF !ids.id;
+  IF !ids || !ids.group_id;
+    meta.status = '404';
+    meta.status_note = 'Incorrect uri';
+    STOP;
+  ELSIF !ids.id;
     meta.redirect = edit_uri.req;
     STOP;
   END;

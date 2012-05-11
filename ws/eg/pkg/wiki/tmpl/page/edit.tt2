@@ -12,7 +12,11 @@
   ids = api('wiki.ids_by_code', group_code => group_code, code => code);
   view_uri = uri(code => page.up_code, id => doc_path);
   view_pathname = uri_mk(view_uri.req);
-  IF !ids.id;
+  IF !ids || !ids.group_id;
+    meta.status = '404';
+    meta.status_note = 'Incorrect uri';
+    STOP;
+  ELSIF !ids.id;
     can_do = api('wiki.can_create', group_id => ids.group_id, code => code);
     IF !can_do;
       meta.status = '403';
