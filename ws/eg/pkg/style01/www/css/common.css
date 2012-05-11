@@ -15,9 +15,14 @@ h1, h2, h3, h4, h5 {
 
 h1 {
   font-size: 120%;
+  border-bottom: 1px solid grey;
+}
+
+h1.title {
   color: #234764;
   text-decoration: none;
   margin:3px;
+  border-bottom: none;
 }
 
 h1 img {
@@ -27,27 +32,6 @@ h1 img {
 
 h1 a {
   margin-right: 100px;
-}
-
-div.bar {
-  text-align: right;
-  background-color: LightGrey;
-  padding-right: 5px;
-}
-
-.center {
-  text-align: center;
-}
-
-input[disabled], input[readonly], select[disabled], select[readonly], checkbox[disabled], checkbox[readonly], textarea[disabled], textarea[readonly] {
-  background-color: #FFF8C6;
-  border: #3532ff 1px solid;
-  color: #000000;
-  cursor: default;
-}
-
-.error {
-  color: red;
 }
 
 h2 {
@@ -70,8 +54,30 @@ tr.odd {
   background-color: ghostwhite;
 }
 
+div.bar {
+  text-align: right;
+  background-color: LightGrey;
+  padding-right: 5px;
+}
+
+.center {
+  text-align: center;
+}
+
+.error {
+  color: red;
+}
+
 input[type=text].slim {
   width: 200px;
+}
+
+
+input[disabled], input[readonly], select[disabled], select[readonly], checkbox[disabled], checkbox[readonly], textarea[disabled], textarea[readonly] {
+  background-color: #FFF8C6;
+  border: #3532ff 1px solid;
+  color: #000000;
+  cursor: default;
 }
 
 /* verify point */
@@ -97,8 +103,5 @@ label {
 table.form th {
   width: 200px;
 }
-
-
-
 
 */
