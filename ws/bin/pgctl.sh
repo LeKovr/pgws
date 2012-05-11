@@ -184,7 +184,7 @@ EOF
 
   pushd $BLD > /dev/null
   echo "Running build.sql..."
-  [[ "$DO_SQL" ]] && psql -X -P footer=off -d "$CONN" -f build.sql > $LOGFILE 2>&1
+  [[ "$DO_SQL" ]] && ${PG_BINDIR}psql -X -P footer=off -d "$CONN" -f build.sql > $LOGFILE 2>&1
   RETVAL=$?
   popd > /dev/null
   if [[ $RETVAL -eq 0 ]] ; then
@@ -212,7 +212,7 @@ db_dump() {
   [[ "$schema" ]] || schema="i18n_def"
   local file=$BLD/$schema.sql
   [ -f $file ] && rm -f $file
-  pg_dump -F p -f $file -n $schema -O --inserts --no-tablespaces -E UTF-8 "$CONN";
+  ${PG_BINDIR}pg_dump -F p -f $file -n $schema -O --inserts --no-tablespaces -E UTF-8 "$CONN";
   echo "Dump of $schema saved to $file"
 }
 
@@ -222,7 +222,7 @@ db_dumpdata() {
   local file=$PGWS_ROOT/var/dbdump-$key.tar
   echo "Dumping *_data to $file.gz..."
   [ -f $file.gz ] && { echo "File exists. Abotring" ; exit ; }
-  pg_dump -F t -f $file -n "*_data" -E UTF-8 "$CONN"
+  ${PG_BINDIR}pg_dump -F t -f $file -n "*_data" -E UTF-8 "$CONN"
   gzip -9 $file
   echo "Dump complete."
 }
@@ -236,11 +236,11 @@ db_restoredata() {
   # [ -L $file.gz ] && { filegz=$(readlink $file.gz); file=${filegz%.gz} ; }
   echo "Restoring *_data from $file.gz..."
   [ -f $file ] || gunzip $file.gz
-  pg_restore -d "$CONN" --single-transaction $file > $LOGFILE 2>&1
+  ${PG_BINDIR}pg_restore -d "$CONN" --single-transaction $file > $LOGFILE 2>&1
   RETVAL=$?
   if [[ $RETVAL -eq 0 ]] ; then
     echo "Deactivating PGWS packages..."
-    [[ "$DO_SQL" ]] && psql -X -d "$CONN" -c "INSERT INTO ws_data.pkg (code, ver, log_name, user_name, ssh_client, is_add) SELECT code, ver, '', '', '', FALSE FROM ws_data.pkg where id in (select max(id) from ws_data.pkg group by code) AND is_add;" >> $LOGFILE 2>&1
+    [[ "$DO_SQL" ]] && ${PG_BINDIR}psql -X -d "$CONN" -c "INSERT INTO ws_data.pkg (code, ver, log_name, user_name, ssh_client, is_add) SELECT code, ver, '', '', '', FALSE FROM ws_data.pkg where id in (select max(id) from ws_data.pkg group by code) AND is_add;" >> $LOGFILE 2>&1
     echo "Restore complete."
   else
     echo "*** Errors:"
@@ -251,10 +251,10 @@ db_restoredata() {
 # ------------------------------------------------------------------------------
 db_dropdata() {
   db_show_logfile
-  psql -X -d "$CONN" -P tuples_only -c "SELECT code FROM ws_data.pkg_data" 2>> $LOGFILE | while read schema ; do
+  ${PG_BINDIR}psql -X -d "$CONN" -P tuples_only -c "SELECT code FROM ws_data.pkg_data" 2>> $LOGFILE | while read schema ; do
     if [[ "$schema" ]] ; then
       echo "Dropping schema $schema..."
-      psql -X -d "$CONN" -c "DROP SCHEMA $schema CASCADE" >> $LOGFILE 2>&1
+      ${PG_BINDIR}psql -X -d "$CONN" -c "DROP SCHEMA $schema CASCADE" >> $LOGFILE 2>&1
     fi
   done
   grep ERROR $LOGFILE || echo "Dropdata complete."
