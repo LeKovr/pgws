@@ -20,11 +20,11 @@
 */
 -- 50_pkg.sql - Компиляция и установка пакетов
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:50_pkg.sql / 23 --'
+\qecho '-- FD: pgws:ws:50_pkg.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION compile_errors_chk() RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 27 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 27 --
   DECLARE
     v_t TIMESTAMP := CURRENT_TIMESTAMP;
   BEGIN
@@ -37,12 +37,24 @@ $_$  -- FD: pg:ws:50_pkg.sql / 27 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pkg_data_add(a_code TEXT, a_ver TEXT) RETURNS VOID LANGUAGE 'sql' AS
+$_$  -- FD: pgws:ws:50_pkg.sql / 41 --
+  INSERT INTO ws_data.pkg_data (code, ver) VALUES ($1, $2);
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pkg_data_add(a_code TEXT) RETURNS VOID LANGUAGE 'sql' AS
+$_$  -- FD: pgws:ws:50_pkg.sql / 47 --
+  INSERT INTO ws_data.pkg_data (code, ver) VALUES ($1, DEFAULT);
+$_$;
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_add(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 41 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 53 --
   DECLARE
-    r_pkg ws.pkg%ROWTYPE;
+    r_pkg ws_data.pkg%ROWTYPE;
   BEGIN
-    SELECT INTO r_pkg * FROM ws.pkg
+    SELECT INTO r_pkg * FROM ws_data.pkg
       WHERE code = a_code AND ver = a_ver
       ORDER BY id DESC
       LIMIT 1
@@ -53,7 +65,7 @@ $_$  -- FD: pg:ws:50_pkg.sql / 41 --
           , a_code, a_ver, r_pkg.stamp, r_pkg.id;
       END IF;
     END IF;
-    INSERT INTO ws.pkg (code, ver, log_name, user_name, ssh_client)
+    INSERT INTO ws_data.pkg (code, ver, log_name, user_name, ssh_client)
       VALUES (a_code, a_ver, a_log_name, a_user_name, a_ssh_client)
     ;
     RETURN 'Ok';
@@ -61,9 +73,9 @@ $_$  -- FD: pg:ws:50_pkg.sql / 41 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_actual(a_code TEXT) RETURNS pkg STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 65 --
-  SELECT * FROM ws.pkg
+CREATE OR REPLACE FUNCTION pkg_actual(a_code TEXT) RETURNS ws_data.pkg STABLE LANGUAGE 'sql' AS
+$_$  -- FD: pgws:ws:50_pkg.sql / 77 --
+  SELECT * FROM ws_data.pkg
       WHERE code = $1 AND is_add AND rm_id IS NULL
       ORDER BY id DESC
       LIMIT 1
@@ -73,14 +85,16 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_is_core_only() RETURNS BOOL STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 76 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 88 --
   DECLARE
     v_pkgs TEXT;
   BEGIN
     SELECT INTO v_pkgs
       array_to_string(array_agg(code),', ')
-      FROM ws.pkg
-      WHERE is_add AND rm_id IS NULL AND code <> 'pg'
+      FROM ws_data.pkg
+      WHERE id in (SELECT max(id) FROM ws_data.pkg GROUP BY code)
+        AND COALESCE(is_add, TRUE)
+        AND code <> 'pgws'
     ;
     IF v_pkgs IS NOT NULL THEN
       RAISE EXCEPTION '***************** There are app packages installed (%) *****************', v_pkgs;
@@ -92,13 +106,13 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_make(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 95 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 109 --
   DECLARE
-    r_pkg ws.pkg%ROWTYPE;
+    r_pkg ws_data.pkg%ROWTYPE;
   BEGIN
     r_pkg := ws.pkg_actual(a_code);
     IF a_ver = r_pkg.ver THEN
-      INSERT INTO ws.pkg (code, ver, log_name, user_name, ssh_client, is_add)
+      INSERT INTO ws_data.pkg (code, ver, log_name, user_name, ssh_client, is_add)
         VALUES (a_code, a_ver, a_log_name, a_user_name, a_ssh_client, NULL)
       ;
       RETURN 'Ok';
@@ -112,18 +126,18 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_del(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 115 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 129 --
   DECLARE
-    r_pkg ws.pkg%ROWTYPE;
+    r_pkg ws_data.pkg%ROWTYPE;
     v_id  INTEGER;
   BEGIN
     r_pkg := ws.pkg_actual(a_code);
     IF a_ver = r_pkg.ver THEN
-      INSERT INTO ws.pkg (code, ver, log_name, user_name, ssh_client, is_add)
+      INSERT INTO ws_data.pkg (code, ver, log_name, user_name, ssh_client, is_add)
         VALUES (a_code, a_ver, a_log_name, a_user_name, a_ssh_client, FALSE)
         RETURNING id INTO v_id
       ;
-      UPDATE ws.pkg SET
+      UPDATE ws_data.pkg SET
         rm_id = v_id
           WHERE id = r_pkg.id
       ;
@@ -138,7 +152,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_require(a_code TEXT) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_pkg.sql / 141 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 155 --
   BEGIN
     RAISE NOTICE 'TODO: function needs code';
     RETURN NULL;
@@ -146,4 +160,4 @@ $_$  -- FD: pg:ws:50_pkg.sql / 141 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:50_pkg.sql / 149 --'
+\qecho '-- FD: pgws:ws:50_pkg.sql / 163 --'

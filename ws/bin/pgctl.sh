@@ -20,6 +20,14 @@
 #
 
 # ------------------------------------------------------------------------------
+db_show_logfile() {
+  cat <<EOF
+  Logfile:     $LOGFILE
+  ---------------------------------------------------------
+EOF
+}
+
+# ------------------------------------------------------------------------------
 db_run_sql_begin() {
   local file=$1
   cat > $file <<EOF
@@ -57,6 +65,15 @@ EOF
 }
 
 # ------------------------------------------------------------------------------
+db_empty_file_if_schema() {
+  local schema=$1
+  local file=$2
+  local dest=$3
+  echo "SELECT schema_name FROM information_schema.schemata WHERE schema_name = '$schema'" >> $dest
+  echo "\\g | read col; read delim ; read answer ; [[ "\$answer" ]] && echo \"-- File was erased because target schema exists (\$answer)\" > $file" >> $dest
+}
+
+# ------------------------------------------------------------------------------
 db_run() {
   local run_op=$1 ; shift
   local file_mask=$1 ; shift
@@ -78,9 +95,8 @@ db_run() {
   cat <<EOF
   DB Source:   $src
   DB Package:  $pkg
-  Logfile:     $LOGFILE
-  ---------------------------------------------------------
 EOF
+  db_show_logfile
 
   schema_mask="??_*"
   db_run_sql_begin $BLD/build.sql
@@ -115,9 +131,10 @@ EOF
     pn=${s%%/sql*}    # package name
     sn=${s#*/sql/??_} # schema name
     bd=$pn-${s#*/sql/} # build dir
+    dn="${sn}_data"   # persistent data schema
+    [[ "$pn" == "pg" ]] && pn="pgws" # system package got project name
     [[ "$p" != "$p_pre" ]] && echo "\\qecho '-- ******* Package: $pn --'" >> $BLD/build.sql
-
-    [[ "$p" != "$p_pre" ]] && [[ "$pn" != "pg" ]] && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+    [[ "$p" != "$p_pre" ]] && ( [[ "$pn" != "pgws" ]] || [[ "$run_op" != "add" ]] ) && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
 
     echo "\\qecho '-- ------- Schema: $sn'" >> $BLD/build.sql
     [ -d "$BLD/$bd" ] || mkdir $BLD/$bd
@@ -129,6 +146,10 @@ EOF
         echo "Found: $s/$f"
         echo "Processing file: $s/$f" >> $LOGFILE
         awk "{gsub(/-- FD:(.*)--/, \"-- FD: $pn:$sn:$n / \" FNR \" --\")}; 1" $f > $BLD/$bd/$n
+        if [[ $n != ${n%_$dn.sql} ]]; then
+          # file named SCHEMA_data.sql - empty if schema exists
+          db_empty_file_if_schema $dn $BLD/$bd/$n $BLD/build.sql
+        fi
         echo "\i $bd/$n" >> $BLD/build.sql
       fi
     done
@@ -153,7 +174,7 @@ EOF
     fi
 
     [[ -f "$BLD/keep_sql" ]] || echo "\! rm -rf $bd" >> $BLD/build.sql
-    [[ "$p" != "$p_pre" ]] && [[ "$pn" == "pg" ]] && [[ "$run_op" == "add" ]] \
+    [[ "$p" != "$p_pre" ]] && [[ "$pn" == "pgws" ]] && [[ "$run_op" == "add" ]] \
       && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
     p_pre=$p
   done
@@ -162,6 +183,7 @@ EOF
   db_run_sql_end $BLD/build.sql
 
   pushd $BLD > /dev/null
+  echo "Running build.sql..."
   [[ "$DO_SQL" ]] && psql -X -P footer=off -d "$CONN" -f build.sql > $LOGFILE 2>&1
   RETVAL=$?
   popd > /dev/null
@@ -195,6 +217,49 @@ db_dump() {
 }
 
 # ------------------------------------------------------------------------------
+db_dumpdata() {
+  local key=$(date "+%y%m%d_%H%M")
+  local file=$PGWS_ROOT/var/dbdump-$key.tar
+  echo "Dumping *_data to $file.gz..."
+  [ -f $file.gz ] && { echo "File exists. Abotring" ; exit ; }
+  pg_dump -F t -f $file -n "*_data" -E UTF-8 "$CONN"
+  gzip -9 $file
+  echo "Dump complete."
+}
+
+# ------------------------------------------------------------------------------
+db_restoredata() {
+  local key=$1
+  local file=$PGWS_ROOT/var/dbdump-$key.tar
+  db_show_logfile
+
+  echo "Restoring *_data from $file.gz..."
+  [ -f $file ] || gunzip $file.gz
+  pg_restore -d "$CONN" --single-transaction $file > $LOGFILE 2>&1
+  RETVAL=$?
+  if [[ $RETVAL -eq 0 ]] ; then
+    echo "Deactivating PGWS packages..."
+    [[ "$DO_SQL" ]] && psql -X -d "$CONN" -c "INSERT INTO ws_data.pkg (code, ver, log_name, user_name, ssh_client, is_add) SELECT code, ver, '', '', '', FALSE FROM ws_data.pkg where id in (select max(id) from ws_data.pkg group by code) AND is_add;" >> $LOGFILE 2>&1
+    echo "Restore complete."
+  else
+    echo "*** Errors:"
+    grep ERROR $LOGFILE || echo "    None."
+  fi
+}
+
+# ------------------------------------------------------------------------------
+db_dropdata() {
+  db_show_logfile
+  psql -X -d "$CONN" -P tuples_only -c "SELECT code FROM ws_data.pkg_data" 2>> $LOGFILE | while read schema ; do
+    if [[ "$schema" ]] ; then
+      echo "Dropping schema $schema..."
+      psql -X -d "$CONN" -c "DROP SCHEMA $schema CASCADE" >> $LOGFILE 2>&1
+    fi
+  done
+  grep ERROR $LOGFILE || echo "Dropdata complete."
+}
+
+# ------------------------------------------------------------------------------
 db_doc() {
   local schema=$1
   [[ "$schema" ]] || schema="ws"
@@ -220,6 +285,10 @@ cat <<EOF
     drop - drop DB objects
     doc  - make docs for schema SRC (Default: ws)
     dump - dump schema SRC (Default: i18n_def)
+
+    dumpdata - dump *_data schemas to dbdump-KEY.tar.gz
+    restoredata KEY - restore *_data schemas from dbdump-KEY.tar.gz
+    dropdata - drop *_data schemas
 
     SRC  - pgws|pkg. Default: pgws
     PKG  - dirname(s) from SRC. Default: "$PGWS_PKG" (if SRC=pgws) or "$PGWS_APP_PKG"
@@ -247,7 +316,7 @@ pkg=$@
 
 case "$cmd" in
   init)
-    db_run add "[1-9]?_*.sql" $src "$pkg"
+    db_run add "[1-8]?_*.sql" $src "$pkg"
     ;;
   drop)
     db_run del "0?_*.sql" $src "$pkg"
@@ -260,6 +329,15 @@ case "$cmd" in
     ;;
   dump)
     db_dump $src
+    ;;
+  dumpdata)
+    db_dumpdata
+    ;;
+  restoredata)
+    db_restoredata $src
+    ;;
+  dropdata)
+    db_dropdata
     ;;
   *)
     db_help

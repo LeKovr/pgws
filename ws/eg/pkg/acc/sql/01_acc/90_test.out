@@ -1,15 +1,20 @@
 1. login
- login | status_id |     email     | psw 
--------+-----------+---------------+-----
- user  |         1 | user@email.to | ***
+ login | status_id |      email       | psw 
+-------+-----------+------------------+-----
+ admin |         1 | admin@pgws.local | ***
 
 2. session
     ip     | sid 
 -----------+-----
- 127.0.0.1 | xx
+ 127.0.0.1 | ; 
 
 3. profile
- id | group_id | status_id | login |     email     | psw | name  | group_name 
-----+----------+-----------+-------+---------------+-----+-------+------------
-  1 |        2 |         1 | user  | user@email.to | *** | Admin | Writers
+ id | group_id | status_id | login |      email       | psw | name  | group_name 
+----+----------+-----------+-------+------------------+-----+-------+------------
+  1 |        2 |         1 | admin | admin@pgws.local | *** | Admin | Writers
+
+4. logout
+ logout 
+--------
+      1
 

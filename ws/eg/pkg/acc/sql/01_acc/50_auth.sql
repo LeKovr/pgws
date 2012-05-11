@@ -23,18 +23,18 @@
 \qecho '-- FD: acc:acc:50_auth.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION sid_info(a__sid d_sid, a__ip INET) RETURNS SETOF acc.session STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION sid_info(a__sid d_sid, a__ip INET) RETURNS SETOF acc_data.session STABLE LANGUAGE 'sql' AS
 $_$  -- FD: acc:acc:50_auth.sql / 27 --
-  SELECT * FROM acc.session WHERE deleted_at IS NULL AND sid::text = $1 /* AND ($2 IS NULL OR ip = $2) */ LIMIT 1;
+  SELECT * FROM acc_data.session WHERE deleted_at IS NULL AND sid::text = $1 /* AND ($2 IS NULL OR ip = $2) */ LIMIT 1;
 $_$;
 SELECT pg_c('f', 'sid_info', 'Атрибуты своей сессии');
 
 /* ------------------------------------------------------------------------- */
 -- вернуть описание сервера, отвечающего за экземпляр текущего класса
-CREATE OR REPLACE FUNCTION sid_info_cook(a_cook TEXT, a__ip INET) RETURNS SETOF acc.session STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION sid_info_cook(a_cook TEXT, a__ip INET) RETURNS SETOF acc_data.session STABLE LANGUAGE 'sql' AS
 $_$  -- FD: acc:acc:50_auth.sql / 35 --
 -- TODO: изменить a_cook на a__cook при переходе на тотальное использование cookie
-  SELECT * FROM acc.session WHERE deleted_at IS NULL AND sid = $1 /*AND ($2 IS NULL OR ip = $2)*/
+  SELECT * FROM acc_data.session WHERE deleted_at IS NULL AND sid = $1 /*AND ($2 IS NULL OR ip = $2)*/
     ORDER BY updated_at DESC LIMIT 1
 $_$;
 SELECT pg_c('f', 'sid_info_cook', 'Атрибуты своей сессии по cookie');
@@ -47,7 +47,7 @@ $_$  -- FD: acc:acc:50_auth.sql / 44 --
   DECLARE
     v_cnt INTEGER;
   BEGIN
-    UPDATE acc.session SET
+    UPDATE acc_data.session SET
       deleted_at = now()
       WHERE sid = a__sid
         AND deleted_at IS NULL
@@ -79,14 +79,15 @@ $_$  -- FD: acc:acc:50_auth.sql / 70 --
   BEGIN
     SELECT INTO r_account_info
       *
-      FROM acc.account
+      FROM acc_data.account
       WHERE login = a_login
     ;
     IF FOUND THEN
       RAISE DEBUG 'Account % found', a_login;
 
       -- TODO: контроль IP
-      IF r_account_info.psw = md5(a_psw) THEN
+      IF r_account_info.is_psw_plain AND r_account_info.psw = a_psw
+        OR NOT r_account_info.is_psw_plain AND r_account_info.psw = md5(a_psw) THEN
         RAISE DEBUG 'Password matched for %', a_login;
         -- прячем пароль
         r_account_info.psw := '***';
@@ -100,7 +101,7 @@ $_$  -- FD: acc:acc:50_auth.sql / 70 --
         PERFORM acc.logout(v_key, a__ip);
 
         -- создаем сессию
-        INSERT INTO acc.session (account_id, ip, sid)
+        INSERT INTO acc_data.session (account_id, ip, sid)
           VALUES (r_account_info.id, a__ip, v_key)
         ;
         RETURN NEXT r_account_info;
@@ -119,7 +120,7 @@ SELECT pg_c('f', 'login', 'Авторизация пользователя');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION profile (a__sid TEXT, a__ip TEXT) RETURNS SETOF account_info LANGUAGE 'plpgsql' AS
-$_$  -- FD: acc:acc:50_auth.sql / 122 --
+$_$  -- FD: acc:acc:50_auth.sql / 123 --
   -- a__sid: ID сессии
   -- a__ip: IP-адреса сессии
   DECLARE
@@ -130,7 +131,7 @@ $_$  -- FD: acc:acc:50_auth.sql / 122 --
 
     SELECT INTO v_account_id
       account_id
-      FROM acc.session
+      FROM acc_data.session
       WHERE sid = a__sid
         AND deleted_at IS NULL
     ;
@@ -152,4 +153,4 @@ $_$;
 SELECT pg_c('f', 'profile', 'Профиль текущего пользователя');
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: acc:acc:50_auth.sql / 155 --'
+\qecho '-- FD: acc:acc:50_auth.sql / 156 --'

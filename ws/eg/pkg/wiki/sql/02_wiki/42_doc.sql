@@ -36,9 +36,9 @@ CREATE OR REPLACE VIEW doc_info AS SELECT
   , d.name
   , dg.name AS group_name
   , a.name AS updated_by_name
-  FROM wiki.doc d
-    JOIN wiki.doc_group dg ON (d.group_id = dg.id)
-    JOIN acc.account a ON (d.created_by = a.id)
+  FROM wiki_data.doc d
+    JOIN wiki_data.doc_group dg ON (d.group_id = dg.id)
+    JOIN acc_data.account a ON (d.created_by = a.id)
 ;
 
 

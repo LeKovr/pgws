@@ -22,17 +22,20 @@
 /* ------------------------------------------------------------------------- */
 
 -- TODO: insert into wiki.account
+\set SID '\'; \''
 
-\qecho 'login'
-select login, status_id, email, psw FROM acc.login('xx','127.0.0.1','user','nimda');
+\qecho '1. login'
+select login, status_id, email, psw FROM acc.login(:SID,'127.0.0.1','admin', (SELECT psw FROM acc_data.account WHERE login='admin'));
 
 \qecho 'can_create'
-SELECT wiki.can_create('xx', 1, 'definitely/new/page');
+SELECT wiki.can_create(:SID, 1, 'definitely/new/page');
 
 \qecho 'doc tests'
-
 SELECT wiki.group_id_by_code('wk');
 
+
+\qecho '4. logout'
+SELECT acc.logout(:SID,'127.0.0.1');
 
 /* ------------------------------------------------------------------------- */
 

@@ -22,43 +22,10 @@
 /* ------------------------------------------------------------------------- */
 \qecho '-- FD: wiki:wiki:22_doc.sql / 23 --'
 
-/* ------------------------------------------------------------------------- */
-CREATE TABLE doc_group (
-  id      d_id32 PRIMARY KEY
-  , code  d_code NOT NULL UNIQUE
-  , name  text   NOT NULL
-  , anno  text   NOT NULL
-);
-
-/* ------------------------------------------------------------------------- */
-CREATE TABLE doc (
-  id           d_id    PRIMARY KEY
-  , status_id  d_id32  NOT NULL DEFAULT 1
-  , group_id   d_id32  NOT NULL REFERENCES doc_group
-  , code       d_path  NOT NULL DEFAULT ''
-  , revision   d_cnt   NOT NULL DEFAULT 1
-  , created_by d_id    NOT NULL REFERENCES acc.account
-  , created_at d_stamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-  , updated_by d_id    NOT NULL REFERENCES acc.account
-  , updated_at d_stamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-  , cached_at  d_stamp
-  , src        text NOT NULL
-  , name       text
-  , CONSTRAINT group_id_code_ukey UNIQUE (group_id, code)
-);
-
-SELECT pg_c('t', 'doc', 'Статья wiki')
-  ,pg_c('c', 'doc.code', 'Код статьи (URI)')
-  ,pg_c('c', 'doc.updated_at', 'Момент последнего редактирования')
-  ,pg_c('c', 'doc.cached_at', 'Момент актуализации кэша')
-;
-
-CREATE SEQUENCE doc_id_seq;
-ALTER TABLE doc ALTER COLUMN id SET DEFAULT NEXTVAL('doc_id_seq');
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE doc_extra (
-  id                  d_id32  PRIMARY KEY REFERENCES doc
+  id                  d_id32  PRIMARY KEY REFERENCES wiki_data.doc
   , is_toc_preferred  bool    NOT NULL DEFAULT FALSE
   , toc               text
   , anno              text
@@ -68,30 +35,18 @@ SELECT pg_c('t', 'doc_extra', 'Дополнительные данные ста�
   ,pg_c('c', 'doc_extra.is_toc_preferred', 'В кратком списке выводить не аннотацию а содержание')
 ;
 
-/* ------------------------------------------------------------------------- */
-CREATE TABLE doc_diff (
-  id            d_id32  REFERENCES doc
-  , revision    d_cnt   NOT NULL
-  , updated_by  d_id    NOT NULL REFERENCES acc.account
-  , updated_at  d_stamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-  , diff_src    text
-  , CONSTRAINT  doc_diff_pkey PRIMARY KEY (id, revision)
-);
-SELECT pg_c('t', 'doc_diff', 'Изменения между ревизиями статьи wiki')
-  ,pg_c('c', 'doc_diff.id', 'ID статьи')
-;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE doc_link (
-  id            d_id32  NOT NULL REFERENCES doc
+  id            d_id32  NOT NULL REFERENCES wiki_data.doc
   , path        text    NOT NULL
   , is_wiki     bool    NOT NULL DEFAULT TRUE -- TODO считать триггером или при запросе
-  , link_id     d_id    REFERENCES wiki.doc
+  , link_id     d_id    REFERENCES wiki_data.doc
   , CONSTRAINT  doc_link_pkey PRIMARY KEY (id, path)
 );
-SELECT pg_c('t', 'doc_link', 'Ссылка ни внутренние документы статьи wiki')
+SELECT pg_c('t', 'doc_link', 'Ссылка на внутренние документы статьи wiki')
   ,pg_c('c', 'doc_link.id', 'ID статьи')
 ;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:22_doc.sql / 97 --'
+\qecho '-- FD: wiki:wiki:22_doc.sql / 52 --'

@@ -1,7 +1,7 @@
-login
- login | status_id |     email     | psw 
--------+-----------+---------------+-----
- user  |         1 | user@email.to | ***
+1. login
+ login | status_id |      email       | psw 
+-------+-----------+------------------+-----
+ admin |         1 | admin@pgws.local | ***
 
 can_create
  can_create 
@@ -12,4 +12,9 @@ doc tests
  group_id_by_code 
 ------------------
                 1
+
+4. logout
+ logout 
+--------
+      1
 

@@ -18,15 +18,13 @@
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
 */
--- 80_class.sql - Данные классов и акций
+-- 82_doc.sql - Вторичные данные wiki
 /* ------------------------------------------------------------------------- */
 \qecho '-- FD: wiki:wiki:82_doc.sql / 23 --'
 
-/* ------------------------------------------------------------------------- */
-INSERT INTO doc_group (id, code, name, anno) VALUES
-  (1, 'wk', 'Public','Public info')
-  , (2, 'sys', 'Internal', 'Internal info')
-;
+-- Пометим все вторичные данные как требующие переформирования
+UPDATE wiki_data.doc SET cached_at = NULL;
 
+-- TODO: создать в tm задачу переформирования вторичных данных
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:82_doc.sql / 32 --'
+\qecho '-- FD: wiki:wiki:82_doc.sql / 30 --'

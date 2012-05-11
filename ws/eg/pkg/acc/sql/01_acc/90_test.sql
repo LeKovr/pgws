@@ -23,15 +23,19 @@
 
 -- TODO: insert into wiki.account
 
+\set SID '\'; \''
+
 \qecho '1. login'
-select login, status_id, email, psw FROM acc.login('xx','127.0.0.1','user','nimda');
+select login, status_id, email, psw FROM acc.login(:SID,'127.0.0.1','admin', (SELECT psw FROM acc_data.account WHERE login='admin'));
 
 \qecho '2. session'
-SELECT ip,sid FROM acc.session WHERE ip='127.0.0.1' AND sid='xx' AND deleted_at IS NULL;
+SELECT ip,sid FROM acc_data.session WHERE ip='127.0.0.1' AND sid=:SID AND deleted_at IS NULL;
 
 \qecho '3. profile'
-SELECT id, group_id, status_id, login,email,psw, name , group_name FROM acc.profile('xx','127.0.0.1');
+SELECT id, group_id, status_id, login,email,psw, name , group_name FROM acc.profile(:SID,'127.0.0.1');
 
+\qecho '4. logout'
+SELECT acc.logout(:SID,'127.0.0.1');
 
 -- TODO: wiki.logout
 -- TODO: delete from wiki.account
