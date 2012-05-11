@@ -20,7 +20,7 @@
 */
 -- 12_type.sql - Типы данных и домены
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:12_type.sql / 23 --'
+\qecho '-- FD: pgws:ws:12_type.sql / 23 --'
 
 CREATE DOMAIN d_id AS INTEGER;
 CREATE DOMAIN d_id_positive AS INTEGER CHECK (VALUE > 0);
@@ -193,4 +193,4 @@ COMMENT ON COLUMN t_month_info.month_name_ic IS 'Месяц ГГГГ';
 
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:12_type.sql / 196 --'
+\qecho '-- FD: pgws:ws:12_type.sql / 196 --'

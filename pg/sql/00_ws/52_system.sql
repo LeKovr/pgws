@@ -20,18 +20,18 @@
 */
 -- 52_system.sql - Функции объектов класса system
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:52_system.sql / 23 --'
+\qecho '-- FD: pgws:ws:52_system.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION system_status() RETURNS d_id32 STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pg:ws:52_system.sql / 27 --
+$_$  -- FD: pgws:ws:52_system.sql / 27 --
   SELECT 1::ws.d_id32 -- TODO: брать актуальный статус из таблицы (после готовности поддержки статуса "Обслуживание")
 $_$;
 SELECT pg_c('f', 'system_status', 'Статус системы');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION system_acl(a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:52_system.sql / 34 --
+$_$  -- FD: pgws:ws:52_system.sql / 34 --
   DECLARE
   BEGIN
     -- проверки прав сессии на объект
@@ -50,10 +50,10 @@ SELECT pg_c('f', 'system_acl', 'ACL sid для системы');
 /* ------------------------------------------------------------------------- */
 -- вернуть описание сервера, отвечающего за экземпляр текущего класса
 CREATE OR REPLACE FUNCTION system_server() RETURNS SETOF server STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pg:ws:52_system.sql / 53 --
+$_$  -- FD: pgws:ws:52_system.sql / 53 --
   SELECT * FROM ws.server WHERE id = 1
 $_$;
 
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:52_system.sql / 59 --'
+\qecho '-- FD: pgws:ws:52_system.sql / 59 --'

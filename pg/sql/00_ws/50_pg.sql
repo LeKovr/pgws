@@ -20,17 +20,17 @@
 */
 -- 50_pg.sql - Функции ядра, метаданные Postgresql
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:50_pg.sql / 23 --'
+\qecho '-- FD: pgws:ws:50_pg.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION sprintf (TEXT, TEXT DEFAULT '', TEXT DEFAULT '', TEXT DEFAULT '', TEXT DEFAULT '') RETURNS TEXT IMMUTABLE LANGUAGE 'plperl' AS
-$_$  # -- FD: pg:ws:50_pg.sql / 27 --
+$_$  # -- FD: pgws:ws:50_pg.sql / 27 --
     my ($fmt, @args) = @_; my $str = sprintf($fmt, @args); return $str;
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION notice (a_text TEXT) RETURNS VOID LANGUAGE 'plpgsql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 33 --
+$_$ -- FD: pgws:ws:50_pg.sql / 33 --
   -- вызов RAISE NOTICE из скриптов и sql
   BEGIN
     RAISE NOTICE '%', a_text;
@@ -39,7 +39,7 @@ $_$ ;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION set_search_path(a_path TEXT) RETURNS VOID LANGUAGE 'plpgsql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 42 --
+$_$ -- FD: pgws:ws:50_pg.sql / 42 --
   DECLARE
     v_sql TEXT;
   BEGIN
@@ -50,7 +50,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION set_lang(a_lang TEXT DEFAULT NULL) RETURNS TEXT LANGUAGE 'plpgsql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 53 --
+$_$ -- FD: pgws:ws:50_pg.sql / 53 --
   DECLARE
     v_lang TEXT;
     v_path_old TEXT;
@@ -70,26 +70,26 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_cs(TEXT) RETURNS name IMMUTABLE LANGUAGE 'sql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 73 --
+$_$ -- FD: pgws:ws:50_pg.sql / 73 --
  SELECT (current_schema() || CASE WHEN $1 IS NULL THEN '' ELSE '.' || $1 END)::name
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_schema_oid(a_name text) RETURNS oid STABLE LANGUAGE 'sql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 79 --
+$_$ -- FD: pgws:ws:50_pg.sql / 79 --
   SELECT oid FROM pg_namespace WHERE nspname = $1
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_reserved_args() RETURNS text[] IMMUTABLE LANGUAGE 'sql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 85 --
+$_$ -- FD: pgws:ws:50_pg.sql / 85 --
   SELECT ARRAY['a__acl', 'a__sid', 'a__ip', 'a__cook', 'a__lang'];
 $_$;
 
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_proargs2str(a_names d_pg_argnames, a_types d_pg_argtypes, a_pub BOOL) RETURNS text STABLE LANGUAGE 'plpgsql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 92 --
+$_$ -- FD: pgws:ws:50_pg.sql / 92 --
   DECLARE
     v_reserved TEXT[];
     v_names TEXT[];
@@ -118,7 +118,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_proc_info(a_ns text, a_name text) RETURNS SETOF t_pg_proc_info STABLE LANGUAGE 'sql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 121 --
+$_$ -- FD: pgws:ws:50_pg.sql / 121 --
   SELECT $1
     , $2
     , obj_description(p.oid, 'pg_proc')
@@ -135,7 +135,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_register_proarg_old(a_code ws.d_code) RETURNS ws.d_id32 VOLATILE LANGUAGE 'plpgsql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 138 --
+$_$ -- FD: pgws:ws:50_pg.sql / 138 --
   DECLARE
     v_names text[];
     v_types oidvector;
@@ -184,12 +184,12 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_proarg_arg_anno(a_src TEXT, a_argname TEXT) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 187 --
+$_$ -- FD: pgws:ws:50_pg.sql / 187 --
   SELECT (regexp_matches($1, E'--\\s+' || $2 || E':\\s+(.*)$', 'gm'))[1];
 $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_register_proarg(a_code ws.d_code) RETURNS ws.d_id32 VOLATILE LANGUAGE 'plpgsql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 192 --
+$_$ -- FD: pgws:ws:50_pg.sql / 192 --
   DECLARE
     v_i INTEGER;
     v_id ws.d_id32;
@@ -263,7 +263,7 @@ $_$ -- FD: pg:ws:50_pg.sql / 192 --
 $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_register_class(a_oid oid) RETURNS ws.d_id32 VOLATILE LANGUAGE 'plpgsql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 266 --
+$_$ -- FD: pgws:ws:50_pg.sql / 266 --
   DECLARE
     r_pg_type pg_catalog.pg_type;
     v_code TEXT;
@@ -317,7 +317,7 @@ $_$ -- FD: pg:ws:50_pg.sql / 266 --
 $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_c(a_type t_pg_object, a_code d_code, a_text text) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
-$_$ -- FD: pg:ws:50_pg.sql / 320 --
+$_$ -- FD: pgws:ws:50_pg.sql / 320 --
   DECLARE
     v_code TEXT;
     v_name TEXT;
@@ -363,4 +363,4 @@ SELECT
 ;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:50_pg.sql / 366 --'
+\qecho '-- FD: pgws:ws:50_pg.sql / 366 --'

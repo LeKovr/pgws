@@ -20,7 +20,7 @@
 */
 -- 40_view.sql - Представления
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:40_view.sql / 23 --'
+\qecho '-- FD: pgws:ws:40_view.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW class_status_action_ext AS
@@ -90,4 +90,4 @@ COMMENT ON VIEW csaa IS 'Синоним class_status_action_acl_ext';
 
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:40_view.sql / 93 --'
+\qecho '-- FD: pgws:ws:40_view.sql / 93 --'

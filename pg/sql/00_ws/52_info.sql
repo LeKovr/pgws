@@ -20,18 +20,18 @@
 */
 -- 52_info.sql - Функции объектов класса info
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:52_info.sql / 23 --'
+\qecho '-- FD: pgws:ws:52_info.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION info_status() RETURNS d_id32 IMMUTABLE LANGUAGE 'sql' AS 
-$_$  -- FD: pg:ws:52_info.sql / 27 -- 
+$_$  -- FD: pgws:ws:52_info.sql / 27 -- 
   SELECT 1::ws.d_id32
 $_$;
 SELECT pg_c('f', 'info_status', 'Статус инфо');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION info_acl(a__sid d_sid) RETURNS SETOF d_acl IMMUTABLE LANGUAGE 'sql' AS 
-$_$  -- FD: pg:ws:52_info.sql / 34 -- 
+$_$  -- FD: pgws:ws:52_info.sql / 34 -- 
   SELECT 1::ws.d_acl;
 $_$;
 SELECT pg_c('f', 'info_acl', 'ACL sid для инфо');
@@ -39,9 +39,9 @@ SELECT pg_c('f', 'info_acl', 'ACL sid для инфо');
 /* ------------------------------------------------------------------------- */
 -- вернуть описание сервера, отвечающего за экземпляр текущего класса
 CREATE OR REPLACE FUNCTION info_server() RETURNS SETOF server STABLE LANGUAGE 'sql' AS 
-$_$  -- FD: pg:ws:52_info.sql / 42 -- 
+$_$  -- FD: pgws:ws:52_info.sql / 42 -- 
   SELECT * FROM ws.server WHERE id = 1
 $_$;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:52_info.sql / 47 --'
+\qecho '-- FD: pgws:ws:52_info.sql / 47 --'

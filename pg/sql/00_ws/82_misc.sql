@@ -20,7 +20,7 @@
 */
 -- 82_misc.sql - Вспомогательные таблицы
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:82_misc.sql / 23 --'
+\qecho '-- FD: pgws:ws:82_misc.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO cache (id, is_active, code, name) VALUES
@@ -44,4 +44,4 @@ INSERT INTO method_rv_format VALUES (7, 'массив хэшей');
 INSERT INTO method_rv_format VALUES (8, 'массив массивов');
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:82_misc.sql / 47 --'
+\qecho '-- FD: pgws:ws:82_misc.sql / 47 --'

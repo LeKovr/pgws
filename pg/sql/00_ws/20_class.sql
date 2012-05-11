@@ -20,7 +20,7 @@
 */
 -- 20_class.sql - Таблицы классов
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:20_class.sql / 23 --'
+\qecho '-- FD: pgws:ws:20_class.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE class (
@@ -102,4 +102,4 @@ CREATE TABLE class_status_action_acl_addon (
 COMMENT ON TABLE class_status_action_acl_addon IS 'Дополнения (+/-) к итоговым разрешениям';
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:20_class.sql / 105 --'
+\qecho '-- FD: pgws:ws:20_class.sql / 105 --'

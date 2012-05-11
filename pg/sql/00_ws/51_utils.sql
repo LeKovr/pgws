@@ -20,23 +20,23 @@
 */
 -- 51_utils.sql - вспомогательные функции
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:51_utils.sql / 23 --'
+\qecho '-- FD: pgws:ws:51_utils.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 
 CREATE OR REPLACE FUNCTION e_noaccess() RETURNS text IMMUTABLE LANGUAGE 'sql' AS
-$_$  -- FD: pg:ws:51_utils.sql / 28 --
+$_$  -- FD: pgws:ws:51_utils.sql / 28 --
   SELECT ws.sprintf('[{"code": "%s"}]', ws.const('RPC_ERR_NOACCESS'))::text;
 $_$;
 
 CREATE OR REPLACE FUNCTION e_nodata() RETURNS text IMMUTABLE LANGUAGE 'sql' AS
-$_$  -- FD: pg:ws:51_utils.sql / 33 --
+$_$  -- FD: pgws:ws:51_utils.sql / 33 --
   SELECT ws.sprintf('[{"code": "%s"}]', ws.const('RPC_ERR_NODATA'))::text;
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION error_str (code d_errcode, arg TEXT DEFAULT '') RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
-$_$  -- FD: pg:ws:51_utils.sql / 39 --
+$_$  -- FD: pgws:ws:51_utils.sql / 39 --
   SELECT ws.sprintf('[{"code": "Y%s", "id":"%s", "arg": "%s"}]', $1::TEXT, '_', $2);
 $_$;
 
@@ -46,7 +46,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION perror_str (code d_errcode, param_name TEXT, arg TEXT DEFAULT '') RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
-$_$  -- FD: pg:ws:51_utils.sql / 49 --
+$_$  -- FD: pgws:ws:51_utils.sql / 49 --
   SELECT ws.sprintf('[{"code": "Y%s", "id":"%s", "arg": "%s"}]', $1::TEXT, $2, $3);
 $_$;
 
@@ -58,7 +58,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION date_info(a_date DATE DEFAULT CURRENT_DATE, a_offset INTEGER DEFAULT 0) RETURNS t_date_info IMMUTABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:51_utils.sql / 61 --
+$_$  -- FD: pgws:ws:51_utils.sql / 61 --
   DECLARE
     r       ws.t_date_info;
   BEGIN
@@ -81,7 +81,7 @@ SELECT pg_c('f', 'date_info', 'Атрибуты заданной даты');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION month_info(a_date DATE DEFAULT CURRENT_DATE) RETURNS t_month_info IMMUTABLE LANGUAGE 'sql' AS
-$_$  -- FD: pg:ws:51_utils.sql / 84 --
+$_$  -- FD: pgws:ws:51_utils.sql / 84 --
   SELECT
     date_trunc('month', $1)::date
     , date_trunc('month', $1 + '1 month'::interval)::date - 1
@@ -99,7 +99,7 @@ SELECT pg_c('f', 'month_info', 'Атрибуты месяца заданной �
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION year_months(a_date DATE DEFAULT CURRENT_DATE, a_date_min DATE DEFAULT NULL, a_date_max DATE DEFAULT NULL) RETURNS SETOF t_month_info IMMUTABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:51_utils.sql / 102 --
+$_$  -- FD: pgws:ws:51_utils.sql / 102 --
   -- Список атрибутов месяцев года заданной даты
   -- a_date:      Дата
   -- a_date_min:  Дата, месяцы раньше которой не включать
@@ -125,7 +125,7 @@ SELECT pg_c('f', 'year_months', 'Список атрибутов месяцев 
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ref_info(a_id d_id32) RETURNS SETOF ref STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pg:ws:51_utils.sql / 128 --
+$_$  -- FD: pgws:ws:51_utils.sql / 128 --
   SELECT * FROM ws.ref WHERE id = $1;
 $_$;
 SELECT pg_c('f', 'ref_info', 'Атрибуты справочника');
@@ -133,7 +133,7 @@ SELECT pg_c('f', 'ref_info', 'Атрибуты справочника');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ref(a_id d_id32, a_item_id d_id32 DEFAULT 0, a_group_id d_id32 DEFAULT 0, a_active_only BOOL DEFAULT TRUE) RETURNS SETOF ref_item STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:51_utils.sql / 136 --
+$_$  -- FD: pgws:ws:51_utils.sql / 136 --
   DECLARE
     v_code TEXT;
   BEGIN
@@ -158,4 +158,4 @@ $_$  -- FD: pg:ws:51_utils.sql / 136 --
 $_$;
 SELECT pg_c('f', 'ref', 'Значение из справочника ws.ref');
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:51_utils.sql / 161 --'
+\qecho '-- FD: pgws:ws:51_utils.sql / 161 --'

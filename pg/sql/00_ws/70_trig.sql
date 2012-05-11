@@ -20,7 +20,7 @@
 */
 -- 70_trig.sql - Создание триггеров
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:70_trig.sql / 23 --'
+\qecho '-- FD: pgws:ws:70_trig.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON dt
@@ -43,4 +43,4 @@ CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON method
     FOR EACH ROW EXECUTE PROCEDURE method_insupd_trigger();
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:70_trig.sql / 46 --'
+\qecho '-- FD: pgws:ws:70_trig.sql / 46 --'

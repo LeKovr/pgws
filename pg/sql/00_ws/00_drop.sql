@@ -20,10 +20,10 @@
 */
 --  00_drop.sql - Удаление схем
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:00_drop.sql / 23 --'
+\qecho '-- FD: pgws:ws:00_drop.sql / 23 --'
 
 DROP SCHEMA ws CASCADE;
 DROP SCHEMA i18n_def CASCADE;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:00_drop.sql / 29 --'
+\qecho '-- FD: pgws:ws:00_drop.sql / 29 --'

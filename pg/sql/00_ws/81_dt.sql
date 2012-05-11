@@ -20,7 +20,7 @@
 */
 -- 81_dt.sql - Типы данных
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:81_dt.sql / 23 --'
+\qecho '-- FD: pgws:ws:81_dt.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO dt (id, parent_id, code, anno) VALUES (1, 1, 'text',      'Текст');
@@ -236,4 +236,4 @@ INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('t_acl_ch
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('t_acl_check'), 4, 'name', dt_id('text'), '');
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:81_dt.sql / 239 --'
+\qecho '-- FD: pgws:ws:81_dt.sql / 239 --'

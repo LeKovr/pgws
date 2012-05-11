@@ -20,11 +20,11 @@
 */
 -- 50_const.sql - Вспомогательные функции
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:50_const.sql / 23 --'
+\qecho '-- FD: pgws:ws:50_const.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const(a_tag TEXT) RETURNS TEXT IMMUTABLE STRICT LANGUAGE 'plpgsql' AS
-$_$  -- FD: pg:ws:50_const.sql / 27 --
+$_$  -- FD: pgws:ws:50_const.sql / 27 --
   DECLARE
     CLASS_CORE    CONSTANT ws.d_classcode := '00';
     CLASS_SYSTEM CONSTANT ws.d_classcode := '01';
@@ -39,4 +39,4 @@ $_$  -- FD: pg:ws:50_const.sql / 27 --
   END
 $_$;
 
-\qecho '-- FD: pg:ws:50_const.sql / 42 --'
+\qecho '-- FD: pgws:ws:50_const.sql / 42 --'

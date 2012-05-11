@@ -20,10 +20,10 @@
 */
 --  10_create.sql - Создание схем
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:10_create.sql / 23 --'
+\qecho '-- FD: pgws:ws:10_create.sql / 23 --'
 
 CREATE SCHEMA i18n_def;
 CREATE SCHEMA ws;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pg:ws:10_create.sql / 29 --'
+\qecho '-- FD: pgws:ws:10_create.sql / 29 --'
