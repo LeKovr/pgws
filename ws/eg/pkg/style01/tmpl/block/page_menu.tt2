@@ -10,35 +10,28 @@
   uris = api('ws.page_childs', code => target.code, id => target.args.0, id1 => target.args.1, id2 => target.args.2);
   FOR u IN uris;
     NEXT IF !uri_allowed(u);
-#    NEXT IF u.code != page.code AND meta.nosiblings;
-#    NEXT IF u.code == page.code AND meta.nochilds;
-#    IF !meta.page_menu_used AND (u.code != page.code OR !meta.nosiblings OR !meta.nochilds);
     IF !meta.page_menu_used AND (u.code != page.code OR !meta.nochilds);
       meta.page_menu_used = 1;
-    gid = 0;
-%]
-<div class="contentHolderWithMenu">
-<div class="menuHolder">
-  <div class="cabinet_admin_menu" id="navmenu">
-    <div class="menuBlock">
-      <div class="mtc"></div>
-      <ul class="newmenuList">
-[%
+      gid = 0;
+      %]<ul id="page-menu">[%
     END;
 
     IF u.group_id != gid;
-      IF gid; %]</ul>
-      [% END;
+      IF gid;
+        %]</ul>[%
+      END;
       gid = u.group_id;
-      IF gid; %]<li id="cabinet_menu1"><span class="bg"><a href="#">[% u.group_name %]</a></span><ul>[% END;
+      IF gid;
+        %]<li class="list"><a href="#">[% u.group_name %]</a><ul class="child">[%
+      END;
     END;
 
     IF u.code != page.code;
-      %]<li>[%
+      %]<li class="list">[%
     ELSE;
-      %]<li class="active">[%
+      %]<li class="list active">[%
     END;
-    %]<span class="bg"><a href="[% uri_mk(u.req) %]">[% u.name %]</a></span>[%
+    %]<a href="[% uri_mk(u.req) %]" class="link">[% u.name %]</a>[%
     IF u.code == page.code AND !meta.nochilds AND !meta.nosiblings; INCLUDE "block/$L/page_childs.tt2" target = u; END;
     %]</li>
     [%
@@ -50,12 +43,6 @@
     END;
     %]
       </ul>
-      <div class="mbc"></div>
-    </div>
-    <a class="mbutton" onclick="return false;" href="#"></a>
-  </div>
-</div>
-<div class="contentHolder">
 [% END
 %]
 

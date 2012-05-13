@@ -4,19 +4,19 @@
   FOR u IN uris;
     NEXT IF !uri_allowed(u);
     IF !list;
-      %]<ul>[%
+      %]<ul class="child">[%
       list = 1;
     END;
-    %]<li><span class="bg"><a href="[% uri_mk(u.req) %]"[% IF u.target %] target="[% u.target %]"[% END %]>[% u.name %]</a></span></li>[%
+    %]<li><a href="[% uri_mk(u.req) %]"[% IF u.target %] target="[% u.target %]"[% END %]>[% u.name %]</a></li>[%
   END;
   IF meta.page_childs;
     FOR u IN meta.page_childs;
 #    NEXT IF !uri_allowed(u)
       IF !list
-        %]<ul>[%
+        %]<ul class="child">[%
         list = 2;
       END;
-      %]<li><span class="bg"><a href="[% u.uri %]"[% IF u.target %] target="[% u.target %]"[% END %]>[% u.name %]</a></span></li>[%
+      %]<li><a href="[% u.uri %]"[% IF u.target %] target="[% u.target %]"[% END %]>[% u.name %]</a></li>[%
     END;
   END;
   IF list;

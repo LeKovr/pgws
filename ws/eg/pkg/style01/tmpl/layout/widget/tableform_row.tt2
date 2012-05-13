@@ -1,6 +1,6 @@
 [% META
   description = 'Строка таблицы'
-%]<tr><th>[% name %]: </th><td>[%
+%]<tr><th [% IF name_class; 'class="' _ name_class _ '"'; END %]>[% name %]: </th><td>[%
 IF href;
   %]<a href='[% href %]'>[% value %]</a>[%
 ELSE;

@@ -41,6 +41,7 @@ pre { padding-bottom:25px; overflow-y:hidden; }
 [% IF page.code != 'main'; root_page = uri(code => 'main'); root_href = uri_mk(root_page.req); END; %]
 <h1 class="title"><a name="top"[% IF root_href; ' href="' _ root_href _ '"'; END; %]><img src="/img/style01/pgws-logo.png" alt="PGWS. Postgresql WebServices" /></a>[% resp.title %]</h1>
 <div id="top" class="bar">
+[% SET meta.page_menu_used = 0; INCLUDE "block/$L/page_menu.tt2" %]
 [%
   # <!-- menu point -->
   IF session.sid;
@@ -58,8 +59,6 @@ pre { padding-bottom:25px; overflow-y:hidden; }
   END; %]
 &nbsp;|&nbsp;<a href="/">[% l('Главная') %]</a>
 </div>
-[% SET  meta.page_menu_used = 0 %]
-[% INCLUDE "block/$L/page_menu.tt2" %]
 
 <div id="content">
 [% ELSE %][%
