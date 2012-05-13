@@ -1,35 +1,29 @@
 [% META
 # Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
 # This file is part of PGWS - Postgresql WebServices.
-  description = 'Список страниц сайта'
-%][%
+  description = 'Список страниц сайта';
+
   PROCESS 'macro/tableform.tt2';
   classes = api('ws.class');
   pages = api('ws.page_by_code:5', 'code' =>'%');
   tree = api('ws.page_tree');
   u_cla = uri(code => 'api.class');
-%]
-<pre>
-[%# USE dumper(indent=1, pad="  ") %]
-[%# dumper.dump({pages => pages, tree => tree}) %]
-</pre>
 
-<ul>[%
-  FOR m IN tree
-    %]<li style="padding-left: [% 40 + m.id * 20 %]px"><a href="#[% m.name %]" title="[% pages.${m.name}.uri_fmt %]">[% m.name %]</a> - [% pages.${m.name}.name %]</li>[%
-  END
-%]</ul>
+%]
 
 <style type="text/css">
   a.name { text-decoration: none; }
   .baseTable th { width: 10%; }
-  h2 { font-size: 90%;
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
-    border-bottom-color: #000000;
-  }
+  ul.page-tree { list-style: none; }
+  ul.page-tree li { list-style-type: none; }
 </style>
 
+<ul class="page-tree">[%
+  FOR m IN tree
+    %]<li style="padding-left: [% 40 + m.id * 20 %]px"><a href="#[% m.name %]" title="[% pages.${m.name}.uri_fmt %]">[% m.name %]</a> - [% pages.${m.name}.name %]</li>[%
+  END
+%]
+</ul>
 [%
 FOR p IN tree;
   m = pages.${p.name};

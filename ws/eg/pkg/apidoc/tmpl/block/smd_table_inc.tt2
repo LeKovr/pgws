@@ -1,0 +1,21 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Блок таблицы описания метода';
+
+  tableform_row(name = l('Описание'), value = m.name);
+  tableform_row(name = l('Сервис'), value = m.code_real _ '(' _  m.args _ ')');
+  IF m.arg_dt_id;
+    tableform_row(name = l('Тип аргументов'), value = dts.${m.arg_dt_id}.code, href = uri_mk(u_xsd.req, undef, dts.${m.arg_dt_id}.code));
+  END;
+  tableform_row(name = l('Тип результата'), value = dts.${m.rv_dt_id}.code, href = uri_mk(u_xsd.req, undef, dts.${m.rv_dt_id}.code));
+  tableform_row(name = l('Класс'), value = classes.${m.class_id}.name, href = uri_mk(u_cla.req, undef, classes.${m.class_id}.code));
+  tableform_row(name = l('Акция'), value = m.action_id _ '. ' _ ac.name, href = uri_mk(u_cla.req, undef, classes.${m.class_id}.code) _ '-action-' _ m.action_id);
+  tableform_row(name = l('Формат результата'), value = m.rvf_id _ '. ' _ rvf.${m.rvf_id});
+  tableform_row(name = l('Кэш'), value = caches.${m.cache_id}.name);
+  tableform_row(name = l('Read-only'), value = (m.is_write ? l('Нет'):l('Да')));
+  tableform_row(name = l('SQL'), value = (m.is_sql ? l('Да'):l('Нет')));
+  IF m.args_exam.defined;
+    tableform_row(name = l('Пример вызова'), value = m.code _ '(' _ m.args_exam _ ')', href = uri_mk("_${m.code}.json", m.args_exam.replace(',\s*','&')));
+  END;
+%]

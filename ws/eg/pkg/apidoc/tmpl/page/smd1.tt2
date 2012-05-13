@@ -1,9 +1,8 @@
 [% META
 # Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
 # This file is part of PGWS - Postgresql WebServices.
-  description = 'Методы и их описание c использованием JS'
-%]
-[%
+  description = 'Методы и их описание c использованием JS';
+
   IF get.code;
     resp.skin = 'blank';
     INCLUDE block/apidoc/smd_table.tt2;
@@ -17,11 +16,8 @@
   meta.api = 1;
   meta.autocomplete = 1;
   pg = uri(code => 'api.smd1');
-#  pg = uri(code => 'api.test1');
 %]
-<style type="text/css">
 
-</style>
 <script type="text/javascript">
 //<![CDATA[
   //Для кеширования результатов вызовов списка методов и детализации по методу
@@ -216,9 +212,8 @@ function myclick() {
 <div id="form1___err" style="color:green"></div>
 <div id="status" style="color:red"></div>
 <form id="form1" onsubmit="return false;">
-[% l('Имя метода:') %]
-<input type="text" id="autoc" name="code" autocomplete="off" size="50">
-<button id="myB" onClick="form_send();">[% l('Найти') %]</button>
-
+  [% l('Имя метода:') %]
+  <input type="text" id="autoc" name="code" autocomplete="off" size="50">
+  <button id="myB" onClick="form_send();">[% l('Найти') %]</button>
 </form>
 <div id="form_smd"></div>

@@ -1,8 +1,8 @@
 [% META
 # Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
 # This file is part of PGWS - Postgresql WebServices.
-  description = 'Вывод результатов для autocomplete'
-%][%
+  description = 'Вывод результатов для autocomplete';
+
 IF get.li;
   data = api('ws.method_lookup', 'code' => get.li );
   FOR m IN data;
