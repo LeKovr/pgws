@@ -157,7 +157,7 @@ sub header {
     print $self->{'_q'}->header(@_);
   }
   if ($_[0] =~ /utf-8/ and !$self->{'encode_utf'}) { # and $_[0] =~ /plain/) {
-    binmode(STDOUT, ':utf8');
+    binmode(STDOUT, ':encoding(utf8)');
   }
 #print STDERR "$_ = $ENV{$_}<br>\n" foreach sort keys %ENV;
 }
