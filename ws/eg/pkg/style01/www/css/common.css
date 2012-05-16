@@ -81,50 +81,47 @@ input[disabled], input[readonly], select[disabled], select[readonly], checkbox[d
 }
 
 #page-menu ul, ul#page-menu{
-   list-style:none;
+  list-style: none;
 }
 
 #page-menu{
-    text-align: left;
-
-   position:relative; /* (!) */
-   z-index:3;
- /*  width:300px;
-   height:20px;
- */  margin:0 auto;
+  text-align: left;
+  position: relative; /* (!) */
+  z-index: 3;
+  margin: 0 auto;
 }
 
 #page-menu li.list{
-   float:left; /* (!) */
-   display:block; /* (!) */
-   margin:0;
+  float: left; /* (!) */
+  display: block; /* (!) */
+  margin: 0;
 }
 
 #page-menu a{
-   color: black;
-   text-decoration:none;
+  color: black;
+  text-decoration: none;
 }
 
 #page-menu ul.child{
-   background: LightGrey;
-   padding:5px;
-   position:absolute; /* (!) */
-   top:1.3em; /*205px; /* (!) */
-   left:-9999px; /* (!) */
-   z-index:3;
-   border-top: 1px solid #3A2E2B;
-   -moz-box-shadow: 0px 3px 7px #251d1b;
-   -webkit-box-shadow: 0px 3px 7px #251d1b;
-   box-shadow: 0px 3px 7px #251d1b;
+  background: LightGrey;
+  padding: 5px;
+  position: absolute; /* (!) */
+  top: 1.2em;
+  left: -9999px; /* (!) */
+  z-index: 3;
+  border-top: 1px solid #3A2E2B;
+  -moz-box-shadow: 0px 3px 7px #251d1b;
+  -webkit-box-shadow: 0px 3px 7px #251d1b;
+  box-shadow: 0px 3px 7px #251d1b;
 }
 
 #page-menu li:hover ul.child{
-   left:auto; /* (!) */
+  left: auto; /* (!) */
 }
 
 #page-menu li a.link{
-   display:block;
-   padding:0 5px;
+  display: block;
+  padding: 0 5px;
 }
 
 #page-menu li:hover a.link,
@@ -132,12 +129,12 @@ input[disabled], input[readonly], select[disabled], select[readonly], checkbox[d
 #page-menu li.active a.link,
 #page-menu li:hover li:hover,
 #page-menu li:hover li:hover a {
-   background: Grey;
-   color: White;
+  background: Grey;
+  color: White;
 }
 
 #page-menu:hover li.active a.link {
-   background: LightGrey;
+  background: LightGrey;
   color: Black;
 }
 
