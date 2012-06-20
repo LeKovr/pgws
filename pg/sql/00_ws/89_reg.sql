@@ -43,6 +43,7 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, args_exam) VALU
    ('ws.page_tree',               2, 1, 2, 7, '')
   ,('ws.class',                   2, 1, 2, 5, '')
   ,('ws.method_lookup',           2, 1, 2, 7, '')
+  ,('ws.class_id',                2, 1, 2, 2, 'code=system')
 ;
 
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, is_i18n) VALUES
@@ -109,4 +110,4 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
   ,('Y0106', 1, 'некорректный идентификатор статуса "%s"')
 ;
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:89_reg.sql / 112 --'
+\qecho '-- FD: pgws:ws:89_reg.sql / 113 --'
