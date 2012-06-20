@@ -15,6 +15,10 @@
     meta.status = '404';
     meta.status_note = 'Incorrect uri';
     STOP;
+  ELSIF !ids.id && !session.sid;
+    meta.status = '404';
+    meta.status_note = 'Page not found';
+    STOP;
   ELSIF !ids.id;
     meta.redirect = edit_uri.req;
     STOP;
