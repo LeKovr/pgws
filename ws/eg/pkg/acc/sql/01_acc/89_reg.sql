@@ -42,6 +42,9 @@ INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, 
   , ('logout',  'main', 2, 1, null, 'logout$',    'acc/logout',   'Выход')
 ;
 
+--INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, id_source, name) VALUES
+--  ('logout',  'main', 3, 4, null, 'logout$',    'acc/logout',   'account_id', 'Выход')
+--;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: acc:acc:89_reg.sql / 47 --'
+\qecho '-- FD: acc:acc:89_reg.sql / 50 --'
