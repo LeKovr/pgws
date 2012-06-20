@@ -27,7 +27,7 @@ CREATE OR REPLACE FUNCTION class_id(a_code d_code) RETURNS d_class STABLE STRICT
 $_$  -- FD: pgws:ws:52_class.sql / 27 --
   SELECT id FROM ws.class WHERE code = $1;
 $_$;
-SELECT pg_c('f', 'class_id_by_code', 'ID класса по коду');
+SELECT pg_c('f', 'class_id', 'ID класса по коду');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION class_code(a_id d_class) RETURNS d_code STABLE STRICT LANGUAGE 'sql' AS
