@@ -49,7 +49,7 @@ EOF
 
 loc_lang($lang);
 while (<>) {
-  if (/CREATE SCHEMA/) {
+  if (/CREATE SCHEMA/ || /^SET client_min_messages = warning;/) {
     next;
   }
   s/$name/$lname/g;
