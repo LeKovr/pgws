@@ -16,27 +16,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: en\n"
 
-#: pkg/style01/tmpl/block/debug.tt2:39
+#. (status, note)
+#: pkg/app/tmpl/page/error.tt2:1
+msgid "%1. %2"
+msgstr ""
+
+#: pkg/app/tmpl/page/error.tt2:1
+msgid "403. Необходима авторизация"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:42
 msgid "Debug"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:39
+#: pkg/style01/tmpl/block/debug.tt2:42
 msgid "Default"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:39
+#: pkg/style01/tmpl/block/debug.tt2:42
 msgid "Dump"
 msgstr ""
 
-#: pgws/apidoc/tmpl/page/class.tt2:58
-msgid "ID"
-msgstr ""
-
-#: pkg/style01/tmpl/block/debug.tt2:38
+#: pkg/style01/tmpl/block/debug.tt2:41
 msgid "JSON-RPC debug levels"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:39
+#: pkg/style01/tmpl/block/debug.tt2:42
 msgid "No data"
 msgstr ""
 
@@ -44,140 +49,196 @@ msgstr ""
 msgid "PGWS"
 msgstr ""
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:46
-#: pgws/apidoc/tmpl/page/smd.tt2:63
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 msgid "Read-only"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:76
+#: pkg/style01/tmpl/block/debug.tt2:79
 msgid "Request logs"
 msgstr ""
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:47
-#: pgws/apidoc/tmpl/page/smd.tt2:64
-#: pgws/apidoc/tmpl/page/xsd.tt2:60
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "SQL"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:39
+#: pkg/style01/tmpl/block/debug.tt2:42
 msgid "Stage"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:58
+#: pkg/wiki/tmpl/page/edit.tt2:1
+msgid ""
+"Title: Заголовок\n"
+"TOC:   UnOrdered\n"
+"\n"
+"Аннотация\n"
+"<!-- CUT -->\n"
+"Текст"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:61
 msgid "acl"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:64
+#: pkg/style01/tmpl/block/debug.tt2:67
 msgid "cache"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:46
+#: pkg/style01/tmpl/block/debug.tt2:49
 msgid "call"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:40
+#: pkg/style01/tmpl/block/debug.tt2:43
 msgid "default"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:52
+#: pkg/wiki/tmpl/page/edit.tt2:74
+msgid "html"
+msgstr ""
+
+#: pkg/style01/tmpl/block/debug.tt2:55
 msgid "sid"
 msgstr ""
 
-#: pkg/style01/tmpl/block/debug.tt2:70
+#: pkg/style01/tmpl/block/debug.tt2:73
 msgid "validate"
 msgstr ""
 
-#: pkg/app/tmpl/page/index.tt2:9
-msgid "Авторизованный режим"
+#: pkg/app/tmpl/page/index.tt2:16
+msgid "Автодокументация по объектам API"
 msgstr ""
 
-#: pgws/apidoc/tmpl/page/class.tt2:54
+#: pkg/wiki/tmpl/page/index.tt2:37
+msgid "Автор"
+msgstr ""
+
+#: pkg/acc/tmpl/page/logout.tt2:1
+msgid "Авторизованная сессия завершена. Спасибо, что были с нами, приходите еще."
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:85
+msgid "Актуальная версия"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/class.tt2:46
 msgid "Акции"
 msgstr "Actions"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:43
-#: pgws/apidoc/tmpl/page/pagemap.tt2:33
-#: pgws/apidoc/tmpl/page/smd.tt2:60
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
+#: pkg/apidoc/tmpl/page/pagemap.tt2:27
 msgid "Акция"
 msgstr "Action"
 
-#: pkg/app/tmpl/page/index.tt2:15
 msgid "Анонимный режим"
 msgstr "Anomymous mode"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:36
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Базовый"
 msgstr "Base"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:47
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Базовый тип"
 msgstr "Base type"
 
+#: pkg/app/tmpl/page/index.tt2:9
+msgid "В рамках этого раздела доступны"
+msgstr ""
+
 #: pkg/app/tmpl/page/error.tt2:1
+msgid "Ваша учетная запись имеет недостаточно прав для просмотра этой страницы."
+msgstr ""
+
+#. (info.revision, info.updated_at)
+#: pkg/wiki/tmpl/page/index.tt2:36
+msgid "Версия документа: %1 от %2"
+msgstr ""
+
+#: pkg/acc/tmpl/block/loginform.tt2:25
+msgid "Войти"
+msgstr ""
+
 msgid "Вход для зарегистрированных пользователей"
 msgstr "Entry for authorized users"
 
+#: pkg/acc/tmpl/page/logout.tt2:1
+msgid "Вы будете переадресованы на главную страницу автоматически через 5 секунд."
+msgstr ""
+
 #: pkg/style01/tmpl/block/page_path.tt2:3
+#: pkg/style01/tmpl/layout/default.tt2:60
 msgid "Главная"
 msgstr "Main page"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:46
-#: pgws/apidoc/tmpl/block/smd_table.tt2:47
-#: pgws/apidoc/tmpl/page/smd.tt2:63
-#: pgws/apidoc/tmpl/page/smd.tt2:64
-#: pgws/apidoc/tmpl/page/xsd.tt2:57
-#: pgws/apidoc/tmpl/page/xsd.tt2:60
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Да"
 msgstr "Yes"
 
-#: pkg/app/tmpl/page/index.tt2:11
-msgid "Для подключения авторизованного режима надо авторизоваться"
+#: pkg/app/tmpl/page/index.tt2:14
+msgid "Демонстрация базовых примеров работы с API"
+msgstr ""
+
+#: pkg/acc/tmpl/block/loginform.tt2:45
+msgid "Добро пожаловать"
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:83
+msgid "Документ изменен"
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:82
+msgid "Документ создан"
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:84
+msgid "Загружается страница просмотра"
 msgstr ""
 
 #: pkg/app/tmpl/page/blank.tt2:1
 msgid "Извините, мы пока не готовы показать содержимое этой страницы"
 msgstr "Sorry, we are not ready to show this page yet"
 
-#: pgws/apidoc/tmpl/page/smd1.tt2:219
+#: pkg/apidoc/tmpl/page/smd1.tt2:215
 msgid "Имя метода:"
 msgstr "Method name:"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:42
-#: pgws/apidoc/tmpl/page/pagemap.tt2:33
-#: pgws/apidoc/tmpl/page/smd.tt2:59
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
+#: pkg/apidoc/tmpl/page/pagemap.tt2:27
 msgid "Класс"
 msgstr "Class"
 
-#: pgws/apidoc/tmpl/page/class.tt2:44
+#: pkg/apidoc/tmpl/page/class.tt2:34
 msgid "Код"
 msgstr "Code"
 
-#: pgws/apidoc/tmpl/page/class.tt2:45
+#: pkg/apidoc/tmpl/page/class.tt2:34
 msgid "Количество ID экземпляра"
 msgstr "The number of instance IDs"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:35
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Конструктор"
 msgstr "Constructor"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:45
-#: pgws/apidoc/tmpl/page/smd.tt2:62
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 msgid "Кэш"
 msgstr "Cache"
 
-#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+#: pkg/acc/tmpl/block/loginform.tt2:16
+msgid "Логин:"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/pagemap.tt2:27
 msgid "Маска URI"
 msgstr "URI mask"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:35
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Массив"
 msgstr "Array"
 
-#: pgws/apidoc/tmpl/page/class.tt2:100
+#: pkg/apidoc/tmpl/page/class.tt2:105
 msgid "Методы"
 msgstr "Methods"
 
-#: pgws/apidoc/tmpl/page/class.tt2:58
 msgid "Название"
 msgstr "Name"
 
@@ -185,8 +246,8 @@ msgstr "Name"
 msgid "Найден класс \"%1\""
 msgstr "Class found: \"%1\""
 
-#: pgws/apidoc/tmpl/page/smd1.tt2:153
-#: pgws/apidoc/tmpl/page/smd1.tt2:221
+#: pkg/apidoc/tmpl/page/smd1.tt2:149
+#: pkg/apidoc/tmpl/page/smd1.tt2:217
 msgid "Найти"
 msgstr "Find"
 
@@ -197,73 +258,95 @@ msgstr "Incorrect request method"
 msgid "Недостаточно прав"
 msgstr "Insufficient privileges"
 
-#: pkg/app/tmpl/page/error.tt2:1
-msgid "Недостаточно прав. Войдите в систему, воспользовавшись формой ниже."
-msgstr ""
-
 msgid "Необходима авторизация"
 msgstr "Authorisation required"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:46
-#: pgws/apidoc/tmpl/block/smd_table.tt2:47
-#: pgws/apidoc/tmpl/page/smd.tt2:63
-#: pgws/apidoc/tmpl/page/smd.tt2:64
-#: pgws/apidoc/tmpl/page/xsd.tt2:60
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Нет"
 msgstr "No"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:79
+#: pkg/acc/tmpl/page/logout.tt2:1
+msgid "Общее количество завершенных сессий"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/xsd.tt2:63
 msgid "Ограничения"
 msgstr "Restrictions"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:35
-#: pgws/apidoc/tmpl/page/pagemap.tt2:33
-#: pgws/apidoc/tmpl/page/smd.tt2:52
-#: pgws/apidoc/tmpl/page/xsd.tt2:34
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
+#: pkg/apidoc/tmpl/page/pagemap.tt2:27
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Описание"
 msgstr "Description"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:57
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Опционален"
 msgstr "Optional"
 
-#. (status, note)
-#: pkg/app/tmpl/page/error.tt2:1
 msgid "Ошибка %1. %2"
 msgstr "Error %1. %2"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:53
+#: pkg/acc/tmpl/block/loginform.tt2:20
+msgid "Пароль:"
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:53
+#: pkg/wiki/tmpl/page/edit.tt2:57
+msgid "Перейти на вкладку предпросмотра"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "По умолчанию"
 msgstr "Default"
 
-#: pgws/apidoc/tmpl/page/smd1.tt2:153
+#: pkg/apidoc/tmpl/page/smd1.tt2:149
 msgid "Показать все"
 msgstr "Show all"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:64
+#: pkg/style01/tmpl/layout/default.tt2:45
+msgid "Пользователь авторизован"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/xsd.tt2:46
 msgid "Поля"
 msgstr "Fields"
 
-#: pgws/apidoc/tmpl/page/pagemap.tt2:33
-#: pgws/apidoc/tmpl/page/xsd.tt2:42
+#: pkg/acc/tmpl/page/logout.tt2:1
+msgid "Похоже, сессия была завершена ранее."
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:52
+#: pkg/wiki/tmpl/page/edit.tt2:56
+msgid "Предварительный просмотр"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/pagemap.tt2:27
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Предок"
 msgstr "Parent"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:49
-#: pgws/apidoc/tmpl/page/smd.tt2:66
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 msgid "Пример вызова"
 msgstr "Example"
 
-#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+#: pkg/app/tmpl/page/index.tt2:12
+msgid "Пример приложения"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/pagemap.tt2:27
 msgid "Пример страницы"
 msgstr "Page example"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:36
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Производный"
 msgstr "Derivative"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:36
-#: pgws/apidoc/tmpl/page/smd.tt2:53
+#: pkg/wiki/tmpl/page/index.tt2:38
+msgid "Редактировать"
+msgstr ""
+
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 msgid "Сервис"
 msgstr "Service"
 
@@ -271,11 +354,16 @@ msgstr "Service"
 msgid "Сервис недоступен"
 msgstr "Service unavailable"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:35
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Скаляр"
 msgstr "Scalar"
 
-#: pgws/apidoc/tmpl/page/class.tt2:81
+#: pkg/wiki/tmpl/page/edit.tt2:51
+#: pkg/wiki/tmpl/page/edit.tt2:55
+msgid "Сохранить"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/class.tt2:69
 msgid "Статус"
 msgstr "Status"
 
@@ -283,48 +371,70 @@ msgstr "Status"
 msgid "Страница не найдена"
 msgstr "Page not found"
 
-#: pgws/apidoc/tmpl/page/class.tt2:92
+#: pkg/apidoc/tmpl/page/class.tt2:94
 msgid "Страницы"
 msgstr "Pages"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:35
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Структура"
 msgstr "Structure"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:36
+#: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Тип"
 msgstr "Type"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:38
-#: pgws/apidoc/tmpl/page/smd.tt2:55
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 msgid "Тип аргументов"
 msgstr "Arguments type"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:41
-#: pgws/apidoc/tmpl/page/smd.tt2:58
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 msgid "Тип результата"
 msgstr "Result type"
 
-#: pgws/apidoc/tmpl/page/class.tt2:81
+#: pkg/apidoc/tmpl/page/class.tt2:69
 msgid "Уровень доступа"
 msgstr "Access level"
 
-#: pgws/apidoc/tmpl/block/smd_table.tt2:44
-#: pgws/apidoc/tmpl/page/smd.tt2:61
+#: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 msgid "Формат результата"
 msgstr "Result format"
 
-#: pgws/apidoc/tmpl/page/pagemap.tt2:33
+#: pkg/apidoc/tmpl/page/pagemap.tt2:27
 msgid "Шаблон"
 msgstr "Template"
+
+#: pkg/app/tmpl/page/error.tt2:1
+msgid "Эта страница доступна только для авторизованных пользователей."
+msgstr ""
 
 msgid "Это главная страница проекта по умолчанию"
 msgstr "This is default project main page"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:69
+#: pkg/wiki/tmpl/page/edit.tt2:70
+msgid "изменения"
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:88
+#: pkg/wiki/tmpl/page/edit.tt2:89
+msgid "нет данных"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/xsd.tt2:49
 msgid "обязателен"
 msgstr "required"
 
-#: pgws/apidoc/tmpl/page/xsd.tt2:69
+#: pkg/apidoc/tmpl/page/xsd.tt2:49
 msgid "по умолчанию"
 msgstr "default"
+
+#: pkg/wiki/tmpl/page/edit.tt2:66
+msgid "просмотр"
+msgstr ""
+
+#: pkg/app/tmpl/page/index.tt2:8
+msgid "раздел, посвященный программному интерфейсу к функционалу сайта"
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:42
+msgid "редактор"
+msgstr ""

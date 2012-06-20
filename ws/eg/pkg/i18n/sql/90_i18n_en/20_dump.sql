@@ -29,7 +29,6 @@ SET statement_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = off;
 SET check_function_bodies = false;
-SET client_min_messages = warning;
 SET escape_string_warning = off;
 
 --
@@ -46,7 +45,7 @@ SET search_path = i18n_en, pg_catalog;
 
 CREATE FUNCTION amount2words(source numeric, up_mode integer) RETURNS text
     LANGUAGE plpgsql IMMUTABLE
-    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 49 --
+    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 48 --
 /*
   Сумма прописью в рублях и копейках
   up_mode = 0 - все символы строчные
@@ -172,7 +171,7 @@ COMMENT ON FUNCTION amount2words(source numeric, up_mode integer) IS 'Сумма
 
 CREATE FUNCTION date_name(a_date date) RETURNS text
     LANGUAGE plpgsql IMMUTABLE
-    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 175 --
+    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 174 --
   DECLARE
     m_names TEXT := 'january february march april may june july august september october november december';
   BEGIN
@@ -197,7 +196,7 @@ COMMENT ON FUNCTION date_name(a_date date) IS 'Название даты вид�
 
 CREATE FUNCTION date_name_doc(a_date date) RETURNS text
     LANGUAGE sql IMMUTABLE
-    AS $_$  -- FD: i18n:i18n_en:20_dump.sql / 200 --
+    AS $_$  -- FD: i18n:i18n_en:20_dump.sql / 199 --
   SELECT CASE WHEN date_part('day', $1) < 10 THEN '0' ELSE '' END || date_name($1)
 $_$;
 
@@ -215,7 +214,7 @@ COMMENT ON FUNCTION date_name_doc(a_date date) IS 'Название даты в�
 
 CREATE FUNCTION month_amount_name(a_id integer) RETURNS text
     LANGUAGE sql IMMUTABLE
-    AS $_$  -- FD: i18n:i18n_en:20_dump.sql / 218 --
+    AS $_$  -- FD: i18n:i18n_en:20_dump.sql / 217 --
   SELECT CASE
     WHEN $1 % 10 = 1 AND $1 <> 11 THEN $1::text || ' ' || 'месяц'
     WHEN $1 IN (24,36,48) THEN $1/12 || ' ' || 'года'
@@ -241,7 +240,7 @@ COMMENT ON FUNCTION month_amount_name(a_id integer) IS 'Название пер�
 
 CREATE FUNCTION month_name(a_date date) RETURNS text
     LANGUAGE plpgsql IMMUTABLE
-    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 244 --
+    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 243 --
   DECLARE
     m_names TEXT := 'january february march april may june july august september october november december';
   BEGIN
@@ -463,8 +462,6 @@ INSERT INTO error_message VALUES ('Y0001', 0, 'required value does not given');
 INSERT INTO error_message VALUES ('Y0002', 2, 'value does not conform to condition "%s %s"');
 INSERT INTO error_message VALUES ('Y0003', 1, 'value does not conform to template "%s %s"');
 INSERT INTO error_message VALUES ('Y0010', 0, 'no data');
-INSERT INTO error_message VALUES ('Y0021', 1, 'no access to sum result when a = %i');
-INSERT INTO error_message VALUES ('Y0022', 1, 'no data for a = %i');
 INSERT INTO error_message VALUES ('Y0051', 0, 'Указанный логин уже занят. Выберите другой логин');
 INSERT INTO error_message VALUES ('Y0101', 1, 'incorrect acl code "%s"');
 INSERT INTO error_message VALUES ('Y0102', 1, 'внешний доступ к методу с "%s" запрещен');
@@ -472,6 +469,13 @@ INSERT INTO error_message VALUES ('Y0103', 0, 'authorization required (no sessio
 INSERT INTO error_message VALUES ('Y0104', 1, 'incorrect session id "%s"');
 INSERT INTO error_message VALUES ('Y0105', 1, 'no check for acl "%s"');
 INSERT INTO error_message VALUES ('Y0106', 1, 'incorrect status id "%s"');
+INSERT INTO error_message VALUES ('Y0021', 1, 'no access to sum result when a = %i');
+INSERT INTO error_message VALUES ('Y0022', 1, 'no data for a = %i');
+INSERT INTO error_message VALUES ('Y9901', 1, 'Не найдена группа "%s"');
+INSERT INTO error_message VALUES ('Y9902', 1, 'Версия документа (%s) не актуальна и(или) устарела');
+INSERT INTO error_message VALUES ('Y9903', 1, 'Документ с таким адресом уже создан (%s)');
+INSERT INTO error_message VALUES ('Y9904', 0, 'Документ не содержит изменений');
+INSERT INTO error_message VALUES ('Y9905', 0, 'Документ не найден');
 
 
 --
@@ -493,6 +497,11 @@ INSERT INTO page_name VALUES ('api.class', 'Classes');
 INSERT INTO page_name VALUES ('api.smd1', 'Methods via JS');
 INSERT INTO page_name VALUES ('api.class.single', 'Class');
 INSERT INTO page_name VALUES ('api.test', 'Test page');
+INSERT INTO page_name VALUES ('login', 'Вход');
+INSERT INTO page_name VALUES ('logout', 'Выход');
+INSERT INTO page_name VALUES ('wiki.wk', 'Вики');
+INSERT INTO page_name VALUES ('wiki.wk.edit', 'Редактирование');
+INSERT INTO page_name VALUES ('wiki.wk.history', 'История изменений');
 
 
 --

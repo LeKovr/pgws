@@ -76,9 +76,37 @@ msgstr "Session field to get object ID from"
 msgid "regexp URI, вычисляется триггером при insert/update"
 msgstr "regexp for URI, calculated by insert/update trigger"
 
+#: var/build/i18n_def.i18n:454
+msgid "Версия документа (%s) не актуальна и(или) устарела"
+msgstr ""
+
+#: var/build/i18n_def.i18n:481
+msgid "Вики"
+msgstr ""
+
+#: var/build/i18n_def.i18n:479
+msgid "Вход"
+msgstr ""
+
+#: var/build/i18n_def.i18n:480
+msgid "Выход"
+msgstr ""
+
 #: var/build/i18n_def.i18n:405
 msgid "Группа страниц для меню"
 msgstr "Menu page group"
+
+#: var/build/i18n_def.i18n:457
+msgid "Документ не найден"
+msgstr ""
+
+#: var/build/i18n_def.i18n:456
+msgid "Документ не содержит изменений"
+msgstr ""
+
+#: var/build/i18n_def.i18n:455
+msgid "Документ с таким адресом уже создан (%s)"
+msgstr ""
 
 #: var/build/i18n_def.i18n:388
 msgid "Заголовок страницы в карте сайта"
@@ -91,6 +119,10 @@ msgstr ""
 #: var/build/i18n_def.i18n:297
 msgid "Идентификатор страницы"
 msgstr "Page ID"
+
+#: var/build/i18n_def.i18n:483
+msgid "История изменений"
+msgstr ""
 
 #: var/build/i18n_def.i18n:187
 msgid "Название даты вида \"01 января 2007\""
@@ -108,23 +140,27 @@ msgstr ""
 msgid "Название периода из заданного числа месяцев (252 max)"
 msgstr ""
 
-#: var/build/i18n_def.i18n:466
+#: var/build/i18n_def.i18n:453
+msgid "Не найдена группа \"%s\""
+msgstr ""
+
+#: var/build/i18n_def.i18n:471
 msgid "Описание API"
 msgstr "API docs"
 
-#: var/build/i18n_def.i18n:472
+#: var/build/i18n_def.i18n:477
 msgid "Описание класса"
 msgstr "Class"
 
-#: var/build/i18n_def.i18n:470
+#: var/build/i18n_def.i18n:475
 msgid "Описание классов"
 msgstr "Classes"
 
-#: var/build/i18n_def.i18n:467
+#: var/build/i18n_def.i18n:472
 msgid "Описание методов"
 msgstr "Methods"
 
-#: var/build/i18n_def.i18n:471
+#: var/build/i18n_def.i18n:476
 msgid "Описание методов (JS)"
 msgstr "Methods via JS"
 
@@ -132,13 +168,17 @@ msgstr "Methods via JS"
 msgid "Описание ошибки"
 msgstr "Error description"
 
-#: var/build/i18n_def.i18n:468
+#: var/build/i18n_def.i18n:473
 msgid "Описание страниц"
 msgstr "Pages"
 
-#: var/build/i18n_def.i18n:469
+#: var/build/i18n_def.i18n:474
 msgid "Описание типов"
 msgstr "Types"
+
+#: var/build/i18n_def.i18n:482
+msgid "Редактирование"
+msgstr ""
 
 #: var/build/i18n_def.i18n:290
 msgid "Страница сайта"
@@ -148,16 +188,16 @@ msgstr "Site page"
 msgid "Сумма прописью в рублях и копейках"
 msgstr ""
 
-#: var/build/i18n_def.i18n:473
+#: var/build/i18n_def.i18n:478
 msgid "Тестовая страница"
 msgstr "Test page"
 
-#: var/build/i18n_def.i18n:446
-msgid "This login already exists. Choose another"
+#: var/build/i18n_def.i18n:444
+msgid "Указанный логин уже занят. Выберите другой логин"
 msgstr ""
 
-#: var/build/i18n_def.i18n:448
-msgid "external access to method \"%s\" is forbidden"
+#: var/build/i18n_def.i18n:446
+msgid "внешний доступ к методу с \"%s\" запрещен"
 msgstr ""
 
 #: var/build/i18n_def.i18n:75
@@ -288,23 +328,23 @@ msgstr "name"
 msgid "не задано обязательное значение"
 msgstr "required value does not given"
 
-#: var/build/i18n_def.i18n:451
+#: var/build/i18n_def.i18n:449
 msgid "не найдена проверка для acl \"%s\""
 msgstr "no check for acl \"%s\""
 
-#: var/build/i18n_def.i18n:447
+#: var/build/i18n_def.i18n:445
 msgid "недопустимый код acl \"%s\""
 msgstr "incorrect acl code \"%s\""
 
-#: var/build/i18n_def.i18n:450
+#: var/build/i18n_def.i18n:448
 msgid "некорректный идентификатор сессии \"%s\""
 msgstr "incorrect session id \"%s\""
 
-#: var/build/i18n_def.i18n:452
+#: var/build/i18n_def.i18n:450
 msgid "некорректный идентификатор статуса \"%s\""
 msgstr "incorrect status id \"%s\""
 
-#: var/build/i18n_def.i18n:449
+#: var/build/i18n_def.i18n:447
 msgid "необходима авторизация (не задан идентификатор сессии)"
 msgstr "authorization required (no session id)"
 
@@ -312,11 +352,11 @@ msgstr "authorization required (no session id)"
 msgid "нет данных"
 msgstr "no data"
 
-#: var/build/i18n_def.i18n:445
+#: var/build/i18n_def.i18n:452
 msgid "нет данных по a = %i"
 msgstr "no data for a = %i"
 
-#: var/build/i18n_def.i18n:444
+#: var/build/i18n_def.i18n:451
 msgid "нет доступа к результату суммы при а = %i"
 msgstr "no access to sum result when a = %i"
 
