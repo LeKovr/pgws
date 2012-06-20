@@ -24,7 +24,7 @@
 
 /* ------------------------------------------------------------------------- */
 
-INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real, args_exam) VALUES
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, args_exam) VALUES
    ('info.date',                  2, 1, 2, 3, pg_cs('date_info'), '')
   ,('info.month',                 2, 1, 2, 3, pg_cs('month_info'), '')
   ,('info.year_months',           2, 1, 2, 5, pg_cs('year_months'), '')
@@ -32,25 +32,25 @@ INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real, arg
   ,('info.ref',                   2, 1, 2, 7, pg_cs('ref'), 'id=65')
 ;
 
-INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, is_i18n, args_exam) VALUES
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, is_i18n, args_exam) VALUES
    ('ws.page_by_code',            2, 1, 2, 3, true, 'code=api.smd')
   ,('ws.page_path',               2, 1, 2, 7, true, 'code=api.smd')
   ,('ws.page_childs',             2, 1, 2, 7, true, 'code=api')
   ,('ws.page_by_action',          2, 1, 2, 3, true, '')
 ;
 
-INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, args_exam) VALUES
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, args_exam) VALUES
    ('ws.page_tree',               2, 1, 2, 7, '')
   ,('ws.class',                   2, 1, 2, 5, '')
   ,('ws.method_lookup',           2, 1, 2, 7, '')
 ;
 
-INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, is_i18n) VALUES
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, is_i18n) VALUES
    ('ws.page_by_uri',             2, 1, 2, 3, true)
   ,('ws.error_info',              2, 1, 2, 3, true)
 ;
 
-INSERT INTO method (code, class_id , action_id, cache_id, rvf_id) VALUES
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id) VALUES
   ('ws.method_rvf',              2, 1, 2, 4)
   ,('ws.method_by_code',          2, 1, 2, 7)
   ,('ws.method_by_action',        2, 1, 2, 7)
@@ -68,14 +68,14 @@ INSERT INTO method (code, class_id , action_id, cache_id, rvf_id) VALUES
   ,('ws.acls_eff',                2, 1, 2, 4)
 ;
 
-INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
    ('system.status',              2, 1, 2, 2, pg_cs('system_status'))
   ,('system.acl',                 2, 1, 2, 6, pg_cs('system_acl'))
   ,('info.status',                2, 1, 2, 2, pg_cs('info_status'))
   ,('info.acl',                   2, 1, 2, 6, pg_cs('info_acl'))
 ;
 
-INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real, is_sql, arg_dt_id, rv_dt_id, name) VALUES
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, is_sql, arg_dt_id, rv_dt_id, name) VALUES
    ('info.acl_check',      2, 1, 4, 3, 'System::ACL::check',        false, dt_id('z_acl_check'),   dt_id('d_acls'), 'Получение acl на объект')
   ,('ws.uncache',          2, 1, 1, 2, 'System::Cache::uncache',    false, dt_id('z_uncache'), dt_id('d_id'), 'Сброс кэша метода')
 /*
