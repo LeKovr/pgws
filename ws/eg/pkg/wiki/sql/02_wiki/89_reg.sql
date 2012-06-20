@@ -31,6 +31,8 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id) VALUES
   , ('wiki.doc_src',          2, 1, 3, 2)
   , ('wiki.doc_extra',        2, 1, 3, 3)
   , ('wiki.doc_link',         2, 1, 3, 7)
+  , ('wiki.doc_by_name',      2, 1, 3, 7)
+  , ('wiki.keyword_by_name',  2, 1, 3, 6)
   , ('wiki.doc_diff',         2, 1, 3, 3)
   , ('wiki.can_create',       2, 1, 3, 2)
 ;
@@ -38,6 +40,7 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id) VALUES
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write) VALUES
   ('wiki.doc_create',         2, 1, 1, 2, true)
   , ('wiki.doc_update_src',   2, 1, 1, 2, true)
+  , ('wiki.doc_update_attr',  2, 1, 1, 2, true)
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, is_sql, arg_dt_id, rv_dt_id, name, args_exam) VALUES
@@ -61,6 +64,7 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
   , ( 'Y9902', 1, 'Версия документа (%s) не актуальна и(или) устарела')
   , ( 'Y9903', 1, 'Документ с таким адресом уже создан (%s)')
   , ( 'Y9904', 0, 'Документ не содержит изменений')
+  , ( 'Y9905', 0, 'Документ не найден')
 ;
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:89_reg.sql / 66 --'
+\qecho '-- FD: wiki:wiki:89_reg.sql / 70 --'

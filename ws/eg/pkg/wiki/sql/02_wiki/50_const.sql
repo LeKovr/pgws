@@ -33,10 +33,11 @@ $_$  -- FD: wiki:wiki:50_const.sql / 27 --
     ELSIF a_tag = 'WIKI_ERR_NOREVISION'   THEN v := CLASS_WIKI || '02';
     ELSIF a_tag = 'WIKI_ERR_CODEEXISTS'   THEN v := CLASS_WIKI || '03';
     ELSIF a_tag = 'WIKI_ERR_NOCHGTOSAVE'  THEN v := CLASS_WIKI || '04'; -- вызывается из perl-кода
+    ELSIF a_tag = 'WIKI_ERR_NODOC'        THEN v := CLASS_WIKI || '05';
     ELSE RAISE EXCEPTION 'ERROR: Unknown tag %', a_tag;
     END IF;
     RETURN v;
   END
 $_$;
 
-\qecho '-- FD: wiki:wiki:50_const.sql / 42 --'
+\qecho '-- FD: wiki:wiki:50_const.sql / 43 --'

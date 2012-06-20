@@ -22,36 +22,33 @@
 /* ------------------------------------------------------------------------- */
 
 -- TODO: insert into wiki.account
+
 \set SID '\'; \''
 
-\qecho '1. login'
-select login, status_id, email, psw FROM acc.login(:SID,'127.0.0.1','admin', (SELECT psw FROM acc_data.account WHERE login='admin'));
+SELECT login, status_id, email, psw FROM acc.login(:SID,'127.0.0.1','admin', (SELECT psw FROM acc_data.account WHERE login='admin'));
 
-\qecho 'can_create'
-SELECT wiki.can_create(:SID, 1, 'definitely/new/page');
+SELECT wiki.group_id_by_code('wk') IS NOT NULL AS group_exists;
 
-\qecho 'doc tests'
-SELECT wiki.group_id_by_code('wk');
+SELECT wiki.can_create(:SID, wiki.group_id_by_code('wk'), 'definitely/new/page');
 
+SELECT wiki.doc_create(:SID, wiki.group_id_by_code('wk'), 'definitely/new/page','==test title\n\ntest body','New test page') IS NOT NULL AS doc_created;
 
-\qecho '4. logout'
-SELECT acc.logout(:SID,'127.0.0.1');
+SELECT ((wiki.ids_by_code('wk', 'definitely/new/page')).id IS NOT NULL) AS doc_exists;
 
-/* ------------------------------------------------------------------------- */
+SELECT wiki.doc_update_src(:SID, (wiki.ids_by_code('wk', 'definitely/new/page')).id, 1,'==test title\n\ntest body2','New test page updated', NULL, NULL, NULL, '>\n<2') = (wiki.ids_by_code('wk', 'definitely/new/page')).id AS src_updated;
 
-/*
-INSERT INTO doc (group_id, code, created_by, name, src) VALUES
-  (1, 'p1', 1, 'Brief test', '# sdfsdsdfdsf\n\n## dfd\n## sss\n\nttt\n---\n[wewew](http://ddd)\n\n* dsds\n* sdssd\n\n[dfdf]\n')
+SELECT wiki.doc_update_attr(:SID, (wiki.ids_by_code('wk', 'definitely/new/page')).id, 2, NULL, NULL, NULL, '{{test,page}}') = (wiki.ids_by_code('wk', 'definitely/new/page')).id AS attr_updated;
+
+SELECT status_id, group_id, up_id, code, revision, name, group_name, updated_by_name
+  FROM wiki.doc_info((wiki.ids_by_code('wk', 'definitely/new/page')).id)
 ;
-SELECT * FROM wiki.ids_by_code('wk','p1');
-*/
 
--- SELECT wiki.doc_create ('xx', 1, 'index', 'Welcome','Welcome to our wiki','Title: Welcome\n\nWelcome to our wiki!\n## Test page working\n');
+SELECT * FROM wiki.doc_keyword((wiki.ids_by_code('wk', 'definitely/new/page')).id);
 
--- SELECT id, status_id, group_id, code, created_by, name, src FROM wiki.doc where group_id=1 AND code='index';
+-- TODO: delete doc
 
--- TODO: wiki.logout
--- TODO: delete from wiki.account
+SELECT acc.logout(:SID,'127.0.0.1');
+-- TODO: delete account ?
 
 /* ------------------------------------------------------------------------- */
 -- No end qecho

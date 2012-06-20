@@ -38,13 +38,17 @@ CREATE TABLE wiki_data.doc (
   id           INTEGER      PRIMARY KEY
   , status_id  INTEGER      NOT NULL DEFAULT 1
   , group_id   INTEGER      NOT NULL REFERENCES wiki_data.doc_group
+  , up_id      INTEGER      REFERENCES wiki_data.doc
   , code       TEXT         NOT NULL DEFAULT ''
   , revision   INTEGER      NOT NULL DEFAULT 1
+  , pub_date   DATE
   , created_by INTEGER      NOT NULL REFERENCES acc_data.account
   , created_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
   , updated_by INTEGER      NOT NULL REFERENCES acc_data.account
   , updated_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
   , cached_at  TIMESTAMP(0)
+  , status_next_id INTEGER
+  , status_next_at TIMESTAMP(0)
   , src        TEXT         NOT NULL
   , name       TEXT
   , CONSTRAINT group_id_code_ukey UNIQUE (group_id, code)
@@ -82,4 +86,15 @@ INSERT INTO wiki_data.doc_group (id, code, name, anno) VALUES
 ;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:19_wiki_data.sql / 85 --'
+CREATE TABLE wiki_data.doc_keyword (
+  id           INTEGER REFERENCES wiki_data.doc
+  , name       TEXT
+  , CONSTRAINT doc_keyword_pkey PRIMARY KEY (id, name)
+);
+SELECT pg_c('t', 'wiki_data.doc_keyword', 'Ключевые слова')
+  ,pg_c('c', 'wiki_data.doc_keyword.id', 'ID статьи')
+  ,pg_c('c', 'wiki_data.doc_keyword.name', 'Слово')
+;
+
+/* ------------------------------------------------------------------------- */
+\qecho '-- FD: wiki:wiki:19_wiki_data.sql / 100 --'

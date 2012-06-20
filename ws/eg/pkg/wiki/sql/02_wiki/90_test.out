@@ -1,19 +1,40 @@
-1. login
  login | status_id |      email       | psw 
 -------+-----------+------------------+-----
  admin |         1 | admin@pgws.local | ***
 
-can_create
+ group_exists 
+--------------
+ t
+
  can_create 
 ------------
  t
 
-doc tests
- group_id_by_code 
-------------------
-                1
+ doc_created 
+-------------
+ t
 
-4. logout
+ doc_exists 
+------------
+ t
+
+ src_updated 
+-------------
+ t
+
+ attr_updated 
+--------------
+ t
+
+ status_id | group_id | up_id |        code         | revision |         name          | group_name | updated_by_name 
+-----------+----------+-------+---------------------+----------+-----------------------+------------+-----------------
+         2 |        1 |       | definitely/new/page |        2 | New test page updated | Public     | Admin
+
+ doc_keyword 
+-------------
+ page
+ test
+
  logout 
 --------
       1

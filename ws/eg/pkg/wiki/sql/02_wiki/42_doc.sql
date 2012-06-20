@@ -27,12 +27,16 @@ CREATE OR REPLACE VIEW doc_info AS SELECT
   d.id
   , d.status_id
   , d.group_id
+  , d.up_id
   , d.code
   , d.revision
+  , d.pub_date
   , d.created_by
   , d.created_at
   , d.updated_by
   , d.updated_at
+  , d.status_next_id
+  , d.status_next_at
   , d.name
   , dg.name AS group_name
   , a.name AS updated_by_name
@@ -41,6 +45,13 @@ CREATE OR REPLACE VIEW doc_info AS SELECT
     JOIN acc_data.account a ON (d.created_by = a.id)
 ;
 
+CREATE OR REPLACE VIEW doc_keyword_info AS SELECT
+  d.id
+  , d.group_id
+  , dk.name
+  FROM wiki_data.doc d
+    JOIN wiki_data.doc_keyword dk USING (id)
+;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:42_doc.sql / 46 --'
+\qecho '-- FD: wiki:wiki:42_doc.sql / 57 --'

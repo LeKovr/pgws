@@ -70,8 +70,32 @@ $_$;
 SELECT pg_c('f', 'doc_info', 'Атрибуты документа');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION doc_src(a_id d_id) RETURNS TEXT STABLE STRICT LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION doc_by_name (a_group_id ws.d_id32, a_string TEXT, a_max_rows ws.d_cnt DEFAULT 15) RETURNS SETOF ws.t_hashtable STABLE LANGUAGE 'sql' AS
 $_$  -- FD: wiki:wiki:52_doc.sql / 74 --
+  -- a_id: ID статьи
+  SELECT id::TEXT, name FROM wiki.doc_info WHERE group_id = $1 AND name ~ $2 ORDER BY name LIMIT $1;
+$_$;
+SELECT pg_c('f', 'doc_by_name', 'список статей, название которых содержит string');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION doc_keyword (a_id ws.d_id) RETURNS SETOF text STABLE LANGUAGE 'sql' AS
+$_$  -- FD: wiki:wiki:52_doc.sql / 82 --
+  -- a_id: ID статьи
+  SELECT name FROM wiki_data.doc_keyword WHERE id = $1 ORDER BY name;
+$_$;
+SELECT pg_c('f', 'doc_keyword', 'список ключевых слов статьи');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION keyword_by_name (a_group_id ws.d_id32, a_string TEXT, a_max_rows ws.d_cnt DEFAULT 15) RETURNS SETOF text STABLE LANGUAGE 'sql' AS
+$_$  -- FD: wiki:wiki:52_doc.sql / 90 --
+  -- a_id: ID статьи
+  SELECT name FROM wiki.doc_keyword_info WHERE group_id = $1 AND name ~ $2 ORDER BY name LIMIT $3;
+$_$;
+SELECT pg_c('f', 'keyword_by_name', 'список ключевых слов, содержащих строку string');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION doc_src(a_id d_id) RETURNS TEXT STABLE STRICT LANGUAGE 'sql' AS
+$_$  -- FD: wiki:wiki:52_doc.sql / 98 --
   -- a_id: ID статьи
   SELECT src FROM wiki_data.doc WHERE id = $1; /* a_id */
 $_$;
@@ -79,7 +103,7 @@ SELECT pg_c('f', 'doc_src', 'Текст документа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION doc_extra(a_id d_id) RETURNS doc_extra STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: wiki:wiki:52_doc.sql / 82 --
+$_$  -- FD: wiki:wiki:52_doc.sql / 106 --
   -- a_id: ID статьи
   SELECT * FROM wiki.doc_extra WHERE id = $1; /* a_id */
 $_$;
@@ -87,7 +111,7 @@ SELECT pg_c('f', 'doc_extra', 'Дополнительные данные');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION doc_link(a_id d_id) RETURNS SETOF doc_link STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: wiki:wiki:52_doc.sql / 90 --
+$_$  -- FD: wiki:wiki:52_doc.sql / 114 --
   -- a_id: ID статьи
   SELECT * FROM wiki.doc_link WHERE id = $1; /* a_id */
 $_$;
@@ -95,7 +119,7 @@ SELECT pg_c('f', 'doc_link', 'Ссылки ни внутренние докум�
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION doc_diff(a_id d_id, a_revision d_cnt) RETURNS SETOF wiki_data.doc_diff STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: wiki:wiki:52_doc.sql / 98 --
+$_$  -- FD: wiki:wiki:52_doc.sql / 122 --
   -- a_id: ID статьи
   SELECT * FROM wiki_data.doc_diff WHERE id = $1 /* a_id */ AND revision = $2 /* a_revision */;
 $_$;
@@ -107,7 +131,7 @@ CREATE OR REPLACE FUNCTION can_create (
   , a_group_id  ws.d_id32
   , a_code      ws.d_path DEFAULT ''
   ) RETURNS bool STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: wiki:wiki:52_doc.sql / 110 --
+$_$  -- FD: wiki:wiki:52_doc.sql / 134 --
   -- a__sid:      ID сессии
   -- a_group_id:  ID группы статей
   -- a_code:      Код статьи
@@ -143,7 +167,7 @@ CREATE OR REPLACE FUNCTION doc_update_extra (
   , a_anno      text    DEFAULT ''
   , a_toc       text    DEFAULT ''
   ) RETURNS d_id LANGUAGE 'plpgsql' AS
-$_$  -- FD: wiki:wiki:52_doc.sql / 146 --
+$_$  -- FD: wiki:wiki:52_doc.sql / 170 --
   -- a__sid:      ID сессии
   -- a_id:        ID статьи
   -- a links:     Список внешних ссылок
@@ -163,7 +187,7 @@ $_$  -- FD: wiki:wiki:52_doc.sql / 146 --
       WHERE id = a_id
     ;
     IF NOT FOUND THEN
-      RAISE EXCEPTION '%', ws.error_str(wiki.const('WIKI_ERR_NOREVISION')::ws.d_errcode, a_revision::text);
+      RAISE EXCEPTION '%', ws.e_nodata();
     END IF;
 
     UPDATE wiki.doc_extra SET
@@ -198,7 +222,7 @@ CREATE OR REPLACE FUNCTION doc_create (
   , a_anno      text      DEFAULT ''
   , a_toc       text      DEFAULT ''
   ) RETURNS d_id LANGUAGE 'plpgsql' AS
-$_$  -- FD: wiki:wiki:52_doc.sql / 201 --
+$_$  -- FD: wiki:wiki:52_doc.sql / 225 --
   -- a__sid:      ID сессии
   -- a_group_id:  ID группы статей
   -- a_code:      Код статьи
@@ -250,7 +274,7 @@ CREATE OR REPLACE FUNCTION doc_update_src (
   , a_toc       text    DEFAULT ''
   , a_diff      text    DEFAULT ''
   ) RETURNS d_id LANGUAGE 'plpgsql' AS
-$_$  -- FD: wiki:wiki:52_doc.sql / 253 --
+$_$  -- FD: wiki:wiki:52_doc.sql / 277 --
   -- a__sid:      ID сессии
   -- a_id:        ID статьи
   -- a_revision:  Номер текущей ревизии
@@ -295,6 +319,55 @@ $_$  -- FD: wiki:wiki:52_doc.sql / 253 --
 $_$;
 SELECT pg_c('f', 'doc_update_src', 'Изменение пользователем текста документа');
 
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION doc_update_attr (
+  a__sid              text
+  , a_id              ws.d_id
+  , a_status_id       ws.d_id32
+  , a_up_id           ws.d_id DEFAULT NULL
+  , a_status_next_id  ws.d_id DEFAULT NULL
+  , a_status_next_at  ws.d_stamp DEFAULT NULL
+  , a_keywords        ws.d_texta DEFAULT NULL
+  ) RETURNS d_id LANGUAGE 'plpgsql' AS
+$_$  -- FD: wiki:wiki:52_doc.sql / 332 --
+  -- a__sid:      ID сессии
+  -- a_id:        ID статьи
+  -- a_status_id: ID статуса
+  -- a_up_id:     ID статьи-предка
+  -- a_status_next_id  ID отложенного статуса
+  -- a_status_next_at  Время активации отложенного статуса
+  -- a_keywords        Ключевые слова
+  DECLARE
+    v_account_id ws.d_id;
+    v_revision ws.d_id;
+  BEGIN
+    v_account_id := (acc.profile(a__sid,'')).id;
+    IF v_account_id IS NULL THEN
+      RAISE EXCEPTION 'unknown account'; -- TODO: ERRORCODE
+    END IF;
+    -- TODO: валидировать значения status_id, up_id, status_next_id
+    -- TODO: заполнить pub_date по факту публикации
+    UPDATE wiki_data.doc SET
+      status_id        = a_status_id
+      , up_id          = a_up_id
+      , status_next_id = a_status_next_id
+      , status_next_at = a_status_next_at
+      WHERE id = a_id
+    ;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION '%', ws.e_nodata();
+    END IF;
+
+    DELETE FROM wiki_data.doc_keyword  WHERE id = a_id;
+
+    INSERT INTO wiki_data.doc_keyword (id, name)
+      SELECT a_id, name FROM unnest(a_keywords) name
+    ;
+    RETURN a_id;
+  END;
+$_$;
+SELECT pg_c('f', 'doc_update_attr', 'Изменение атрибутов документа');
+
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:52_doc.sql / 300 --'
+\qecho '-- FD: wiki:wiki:52_doc.sql / 373 --'
