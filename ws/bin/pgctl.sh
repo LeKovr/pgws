@@ -53,6 +53,21 @@ EOF
 }
 
 # ------------------------------------------------------------------------------
+db_run_test() {
+  local bd=$1
+  local test=$2
+  local name=$3
+  local point=$4
+  local file=$5
+  cat >> $file <<EOF
+SAVEPOINT ${point}_test;
+\o $bd/$name.out
+\i $bd/$n
+\o
+ROLLBACK TO SAVEPOINT ${point}_test;
+EOF
+}
+# ------------------------------------------------------------------------------
 db_run_test_end() {
   local file=$1
   cat >> $file <<EOF
@@ -165,8 +180,7 @@ EOF
         echo "Processing file: $f" >> $LOGFILE
         awk "{gsub(/-- FD:(.*)--/, \"-- FD: $pn:$sn:$n / \" FNR \" --\")}; 1" $f > $BLD/$bd/$n
         n1=${n%.sql} # remove ext
-        echo "\o $bd/$n1.out" >> $BLD/build.sql
-        echo "\i $bd/$n" >> $BLD/build.sql
+        db_run_test $bd $n $n1 $sn $BLD/build.sql
         cp $s/$n1.out $BLD/$bd/$n1.out.orig 2>>  $BLD/errors.diff
         echo "\! diff -c $bd/$n1.out.orig $bd/$n1.out | tr \"\t\" \" \" >> errors.diff" >> $BLD/build.sql
         db_run_test_end $BLD/build.sql
