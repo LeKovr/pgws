@@ -127,6 +127,12 @@ INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_sid'), dt_id('text'), '�
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_zip'), dt_id('text'), 'Почтовый индекс');
 INSERT INTO dt_facet (id, facet_id, value, anno) VALUES (dt_id('d_zip'), facet_id('pattern'), E'^[a-zA-Zа-яА-я0-9][a-zA-Zа-яА-я0-9 \-]{2,11}','index');
 
+INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_text'), dt_id('text'), 'Текст');
+
+INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_string'), dt_id('text'), 'Текстовая строка');
+INSERT INTO dt_facet (id, facet_id, value, anno) VALUES (dt_id('d_string'), facet_id('pattern'), E'^[^\n]','NO CR');
+
+
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_login'), dt_id('text'), 'Логин');
 INSERT INTO dt_facet (id, facet_id, value, anno) VALUES (dt_id('d_login'), facet_id('pattern'), E'^[a-zA-Z0-9\\.+_@\\-]{5,}$','login');
 
@@ -236,4 +242,4 @@ INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('t_acl_ch
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('t_acl_check'), 4, 'name', dt_id('text'), '');
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:81_dt.sql / 239 --'
+\qecho '-- FD: pgws:ws:81_dt.sql / 245 --'

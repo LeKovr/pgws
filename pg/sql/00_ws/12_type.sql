@@ -54,6 +54,9 @@ CREATE DOMAIN d_sid AS TEXT;
 
 CREATE DOMAIN d_login AS TEXT CHECK (VALUE ~ E'^[a-zA-Z0-9\\.+_@\\-]{5,}$');
 
+CREATE DOMAIN d_text AS TEXT;
+CREATE DOMAIN d_string AS TEXT CHECK (VALUE !~ E'\\n');
+
 CREATE DOMAIN d_zip AS TEXT CHECK (VALUE ~ E'^[a-zA-Zа-яА-я0-9][a-zA-Zа-яА-я0-9 \-]{2,11}');
 
 CREATE DOMAIN d_email AS TEXT CHECK (VALUE = '' OR VALUE ~ E'^[^ ]+@[^ ]+\\.[^ ]{2,6}');
@@ -193,4 +196,4 @@ COMMENT ON COLUMN t_month_info.month_name_ic IS 'Месяц ГГГГ';
 
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:12_type.sql / 196 --'
+\qecho '-- FD: pgws:ws:12_type.sql / 199 --'
