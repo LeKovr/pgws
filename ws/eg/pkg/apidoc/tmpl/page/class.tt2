@@ -53,6 +53,7 @@ FOR d IN data;
       %]</ul>[%
     END;
   END;
+  lcount=0;
   FOR ra IN ca_rows;
     csaa_rows = api('ws.class_status_action_acl:7', 'class_id' => d.id, 'action_id' => ra.id);
     table = {};
@@ -72,7 +73,8 @@ FOR d IN data;
         END;
         %]</tr>[%
       END;
-      %]<tr class="[% IF loop.count mod 2; 'even'; ELSE; 'odd'; END %]"><td>[% r.id _ '. ' _ r.name %]</td>[%
+ IF table.${r.id};
+      %]<tr class="[% IF lcount; 'even'; ELSE; 'odd'; END %]"><td>[% r.id _ '. ' _ r.name %]</td>[%
       FOR s IN st_rows;
         %]<td align="center">[%
         IF table.${r.id}.${s.id} == 1;
@@ -83,7 +85,10 @@ FOR d IN data;
         %]</td>[%
       END;
       %]</tr>[%
-      IF loop.last
+      lcount = 1 - lcount;
+
+  END;
+     IF loop.last
         %]</table>[%
       END;
     END;
