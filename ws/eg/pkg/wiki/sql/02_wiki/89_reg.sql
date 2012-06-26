@@ -33,6 +33,7 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id) VALUES
   , ('wiki.doc_link',         2, 1, 3, 7)
   , ('wiki.doc_by_name',      2, 1, 3, 7)
   , ('wiki.keyword_by_name',  2, 1, 3, 6)
+  , ('wiki.doc_keyword',      2, 1, 3, 6)
   , ('wiki.doc_diff',         2, 1, 3, 3)
   , ('wiki.can_create',       2, 1, 3, 2)
 ;
@@ -67,4 +68,4 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
   , ( 'Y9905', 0, 'Документ не найден')
 ;
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:89_reg.sql / 70 --'
+\qecho '-- FD: wiki:wiki:89_reg.sql / 71 --'
