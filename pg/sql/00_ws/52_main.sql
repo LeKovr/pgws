@@ -61,7 +61,7 @@ $_$  -- FD: pgws:ws:52_main.sql / 59 --
     , ws.sprintf(uri_fmt, $2, $3, $4)
     , ws.uri_args(ws.sprintf(uri_fmt, $2, $3, $4), uri_re)
     , ws.page_group_name(group_id)
-    FROM page WHERE code LIKE $1 ORDER BY 1 DESC;
+    FROM page WHERE code LIKE $1 ORDER BY code;
 $_$;
 SELECT pg_c('f', 'page_by_code', 'Атрибуты страницы  по коду и идентификаторам');
 
@@ -72,7 +72,7 @@ $_$  -- FD: pgws:ws:52_main.sql / 70 --
     , ws.sprintf(uri_fmt, $3, $4, $5)
     , ws.uri_args(ws.sprintf(uri_fmt, $3, $4, $5), uri_re)
     , ws.page_group_name(group_id)
-    FROM page WHERE $1 IN (class_id, 0) AND $2 IN (action_id, 0) ORDER BY 1 DESC;
+    FROM page WHERE $1 IN (class_id, 0) AND $2 IN (action_id, 0) ORDER BY code;
 $_$;
 SELECT pg_c('f', 'page_by_action', 'Атрибуты страницы  по акции и идентификаторам');
 
