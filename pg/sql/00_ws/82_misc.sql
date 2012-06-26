@@ -24,24 +24,27 @@
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO cache (id, is_active, code, name) VALUES
-  (1, false, 'none',  'нет')
- ,(2, true,  'meta',  'метаданные системы')
- ,(3, true,  'short', 'Анти-DoS')
- ,(4, true,  'session', 'Данные сессий')
- ,(5, true,  'big', 'Большие объекты')
+  (  1, false, 'none',  'нет')
+  , (2, true,  'meta',  'метаданные системы')
+  , (3, true,  'short', 'Анти-DoS')
+  , (4, true,  'session', 'Данные сессий')
+  , (5, true,  'big', 'Большие объекты')
 ;
 
 INSERT INTO server VALUES (1, 'http://localhost:8080', 'Основной сервер');
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO method_rv_format VALUES (1, 'нет');
-INSERT INTO method_rv_format VALUES (2, 'скаляр');
-INSERT INTO method_rv_format VALUES (3, 'хэш');
-INSERT INTO method_rv_format VALUES (4, 'хэш {[i][0] -> [i][1]}');
-INSERT INTO method_rv_format VALUES (5, 'хэш {([i]{id}|[i]{code}) -> %[i]}');
-INSERT INTO method_rv_format VALUES (6, 'массив [i][0]');
-INSERT INTO method_rv_format VALUES (7, 'массив хэшей');
-INSERT INTO method_rv_format VALUES (8, 'массив массивов');
+INSERT INTO method_rv_format (id, name) VALUES
+  (  1, 'нет')
+  , (2, 'скаляр')
+  , (3, 'хэш')
+  , (4, 'хэш {[i][0] -> [i][1]}')
+  , (5, 'хэш {([i]{id}|[i]{code}) -> %[i]}')
+  , (6, 'массив [i][0]')
+  , (7, 'массив хэшей')
+  , (8, 'массив массивов')
+  , (10, 'дерево хэшей из массива [tag1.tag2][value]')
+;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:82_misc.sql / 47 --'
+\qecho '-- FD: pgws:ws:82_misc.sql / 50 --'

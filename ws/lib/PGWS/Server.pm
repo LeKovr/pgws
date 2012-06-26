@@ -510,6 +510,7 @@ sub _call_db {
 # (6, 'массив [i][0]');
 # (7, 'массив хэшей');
 # (8, 'массив массивов');
+# (10, 'дерево хэшей из массива [tag1.tag2][value]');
 
     if ($rvf < 4) {;
       $ret = $ret->[0]; # берем 1ю строку
@@ -533,6 +534,8 @@ sub _call_db {
         push @$ret2, $i->[0];
       }
       $ret = scalar(@$ret2)?$ret2:undef;
+    } elsif ($rvf == 10) {
+      $ret = PGWS::Utils::hashtree_mk($ret);
     }
     if (defined($ret)) {
       $res->{'result'} = { 'data' => $ret };
