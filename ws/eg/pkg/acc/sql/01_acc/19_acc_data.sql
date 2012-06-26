@@ -75,7 +75,7 @@ ALTER TABLE acc_data.session ALTER COLUMN id SET DEFAULT NEXTVAL('acc_data.sessi
 CREATE INDEX sid_deleted_at ON acc_data.session (sid, deleted_at);
 
 /* ------------------------------------------------------------------------- */
-SELECT ws.pkg_data_add('acc_data');
+SELECT ws.pkg_oper_add('acc_data');
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO acc_data.account_group (id, name, anno) VALUES

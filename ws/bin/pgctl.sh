@@ -85,7 +85,7 @@ db_empty_file_if_schema() {
   local file=$2
   local dest=$3
   echo "SELECT schema_name FROM information_schema.schemata WHERE schema_name = '$schema'" >> $dest
-  echo "\\g | read col; read delim ; read answer ; [[ "\$answer" ]] && echo \"-- File was erased because target schema exists (\$answer)\" > $file" >> $dest
+  echo "\\g | read col; read delim ; read answer ; [ "\$answer" ] && echo \"-- File was erased because target schema exists (\$answer)\" > $file" >> $dest
 }
 
 # ------------------------------------------------------------------------------
@@ -235,7 +235,7 @@ db_dumpdata() {
   local key=$(date "+%y%m%d_%H%M")
   local file=$PGWS_ROOT/var/dbdump-$key.tar
   echo "Dumping *_data to $file.gz..."
-  [ -f $file.gz ] && { echo "File exists. Abotring" ; exit ; }
+  [ -f $file.gz ] && { echo "File exists. Aborting" ; exit ; }
   ${PG_BINDIR}pg_dump -F t -f $file -n "*_data" -E UTF-8 "$CONN"
   gzip -9 $file
   echo "Dump complete."
@@ -253,8 +253,6 @@ db_restoredata() {
   ${PG_BINDIR}pg_restore -d "$CONN" --single-transaction $file > $LOGFILE 2>&1
   RETVAL=$?
   if [[ $RETVAL -eq 0 ]] ; then
-    echo "Deactivating PGWS packages..."
-    [[ "$DO_SQL" ]] && ${PG_BINDIR}psql -X -d "$CONN" -c "INSERT INTO ws_data.pkg (code, ver, log_name, user_name, ssh_client, is_add) SELECT code, ver, '', '', '', FALSE FROM ws_data.pkg where id in (select max(id) from ws_data.pkg group by code) AND is_add;" >> $LOGFILE 2>&1
     echo "Restore complete."
   else
     echo "*** Errors:"
@@ -265,7 +263,7 @@ db_restoredata() {
 # ------------------------------------------------------------------------------
 db_dropdata() {
   db_show_logfile
-  ${PG_BINDIR}psql -X -d "$CONN" -P tuples_only -c "SELECT code FROM ws_data.pkg_data" 2>> $LOGFILE | while read schema ; do
+  ${PG_BINDIR}psql -X -d "$CONN" -P tuples_only -c "SELECT code FROM ws_data.pkg_oper" 2>> $LOGFILE | while read schema ; do
     if [[ "$schema" ]] ; then
       echo "Dropping schema $schema..."
       ${PG_BINDIR}psql -X -d "$CONN" -c "DROP SCHEMA $schema CASCADE" >> $LOGFILE 2>&1

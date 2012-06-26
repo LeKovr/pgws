@@ -59,7 +59,17 @@ CREATE TABLE i18n_def.page_group (
 
 COMMENT ON TABLE i18n_def.page_group       IS 'Группа страниц для меню';
 COMMENT ON COLUMN i18n_def.page_group.id   IS 'ID группы';
-COMMENT ON COLUMN i18n_def.page_group.name IS 'название';
+COMMENT ON COLUMN i18n_def.page_group.name IS 'Название';
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:20_misc.sql / 65 --'
+CREATE TABLE i18n_def.cfg_group (
+  id           d_id32   PRIMARY KEY
+  , name       text     NOT NULL
+);
+
+COMMENT ON TABLE i18n_def.cfg_group       IS 'Группа параметров конфигурации';
+COMMENT ON COLUMN i18n_def.cfg_group.id   IS 'ID группы';
+COMMENT ON COLUMN i18n_def.cfg_group.name IS 'Название';
+
+/* ------------------------------------------------------------------------- */
+\qecho '-- FD: pgws:ws:20_misc.sql / 75 --'

@@ -34,24 +34,40 @@ CREATE TABLE compile_errors (
 COMMENT ON TABLE compile_errors IS 'Ошибки компиляции';
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE pkg (
+CREATE TABLE pkg_log (
   id            INTEGER PRIMARY KEY
-  , code        TEXT
-  , ver         TEXT
-  , is_add      BOOL DEFAULT TRUE
+  , code        TEXT NOT NULL DEFAULT 'ws'
+  , ver         TEXT NOT NULL DEFAULT '000'
+  , op          CHAR(1) DEFAULT '+'
   , log_name    TEXT
   , user_name   TEXT
   , ssh_client  TEXT
   , usr         TEXT DEFAULT current_user
   , ip          INET DEFAULT inet_client_addr()
   , stamp       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  , rm_id       INTEGER REFERENCES pkg
 );
 
-COMMENT ON TABLE pkg IS 'Пакеты PGWS';
+COMMENT ON TABLE pkg_log IS 'Журнал изменений пакетов PGWS';
 
 CREATE SEQUENCE pkg_id_seq;
-ALTER TABLE pkg ALTER COLUMN id SET DEFAULT NEXTVAL('pkg_id_seq');
+ALTER TABLE pkg_log ALTER COLUMN id SET DEFAULT NEXTVAL('pkg_id_seq');
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:20_pkg.sql / 57 --'
+CREATE TABLE pkg (
+  id            INTEGER NOT NULL UNIQUE
+  , code        TEXT PRIMARY KEY -- для REFERENCES
+  , ver         TEXT
+  , op          CHAR(1) DEFAULT '+'
+  , log_name    TEXT
+  , user_name   TEXT
+  , ssh_client  TEXT
+  , usr         TEXT DEFAULT current_user
+  , ip          INET DEFAULT inet_client_addr()
+  , stamp       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE pkg IS 'Актуальные пакеты PGWS';
+
+
+/* ------------------------------------------------------------------------- */
+\qecho '-- FD: pgws:ws:20_pkg.sql / 73 --'

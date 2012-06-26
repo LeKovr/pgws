@@ -24,33 +24,34 @@
 
 CREATE SCHEMA ws_data;
 
-/* ------------------------------------------------------------------------- */
-CREATE TABLE ws_data.pkg (
-  id            INTEGER PRIMARY KEY
-  , code        TEXT NOT NULL DEFAULT 'ws'
-  , ver         TEXT NOT NULL DEFAULT '000'
-  , is_add      BOOL DEFAULT TRUE
-  , log_name    TEXT
-  , user_name   TEXT
-  , ssh_client  TEXT
-  , db_user     TEXT DEFAULT current_user
-  , db_ip       INET DEFAULT inet_client_addr()
-  , stamp       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  , rm_id       INTEGER REFERENCES ws_data.pkg
-);
-
-COMMENT ON TABLE ws_data.pkg IS 'Пакеты PGWS';
-
-CREATE SEQUENCE ws_data.pkg_id_seq;
-ALTER TABLE ws_data.pkg ALTER COLUMN id SET DEFAULT NEXTVAL('ws_data.pkg_id_seq');
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE ws_data.pkg_data (
+CREATE TABLE ws_data.pkg_oper (
   code          TEXT PRIMARY KEY DEFAULT 'ws_data'
   , ver         TEXT NOT NULL DEFAULT '000'
   , stamp       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+COMMENT ON TABLE ws_data.pkg_oper IS 'Оперативные данные пакетов PGWS';
 
-INSERT INTO ws_data.pkg_data (code, ver) VALUES (DEFAULT, DEFAULT);
+INSERT INTO ws_data.pkg_oper (code, ver) VALUES (DEFAULT, DEFAULT);
+
+
+CREATE TABLE ws_data.cfg_value (
+  class_id    INTEGER  NOT NULL -- REFERENCES class
+  , code      TEXT
+  , id        INTEGER
+  , value     TEXT
+  , CONSTRAINT сfg_value_pkey PRIMARY KEY (class_id, code, id)
+);
+
+CREATE TABLE ws_data.cfg_timed_value (
+  class_id   INTEGER  NOT NULL -- REFERENCES class
+  , code      TEXT
+  , id        INTEGER
+  , valid_from DATE NOT NULL
+  , value     TEXT
+  , CONSTRAINT сfg_timed_value_pkey PRIMARY KEY (class_id, code, id, valid_from)
+);
+
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:19_ws_data.sql / 56 --'
+\qecho '-- FD: pgws:ws:19_ws_data.sql / 57 --'

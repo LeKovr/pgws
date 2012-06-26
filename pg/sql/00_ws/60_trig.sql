@@ -97,8 +97,8 @@ CREATE OR REPLACE FUNCTION page_insupd_trigger() RETURNS TRIGGER IMMUTABLE LANGU
 $_$  -- FD: pgws:ws:60_trig.sql / 97 --
   BEGIN
     IF NEW.uri_re IS NULL THEN
-      NEW.uri_re := regexp_replace(NEW.uri_re, E'\\?', E'\\?', 'g');
       NEW.uri_re := regexp_replace(NEW.uri, ':i', E'(\\d+)', 'g');
+      NEW.uri_re := regexp_replace(NEW.uri_re, E'\\?', E'\\?', 'g');
       NEW.uri_re := regexp_replace(NEW.uri_re, ':s', '([^/:]+)', 'g');
       NEW.uri_re := regexp_replace(NEW.uri_re, ':u', '((?:/[^/]+)*)', 'g');
     END IF;

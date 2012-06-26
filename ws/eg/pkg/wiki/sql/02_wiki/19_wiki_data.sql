@@ -77,7 +77,7 @@ SELECT pg_c('t', 'wiki_data.doc_diff', 'Изменения между ревиз
 ;
 
 /* ------------------------------------------------------------------------- */
-SELECT ws.pkg_data_add('wiki_data');
+SELECT ws.pkg_oper_add('wiki_data');
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO wiki_data.doc_group (id, code, name, anno) VALUES
