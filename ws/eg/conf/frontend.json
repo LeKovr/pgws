@@ -1,5 +1,5 @@
 {
-  "cookie_mask": "PGWS_SID=([\\w+]+)==",
+  "cookie_mask": "PGWS_SID=([\\w+/]+)==",
   "sid_arg":  "",
   "error_500": "/error/",
   "site_is_hidden": 1,

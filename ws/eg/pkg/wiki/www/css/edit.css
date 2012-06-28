@@ -4,6 +4,7 @@
   padding: 0;
   overflow: hidden;
   background: #F5F5F5;
+  min-width: 800px; /* минимальная ширина аккордиона*/
 }
 
 #accordion div.acc-panel {
@@ -61,8 +62,12 @@
  background-color: #9E7BFF;
 }
 
+#accordion p.acc-attr {
+ background-color: #00FFFF;
+}
+
 #accordion div.active {
-  width: 96%;
+  width: 92%;
 }
 
 label {

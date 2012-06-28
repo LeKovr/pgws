@@ -305,19 +305,25 @@ $_$ -- FD: pgws:ws:50_pg.sql / 266 --
         v_type := 'numeric'; -- clean "numeric(14,4)"
       ELSIF v_type ~ E'^double' THEN
         v_type := 'double'; -- clean "double precision"
+      ELSIF v_type ~ E'^character varying' THEN
+        v_type := 'text'; -- TODO: allow length
       END IF;
       RAISE NOTICE '   column % %', rec.attname, v_type;
-      INSERT INTO ws.dt_part (id, part_id, code, parent_id, anno, def_val, allow_null)
-        VALUES (v_id, rec.attnum, rec.attname, ws.dt_id(v_type), COALESCE(rec.anno, rec.attname), rec.def_val, NOT rec.attnotnull)
-      ;
-
+      BEGIN
+        INSERT INTO ws.dt_part (id, part_id, code, parent_id, anno, def_val, allow_null)
+          VALUES (v_id, rec.attnum, rec.attname, ws.dt_id(v_type), COALESCE(rec.anno, rec.attname), rec.def_val, NOT rec.attnotnull)
+        ;
+        EXCEPTION
+          WHEN CHECK_VIOLATION THEN
+          RAISE EXCEPTION 'Unregistered % part type (%)', v_code, v_type;
+      END;
     END LOOP;
     RETURN v_id;
   END;
 $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_c(a_type t_pg_object, a_code d_code, a_text text) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
-$_$ -- FD: pgws:ws:50_pg.sql / 320 --
+$_$ -- FD: pgws:ws:50_pg.sql / 326 --
   DECLARE
     v_code TEXT;
     v_name TEXT;
@@ -363,4 +369,4 @@ SELECT
 ;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:50_pg.sql / 366 --'
+\qecho '-- FD: pgws:ws:50_pg.sql / 372 --'

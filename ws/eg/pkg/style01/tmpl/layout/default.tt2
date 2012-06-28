@@ -35,6 +35,17 @@ pre { padding-bottom:25px; overflow-y:hidden; }
 </style>
 <![endif]-->
 [% END %]
+[% IF meta.datepicker %]
+<script type="text/javascript" src="/js/jquery-ui.datepicker.js"></script>
+<script type="text/javascript" src="/js/jquery-ui.datepicker-ru.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/jquery-ui.datepicker.css" />
+[% END %]
+[% IF meta.timepicker %]
+<script type="text/javascript" src="/js/jquery-ui.timepicker.js"></script>
+<script type="text/javascript" src="/js/jquery-ui.timepicker-ru.js"></script>
+<script type="text/javascript" src="/js/jquery-ui-slider.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/jquery-ui-slider.css" />
+[% END %]
 [% FOREACH h IN meta.html_headers; h _ "\n"; END; %]
 </head>
 <body>

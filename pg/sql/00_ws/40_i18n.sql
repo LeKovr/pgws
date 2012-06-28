@@ -44,7 +44,7 @@ COMMENT ON COLUMN i18n_def.page.sort       IS 'порядок сортировк
 COMMENT ON COLUMN i18n_def.page.uri        IS 'мета-маска с именами переменных, которой должен соответствовать URI запроса';
 COMMENT ON COLUMN i18n_def.page.tmpl       IS 'файл шаблона (NULL для внешних адресов)';
 COMMENT ON COLUMN i18n_def.page.id_source  IS 'ID объекта взять из этого поля сессии';
-COMMENT ON COLUMN i18n_def.page.is_hidden  IS 'Запрет включения в разметку страницы внешних блоков';
+COMMENT ON COLUMN i18n_def.page.is_hidden  IS 'Запрет включения внешних блоков в разметку страницы';
 COMMENT ON COLUMN i18n_def.page.target     IS 'значение атрибута target в формируемых ссылках';
 COMMENT ON COLUMN i18n_def.page.uri_re     IS 'regexp URI, вычисляется триггером при insert/update';
 COMMENT ON COLUMN i18n_def.page.uri_fmt    IS 'строка формата для генерации URI, вычисляется триггером при insert/update';
