@@ -280,7 +280,7 @@ sub response {
     $session->{'sid_arg'} .= ($have_sid_arg?'&':'?').'lang='.$session->{'lang'};
     $session->{'sid_pre'} .= 'lang='.$session->{'lang'}.'&';
   }
-  my $tmpl_meta = { 'status' => '200', 'html_headers' => [] };
+  my $tmpl_meta = { 'status' => '200', 'html_headers' => [], 'head' => {} };
   my $vars = {
     'api'         => sub { api($self, $ws, $errors, $meta, undef, @_) },
     'uri'         => sub { api($self, $ws, $errors, $meta, undef, $self->def_code, @_); },

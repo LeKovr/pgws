@@ -37,25 +37,40 @@ $_$  -- FD: pgws:ws:50_pkg.sql / 27 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_oper_add(a_code TEXT, a_ver TEXT) RETURNS VOID LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION test(a_code d_code) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$  -- FD: pgws:ws:50_pkg.sql / 41 --
+  BEGIN
+    --t/test1_global_config.t .. ok
+    --t/test2_run_config.t ..... ok
+    IF a_code IS NULL THEN
+      RAISE WARNING '::';
+    ELSE
+      RAISE WARNING '::%', rpad('t/'||a_code||' ', 20, '.');
+    END IF;
+    RETURN ' ***** ' || a_code || ' *****';
+  END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pkg_oper_add(a_code TEXT, a_ver TEXT) RETURNS VOID LANGUAGE 'sql' AS
+$_$  -- FD: pgws:ws:50_pkg.sql / 56 --
   INSERT INTO ws_data.pkg_oper (code, ver) VALUES ($1, $2);
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_oper_add(a_code TEXT) RETURNS VOID LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:50_pkg.sql / 47 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 62 --
   INSERT INTO ws_data.pkg_oper (code, ver) VALUES ($1, DEFAULT);
 $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg(a_code TEXT) RETURNS ws.pkg STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:50_pkg.sql / 52 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 67 --
   SELECT * FROM ws.pkg WHERE code = $1;
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_is_core_only() RETURNS BOOL STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:50_pkg.sql / 58 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 73 --
   DECLARE
     v_pkgs TEXT;
   BEGIN
@@ -73,7 +88,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_add(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:50_pkg.sql / 76 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 91 --
   DECLARE
     r_pkg ws.pkg%ROWTYPE;
   BEGIN
@@ -92,7 +107,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_make(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:50_pkg.sql / 95 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 110 --
   DECLARE
     r_pkg ws.pkg%ROWTYPE;
   BEGIN
@@ -119,7 +134,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_del(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:50_pkg.sql / 122 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 137 --
   DECLARE
     r_pkg ws.pkg%ROWTYPE;
     v_id  INTEGER;
@@ -143,7 +158,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_require(a_code TEXT) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:50_pkg.sql / 146 --
+$_$  -- FD: pgws:ws:50_pkg.sql / 161 --
   BEGIN
     RAISE NOTICE 'TODO: function needs code';
     RETURN NULL;
@@ -151,4 +166,4 @@ $_$  -- FD: pgws:ws:50_pkg.sql / 146 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:50_pkg.sql / 154 --'
+\qecho '-- FD: pgws:ws:50_pkg.sql / 169 --'

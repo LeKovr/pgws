@@ -37,7 +37,7 @@ db_run_sql_begin() {
 BEGIN;
 \set ON_ERROR_STOP 1
 SET CLIENT_ENCODING TO 'utf-8';
-
+SET CLIENT_MIN_MESSAGES TO 'WARNING';
 EOF
 }
 
@@ -86,6 +86,30 @@ db_empty_file_if_schema() {
   local dest=$3
   echo "SELECT schema_name FROM information_schema.schemata WHERE schema_name = '$schema'" >> $dest
   echo "\\g | read col; read delim ; read answer ; [ "\$answer" ] && echo \"-- File was erased because target schema exists (\$answer)\" > $file" >> $dest
+}
+
+# ------------------------------------------------------------------------------
+TEST_CNT="0"
+TEST_TTL="0"
+
+log() {
+  local test_total=$1
+  ret="0"
+  while read data
+  do
+    d=${data#* WARNING:  ::}
+    if [[ "$data" != "$d" ]] ; then
+     [[ "$TEST_CNT" == "0" ]] || echo "Ok"
+     TEST_CNT=$(($TEST_CNT+1))
+     [[ "$d" ]] && echo -n "($TEST_CNT/$TEST_TTL) $d "
+    else
+      [[ "$TEST_CNT" == "0" ]] || echo "FAIL"
+      echo "$data" >> ${LOGFILE}.err
+      echo "$data"
+      ret="1"
+    fi
+  done
+  return $ret
 }
 
 # ------------------------------------------------------------------------------
@@ -142,6 +166,7 @@ EOF
     [[ "$is_tac" == "$cat_cmd:" ]] && cat_cmd="tail -r"
   fi
   local p_pre=""
+  echo -n "0" > $BLD/test.cnt
   $cat_cmd $dirs | while read p s ; do
     pn=${s%%/sql*}    # package name
     sn=${s#*/sql/??_} # schema name
@@ -158,7 +183,7 @@ EOF
     for f in $file_mask ; do
       if [ -f "$f" ] ; then
         n=$(basename $f)
-        echo "Found: $s/$f"
+#        echo "Found: $s/$f"
         echo "Processing file: $s/$f" >> $LOGFILE
         awk "{gsub(/-- FD:(.*)--/, \"-- FD: $pn:$sn:$n / \" FNR \" --\")}; 1" $f > $BLD/$bd/$n
         if [[ $n != ${n%_$dn.sql} ]]; then
@@ -176,8 +201,10 @@ EOF
       for f in $s/9?_*.sql ; do
         [ -s "$f" ] || continue
         n=$(basename $f)
-        echo "Found test: $f"
+#        echo "Found test: $f"
         echo "Processing file: $f" >> $LOGFILE
+        c=$(grep -ciE "^\s*select\s+ws.test\(" $f)
+        [[ "$c" ]] && echo -n "+$c" >> $BLD/test.cnt
         awk "{gsub(/-- FD:(.*)--/, \"-- FD: $pn:$sn:$n / \" FNR \" --\")}; 1" $f > $BLD/$bd/$n
         n1=${n%.sql} # remove ext
         db_run_test $bd $n $n1 $sn $BLD/build.sql
@@ -192,13 +219,18 @@ EOF
       && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
     p_pre=$p
   done
+
+  test_op=$(cat $BLD/test.cnt)
+  TEST_TTL=$(($test_op))
+  rm $BLD/test.cnt
   popd > /dev/null
 
   db_run_sql_end $BLD/build.sql
-
+  # print last "Ok"
+  [[ "$run_op" == "del" ]] || echo "SELECT ws.test(NULL);" >> $BLD/build.sql
   pushd $BLD > /dev/null
   echo "Running build.sql..."
-  [[ "$DO_SQL" ]] && ${PG_BINDIR}psql -X -P footer=off -d "$CONN" -f build.sql > $LOGFILE 2>&1
+  [[ "$DO_SQL" ]] && ${PG_BINDIR}psql -X -P footer=off -d "$CONN" -f build.sql 3>&1 1>$LOGFILE 2>&3 | log $TEST_TTL
   RETVAL=$?
   popd > /dev/null
   if [[ $RETVAL -eq 0 ]] ; then
@@ -213,8 +245,8 @@ EOF
     [[ "$run_op" == "del" ]] && [ -f $flagfile ] && rm $flagfile
     echo "Complete"
   else
-    echo "*** Errors:"
-    grep ERROR $LOGFILE || echo "    None."
+#    echo "*** Errors found"
+#    grep ERROR $LOGFILE || echo "    None."
     [ -s "$BLD/errors.diff" ] && { echo "*** Diff:" ; cat "$BLD/errors.diff" ; }
   fi
 
