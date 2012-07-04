@@ -1,22 +1,20 @@
 [% META
   description = 'Просмотр статей wiki';
-
   meta.html_headers.push(
-    '<link rel="stylesheet" type="text/css" href="/css/wiki/common.css" />'
-    '<link rel="stylesheet" type="text/css" href="/css/wiki/edit.css" />'
+    '/css/wiki/common.css'
+    '/css/wiki/edit.css'
   );
-  meta.api = 1;
-  meta.datepicker = 1;
-  meta.timepicker = 1;
-  meta.autocomplete = 1;
+  meta.head.datepicker = 1;
+  meta.head.timepicker = 1;
+  meta.head.autocomplete = 1;
   group_code = page.args.0;
   doc_path = page.args.1;
   code = doc_path.remove('^/');
   ids = api('wiki.ids_by_code', group_code => group_code, code => code);
   wiki_class_id =  api('ws.class_id', code => 'wiki');
-  wiki_word_str =  api('wiki.doc_keyword', id => ids.id);  
- IF wiki_class_id; 
-  wiki_class_status =  api('ws.class_status:7', class_id => wiki_class_id); 
+  wiki_word_str =  api('wiki.doc_keyword', id => ids.id);
+ IF wiki_class_id;
+  wiki_class_status =  api('ws.class_status:7', class_id => wiki_class_id);
  END ;
   view_uri = uri(code => page.up_code, id => doc_path);
   view_pathname = uri_mk(view_uri.req);
@@ -244,7 +242,7 @@ var acl_wikisave = [% api('acl:wiki.save', id => ids.id) %]; //права на �
 
 $(document).ready(function(){
   // http://www.designchemical.com/blog/index.php/jquery/jquery-simple-horizontal-accordion/
-  activeItem = $("#accordion div.acc-panel:first");			
+  activeItem = $("#accordion div.acc-panel:first");
 	[% IF !ids.id; %]
 		activeItem = $("#p-edit").parent();
 	[% END; %]
@@ -272,7 +270,7 @@ $(document).ready(function(){
     }
     activeDiv.show();
   });
-  
+
   if (acl_wikisave){
 	$(".button_change").show();
   }
@@ -424,7 +422,7 @@ b.getSuggestions = function(q) {
       //призводим подмены из опции return_data[]
       nameTemp=s;
       idTemp=i;
-      
+
       suggestions.push(nameTemp);
       data.push(idTemp);
     }

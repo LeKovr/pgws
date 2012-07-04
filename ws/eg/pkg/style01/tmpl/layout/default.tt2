@@ -9,44 +9,15 @@
 <head>
 <title>[% resp.title %] - [% our_title %]</title>
 <meta http-equiv="Content-Type" content="[% resp.ctype %]; [% resp.enc %]" />
-<link href="/favicon.ico?19721023"     rel="shortcut icon" />
-<link href="/css/[% L %]/common.css?19721023"  media="all" rel="stylesheet" type="text/css" />
-[% IF meta.jquery || meta.api || meta.autocomplete %]
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
-[% END %]
-[% IF meta.api %]
-<script type="text/javascript" src="http://jquery-json.googlecode.com/files/jquery.json-2.3.min.js"></script>
-<script type="text/javascript" src="/js/jquery.pwl.js"></script>
-<script type="text/javascript">
-//<![CDATA[
-  var PWL_post_uri = "[% resp.post_uri %]";
-  var PWL_sid = "[% session.sid %]";
-  var PWL_lang = "[% session.lang %]";
-//]]>
-</script>
-[% END %]
-[% IF meta.autocomplete %]
-<script type="text/javascript" src="/js/jquery.autocomplete.js"></script>
-<link rel="stylesheet" type="text/css" href="/css/autocomplete.css" />
-<!--[if lte IE 7]>
-<style type="text/css">
-.autocomplete-w1 { left:0px; top:8px; }
-pre { padding-bottom:25px; overflow-y:hidden; }
-</style>
-<![endif]-->
-[% END %]
-[% IF meta.datepicker %]
-<script type="text/javascript" src="/js/jquery-ui.datepicker.js"></script>
-<script type="text/javascript" src="/js/jquery-ui.datepicker-ru.js"></script>
-<link rel="stylesheet" type="text/css" href="/css/jquery-ui.datepicker.css" />
-[% END %]
-[% IF meta.timepicker %]
-<script type="text/javascript" src="/js/jquery-ui.timepicker.js"></script>
-<script type="text/javascript" src="/js/jquery-ui.timepicker-ru.js"></script>
-<script type="text/javascript" src="/js/jquery-ui-slider.js"></script>
-<link rel="stylesheet" type="text/css" href="/css/jquery-ui-slider.css" />
-[% END %]
-[% FOREACH h IN meta.html_headers; h _ "\n"; END; %]
+[%
+  INCLUDE "block/$L/inc/default.tt2";
+  FOREACH i IN meta.head;
+    INCLUDE "block/$L/inc/${i.key}.tt2";
+  END;
+  FOREACH h IN meta.html_headers;
+    (h.search('\.css') ? "<link rel='stylesheet' href='$h' type='text/css' />" : "<script src='$h' type='text/javascript'></script>") _ "\n";
+  END;
+%]
 </head>
 <body>
 [% IF page.code != 'main'; root_page = uri(code => 'main'); root_href = uri_mk(root_page.req); END; %]

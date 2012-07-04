@@ -1,0 +1,10 @@
+<script type="text/javascript" src="http://jquery-json.googlecode.com/files/jquery.json-2.3.min.js"></script>
+[%
+  meta.html_headers.push("/js/jquery.pwl.js");
+%]<script type="text/javascript">
+  //<![CDATA[
+  var PWL_post_uri = "[% resp.post_uri %]";
+  var PWL_sid = "[% session.sid %]";
+  var PWL_lang = "[% session.lang %]";
+  //]]>
+</script>

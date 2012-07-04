@@ -35,7 +35,7 @@ table.debug th, table.debug td {
 </style>
 
 <div style="display: none;" id="debug" >
-[% IF meta.api %]
+[% IF meta.head.api %]
 <form id="debug-form">
 <table class="debug">
 <tr><th align="left" colspan="5">[% l('JSON-RPC debug levels') %]</th></tr>

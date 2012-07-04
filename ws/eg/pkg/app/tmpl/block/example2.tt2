@@ -1,6 +1,6 @@
 [% META
   description = 'Пример блока вызова функции'
-%][% meta.api = 1
+%][% meta.head.api = 1
 %]Class by ID:
 <form id="form2" onsubmit="return false;">
 <div id="form2___err" style="color:red"></div>

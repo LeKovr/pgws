@@ -1,0 +1,6 @@
+[%
+  meta.html_headers.push(
+    "/js/jquery-ui.timepicker.js"
+    "/js/jquery-ui.timepicker-ru.js"
+  );
+%]

@@ -3,10 +3,8 @@
 # This file is part of PGWS - Postgresql WebServices.
   description = 'Форма авторизации пользователя';
   meta.nosiblings = 1;
-  meta.api = 1;
-  meta.html_headers.push(
-    '<link rel="stylesheet" type="text/css" href="/css/acc/common.css" />'
-  );
+  meta.head.api = 1;
+  meta.html_headers.push('/css/acc/common.css');
 %]
 <div class="borderedBox single slim">
   <form id="main-form" action="js_required_but_not_available" onsubmit="return false;">

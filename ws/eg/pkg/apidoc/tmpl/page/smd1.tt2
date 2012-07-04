@@ -13,8 +13,7 @@
     INCLUDE block/apidoc/smd_li.tt2;
     RETURN;
   END;
-  meta.api = 1;
-  meta.autocomplete = 1;
+  meta.head.autocomplete = 1;
   pg = uri(code => 'api.smd1');
 %]
 

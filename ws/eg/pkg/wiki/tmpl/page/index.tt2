@@ -1,11 +1,9 @@
 [% META
   description = 'Просмотр статей wiki';
-
   meta.html_headers.push(
-   '<link rel="stylesheet" type="text/css" href="/css/wiki/common.css" />'
-   '<script src="http://yandex.st/highlightjs/6.2/highlight.min.js"></script>'
-   '<script>hljs.initHighlightingOnLoad();</script>'
- );
+    '/css/wiki/common.css'
+  );
+  meta.head.highlight = 1;
   group_code = page.args.0;
   doc_path = page.args.1;
   code = doc_path.remove('^/');
