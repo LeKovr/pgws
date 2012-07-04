@@ -27,7 +27,7 @@ usage: help
 
 install: test conf pkg var masterconf installcomplete
 
-installapp: test conf-app pkg-app var masterconf installcomplete
+installapp: test conf-app conf pkg-app var masterconf installcomplete
 
 conf:
 	@echo "*** $@ ***"
