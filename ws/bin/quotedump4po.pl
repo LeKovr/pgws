@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 #
-# json2conninfo.pl - Convert DB connect data from JSON to string
+# quotedump4po.pl - Generate .po quotes from sql dump
 # Usage: $0 < i18n_def.sql > i18n_def.tmpl
 
 use strict;

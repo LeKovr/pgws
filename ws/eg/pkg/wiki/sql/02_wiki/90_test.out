@@ -1,6 +1,6 @@
  login | status_id |      email       | psw 
 -------+-----------+------------------+-----
- admin |         1 | admin@pgws.local | ***
+ admin |         2 | admin@pgws.local | ***
 
  group_exists 
 --------------

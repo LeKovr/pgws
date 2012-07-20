@@ -23,7 +23,43 @@ package PGWS::Plugin::System::Cache;
 use PGWS;
 use PGWS::Utils;
 
+use constant ROOT               => ($ENV{PGWS_ROOT} || '');   # PGWS root dir
+
+use Cache::FastMmap;
+
 use base qw(PGWS::Plugin);
+
+use Data::Dumper;
+
+sub new {
+  my ($class, $self) = @_;
+  $self ||= {};
+  bless $self, $class;
+
+  my $cache = $self->{'_caches'} = {};
+  my $cache_list = $self->{'dbc'}->config;
+  foreach my $id (keys %$cache_list) {
+    my $def = $cache_list->{$id};
+    next unless ($def and $def->{'is_active'});
+    my $c = $def->{'code'};
+    my $f = sprintf '%svar/cache/%s.pgws', ROOT, $c;
+    $def->{'share_file'} = $f;
+    $def->{'unlink_on_exit'} = 0;
+    $cache->{$c} = Cache::FastMmap->new($def);
+    chmod 0666, $f;
+  }
+  return $self;
+}
+
+#----------------------------------------------------------------------
+sub cache_by_id {
+  my ($self, $id) = @_;
+  $id or PGWS::bye "Cache id required";
+  my $def = $self->{'dbc'}->config($id) or PGWS::bye "Unknown cache id ".$id;
+ # print STDERR 'PLUGIN2: ', $id,Dumper($def);
+
+  return $self->{'_caches'}{$def->{'code'}};
+}
 
 #----------------------------------------------------------------------
 # удалить из кэша метода $method все записи, содержащие в ключе $key
@@ -37,9 +73,12 @@ sub uncache {
 
   my $cache_id = $mtd_def->{'cache_id'};
 
+  my $cache_def = $self->{'dbc'}->config($cache_id);
+  my $cache_code = $cache_def->{'code'};
+
   my $removed = 0;
-  if ($srv->cache and exists($srv->cache->{$cache_id})) {
-    my $c = $srv->cache->{$cache_id};
+  if ($self->{'_caches'} and exists($self->{'_caches'}{$cache_code})) {
+    my $c = $self->{'_caches'}{$cache_code};
     my @keys = $c->get_keys();
     my $mkey=',"'.$mtd_def->{'code'}.'",';
     foreach my $k (@keys) {
@@ -52,7 +91,7 @@ sub uncache {
     }
     $meta->debug(
       'uncache method %s from cache %s with key %s removes %i rows'
-      , $mtd_def->{'code'}, $srv->cache->{'code'}, $key, $removed
+      , $mtd_def->{'code'}, $cache_code, $key, $removed
     );
   }
   return { 'result' => { 'data' => $removed } };
@@ -67,8 +106,11 @@ sub reset {
   my $ret = 0;
   my $key = PGWS::Utils::json_out($args);
 
-  if ($srv->cache and exists($srv->cache->{$cache_id})) {
-    $srv->cache->{$cache_id}->remove($key);
+  my $cache_def = $self->{'dbc'}->config($cache_id);
+  my $cache_code = $cache_def->{'code'};
+
+  if ($self->{'_caches'} and exists($self->{'_caches'}{$cache_code})) {
+    $self->{'_caches'}{$cache_code}->remove($key);
     $ret = 1;
   }
 
@@ -84,8 +126,11 @@ sub reset_mask {
   $cache_id ||= 3; # app cache
   my $ret = 0;
 
-  if ($srv->cache and exists($srv->cache->{$cache_id})) {
-    my $c = $srv->cache->{$cache_id};
+  my $cache_def = $self->{'dbc'}->config($cache_id);
+  my $cache_code = $cache_def->{'code'};
+
+  if ($self->{'_caches'} and exists($self->{'_caches'}{$cache_code})) {
+    my $c = $self->{'_caches'}{$cache_code};
     my @keys = $c->get_keys();
     foreach my $k (@keys) {
       foreach my $m (@$args) {
@@ -114,10 +159,10 @@ sub get_stats {
   $meta->dump({ 'reset_mask' => $args });
   my $do_clear = shift @$args || 0;
   my @ids = @$args;
-  @ids = keys %{$srv->cache} unless (scalar(@ids));
+  @ids = keys %{$self->{'_caches'}} unless (scalar(@ids));
   my $ret = {};
   foreach my $i (@ids) {
-    my ($nreads, $nreadhits) = $srv->cache->{$i}->get_statistics($do_clear);
+    my ($nreads, $nreadhits) = $self->{'_caches'}{$i}->get_statistics($do_clear);
     $ret->{$i} = { 'nreads' => $nreads, 'nreadhits' => $nreadhits};
   }
   return { 'result' => { 'data' => $ret } };

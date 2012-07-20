@@ -17,35 +17,26 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Функции ядра
 */
--- 52_main.sql - Функции ядра
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:52_main.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION cache(a_id d_id32 DEFAULT 0) RETURNS SETOF cache STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 27 --
-  SELECT * FROM ws.cache WHERE $1 IN (id, 0) ORDER BY name;
+CREATE OR REPLACE FUNCTION cache(a_id d_id32 DEFAULT 0) RETURNS SETOF t_hashtable STABLE STRICT LANGUAGE 'sql' AS
+$_$
+  SELECT poid::text, name FROM wsd.prop_owner WHERE pogc = 'cache' AND $1 IN (poid, 0) ORDER BY name;
 $_$;
 SELECT pg_c('f', 'cache', 'Атрибуты кэша по id');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION cache_by_code(a_code d_code) RETURNS SETOF cache STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 34 --
-  SELECT * FROM ws.cache WHERE code = $1;
-$_$;
-SELECT pg_c('f', 'cache_by_code', 'Атрибуты кэша по коду');
-
-/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_group_name(a_id d_id32) RETURNS TEXT STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 41 --
+$_$
   SELECT name FROM page_group WHERE id = $1;
 $_$;
 SELECT pg_c('f', 'page_group_name', 'Название группы страниц');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_by_uri(a_uri TEXT DEFAULT '') RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 48 --
+$_$
   SELECT *
     , $1
     , ws.uri_args($1, uri_re)
@@ -56,7 +47,7 @@ SELECT pg_c('f', 'page_by_uri', 'Атрибуты страницы по uri');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_by_code(a_code TEXT, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 59 --
+$_$
   SELECT *
     , ws.sprintf(uri_fmt, $2, $3, $4)
     , ws.uri_args(ws.sprintf(uri_fmt, $2, $3, $4), uri_re)
@@ -67,7 +58,7 @@ SELECT pg_c('f', 'page_by_code', 'Атрибуты страницы  по код
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_by_action(a_class_id d_class DEFAULT 0, a_action_id d_id32 DEFAULT 0, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 70 --
+$_$
   SELECT *
     , ws.sprintf(uri_fmt, $3, $4, $5)
     , ws.uri_args(ws.sprintf(uri_fmt, $3, $4, $5), uri_re)
@@ -78,7 +69,7 @@ SELECT pg_c('f', 'page_by_action', 'Атрибуты страницы  по ак
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_path(a_code TEXT DEFAULT NULL, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS SETOF t_page_info STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 81 --
+$_$
   DECLARE
     r ws.t_page_info;
   BEGIN
@@ -102,7 +93,7 @@ SELECT pg_c('f', 'page_path', 'Атрибуты страниц пути от з�
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.is_ids_enough(a_class_id ws.d_class, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS BOOL STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 105 --
+$_$
   DECLARE
     v_id_count ws.d_cnt;
   BEGIN
@@ -119,7 +110,7 @@ SELECT pg_c('f', 'is_ids_enough', 'Достаточно ли заданных ID
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_childs(a_code TEXT DEFAULT NULL, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 122 --
+$_$
   SELECT *
     , ws.sprintf(uri_fmt, $2, $3, $4)
     , ws.uri_args(ws.sprintf(uri_fmt, $2, $3, $4), uri_re)
@@ -130,7 +121,7 @@ SELECT pg_c('f', 'page_childs', 'Атрибуты страниц, имеющих
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_tree(a_code TEXT DEFAULT NULL) RETURNS SETOF t_hashtable STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 133 --
+$_$
   -- http://explainextended.com/2009/07/17/postgresql-8-4-preserving-order-for-hierarchical-query/
   WITH RECURSIVE q AS (
     SELECT h, 1 AS level, ARRAY[sort::int] AS breadcrumb
@@ -151,7 +142,7 @@ SELECT pg_c('f', 'page_tree', 'Иерархия страниц, имеющих �
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION method_by_code(a_code d_code) RETURNS SETOF method STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 154 --
+$_$
   SELECT * FROM ws.method WHERE code = $1 ORDER BY 2,3,1;
 --  SELECT * FROM ws.method WHERE code LIKE $1 ORDER BY 2,3,1;
 $_$;
@@ -159,7 +150,7 @@ SELECT pg_c('f', 'method_by_code', 'Атрибуты метода по коду'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION method_by_action(a_class_id d_class DEFAULT 0, a_action_id d_id32 DEFAULT 0) RETURNS SETOF method STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 162 --
+$_$
   SELECT *
     FROM ws.method WHERE $1 IN (class_id, 0) AND $2 IN (action_id, 0) ORDER BY 2,3,1;
 $_$;
@@ -172,7 +163,7 @@ CREATE INDEX company_title_like ON company (title text_pattern_ops);
 подходит только если не ilike или 1й символ не буква (only if the pattern starts with non-alphabetic characters)
 */
 CREATE OR REPLACE FUNCTION method_lookup(a_code d_code_like DEFAULT '%', a_page ws.d_cnt DEFAULT 0, a_by ws.d_cnt DEFAULT 0) RETURNS SETOF ws.method STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 175 --
+$_$
   SELECT *
     FROM ws.method
     WHERE code ilike '%'||$1 -- ищем по всему имени
@@ -185,7 +176,7 @@ SELECT ws.pg_c('f', 'method_lookup', 'Поиск метода по code');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION method_rvf(a_id d_id32 DEFAULT 0) RETURNS SETOF method_rv_format STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 188 --
+$_$
   SELECT * FROM ws.method_rv_format WHERE $1 IN (id, 0) ORDER BY 1;
 $_$;
 SELECT pg_c('f', 'method_rvf', 'Список форматов результата метода');
@@ -193,11 +184,43 @@ SELECT pg_c('f', 'method_rvf', 'Список форматов результат
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION error_info(a_code d_errcode) RETURNS error STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_main.sql / 196 --
+$_$
   SELECT * FROM error WHERE code = $1;
 $_$;
 SELECT pg_c('f', 'error_info', 'Описание ошибки');
 
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:52_main.sql / 203 --'
+CREATE OR REPLACE FUNCTION ref(a_id d_id32, a_item_id d_id32 DEFAULT 0, a_group_id d_id32 DEFAULT 0, a_active_only BOOL DEFAULT TRUE) RETURNS SETOF ref_item STABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_code TEXT;
+  BEGIN
+  RETURN QUERY
+    SELECT *
+    FROM ws.ref_item
+    WHERE ref_id = a_id
+      AND a_item_id IN (id, 0)
+      AND a_group_id IN (group_id, 0)
+      AND (NOT a_active_only OR deleted_at IS NULL)
+      ORDER BY sort
+  ;
+  IF NOT FOUND THEN
+    SELECT INTO v_code code FROM ws.ref WHERE id = a_id;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION '%', ws.e_nodata();
+    END IF;
+    RETURN QUERY EXECUTE 'SELECT * FROM ' || v_code || '($1, $2, $3)' USING a_id, a_item_id, a_group_id;
+  END IF;
+  RETURN;
+  END;
+$_$;
+SELECT pg_c('f', 'ref', 'Значение из справочника ws.ref');
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION ref_info(a_id d_id32) RETURNS SETOF ref STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT * FROM ws.ref WHERE id = $1;
+$_$;
+SELECT pg_c('f', 'ref_info', 'Атрибуты справочника');
+
+/* ------------------------------------------------------------------------- */

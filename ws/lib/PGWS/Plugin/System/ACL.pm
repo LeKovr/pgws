@@ -45,7 +45,7 @@ sub check {
   my $res = {};
 
   # получить статус экземпляра (class_status)
-  my $tag = $class->{'code'}.$self->cfg->{'def_suffix'}{'status'};
+  my $tag = $class->{'code'}.$self->dbc->config('be.def_suffix.status');
   my $status_id = $self->_call_meta($tag, $meta, @ids);
   unless ($status_id) {
     # нет статуса => нет объекта
@@ -54,7 +54,7 @@ sub check {
     return $res;
   }
   # получить список acl пользователя
-  $tag = $class->{'code'}.$self->cfg->{'def_suffix'}{'acl'};
+  $tag = $class->{'code'}.$self->dbc->config('be.def_suffix.acl');
   my $acl = $self->_call_meta($tag, $meta, @ids, $sid);
   unless ($acl) {
     $meta->dump({ 'tag' => $tag, 'sid' => $sid, 'ids' => \@ids });

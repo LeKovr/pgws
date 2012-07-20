@@ -20,6 +20,28 @@
 #
 
 # ------------------------------------------------------------------------------
+pgws_help() {
+  cat <<EOF
+
+  Usage:
+
+    $0 MODULE CMD [AGRS]
+
+  Where MODULE is one from:
+EOF
+
+  for f in var/ctl/*.sh ; do
+    [[ "$f" == "var/ctl/pgwsctl.sh" ]] || { echo -n "  " ; . $f anno ; }
+  done
+
+  cat <<EOF
+
+    Each module has own help for CMD. See $0 MODULE help
+
+EOF
+}
+
+# ------------------------------------------------------------------------------
 lookup_sudo() {
   local sudo=$(whereis -b sudo)
   if [[ "$sudo" == "sudo:" ]] ; then
@@ -31,135 +53,12 @@ lookup_sudo() {
 }
 
 # ------------------------------------------------------------------------------
-init_tmpl() {
-  local src=$1
-  local dirs=$2
-  local dest=$PGWS_ROOT/var/tmpl
-  pushd $PGWS_ROOT/$src > /dev/null
-  for tag in $dirs ; do
-    if [ -d $tag/tmpl ] ; then
-      local d=$tag/tmpl
-      pushd $d > /dev/null
-      local n=${d%/tmpl}
-      for f in * ; do
-        if [ -d $f ] && [[ "$f" != "macro" ]] ; then
-          [ -d $dest/$f ] || { echo "mkdir $f" ; mkdir -p $dest/$f ; }
-          [ -e $dest/$f/$n ] || { echo "$n: $f" ; ln -s $PWD/$f $dest/$f/$n ; }
-        fi
-      done
-      [ -f config.tt2 ] && [ ! -s $dest/config.tt2 ] && { echo "$n: config.tt2" ; ln -sf $PWD/config.tt2 $dest/config.tt2; }
-      popd > /dev/null
-    fi
-  done
-  d="app/tmpl/macro"
-  if [ -d $d ] ; then
-    [ -d $dest/macro ] || { echo "mkdir macro" ; mkdir -p $dest/macro ; }
-    pushd $d > /dev/null
-    for f in * ; do
-      [ -e $dest/macro/$f ] || { echo "$d: $f" ; ln -s $PWD/$f $dest/macro/$f ; }
-    done
-    popd > /dev/null
-  fi
-#  [ -s $dest/config.tt2 ] || ln -s $PWD/app/tmpl/config.tt2 $dest/config.tt2
-  popd > /dev/null
-}
+pgws_run_perl() {
+  local bin=$1
+  local cmd=$2
 
-# ------------------------------------------------------------------------------
-init_lib() {
-  local src=$1
-  local dirs=$2
-  local dest=$PGWS_ROOT/lib
-  pushd $PGWS_ROOT/$src > /dev/null
-  for tag in $dirs ; do
-    if [ -d $tag/lib ] ; then
-      local d=$tag/tmpl
-      pushd "$tag" > /dev/null
-      for file in $(find lib -name *.pm) ; do 
-        local d0=$(dirname $file) # filedir
-        local n=${d0#lib}
-        local f=${file#$d0/}
-        [ -d $dest$n ] || { echo "mkdir $n" ; mkdir -p $dest$n ; }
-        [ -e $dest$n/$f ] || { echo "$n: $f" ; ln -s $PWD/lib$n/$f $dest$n/$f ; }
-      done
-      popd > /dev/null
-    fi
-  done
-  popd > /dev/null
-}
+  $SUDO_CMD "cd $PGWS_ROOT && perl $PGWS/$PGWS_WS/bin/starter.pl $bin $cmd"
 
-# ------------------------------------------------------------------------------
-fcgi_cmd() {
-  local cmd=$1
-
-  if [[ "$cmd" == "start" || "$cmd" == "restart" ]] ; then
-    [[ "$PGWS_APP_PKG" ]] && init_tmpl $PGWS_APP "$PGWS_APP_PKG"
-    init_tmpl $PGWS "$PGWS_PKG"
-
-    [[ "$PGWS_APP_PKG" ]] && init_lib $PGWS_APP "$PGWS_APP_PKG"
-    init_lib $PGWS "$PGWS_PKG"
-
-    [ -s $PGWS_ROOT/var/i18n ] || { echo "var: i18n" ; ln -s $PGWS_ROOT/pkg/i18n/src/templates $PGWS_ROOT/var/i18n; }
-
-  fi
-  local bin=$PGWS_ROOT/$PGWS/$PGWS_WS/bin
-  case "$cmd" in
-    restart)
-      $SUDO_CMD "cd $PGWS_ROOT && perl $bin/fcgid.pl stop"
-      $SUDO_CMD "cd $PGWS_ROOT && perl $bin/cachectl.pl clear > /dev/null"
-      # TODO: get path from conf/fcgi.json
-      # [ -f "$PGWS_ROOT/var/log/fcgid*.log" ] && mv $PGWS_ROOT/var/log/fcgid*.log *.$$
-      $SUDO_CMD "cd $PGWS_ROOT && perl $bin/fcgid.pl start"
-      ;;
-    *)
-      $SUDO_CMD "cd $PGWS_ROOT && perl $bin/fcgid.pl $cmd"
-      ;;
-  esac
-}
-
-# ------------------------------------------------------------------------------
-tm_cmd() {
-  local cmd=$1
-
-  [[ "$PGWS_APP_PKG" ]] && init_tmpl $PGWS_APP "$PGWS_APP_PKG"
-  init_tmpl $PGWS "$PGWS_PKG"
-
-  [[ "$PGWS_APP_PKG" ]] && init_lib $PGWS_APP "$PGWS_APP_PKG"
-  init_lib $PGWS "$PGWS_PKG"
-
-  local bin=$PGWS_ROOT/$PGWS/$PGWS_WS/bin
-  case "$cmd" in
-    restart)
-      $SUDO_CMD "cd $PGWS_ROOT && perl $bin/tmd.pl stop"
-      $SUDO_CMD "cd $PGWS_ROOT && perl $bin/tmd.pl start"
-      ;;
-    *)
-      $SUDO_CMD "cd $PGWS_ROOT && perl $bin/tmd.pl $cmd"
-      ;;
-  esac
-}
-
-# ------------------------------------------------------------------------------
-help() {
-cat <<EOF
-Vars:
-  PGWS:        $PGWS
-  APP:         $PGWS_APP
-  PGWS PKG:    $PGWS_PKG
-  PGWS_APP:    $PGWS_APP_PKG
-
-Usage:
-    $0 (db|fcgi|tm|cache|i18n) CMD [AGRS]
-
-  Where
-
-    db    - Database control module. See $0 db help
-    fcgi  - FastCGI daemon control. See $0 fcgi help
-    tm    - Task Manager daemon control. See $0 tm help
-    cache - Cache control. See $0 cache help
-    i18n  - i18n control
-
-
-EOF
 }
 
 # ------------------------------------------------------------------------------
@@ -170,10 +69,17 @@ LOG=$PGWS_ROOT/var/log
 STAMP=$(date +%y%m%d-%H%m)-$$
 LOGFILE=$LOG/$CMD-$STAMP.log
 
-DBCTL=$PGWS_ROOT/$PGWS/$PGWS_WS/bin/${PGWS_DB}ctl.sh
-I18NCTL=$PGWS_ROOT/$PGWS/$PGWS_WS/bin/i18nctl.sh
+saveIFS="$IFS"
+IFS=$'\n'
+array=($(perl $PGWS_ROOT/$PGWS/$PGWS_WS/bin/json2var.pl PACKAGES DAEMON_USER < $PGWS_ROOT/config.json))
+IFS="$saveIFS"
+PGWS_APP_PKG=${array[0]}
+PGWS_RUNAS=${array[1]}
+
+[[ "$PGWS_RUNAS" ]] || PGWS_RUNAS=$USER
 
 SUDO_CMD=$(lookup_sudo)
+
 cat <<EOF
   =========================================================
   Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
@@ -183,32 +89,20 @@ cat <<EOF
 
   Root:        $PGWS_ROOT
   Command:     $CMD $@
+  Packages:    $PGWS_APP_PKG
   Daemon user: $PGWS_RUNAS
+  Sudo:        $SUDO_CMD
   ---------------------------------------------------------
 EOF
 
-case "$CMD" in
-  init)
-    init
-    ;;
-  db)
-    . $DBCTL "$@"
-    ;;
-  i18n)
-    . $I18NCTL "$@"
-    ;;
-  fcgi)
-    fcgi_cmd $1
-    ;;
-  tm)
-    tm_cmd $1
-    ;;
-  cache)
-    $SUDO_CMD cd $PGWS_ROOT && perl $PGWS_ROOT/$PGWS/$PGWS_WS/bin/cachectl.pl $@
-    ;;
-  *)
-    help
-    ;;
-esac
+[[ "$CMD" == "db" ]] && CMD=$PGWS_DB
+
+if [ -f var/ctl/${CMD}ctl.sh ] ; then
+  . var/ctl/${CMD}ctl.sh anno
+  echo "  ---------------------------------------------------------"
+  . var/ctl/${CMD}ctl.sh "$@"
+else
+  pgws_help
+fi
 
 # ------------------------------------------------------------------------------

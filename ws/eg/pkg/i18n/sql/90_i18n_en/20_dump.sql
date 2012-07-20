@@ -27,14 +27,20 @@
 
 SET statement_timeout = 0;
 SET client_encoding = 'UTF8';
-SET standard_conforming_strings = off;
+SET standard_conforming_strings = on;
 SET check_function_bodies = false;
-SET escape_string_warning = off;
 
 --
 -- Name: i18n_en; Type: SCHEMA; Schema: -; Owner: -
 --
 
+
+
+--
+-- Name: SCHEMA i18n_en; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON SCHEMA i18n_en IS 'WebService (PGWS) default internationalization data';
 
 
 SET search_path = i18n_en, pg_catalog;
@@ -45,7 +51,7 @@ SET search_path = i18n_en, pg_catalog;
 
 CREATE FUNCTION amount2words(source numeric, up_mode integer) RETURNS text
     LANGUAGE plpgsql IMMUTABLE
-    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 48 --
+    AS $$ /* ws:ws:51_i18n.sql / 60 */ 
 /*
   Сумма прописью в рублях и копейках
   up_mode = 0 - все символы строчные
@@ -171,7 +177,7 @@ COMMENT ON FUNCTION amount2words(source numeric, up_mode integer) IS 'Сумма
 
 CREATE FUNCTION date_name(a_date date) RETURNS text
     LANGUAGE plpgsql IMMUTABLE
-    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 174 --
+    AS $$ /* ws:ws:51_i18n.sql / 11 */ 
   DECLARE
     m_names TEXT := 'january february march april may june july august september october november december';
   BEGIN
@@ -196,7 +202,7 @@ COMMENT ON FUNCTION date_name(a_date date) IS 'Название даты вид�
 
 CREATE FUNCTION date_name_doc(a_date date) RETURNS text
     LANGUAGE sql IMMUTABLE
-    AS $_$  -- FD: i18n:i18n_en:20_dump.sql / 199 --
+    AS $_$ /* ws:ws:51_i18n.sql / 25 */ 
   SELECT CASE WHEN date_part('day', $1) < 10 THEN '0' ELSE '' END || date_name($1)
 $_$;
 
@@ -214,7 +220,7 @@ COMMENT ON FUNCTION date_name_doc(a_date date) IS 'Название даты в�
 
 CREATE FUNCTION month_amount_name(a_id integer) RETURNS text
     LANGUAGE sql IMMUTABLE
-    AS $_$  -- FD: i18n:i18n_en:20_dump.sql / 217 --
+    AS $_$ /* ws:ws:51_i18n.sql / 45 */ 
   SELECT CASE
     WHEN $1 % 10 = 1 AND $1 <> 11 THEN $1::text || ' ' || 'месяц'
     WHEN $1 IN (24,36,48) THEN $1/12 || ' ' || 'года'
@@ -240,7 +246,7 @@ COMMENT ON FUNCTION month_amount_name(a_id integer) IS 'Название пер�
 
 CREATE FUNCTION month_name(a_date date) RETURNS text
     LANGUAGE plpgsql IMMUTABLE
-    AS $$  -- FD: i18n:i18n_en:20_dump.sql / 243 --
+    AS $$ /* ws:ws:51_i18n.sql / 32 */ 
   DECLARE
     m_names TEXT := 'january february march april may june july august september october november december';
   BEGIN
@@ -301,7 +307,7 @@ CREATE TABLE page_name (
 --
 
 CREATE VIEW page AS
-    SELECT d.code, d.up_code, d.class_id, d.action_id, d.group_id, d.sort, d.uri, d.tmpl, d.id_source, d.is_hidden, d.target, d.uri_re, d.uri_fmt, n.name FROM (ws.page_data d JOIN page_name n USING (code));
+    SELECT d.code, d.up_code, d.class_id, d.action_id, d.group_id, d.sort, d.uri, d.tmpl, d.id_source, d.is_hidden, d.target, d.uri_re, d.uri_fmt, d.pkg, n.name FROM (ws.page_data d JOIN page_name n USING (code));
 
 
 --
@@ -378,7 +384,7 @@ COMMENT ON COLUMN page.id_source IS 'Session field to get object ID from';
 -- Name: COLUMN page.is_hidden; Type: COMMENT; Schema: i18n_en; Owner: -
 --
 
-COMMENT ON COLUMN page.is_hidden IS 'Запрет включения в разметку страницы внешних блоков';
+COMMENT ON COLUMN page.is_hidden IS 'Запрет включения внешних блоков в разметку страницы';
 
 
 --
@@ -400,6 +406,13 @@ COMMENT ON COLUMN page.uri_re IS 'regexp for URI, calculated by insert/update tr
 --
 
 COMMENT ON COLUMN page.uri_fmt IS 'format string for URI generation, filled by insert/update trigger';
+
+
+--
+-- Name: COLUMN page.pkg; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN page.pkg IS 'пакет, в котором зарегистрирована страница';
 
 
 --
@@ -437,21 +450,21 @@ COMMENT ON COLUMN page_group.id IS 'Group ID';
 -- Name: COLUMN page_group.name; Type: COMMENT; Schema: i18n_en; Owner: -
 --
 
-COMMENT ON COLUMN page_group.name IS 'name';
+COMMENT ON COLUMN page_group.name IS 'Название';
 
 
 --
 -- Name: id_count; Type: DEFAULT; Schema: i18n_en; Owner: -
 --
 
-ALTER TABLE error ALTER COLUMN id_count SET DEFAULT 0;
+ALTER TABLE ONLY error ALTER COLUMN id_count SET DEFAULT 0;
 
 
 --
 -- Name: target; Type: DEFAULT; Schema: i18n_en; Owner: -
 --
 
-ALTER TABLE page ALTER COLUMN target SET DEFAULT ''::text;
+ALTER TABLE ONLY page ALTER COLUMN target SET DEFAULT ''::text;
 
 
 --
@@ -469,13 +482,13 @@ INSERT INTO error_message VALUES ('Y0103', 0, 'authorization required (no sessio
 INSERT INTO error_message VALUES ('Y0104', 1, 'incorrect session id "%s"');
 INSERT INTO error_message VALUES ('Y0105', 1, 'no check for acl "%s"');
 INSERT INTO error_message VALUES ('Y0106', 1, 'incorrect status id "%s"');
-INSERT INTO error_message VALUES ('Y0021', 1, 'no access to sum result when a = %i');
-INSERT INTO error_message VALUES ('Y0022', 1, 'no data for a = %i');
 INSERT INTO error_message VALUES ('Y9901', 1, 'Не найдена группа "%s"');
 INSERT INTO error_message VALUES ('Y9902', 1, 'Версия документа (%s) не актуальна и(или) устарела');
 INSERT INTO error_message VALUES ('Y9903', 1, 'Документ с таким адресом уже создан (%s)');
 INSERT INTO error_message VALUES ('Y9904', 0, 'Документ не содержит изменений');
 INSERT INTO error_message VALUES ('Y9905', 0, 'Документ не найден');
+INSERT INTO error_message VALUES ('Y0021', 1, 'no access to sum result when a = %i');
+INSERT INTO error_message VALUES ('Y0022', 1, 'no data for a = %i');
 
 
 --
@@ -489,19 +502,12 @@ INSERT INTO error_message VALUES ('Y9905', 0, 'Документ не найде�
 --
 
 INSERT INTO page_name VALUES ('main', 'API');
-INSERT INTO page_name VALUES ('api', 'API docs');
-INSERT INTO page_name VALUES ('api.smd', 'Methods');
-INSERT INTO page_name VALUES ('api.map', 'Pages');
-INSERT INTO page_name VALUES ('api.xsd', 'Types');
-INSERT INTO page_name VALUES ('api.class', 'Classes');
-INSERT INTO page_name VALUES ('api.smd1', 'Methods via JS');
-INSERT INTO page_name VALUES ('api.class.single', 'Class');
-INSERT INTO page_name VALUES ('api.test', 'Test page');
 INSERT INTO page_name VALUES ('login', 'Вход');
 INSERT INTO page_name VALUES ('logout', 'Выход');
 INSERT INTO page_name VALUES ('wiki.wk', 'Вики');
 INSERT INTO page_name VALUES ('wiki.wk.edit', 'Редактирование');
 INSERT INTO page_name VALUES ('wiki.wk.history', 'История изменений');
+INSERT INTO page_name VALUES ('api.test', 'Test page');
 
 
 --
@@ -539,7 +545,7 @@ CREATE RULE error_ins AS ON INSERT TO error DO INSTEAD (INSERT INTO ws.error_dat
 -- Name: page_ins; Type: RULE; Schema: i18n_en; Owner: -
 --
 
-CREATE RULE page_ins AS ON INSERT TO page DO INSTEAD (INSERT INTO ws.page_data (code, up_code, class_id, action_id, group_id, sort, uri, tmpl, id_source, is_hidden, target, uri_re, uri_fmt) VALUES (new.code, new.up_code, new.class_id, new.action_id, new.group_id, new.sort, new.uri, new.tmpl, new.id_source, DEFAULT, DEFAULT, new.uri_re, new.uri_fmt); UPDATE ws.page_data SET is_hidden = COALESCE(new.is_hidden, page_data.is_hidden), target = COALESCE(new.target, page_data.target) WHERE ((page_data.code)::text = (new.code)::text); INSERT INTO page_name (code, name) VALUES (new.code, new.name); );
+CREATE RULE page_ins AS ON INSERT TO page DO INSTEAD (INSERT INTO ws.page_data (code, up_code, class_id, action_id, group_id, sort, uri, tmpl, id_source, is_hidden, target, uri_re, uri_fmt, pkg) VALUES (new.code, new.up_code, new.class_id, new.action_id, new.group_id, new.sort, new.uri, new.tmpl, new.id_source, DEFAULT, DEFAULT, new.uri_re, new.uri_fmt, COALESCE(new.pkg, (ws.pg_cs())::text)); UPDATE ws.page_data SET is_hidden = COALESCE(new.is_hidden, page_data.is_hidden), target = COALESCE(new.target, page_data.target) WHERE ((page_data.code)::text = (new.code)::text); INSERT INTO page_name (code, name) VALUES (new.code, new.name); );
 
 
 --

@@ -17,14 +17,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Метод API add
 */
--- 50_add.sql - Метод API add
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:52_add.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION add (a INTEGER, b INTEGER DEFAULT 0) RETURNS INTEGER STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: app:app:52_add.sql / 27 --
+$_$  -- FD: app:app:50_add.sql / 13 --
   -- a: Слагаемое 1
   -- b: Слагаемое 2
 BEGIN
@@ -36,16 +34,13 @@ BEGIN
     RAISE EXCEPTION '%', ws.e_noaccess();
   ELSIF a = -3 THEN
     -- app form error
-    RAISE EXCEPTION '%', ws.error_str(app.const('APP_ERR_NOINTERNAL')::ws.d_errcode, a::text);
+    RAISE EXCEPTION '%', ws.error_str(app.const_error_forbidden()::ws.d_errcode, a::text);
   ELSIF a = -4 THEN
     -- app form field error
-    RAISE EXCEPTION '%', ws.perror_str(app.const('APP_ERR_NOTFOUND')::ws.d_errcode, 'a', a::text);
+    RAISE EXCEPTION '%', ws.perror_str(app.const_error_notfound()::ws.d_errcode, 'a', a::text);
   END IF;
 
   RETURN a + b;
 END;
 $_$;
 SELECT pg_c('f', 'add', 'Сумма 2х целых');
-
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:52_add.sql / 51 --'

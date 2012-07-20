@@ -23,7 +23,8 @@ package PGWS::Frontend;
 use PGWS;
 use PGWS::Utils;
 use PGWS::Meta;
-use PGWS::Server;
+use PGWS::Core;
+use PGWS::DBConfig;
 
 use Template;
 use strict;
@@ -37,55 +38,53 @@ BEGIN {
     $dir = getcwd;
 }
 
-use Locale::Maketext::Simple('Path' => $dir.'/var/i18n');
+use constant ROOT               => ($ENV{PGWS_ROOT} || '');   # PGWS root dir
+use constant POGC               => 'fe';                      # Property Owner Group Code
+
+use constant COOKIE_MASK        => ($ENV{PGWS_FE_COOKIE_MASK});
+use constant DEBUG_IFACE        => ($ENV{PGWS_FE_DEBUG_IFACE} || 0);
+
+
+use Locale::Maketext::Simple('Path' => ROOT.'/var/i18n');
+
 
 # Доступный извне номер версии
 our $VERSION = $PGWS::VERSION;
 
 #----------------------------------------------------------------------
-sub root      { $_[0]->{'root'}     }
-sub cfg       { $_[0]->{'cfg'}      }
-sub ws        { $_[0]->{'ws'}       }
+sub ws        { $_[0]->{'_ws'}       }
 sub template  { $_[0]->{'template'} }
 
-sub def_sid   { $_[0]->{'cfg'}{'def'}{'sid'} }
-sub def_uri   { $_[0]->{'cfg'}{'def'}{'uri'} }
-sub def_acl   { $_[0]->{'cfg'}{'def'}{'acl'} }
-sub def_code  { $_[0]->{'cfg'}{'def'}{'code'} }
+sub dbc       { $_[0]->{'_dbc'} }
 
+use Data::Dumper;
 #----------------------------------------------------------------------
 # Конструктор, вызывается при старте сервера
 sub new {
-  my ($class, $self) = @_;
+  my ($class, $cfg) = @_;
+  my $self = $cfg ? { %{$cfg} } : {};
   bless $self, $class;
 
-  $self->{'root'} ||= $ENV{'PGWS_ROOT'} ; # or die
-
-  my $root = $self->{'root'}; # or die
-  my $PGWS_root = $root;
-  my $file = $PGWS_root.($ENV{'PGWS_FE'} || '/conf/frontend.json');
-  my $cfg = $self->{'cfg'} = PGWS::Utils::data_load($file);
-
-  $file = $PGWS_root.($ENV{'PGWS_RPC'} || '/conf/rpc.json');
-  $self->{'cfg'}{'rpc'} = PGWS::Utils::data_load($file);
+  my $dbc =  $self->{'_dbc'} = PGWS::DBConfig->new({
+    'pogc' => POGC
+  , 'poid' => $self->{'frontend_poid'}
+  , 'data_write' => 1
+  });
 
   my %template_config = (
-    INCLUDE_PATH  => "$PGWS_root/var/tmpl",
-    COMPILE_DIR   => "$PGWS_root/var/tmpc",
-    PRE_PROCESS   => 'config.tt2',
-    CACHE_SIZE    => '100',
-    COMPILE_EXT   => '.pm',
-    EVAL_PERL     => 0,
-    ENCODING      => 'utf-8',
-    PRE_CHOMP     => 1,
-    POST_CHOMP    => 1,
-    %{$cfg->{'tmpl'}{'config'}}
+    INCLUDE_PATH  => ROOT.'var/tmpl',
+    COMPILE_DIR   => ROOT.'var/tmpc',
+    %{$dbc->config('fe.tt2')}
   );
+
   $self->{'template'} = Template->new(%template_config);
   {
     no warnings 'once';
     $Template::Stash::PRIVATE = undef;   # now you can thing._private
   }
+
+  $self->{'_ws'} = PGWS::Core->new({ 'poid' => $self->{'core_poid'}, _dbh => $self->{'_dbh'} });
+
   return $self;
 }
 
@@ -94,9 +93,9 @@ sub new {
 sub run {
   my ($self, $req) = @_;
 
-  $req->fetch_cook($self->cfg->{'cookie_mask'});
-  my %meta = %{$self->cfg->{'rpc'}};
-  my $meta = PGWS::Meta->new(\%meta);
+  $req->fetch_cook(COOKIE_MASK);
+  my $meta_cfg = $self->dbc->config('log');
+  my $meta = PGWS::Meta->new($meta_cfg);
   $meta->setip($req->user_ip);
   $meta->setcook($req->cookie); # $cookie ...
   if ($req->method eq 'OPTIONS') {
@@ -117,14 +116,12 @@ sub process_post {
 
   my $data = $req->post_data;
   $meta->setsource('post');
-  $meta->setenc('UTF-8'); # required for ajax
   $meta->keyoff; # основной запрос - не от имени фронтенда
-  #TODO: брать enc из строки "application/json; charset=UTF-8"
+  #TODO: брать enc из входящей строки "application/json; charset=UTF-8"
 
-  my ($ws, $ret) = PGWS::Server->new({ root => $self->{'root'}, _dbh => $req->{'_dbh'} });
-  $ret = $ws->run($meta, $data) unless ($ret);
+  my $ret = $self->ws->run($meta, $data);
 
-  $req->header('application/json; charset=utf-8', '200 OK');
+  $req->header('application/json; '.$meta->charset, '200 OK');
   $req->print(PGWS::Utils::json_out_utf8($ret)); # mod_perl иначе портит utf
 }
 
@@ -137,17 +134,15 @@ sub process_direct {
   $meta->setsource('post'); # dir
   $meta->debug('Direct req to %s', $method);
 
-  my ($ws, $ret) = PGWS::Server->new({ root => $self->{'root'}, _dbh => $req->{'_dbh'} });
-  unless ($ret) {
-    $self->load_session($ws, $meta, $params);
-    $meta->keyoff; # основной запрос - не от имени фронтенда
-    $ret = $ws->run_prepared($meta, $method, $params);
-  }
+  my $ws = $self->ws;
+  $self->load_session($ws, $meta, $params);
+  $meta->keyoff; # основной запрос - не от имени фронтенда
+  my  $ret = $ws->run_prepared($meta, $method, $params);
   my $is_pretty;
   if ($req->accept =~ m|application/json|) {
-    $req->header('application/json; charset=utf-8', '200 OK');
+    $req->header('application/json; '.$meta->charset, '200 OK');
   } else {
-    $req->header('text/plain; charset=utf-8', '200 OK');
+    $req->header('text/plain; '.$meta->charset, '200 OK');
     $is_pretty = 1;
   }
   my $json = PGWS::Utils::json_out_utf8($ret, $is_pretty);
@@ -163,32 +158,27 @@ sub process_direct {
 sub process_get {
   my ($self, $meta, $req) = @_;
 
-  my $cfg = $self->cfg;
+  my $dbc = $self->dbc;
   $meta->setsource('get');
   $meta->debug('page start');
   my $errors = [];
   my $resp = {
-    post_uri => $cfg->{'post'}{$req->prefix},
-    layout   => $cfg->{'tmpl'}{'layout_default'},
-    skin     => $cfg->{'tmpl'}{'skin_default'},
-    enc      => $cfg->{'tmpl'}{'enc'},
+    post_uri => $dbc->config('fe.post.'.$req->prefix),
+    layout   => $dbc->config('fe.tmpl.layout_default'),
+    skin     => $dbc->config('fe.tmpl.skin_default'),
+    enc      => $meta->charset,
     ctype    => 'text/html',
     title    => '',
     errors   => $errors,
   };
 
-  my ($ws, $ret) = PGWS::Server->new({ root => $self->{'root'}, _dbh => $req->{'_dbh'} });
-  if ($ret) {
-    return $req->redirect($cfg->{'error_500'}) if ($cfg->{'error_500'});
-    die $ret; #TODO: say something?
-  }
-
+  my $ws = $self->ws;
   $meta->debug('resp start');
   my ($status, $note, $vars, $file) = $self->response($meta, $req, $resp, $ws);
 
-  my $pages = $cfg->{'tmpl'}{'pages'};
-  my $erfile = $cfg->{'tmpl'}{'error'};
-  my $ext = $cfg->{'tmpl'}{'ext'};
+  my $pages   = $dbc->config('fe.tmpl.pages');
+  my $erfile  = $dbc->config('fe.tmpl.error');
+  my $ext     = $dbc->config('fe.tmpl.ext');
   unless ($file) {
     $file = $erfile;
     $vars->{'status'} = $status;
@@ -227,7 +217,7 @@ sub process_get {
     return $req->send_file($vars->{'meta'}{'redirect_file'});
   }
 
-  $req->header($resp->{'ctype'}.'; '.$cfg->{'tmpl'}{'enc'}, "$status $note");
+  $req->header($resp->{'ctype'}.'; '.$meta->charset, "$status $note");
 
   $file = 'layout/'.$resp->{'layout'}.'/'.$resp->{'skin'}.$ext;
   $vars->{'layout_head'} = 1;
@@ -248,20 +238,20 @@ sub process_get {
 sub response {
   my ($self, $meta, $req, $resp, $ws) = @_;
 
-  my $cfg = $self->cfg;
+  my $dbc = $self->dbc;
 
   my $params = $req->get_data;
   my $errors = $resp->{'errors'};
 
   my $session = $self->load_session($ws, $meta, $params, $errors);
   my $sid = $session->{'sid'}; # value or undef
-  my $sid_name = $self->{'cfg'}{'sid_arg'};
+  my $sid_name = $dbc->config('fe.sid_arg');
   my $have_sid_arg = ($sid_name and $sid);
 
   $session->{'sid_arg'} = $have_sid_arg?"?$sid_name=$sid":'';
   $session->{'sid_pre'} = $have_sid_arg?"?$sid_name=$sid&":'?';
 
-  my $page = $self->api($ws, $errors, $meta, 'uri', $self->def_uri, {'uri' => $req->uri });
+  my $page = $self->api($ws, $errors, $meta, 'uri', $dbc->config('fe.def.uri'), {'uri' => $req->uri });
 
   my $acl;
 
@@ -272,7 +262,7 @@ sub response {
     }
     $acl = $self->acl($ws, $errors, $meta, $session, $page, $params);
     $page->{'req'} = $req->prefix.'/'.$page->{'req'} if($page and $page->{'req'});
-    $page->{'is_hidden'} ||= $cfg->{'site_is_hidden'}; # закрываем незакрытое если весь сайт закрыт (не production)
+    $page->{'is_hidden'} ||= $dbc->config('fe.site_is_hidden'); # закрываем незакрытое если весь сайт закрыт (не production)
   }
   my $stg_args = $have_sid_arg?"$sid_name=$sid":'';
   if ($session->{'lang_used'}) {
@@ -283,7 +273,7 @@ sub response {
   my $tmpl_meta = { 'status' => '200', 'html_headers' => [], 'head' => {} };
   my $vars = {
     'api'         => sub { api($self, $ws, $errors, $meta, undef, @_) },
-    'uri'         => sub { api($self, $ws, $errors, $meta, undef, $self->def_code, @_); },
+    'uri'         => sub { api($self, $ws, $errors, $meta, undef, $dbc->config('fe.def.code'), @_); },
     'uri_allowed' => sub { acl($self, $ws, $errors, $meta, $session, @_) },
     'l'           => sub { i18n($self, $ws, $errors, $meta->{'lang'}, @_) },
     'uri_mk'      => sub { PGWS::Utils::uri_mk($req->proto, $req->prefix, $stg_args, @_) },
@@ -296,7 +286,7 @@ sub response {
     'get'  => $params,
     'acl'  => $acl,
     'meta' => $tmpl_meta,
-    'debug' => $cfg->{'tmpl'}{'debug'}?($cfg->{'rpc'}{'debug'}{'post'}||$cfg->{'rpc'}{'debug'}{'default'}):0,
+    'debug' => DEBUG_IFACE ? $meta->debug_level : 0,
     'session' => $session,
   };
 
@@ -347,14 +337,14 @@ sub acl {
     $acl_params->{'id'} = $session->{$page->{'id_source'}};
   }
   $meta->dump({'page' => $page, 'acl_params' => $acl_params});
-  return $self->api($ws, $errors, $meta, 'acl', $self->def_acl, $acl_params);
+  return $self->api($ws, $errors, $meta, 'acl', $self->dbc->config('fe.def.acl'), $acl_params);
 }
 
 #----------------------------------------------------------------------
 # Получение атрибутов страницы, если к ней есть доступ
 sub uri {
   my ($self, $ws, $errors, $meta, @a) = @_;
-  my $page = $self->api($ws, $errors, $meta, undef, $self->def_code, @a);
+  my $page = $self->api($ws, $errors, $meta, undef, $self->dbc->config('fe.def.code'), @a);
   return $page if ($self->acl($ws, $errors, $meta, $page));
   return;
 }
@@ -363,7 +353,7 @@ sub uri {
 # Локализация строки
 sub i18n {
   my ($self, $ws, $errors, $lang, $s, @a) = @_;
-  if ($lang and $lang ne $self->{'cfg'}{'tmpl'}{'lang'}{'default'}) {
+  if ($lang and $lang ne $self->dbc->config('lang.default')) {
     utf8::encode($s);
     $s = loc($s, map {utf8::encode($_); $_ } @a);
     utf8::decode($s);
@@ -380,22 +370,24 @@ sub load_session {
   my ($self, $ws, $meta, $params, $errors) = @_;
 
   $meta->stage_in('sid');
+  my $dbc = $self->dbc;
+  my $lang_default = $dbc->config('lang.default');
   my $sid;
-  if ($self->{'cfg'}{'sid_arg'}) {
-    $sid = delete $params->{$self->{'cfg'}{'sid_arg'}}; # sid - только в session.sid
+  if ($dbc->config('fe.sid_arg')) {
+    $sid = delete $params->{$dbc->config('fe.sid_arg')}; # sid - только в session.sid
   } else {
     $sid = $meta->{'cook'}; # TODO: геттер или иначе брать
   }
   $meta->setsid($sid); # sid до валидации
 
   my $lang = delete $params->{'lang'}; # lang - всегда в meta.lang и в session.lang если нужен в ссылках
-  $lang = PGWS::Utils::lang_mk($self->{'cfg'}{'tmpl'}{'lang'}, $lang);
-  $lang = undef if ($lang and $lang eq $self->{'cfg'}{'tmpl'}{'lang'}{'default'});
-  $meta->setlang($lang || $self->{'cfg'}{'tmpl'}{'lang'}{'default'});
+  $lang = PGWS::Utils::lang_mk($dbc->config('lang'), $lang);
+  $lang = undef if ($lang and $lang eq $lang_default);
+  $meta->setlang($lang || $lang_default);
 
   my $session;
   if ($sid) {
-    $session = $self->api($ws, $errors, $meta, 'sid', $self->def_sid);
+    $session = $self->api($ws, $errors, $meta, 'sid', $dbc->config('fe.def.sid'));
   } else {
     $session = { 'sid' => undef };
   }
@@ -408,7 +400,7 @@ sub load_session {
     $lang = $session->{'lang'}; # в ссылках не нужен
     $meta->setlang($lang);
   } else {
-    $session->{'lang'} = $lang || $self->{'cfg'}{'tmpl'}{'lang'}{'default'};
+    $session->{'lang'} = $lang || $lang_default;
     $session->{'lang_used'} = 1 if ($lang); # задан lang  - нужен в ссылках
   }
   loc_lang($meta->{'lang'});

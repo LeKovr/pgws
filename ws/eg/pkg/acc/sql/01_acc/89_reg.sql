@@ -17,13 +17,10 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Регистрация методов и страниц
 */
--- 89_reg.sql - Регистрация методов и страниц
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: acc:acc:89_reg.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
-
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id) VALUES
   ('acc.sid_info',          2, 1, 3, 3)
   , ('acc.sid_info_cook',   2, 1, 3, 3)
@@ -36,15 +33,8 @@ INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, is_write) VALU
 ;
 
 /* ------------------------------------------------------------------------- */
-
 INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
   ('login',     'main', 2, 1, null, 'login$',     'acc/login',    'Вход')
   , ('logout',  'main', 2, 1, null, 'logout$',    'acc/logout',   'Выход')
 ;
 
---INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, id_source, name) VALUES
---  ('logout',  'main', 3, 4, null, 'logout$',    'acc/logout',   'account_id', 'Выход')
---;
-
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: acc:acc:89_reg.sql / 50 --'

@@ -26,16 +26,39 @@ package PGWS::Daemon;
 # http://www.realcoding.net/article/view/4749
 # http://wiki.opennet.ru/Nginx#Perl_.2B_FastCGI_.2B_nginx
 
-use PGWS; # imports: use strict; use warnings;
-use PGWS::Utils;
-
 use FCGI;
 use PGWS::ProcManager;
 use POSIX qw(setsid);
 
 use Fcntl qw(:DEFAULT :flock);
-
 use File::Basename;
+
+use Data::Dumper;
+
+use PGWS; # imports: use strict; use warnings;
+use PGWS::DBConfig;
+
+use constant ROOT               => ($ENV{PGWS_ROOT} || '');   # PGWS root dir
+
+#----------------------------------------------------------------------
+sub help {
+  print <<TEXT
+  Usage:
+    $0 (start|status|check|restart|reload|stop)
+
+  Where
+    start   - run daemon if not running or raise error
+    status  - print daemon status
+    check   - run daemon if not running or exit
+    restart - restart daemon
+    reload  - restart workers
+    stop    - stop daemon
+TEXT
+}
+
+sub dbc     { $_[0]->{'_dbc'}     } # child config
+sub mgr_dbc { $_[0]->{'_mgr_dbc'} } # mgr config
+#----------------------------------------------------------------------
 
 #----------------------------------------------------------------------
 sub new {
@@ -50,56 +73,74 @@ sub new {
 sub init {
   my $self = shift;
 
-  my $prog_name = basename($0);
-  $prog_name =~s /^(PGWS-)?([^.]+)(\.pl)?$/$2/;
+  my $dbc = $self->{'_mgr_dbc'} = PGWS::DBConfig->new({
+    'pogc' => $self->{'pogc'}
+  , 'poid' => $self->{'poid'}
+  , 'data_write' => 1
+  });
 
-  my $name = $self->{'name'} = $self->{'name'} || $prog_name;
-  my $file = $self->{'root'}.'conf/'.$name.'.json';
-  my $cfg = $self->{'cfg'} = PGWS::Utils::data_load($file);
+  my $startup = $dbc->config('startup');
+  my $name = $dbc->proc_name;
 
-  $cfg->{'pm'}{'pm_title'} ||= $name;
-  $name = $cfg->{'pm'}{'pm_title'};
-  $cfg->{'proc_title'} ||= $name.'-worker';
-
-  $cfg->{'sock'} ||= $self->{'root'}.'var/run/'.$name.'.sock';
-
-  $cfg->{'pm'}{'pid_fname'} ||= $self->{'root'}.'var/run/'.$name.'.pid';
-  $cfg->{'log_file'} ||= $self->{'root'}.'var/log/'.$name.'.log';
-
-  $self->{'proc_main'} ||= \&proc_main;
-  $self->{'proc_loop'} ||= \&proc_loop;
-  $self->{'proc_init'} ||= \&proc_init;
-
+  $self->{'proc_name'}            = $name;
+  $startup->{'pm'}{'pm_title'}    = $name.'-pm';
+  $startup->{'pm'}{'pid_fname'} ||= ROOT.'var/run/'.$name.'.pid';
+  $startup->{'sock'}            ||= ROOT.'var/run/'.$name.'.sock';
+  $startup->{'log_file'}        ||= ROOT.'var/log/'.$name.'.log';
+  $self->{'mgr_init'}           ||= \&mgr_init;
+  $self->{'proc_init'}          ||= \&proc_init;
+  $self->{'proc_loop'}          ||= \&proc_loop unless ($self->{'proc_main'}); # FCGI loop used
 }
 
 #----------------------------------------------------------------------
 sub start {
   my $self = shift;
   my $silent = shift; # Don't print "started"
-  my $cfg = $self->{'cfg'};
+  my $dbc = $self->mgr_dbc;
   $self->daemonize($silent);
 
   open my $NULL, '+>', '/dev/null' or die "Can't open /dev/null: $!"; # no nginx stderr
-  reopen_std($cfg->{'log_file'});
-  my $req_env={};
-  my $proc_manager = PGWS::ProcManager->new($cfg->{'pm'});
-  my $socket = FCGI::OpenSocket($cfg->{'sock'}, $cfg->{'sock_wait'});
-  my $request = FCGI::Request(\*STDIN, \*STDOUT, $NULL, $req_env, $socket, &FCGI::FAIL_ACCEPT_ON_INTR);
-print STDERR '*'x20,' '.localtime().' ','*'x20,"\n";
+  reopen_std($dbc->config('startup.log_file'));
+
+  my $proc_manager = PGWS::ProcManager->new($dbc->config('startup.pm'));
+
+  &{$self->{'mgr_init'}}($self, $proc_manager);
+
+  my ($req_env, $socket, $request);
+  unless ($self->{'proc_main'}) {
+    # FCGI loop used
+    $req_env = {};
+    $socket  = FCGI::OpenSocket($self->{'socket'}, $dbc->config('startup.sock_wait'));
+    $request = FCGI::Request(\*STDIN, \*STDOUT, $NULL, $req_env, $socket, &FCGI::FAIL_ACCEPT_ON_INTR);
+  }
+
+  print STDERR '*'x20,' '.localtime().' ','*'x20,"\n";
+
   $proc_manager->pm_manage();
+  # we're in child now
 
-  $proc_manager->pm_change_process_name($cfg->{'proc_title'});
-  reopen_std($cfg->{'log_file'});
+  reopen_std($dbc->config('startup.log_file'));
 
-  &{$self->{'proc_init'}}($self);
-  &{$self->{'proc_main'}}($self, $proc_manager, $request, $req_env);
+  &{$self->{'proc_init'}}($self, $proc_manager);
 
-  FCGI::CloseSocket($socket);
+  unless ($self->{'proc_main'}) {
+    # FCGI loop used
+    proc_main($self, $proc_manager, $request, $req_env);
+    FCGI::CloseSocket($socket);
+  } else {
+    &{$self->{'proc_main'}}($self, $proc_manager);
+  }
+}
+
+#----------------------------------------------------------------------
+sub mgr_init {
+  my ($self, $proc_manager) = @_;
 }
 
 #----------------------------------------------------------------------
 sub proc_init {
-  my $self = shift;
+  my ($self, $proc_manager) = @_;
+  $proc_manager->pm_change_process_name($self->{'proc_name'});
 }
 
 #----------------------------------------------------------------------
@@ -108,7 +149,7 @@ sub proc_main {
 
   while($request->Accept() >= 0) {
     $proc_manager->pm_pre_dispatch();
-    &{$self->{'proc_loop'}}($self, $req_env);
+    &{$self->{'proc_loop'}}($self, $proc_manager, $req_env);
     $proc_manager->pm_post_dispatch();
   }
 }
@@ -139,7 +180,7 @@ sub reopen_std {
   open(STDIN,  "+>/dev/null") or die "Can't open STDIN: $!";
   open(STDOUT, "+>&STDIN") or die "Can't open STDOUT: $!";
   ## use critic
-  open STDERR, '>>', $stderr or die "Can't redirect STDERR: $!";
+  open STDERR, '>>', $stderr or die "Can't redirect STDERR to $stderr: $!";
 }
 
 #----------------------------------------------------------------------
@@ -148,7 +189,7 @@ sub run {
   $_ = shift || 'help';
 
   my $pid;
-  my $file = $self->{'cfg'}{'pm'}{'pid_fname'};
+  my $file = $self->mgr_dbc->config('startup.pm.pid_fname');
   if (-f $file) {
     open my $FILE, '<', $file or die "Can't open pidfile $file:".$!;
     $pid = <$FILE>;
@@ -190,31 +231,58 @@ sub run {
 }
 
 #----------------------------------------------------------------------
-sub help {
-
-print <<TEXT
-Usage: $0 (start|status|check|restart|reload|stop)
-  Where
-    start   - run daemon if not running or raise error
-    status  - print daemon status
-    check   - run daemon if not running or exit
-    restart - restart daemon
-    reload  - restart workers
-    stop    - stop daemon
-TEXT
-}
-
-#----------------------------------------------------------------------
 sub log {
   my ($self, $exit_code, $pid, $msg) = @_;
+  my $name = $self->{'proc_name'};
   if ($pid) {
-    printf "%s pid %i: %s\n", $self->{'name'}, $pid, $msg;
+    printf "%s pid %i: %s\n", $name, $pid, $msg;
   } else {
-    printf "%s: %s\n", $self->{'name'}, $msg;
+    printf "%s: %s\n", $name, $msg;
   }
   exit($exit_code) unless ($exit_code == -1);
 }
+
+
 #----------------------------------------------------------------------
+# Вспомогательный метод для демонов, использующих LISTEN (Postgresql)
+sub dbc_ping_and_listen {
+  my $self = shift;
+  my $debug = shift;
+
+  my $dbc = $self->dbc;
+  return if ($dbc and $dbc->dbh and $dbc->dbh->ping);
+
+  # нет объекта или пропал коннект
+
+  if ($dbc) {
+    # пропал коннект
+    $self->dbc->init;
+  } else {
+    # нет объекта
+    $self->{'_dbc'} ||= PGWS::DBConfig->new({
+      'pogc' => $self->{'pogc'}
+    , 'poid' => $self->{'poid'}
+    , 'keep_db' => 1
+    });
+  }
+
+  my $dbh = $self->dbc->dbh;
+
+  my $listen = $self->dbc->config('mgr.listen');
+  $self->{'listen'} = {};
+  foreach my $key (keys %{$listen}) {
+    my $event = $listen->{$key};
+    $self->{'listen'}{$event} = $key; # при получениии уведомления надо определять event -> key
+    $dbh->do(qq{listen "$event";}) or PGWS::bye "Listen $event error: ".$dbh->errstr;
+  }
+  my $lt = localtime;
+  printf STDERR ("[%s] [%i]: DB INIT (%s)\n", $lt, $$, join (', ', keys %{$self->{'listen'}}))  if ($debug);
+  return 1;
+}
+
+#----------------------------------------------------------------------
+
+
 1;
 
 __END__

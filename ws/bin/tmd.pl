@@ -19,58 +19,67 @@
 #
 # tmd.pl - Task manager daemon
 
-use strict;
-use warnings;
+use lib 'lib';
 
-use Cwd;
-our $dir;
-BEGIN {
-    $dir = getcwd;
-}
-
-use lib "$dir/lib";
-
+use PGWS;
 use PGWS::Daemon;
+
+use constant ROOT               => ($ENV{PGWS_ROOT} || '');   # PGWS root dir
+
+use constant POGC     => 'tm';                      # Property Owner Group Code
+use constant POID     => ($ENV{PGWS_FCGI_POID} or 1); # Property Owner ID
+
+use constant CMD        => ($ENV{PGWS_TM_CMD});
+
+use constant DEBUG     => ($ENV{PGWS_TM_DEBUG} or 0);
+
+use constant EVENT_REQUIRED => ($ENV{PGWS_TM_EVENT_REQUIRED}); # Запускать cmd только по notify
 
 #----------------------------------------------------------------------
 $| = 1;
 
-my $daemon = PGWS::Daemon->new({'root' => "$dir/", 'proc_main' => \&proc_main });
+my $daemon = PGWS::Daemon->new({
+  'pogc' => POGC
+, 'poid' => POID
+, 'proc_init' => \&proc_init
+, 'proc_main' => \&proc_main
+});
+
 $daemon->run(shift);
 
 #----------------------------------------------------------------------
 1;
 
-use DBI;
+#----------------------------------------------------------------------
+# init server
+sub proc_init {
+  my ($self, $proc_manager) = @_;
+
+  $proc_manager->pm_change_process_name($self->{'proc_name'});
+  $self->dbc_ping_and_listen(DEBUG);
+}
 
 #----------------------------------------------------------------------
 sub proc_main {
   my ($self, $proc_manager, $request, $req_env) = @_;
-  my $cmd = $self->{'root'}.$self->{'cfg'}{'app'}{'cmd'};
-  my $listen = $self->{'cfg'}{'app'}{'listen'};
-  my $timeout = $self->{'cfg'}{'app'}{'timeout'};
-  my $file = $self->{'root'}.'conf/db.json';
-  my $cfg_db = PGWS::Utils::data_load($file);
-
-  my $dbh = DBI->connect(@{$cfg_db->{'connect'}}) or die $DBI::errstr;
-  if ($cfg_db->{'init'}) {
-    foreach my $sql (@{$cfg_db->{'init'}}) {
-      $dbh->do($sql) or die $DBI::errstr;
-    }
-  }
-  # code from http://rhodiumtoad.org.uk/junk/listen-min.pl.txt
-
-  $dbh->do(qq{listen "$listen";}) or die $dbh->errstr;
 
   while (1) {
-    my $start = $self->{'cfg'}{'app'}{'run_anyway'}?1:0;
+
+    $self->dbc_ping_and_listen(DEBUG);
+    my $dbh = $self->dbc->dbh;
+
+    my $listen_wait     = $self->dbc->config('mgr.listen_wait');
+
+    my $start = EVENT_REQUIRED?0:1;
     $proc_manager->pm_pre_dispatch();
+
+    # code from http://rhodiumtoad.org.uk/junk/listen-min.pl.txt
     my $notifies = $dbh->func('pg_notifies');
     if (!$notifies) {
       my $fd = $dbh->{'pg_socket'} or die $dbh->errstr;
       my $rfds = '';
       vec($rfds,$fd,1) = 1;
-      my $n = select($rfds, undef, undef, $timeout);
+      my $n = select($rfds, undef, undef, $listen_wait);
       $notifies = $dbh->func('pg_notifies');
     }
     while ($notifies) {
@@ -84,8 +93,8 @@ sub proc_main {
     }
     if ($start) {
       my $lt = localtime;
-      print STDERR "[$lt] [$$]: Run JQ\n";
-      system $cmd;
+      print STDERR "[$lt] [$$]: Run JQ\n" if (DEBUG);
+      system ROOT.CMD;
     }
     $proc_manager->pm_post_dispatch();
   }

@@ -17,10 +17,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Регистрация методов и страниц
 */
--- 89_reg.sql - Регистрация методов и страниц
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:89_reg.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real, args_exam)
@@ -40,5 +38,3 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
   (   'Y0021', 1, 'нет доступа к результату суммы при а = %i')
   , ( 'Y0022', 1, 'нет данных по a = %i')
 ;
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: app:app:89_reg.sql / 44 --'

@@ -17,30 +17,37 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Создание триггеров
 */
--- 70_trig.sql - Создание триггеров
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:70_trig.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON dt
-    FOR EACH ROW EXECUTE PROCEDURE dt_insupd_trigger();
+  FOR EACH ROW EXECUTE PROCEDURE dt_insupd_trigger()
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON dt_part
-    FOR EACH ROW EXECUTE PROCEDURE dt_part_insupd_trigger();
+  FOR EACH ROW EXECUTE PROCEDURE dt_part_insupd_trigger()
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON dt_facet
-    FOR EACH ROW EXECUTE PROCEDURE dt_facet_insupd_trigger();
+  FOR EACH ROW EXECUTE PROCEDURE dt_facet_insupd_trigger()
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON page_data
-    FOR EACH ROW EXECUTE PROCEDURE page_insupd_trigger();
+  FOR EACH ROW EXECUTE PROCEDURE page_insupd_trigger()
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON method
-    FOR EACH ROW EXECUTE PROCEDURE method_insupd_trigger();
+  FOR EACH ROW EXECUTE PROCEDURE method_insupd_trigger()
+;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:70_trig.sql / 46 --'
+CREATE TRIGGER prop_is_mask BEFORE INSERT OR UPDATE ON prop
+  FOR EACH ROW EXECUTE PROCEDURE ws.prop_calc_is_mask()
+;
+
+/* ------------------------------------------------------------------------- */

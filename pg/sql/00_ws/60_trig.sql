@@ -17,14 +17,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Функции триггеров
 */
--- 60_trig.sql - Функции триггеров
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:60_trig.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:60_trig.sql / 27 --
+$_$
   DECLARE
     v_id ws.d_id32;
   BEGIN
@@ -57,7 +55,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_part_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:60_trig.sql / 60 --
+$_$
   DECLARE
     v_id ws.d_id32;
   BEGIN
@@ -79,7 +77,7 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_facet_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:60_trig.sql / 82 --
+$_$
   DECLARE
     v_id ws.d_id32;
   BEGIN
@@ -94,21 +92,13 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_insupd_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:60_trig.sql / 97 --
+$_$
   BEGIN
     IF NEW.uri_re IS NULL THEN
-      NEW.uri_re := regexp_replace(NEW.uri, ':i', E'(\\d+)', 'g');
-      NEW.uri_re := regexp_replace(NEW.uri_re, E'\\?', E'\\?', 'g');
-      NEW.uri_re := regexp_replace(NEW.uri_re, ':s', '([^/:]+)', 'g');
-      NEW.uri_re := regexp_replace(NEW.uri_re, ':u', '((?:/[^/]+)*)', 'g');
+      NEW.uri_re := ws.mask2regexp(NEW.uri);
     END IF;
     IF NEW.uri_fmt IS NULL THEN
-      NEW.uri_fmt := regexp_replace(NEW.uri, '%', '%%', 'g');
-      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, ':i', '%i', 'g');
-      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, ':s', '%s', 'g');
-      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, ':u', '%s', 'g');
-      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, E'\\$$', '');
-      NEW.uri_fmt := regexp_replace(NEW.uri_fmt, E'[()]', '','g');
+      NEW.uri_fmt := ws.mask2format(NEW.uri);
     END IF;
     RAISE NOTICE 'New page: %', NEW.uri_re;
     RETURN NEW;
@@ -117,13 +107,18 @@ $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION method_insupd_trigger() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:60_trig.sql / 120 --
+$_$
   DECLARE
     r_proc ws.t_pg_proc_info;
     v_code text;
     v_dt_id ws.d_id32;
   BEGIN
-    IF NEW.is_sql THEN
+    IF NEW.code_real ~ ':' THEN
+      NEW.is_sql := FALSE;
+      NEW.args := COALESCE(ws.dt_parts(NEW.arg_dt_id), '');
+      -- TODO: check cache
+      -- TODO: check plugin config
+    ELSE
       -- проверим наличие функции
       NEW.code_real  := COALESCE(NEW.code_real, NEW.code);
 
@@ -134,11 +129,11 @@ $_$  -- FD: pgws:ws:60_trig.sql / 120 --
       END IF;
 
       v_code := r_proc.rt_name;
-      IF r_proc.schema = ws.pg_cs('') THEN
+  /*    IF r_proc.schema = ws.pg_cs('') THEN
          -- в этом случае схемы в имени не будет
          v_code := r_proc.schema || '.'|| v_code;
       END IF;
-      v_dt_id := ws.dt_id(v_code);
+    */  v_dt_id := ws.dt_id(v_code);
       IF v_dt_id IS NOT NULL THEN
         NEW.rv_dt_id := v_dt_id;
       ELSE
@@ -148,7 +143,7 @@ $_$  -- FD: pgws:ws:60_trig.sql / 120 --
       END IF;
 
       IF NEW.arg_dt_id IS NULL THEN
-        v_dt_id := ws.dt_id('z_' || NEW.code_real);
+        v_dt_id := ws.dt_id(split_part(NEW.code_real, '.', 1) ||'.z_'|| split_part(NEW.code_real, '.', 2)); -- NEW.code_real);
         IF v_dt_id IS NULL THEN
           -- авторегистрация типа аргументов
           v_dt_id := ws.pg_register_proarg(NEW.code_real);
@@ -159,8 +154,6 @@ $_$  -- FD: pgws:ws:60_trig.sql / 120 --
       NEW.name := COALESCE(NEW.name, r_proc.anno);
       NEW.args := COALESCE(ws.dt_parts(v_dt_id), '');
       -- TODO: сравнить args с r_proc.args
-    ELSE
-      NEW.args := COALESCE(ws.dt_parts(NEW.arg_dt_id), '');
     END IF;
 
     IF NEW.arg_dt_id IS NOT NULL AND NOT COALESCE(ws.dt_is_complex(NEW.arg_dt_id), false) THEN
@@ -173,4 +166,32 @@ $_$  -- FD: pgws:ws:60_trig.sql / 120 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:60_trig.sql / 176 --'
+CREATE OR REPLACE FUNCTION prop_calc_is_mask() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+  -- prop_calc_is_mask: Расчет значения поля is_mask
+  BEGIN
+    NEW.is_mask := ws.mask_is_multi(NEW.code);
+    RETURN NEW;
+  END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION wsd_prop_value_insupd_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_rows INTEGER;
+  BEGIN
+    SELECT INTO v_rows
+      count(1)
+      FROM ws.prop
+      WHERE NEW.pogc = ANY(pogc_list)
+        AND NEW.code ~ ws.mask2regexp(code)
+    ;
+    IF v_rows = 0 THEN
+      RAISE EXCEPTION 'Unknown code % in group %', NEW.code, NEW.pogc;
+    ELSIF v_rows > 1 THEN
+      RAISE EXCEPTION 'code % related to % props, but need only 1', NEW.code, v_rows;
+    END IF;
+    RETURN NEW;
+  END;
+$_$;

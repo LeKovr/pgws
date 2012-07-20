@@ -17,11 +17,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Тесты
 */
--- 90_test.sql - Тесты
-/* ------------------------------------------------------------------------- */
--- No end qecho
-
 
 /* ------------------------------------------------------------------------- */
--- No end qecho
+SELECT ws.test('i18n_empty');

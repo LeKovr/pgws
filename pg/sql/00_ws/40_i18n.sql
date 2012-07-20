@@ -17,10 +17,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Представления поддержки интернационализации
 */
--- 40_i18n.sql - Представления поддержки интернационализации
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:40_i18n.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW i18n_def.page AS
@@ -48,13 +46,14 @@ COMMENT ON COLUMN i18n_def.page.is_hidden  IS 'Запрет включения �
 COMMENT ON COLUMN i18n_def.page.target     IS 'значение атрибута target в формируемых ссылках';
 COMMENT ON COLUMN i18n_def.page.uri_re     IS 'regexp URI, вычисляется триггером при insert/update';
 COMMENT ON COLUMN i18n_def.page.uri_fmt    IS 'строка формата для генерации URI, вычисляется триггером при insert/update';
+COMMENT ON COLUMN i18n_def.page.pkg        IS 'пакет, в котором зарегистрирована страница';
 COMMENT ON COLUMN i18n_def.page.name       IS 'Заголовок страницы в карте сайта';
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE RULE page_ins AS ON INSERT TO i18n_def.page
     DO INSTEAD (
     INSERT INTO ws.page_data
-      (code, up_code, class_id, action_id, group_id, sort, uri, tmpl, id_source, is_hidden, target, uri_re, uri_fmt)
+      (code, up_code, class_id, action_id, group_id, sort, uri, tmpl, id_source, is_hidden, target, uri_re, uri_fmt, pkg)
       VALUES (
            NEW.code
            , NEW.up_code
@@ -69,6 +68,7 @@ CREATE OR REPLACE RULE page_ins AS ON INSERT TO i18n_def.page
            , DEFAULT
            , NEW.uri_re
            , NEW.uri_fmt
+           , COALESCE(NEW.pkg, ws.pg_cs())
            )
     ;
     -- http://postgresql.1045698.n5.nabble.com/Using-Insert-Default-in-a-condition-expression-td1922835.html
@@ -100,4 +100,3 @@ CREATE OR REPLACE RULE error_ins AS ON INSERT TO i18n_def.error
 ;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:40_i18n.sql / 103 --'

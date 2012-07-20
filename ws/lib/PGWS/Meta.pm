@@ -44,8 +44,10 @@ sub setip     { $_[0]->{'ip'}   = $_[1] }
 sub keyoff    { $_[0]->{'key'}  = undef }
 sub setsid    { $_[0]->{'sid'}  = $_[1] }
 sub setcook   { $_[0]->{'cook'}  = $_[1] }
-sub setenc    { $_[0]->{'enc'}  = $_[1] }
 sub setlang   { $_[0]->{'lang'} = $_[1] }
+
+sub encoding    { $_[0]->{'encoding'} }
+sub charset     { 'charset='.$_[0]->{'encoding'} }
 
 sub setsource { $_[0]->{'source'} = $_[1] }
 sub stage_in  { unshift @{$_[0]->{'stage'}}, $_[1] }
@@ -140,6 +142,12 @@ sub _log_mode {
   return $self->{'default_level'} unless defined($ds);
   my $dss = $ds->{$stage} || $ds->{'default'};
   return defined($dss)?$dss:return $self->{'default_level'};
+}
+
+# уровень отладки для запросов API
+sub debug_level {
+  my $self = shift;
+  return $self->{'debug'}{'post'} || $self->{'debug'}{'default'};
 }
 1;
 

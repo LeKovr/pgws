@@ -17,10 +17,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Таблицы классов
 */
--- 20_class.sql - Таблицы классов
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:20_class.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE class (
@@ -100,6 +98,3 @@ CREATE TABLE class_status_action_acl_addon (
   , CONSTRAINT class_status_action_acl_addon_class_id_acl_id_fkey FOREIGN KEY (class_id, acl_id) REFERENCES class_acl
 );
 COMMENT ON TABLE class_status_action_acl_addon IS 'Дополнения (+/-) к итоговым разрешениям';
-
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:20_class.sql / 105 --'

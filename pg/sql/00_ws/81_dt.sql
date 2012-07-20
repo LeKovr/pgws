@@ -17,71 +17,71 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Типы данных
 */
--- 81_dt.sql - Типы данных
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:81_dt.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO dt (id, parent_id, code, anno) VALUES (1, 1, 'text',      'Текст');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (2, 2, 'boolean',   'Да/Нет');
---INSERT INTO dt (id, parent_id, code, anno) VALUES (3, 3, 'decimal',   'Число');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (3, 3, 'numeric',   'Число');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (4, 4, 'interval',  'Интервал');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (5, 5, 'timestamp', 'Момент');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (6, 6, 'time',      'Время');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (7, 7, 'date',      'Дата');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (8, 8, 'inet',      'ip адрес');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (9, 9, 'real',      'Число');
-
-INSERT INTO dt (id, parent_id, code, anno) VALUES (11, 11, 'integer', 'Целое');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (12, 12, 'smallint','Короткое целое');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (13, 13, 'oid',     'OID');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (14, 14, 'double',  'Длинное вещественное число');
-INSERT INTO dt (id, parent_id, code, anno) VALUES (15, 15, 'bigint',  'Длинное целое');
-
+INSERT INTO dt (id, parent_id, code, anno) VALUES
+  (1,   1,  'text',       'Текст')
+, (2,   2,  'boolean',    'Да/Нет')
+, (3,   3,  'numeric',    'Число')
+, (4,   4,  'interval',   'Интервал')
+, (5,   5,  'timestamp',  'Момент')
+, (6,   6,  'time',       'Время')
+, (7,   7,  'date',       'Дата')
+, (8,   8,  'inet',       'ip адрес')
+, (9,   9,  'real',       'Число')
+, (11,  11, 'integer',    'Целое')
+, (12,  12, 'smallint',   'Короткое целое')
+, (13,  13, 'oid',        'OID')
+, (14,  14, 'double',     'Длинное вещественное число')
+, (15,  15, 'bigint',     'Длинное целое')
+;
 -- parent для массива хэшей, но они пока не поддерживаются DBD::Pg
 -- INSERT INTO dt (id, parent_id, code, anno) VALUES (21, 21, 'composite', 'Структура');
 
 
 /* ------------------------------------------------------------------------- */
+INSERT INTO facet (id, code, anno) VALUES
+  ( 1, 'length',         'Длина')
+, ( 2, 'minLength',      'Мин. длина')
+, ( 3, 'maxLength',      'Макс. длина')
+, ( 4, 'pattern',        'Шаблон')
+, ( 5, 'enumeration',    'Список значений')
+, ( 6, 'whiteSpace',     'Обработка пробелов') --  (preserve|replace|collapse)
+, ( 7, 'maxInclusive',   'Не больше')
+, ( 8, 'maxExclusive',   'Меньше')
+, ( 9, 'minExclusive',   'Больше')
+, (10, 'minInclusive',   'Не меньше')
+, (11, 'totalDigits',    'Количество знаков')
+, (12, 'fractionDigits', 'Знаков дробной части')
+;
 
-INSERT INTO facet VALUES ( 1, 'length',         'Длина');
-INSERT INTO facet VALUES ( 2, 'minLength',      'Мин. длина');
-INSERT INTO facet VALUES ( 3, 'maxLength',      'Макс. длина');
-INSERT INTO facet VALUES ( 4, 'pattern',        'Шаблон');
-INSERT INTO facet VALUES ( 5, 'enumeration',    'Список значений');
-INSERT INTO facet VALUES ( 6, 'whiteSpace',     'Обработка пробелов'); --  (preserve|replace|collapse)
-INSERT INTO facet VALUES ( 7, 'maxInclusive',   'Не больше');
-INSERT INTO facet VALUES ( 8, 'maxExclusive',   'Меньше');
-INSERT INTO facet VALUES ( 9, 'minExclusive',   'Больше');
-INSERT INTO facet VALUES (10, 'minInclusive',   'Не меньше');
-INSERT INTO facet VALUES (11, 'totalDigits',    'Количество знаков');
-INSERT INTO facet VALUES (12, 'fractionDigits', 'Знаков дробной части');
+INSERT INTO facet_dt_base (id, base_id) VALUES
+  ( 1, 1)
+, ( 2, 1)
+, ( 3, 1)
+, ( 6, 1)
 
-INSERT INTO facet_dt_base VALUES ( 1, 1);
-INSERT INTO facet_dt_base VALUES ( 2, 1);
-INSERT INTO facet_dt_base VALUES ( 3, 1);
-INSERT INTO facet_dt_base VALUES ( 6, 1);
+, ( 7, 3)
+, ( 8, 3)
+, ( 9, 3)
+, (10, 3)
+, (11, 3)
+, (12, 3)
 
-INSERT INTO facet_dt_base VALUES ( 7, 3);
-INSERT INTO facet_dt_base VALUES ( 8, 3);
-INSERT INTO facet_dt_base VALUES ( 9, 3);
-INSERT INTO facet_dt_base VALUES (10, 3);
-INSERT INTO facet_dt_base VALUES (11, 3);
-INSERT INTO facet_dt_base VALUES (12, 3);
+, ( 7, 11)
+, ( 8, 11)
+, ( 9, 11)
+, (10, 11)
+, (11, 11)
 
-INSERT INTO facet_dt_base VALUES ( 7, 11);
-INSERT INTO facet_dt_base VALUES ( 8, 11);
-INSERT INTO facet_dt_base VALUES ( 9, 11);
-INSERT INTO facet_dt_base VALUES (10, 11);
-INSERT INTO facet_dt_base VALUES (11, 11);
-
-INSERT INTO facet_dt_base VALUES ( 7, 12);
-INSERT INTO facet_dt_base VALUES ( 8, 12);
-INSERT INTO facet_dt_base VALUES ( 9, 12);
-INSERT INTO facet_dt_base VALUES (10, 12);
-INSERT INTO facet_dt_base VALUES (11, 12);
+, ( 7, 12)
+, ( 8, 12)
+, ( 9, 12)
+, (10, 12)
+, (11, 12)
+;
 
 -- parent для массива хэшей, но они пока не поддерживаются DBD::Pg
 INSERT INTO facet_dt_base SELECT 4, id FROM dt WHERE id = parent_id; --  AND id <> dt_id('composite');
@@ -242,4 +242,3 @@ INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('t_acl_ch
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('t_acl_check'), 4, 'name', dt_id('text'), '');
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:81_dt.sql / 245 --'

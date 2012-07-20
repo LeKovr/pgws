@@ -1,22 +1,30 @@
 /*
-  -- FD: acc:acc:00_cleanup.sql / 2 --
 
-  PGWS. Удаление данных из схемы ws
+    Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
 
+    This file is part of PGWS - Postgresql WebServices.
+
+    PGWS is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PGWS is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
+
+    Удаление данных из схемы ws
 */
+
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: acc:acc:00_cleanup.sql / 8 --'
 
-DELETE FROM ws.page_data             WHERE code LIKE 'acc%' OR up_code='acc';
+DELETE FROM ws.page_data             WHERE pkg = :'PKG';
 
-DELETE FROM ws.page_data WHERE code IN ('login','logout');
+DELETE FROM ws.method                WHERE pkg = :'PKG';
 
-DELETE FROM ws.method           WHERE code_real LIKE 'acc.%' OR code_real LIKE 'acc::%';
---class_id IN (6,7,8) OR code ~ E'(tmpl|tender|offer)\.';
-
-
--- pg_cs('z_wikiformat')
 DELETE FROM ws.dt_part          WHERE id IN (SELECT id FROM ws.dt WHERE code LIKE 'acc.%');
 DELETE from ws.dt               WHERE code LIKE 'acc.%';
-
--- DELETE FROM ws.cache WHERE id IN (15, 16, 17);

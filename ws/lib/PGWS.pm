@@ -25,6 +25,8 @@ package PGWS;
 
 our $VERSION = '1.11';
 
+use constant TRACE_DIE     => ($ENV{PGWS_TRACE_DIE} or 0);
+
 #----------------------------------------------------------------------
 
 # see Mojolitious::Lite
@@ -34,6 +36,17 @@ sub import {
     # Lite apps are strict!
     strict->import;
     warnings->import;
+}
+
+#----------------------------------------------------------------------
+sub bye {
+  my $message = shift;
+  require Carp;
+  if (TRACE_DIE) {
+    Carp::confess($message);
+  } else {
+    Carp::croak('FATAL:'.$message);
+  }
 }
 
 1;

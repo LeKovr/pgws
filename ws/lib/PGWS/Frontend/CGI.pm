@@ -95,25 +95,14 @@ sub new {
   $self->{'prefix'} ||= $prefix;
 
   $self->{'_q'} = new CGI::Simple;
-#printf STDERR "GOT PAGE '%s::%s' (%s::%s - %s)\n", $self->{'prefix'},$self->{'uri'},$ENV{'REDIRECT_URL'},$ENV{'PATH_INFO'},$ENV{'REDIRECT_PINFO'};
   $self->{'encode_utf'} = $ENV{'FCGI_ROLE'}?1:0;
 
   return $self;
 }
 
 #----------------------------------------------------------------------
-sub run {
-  my $self = shift;
-
-  my $root = $self->{'root'};
-  $frontend ||= PGWS::Frontend->new({'root' => $root});
-  $frontend->run($self);
-}
-
-#----------------------------------------------------------------------
 sub fetch_cook {
   my ($self, $mask) = @_;
-
   if ($mask and $ENV{'HTTP_COOKIE'} and $ENV{'HTTP_COOKIE'} =~ /(^| )$mask(;|$)/) {
     $self->{'cookie'} = $2;
   }

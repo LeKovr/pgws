@@ -2,7 +2,7 @@
 ------------------------
   ***** acl_check *****
 
-      code      | class_id | action_id | cache_id | rvf_id | is_write | is_i18n | is_sql |     code_real      |     arg_dt     |   rv_dt   |          name           | args_exam |                                          args                                          
-----------------+----------+-----------+----------+--------+----------+---------+--------+--------------------+----------------+-----------+-------------------------+-----------+----------------------------------------------------------------------------------------
- info.acl_check |        2 |         1 |        4 |      3 | f        | f       | f      | System::ACL::check | ws.z_acl_check | ws.d_acls | Получение acl на объект |           | _sid text, class_id ws.d_class, action_id ws.d_id32, id ws.d_id, id1 ws.d_id, id2 text
+      code      | class_id | action_id | cache_id | rvf_id | is_write | is_i18n | is_sql | code_real |     arg_dt     |   rv_dt   |          name           | args_exam |                                          args                                          
+----------------+----------+-----------+----------+--------+----------+---------+--------+-----------+----------------+-----------+-------------------------+-----------+----------------------------------------------------------------------------------------
+ info.acl_check |        2 |         1 |        4 |      3 | f        | f       | f      | acl:check | ws.z_acl_check | ws.d_acls | Получение acl на объект |           | _sid text, class_id ws.d_class, action_id ws.d_id32, id ws.d_id, id1 ws.d_id, id2 text
 

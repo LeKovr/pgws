@@ -25,23 +25,11 @@ help:
 all: help
 usage: help
 
-install: test conf pkg var masterconf installcomplete
+install: test pkg lib lib-app var ctl tmpl masterconf installcomplete
 
-installapp: test conf-app conf pkg-app var masterconf installcomplete
+installapp: test pkg-app lib lib-app var ctl tmpl masterconf installcomplete
 
-conf:
-	@echo "*** $@ ***"
-	pushd .. > /dev/null ; [ -d conf ] || mkdir conf ; root=$$PWD ; popd > /dev/null ; \
-pushd ws/eg > /dev/null ; \
-for p in conf/*.{json,conf} ; do [ -f $$root/$$p ] || ln -s  ${PWD}/ws/eg/$$p $$root/$$p ; done ; \
-popd > /dev/null
-
-conf-app:
-	@echo "*** $@ ***"
-	pushd .. > /dev/null ; [ -d conf ] || mkdir conf ; root=$$PWD ; \
-pushd pkg/app/eg > /dev/null ; \
-for p in conf/*.json ; do [ -f $$root/$$p ] || ln -s $$root/pkg/app/eg/$$p $$root/$$p ; done ; \
-popd > /dev/null ; popd > /dev/null
+# ------------------------------------------------------------------------------
 
 pkg:
 	@echo "*** $@ ***"
@@ -50,25 +38,108 @@ pushd ws/eg > /dev/null ; \
 for p in pkg/* ; do [ -e $$root/$$p ] || ln -s $$PWD/$$p $$root/$$p ; done ; \
 popd > /dev/null
 
+# ------------------------------------------------------------------------------
+
 pkg-app:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; root=$$PWD ; . pgws.cfg ; \
-for p in $$PGWS_APP_PKG ; do [ -e $$root/pkg/$$p ] || ln -s $$root/pgws/ws/eg/pkg/$$p pkg/$$p ; done ; \
-popd > /dev/null
+	pushd .. > /dev/null ; root=$$PWD ; pushd pgws/ws/eg > /dev/null ; \
+for p in pkg/* ; do [ -e $$root/$$p ] || ln -s ../pgws/ws/eg/$$p $$root/$$p ; done ; \
+popd > /dev/null ; popd > /dev/null
+
+# ------------------------------------------------------------------------------
 
 var:
 	@echo "*** $@ ***"
 	pushd .. > /dev/null ; \
 [ -d var ] || mkdir var ; \
-for p in build cache log run tmpl tmpc ; do [ -d var/$$p ] || mkdir -m g+w var/$$p ; done ; \
+for p in build cache conf ctl log run tmpl tmpc ; do [ -d var/$$p ] || mkdir -m g+w var/$$p ; done ; \
 popd > /dev/null
+
+# ------------------------------------------------------------------------------
+
+lib:
+	@echo "*** $@ ***"
+	pushd .. > /dev/null ; \
+R=$$(dirs +0) ; \
+[ -d lib ] || mkdir lib ; \
+pushd $$R/pgws/ws/ ; \
+find lib -name *.pm -print | while read f ; do \
+  d=$$(dirname $$f) ; n=$$(basename $$f) ; \
+  [ -d $$R/$$d ] || mkdir -p $$R/$$d ; \
+  [ -e $$R/$$d/$$n ] || ln -s $$R/pgws/ws/$$d/$$n $$R/$$d/$$n ; \
+done ; \
+popd > /dev/null
+
+# ------------------------------------------------------------------------------
+
+lib-app:
+	@echo "*** $@ ***"
+	pushd .. > /dev/null ; \
+R=$$(dirs +0) ; \
+[ -d lib ] || mkdir lib ; \
+for p in pkg/* ; do if [ -d $$R/$$p/lib ] ; then \
+pushd $$R/$$p ; \
+find lib -name *.pm -print | while read f ; do \
+  d=$$(dirname $$f) ; n=$$(basename $$f) ; \
+  [ -d $$R/$$d ] || mkdir -p $$R/$$d ; \
+  [ -e $$R/$$d/$$n ] || ln -s $$R/$$p/$$d/$$n $$R/$$d/$$n ; \
+done ; \
+popd > /dev/null ; \
+fi ; done ; \
+popd > /dev/null
+
+# ------------------------------------------------------------------------------
+
+tmpl:
+	@echo "*** $@ ***"
+	pushd .. > /dev/null ; \
+R=$$(dirs +0) ; \
+PD=$$(ls pkg/) ; \
+for p in $$PD ; do if [ -d $$R/pkg/$$p ] && [ -d $$R/pkg/$$p/tmpl ] ; then \
+pushd $$R/pkg/$$p/tmpl ; \
+for d in * ; do if [[ "$$d" == "config.tt2" ]] ; then \
+  [ -e $$R/var/tmpl/$$d ] || ln -s $$R/pkg/$$p/tmpl/$$d $$R/var/tmpl/$$d ; \
+  elif [[ "$$d" == "macro" ]] ; then \
+  [ -d $$R/var/tmpl/$$d ] || mkdir -p $$R/var/tmpl/$$d ; \
+for n in $$d/*.tt2 ; do \
+  [ -e $$R/var/tmpl/$$n ] || ln -s $$R/pkg/$$p/tmpl/$$n $$R/var/tmpl/$$n ; \
+done else \
+  [ -d $$R/var/tmpl/$$d ] || mkdir -p $$R/var/tmpl/$$d ; \
+  [ -e $$R/var/tmpl/$$d/$$p ] || ln -s $$R/pkg/$$p/tmpl/$$d $$R/var/tmpl/$$d/$$p ; \
+fi ; done ; \
+popd > /dev/null ; \
+fi ; done ; \
+popd > /dev/null
+
+# ------------------------------------------------------------------------------
+
+ctl:
+	@echo "*** $@ ***"
+	pushd .. > /dev/null ; \
+R=$$(dirs +0) ; \
+find pgws/ws/bin -name *ctl.sh -print | while read f ; do \
+  d=$$(dirname $$f) ; n=$$(basename $$f) ; \
+  [ -e $$R/var/ctl/$$n ] || ln -s $$R/$$d/$$n $$R/var/ctl/$$n ; \
+done ; \
+PD=$$(ls pkg/) ; \
+for p in $$PD ; do if [ -d $$R/pkg/$$p/bin ] ; then \
+find pkg/$$p/bin -name *ctl.sh -print | while read f ; do \
+  d=$$(dirname $$f) ; n=$$(basename $$f) ; \
+  [ -e $$R/var/ctl/$$n ] || ln -s $$R/$$d/$$n $$R/var/ctl/$$n ; \
+done ; \
+fi ; done ; \
+popd > /dev/null
+
+# ------------------------------------------------------------------------------
 
 masterconf:
 	@echo "*** $@ ***"
 	pushd .. > /dev/null ; \
-[ -f pgws.cfg ] || ln ${PWD}/ws/eg/pgws.cfg pgws.cfg ; \
-[ -f pgws.sh ] || ln ${PWD}/ws/eg/pgws.sh pgws.sh ; \
+[ -f config.json ] || cp ${PWD}/ws/eg/config.json . ; \
+[ -f pgws.sh ] || cp ${PWD}/ws/eg/pgws.sh pgws.sh ; \
 popd > /dev/null
+
+# ------------------------------------------------------------------------------
 
 gitignore:
 	@echo "*** $@ ***"
@@ -77,19 +148,25 @@ gitignore:
 for p in pgws var conf  ; do grep -E "^$$p" .gitignore > /dev/null || echo "$$p/*" >> .gitignore ; done ; \
 popd > /dev/null
 
+# ------------------------------------------------------------------------------
+
 installcomplete:
 	@echo "*** $@ ***"
 
 uninstallcomplete:
 	@echo "*** $@ ***"
 
+# ------------------------------------------------------------------------------
+
 clean:
 	@echo "*** $@ ***"
 	rm -rf .install .usage ; \
 pushd .. > /dev/null ; \
 [ -f var/run/*.pid ] && ./pgws.sh fcgi stop ; \
-[ -d var ] && for p in var/{build,cache,log,run,tmpl,tmpc}/* ; do rm -rf $$p ; done ; \
+[ -d var ] && for p in var/{build,cache,ctl,log,run,tmpl,tmpc}/* ; do rm -rf $$p ; done ; \
 popd > /dev/null
+
+# ------------------------------------------------------------------------------
 
 uninstall-db:
 	@echo "*** $@ ***"
@@ -98,6 +175,8 @@ uninstall-db:
 [ -f var/.build.pgws ] && ./pgws.sh db drop ; \
 popd > /dev/null
 
+# ------------------------------------------------------------------------------
+
 uninstall-dirs:
 	@echo "*** $@ ***"
 	pushd .. > /dev/null ; \
@@ -105,12 +184,16 @@ uninstall-dirs:
 for p in var pkg conf ; do rmdir $$p 2> /dev/null ; done ; \
 popd > /dev/null
 
+# ------------------------------------------------------------------------------
+
 clean-conf:
 	@echo "*** $@ ***"
 	pushd .. > /dev/null ; \
 for p in conf/*.{json,conf} ; do [ $$p -ef pgws/ws/eg/$$p ] && rm $$p ; done ; \
-for f in pgws.sh pgws.cfg ; do [ -f $$f ] && diff --brief $$f pgws/ws/eg/$$f && rm $$f ; done ; \
+for f in config.json pgws.sh ; do [ -f $$f ] && diff --brief $$f pgws/ws/eg/$$f && rm $$f ; done ; \
 popd > /dev/null
+
+# ------------------------------------------------------------------------------
 
 clean-pkg:
 	@echo "*** $@ ***"
@@ -119,11 +202,14 @@ clean-pkg:
 [ -d pkg ] && for p in pkg/* ; do [ $$p -ef pgws/ws/eg/$$p ] && rm $$p ; done ; \
 popd > /dev/null
 
+# ------------------------------------------------------------------------------
+
 clean-lib:
 	@echo "*** $@ ***"
 	pushd .. > /dev/null ; \
 R=$$(dirs +0) ; \
-[ -d lib ] && find lib -name *.pm -printf "%p %l\n" | while read p s ; do \
+[ -d lib ] && find lib -name *.pm -print | while read f ; do \
+  s=$$(readlink $$f) ; p=$$f ; \
   if [[ "$$s" && "$$s" != "$${s#$$R/pgws/ws/lib/}" ]] ; then \
     rm $$p ; \
   else \
@@ -139,7 +225,11 @@ done ; \
 [ -d lib ] && find lib -type d | while read p ; do rmdir -p $$p 2>> /dev/null ; done ; \
 popd > /dev/null
 
+# ------------------------------------------------------------------------------
+
 uninstall: uninstall-db clean clean-lib clean-pkg clean-conf uninstall-dirs uninstallcomplete
+
+# ------------------------------------------------------------------------------
 
 test:
 	CORELIB=$$PWD/ws/lib ; \
@@ -147,6 +237,6 @@ test:
 	d=$$(dirname $$f) ; \
 	n=$$(basename $$f) ; \
 	pushd $$d/.. ; \
-	perl -I$$CORELIB t/$$n ; \
+	perl -I$$CORELIB -Ilib t/$$n ; \
 	popd ; \
 	done

@@ -17,19 +17,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Вспомогательные таблицы
 */
--- 20_misc.sql - Вспомогательные таблицы
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:20_misc.sql / 23 --'
-
-/* ------------------------------------------------------------------------- */
-CREATE TABLE cache (
-  id           d_id32   PRIMARY KEY
-  , is_active  bool     NOT NULL
-  , code       d_code   NOT NULL -- внешнее имя метода
-  , name       text     NOT NULL
-);
-COMMENT ON TABLE cache IS 'Вид кэша';
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE method_rv_format (
@@ -60,16 +49,3 @@ CREATE TABLE i18n_def.page_group (
 COMMENT ON TABLE i18n_def.page_group       IS 'Группа страниц для меню';
 COMMENT ON COLUMN i18n_def.page_group.id   IS 'ID группы';
 COMMENT ON COLUMN i18n_def.page_group.name IS 'Название';
-
-/* ------------------------------------------------------------------------- */
-CREATE TABLE i18n_def.cfg_group (
-  id           d_id32   PRIMARY KEY
-  , name       text     NOT NULL
-);
-
-COMMENT ON TABLE i18n_def.cfg_group       IS 'Группа параметров конфигурации';
-COMMENT ON COLUMN i18n_def.cfg_group.id   IS 'ID группы';
-COMMENT ON COLUMN i18n_def.cfg_group.name IS 'Название';
-
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:20_misc.sql / 75 --'

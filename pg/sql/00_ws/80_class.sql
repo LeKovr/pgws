@@ -20,7 +20,6 @@
 */
 -- 80_class.sql - Данные классов и акций
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:80_class.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO class (id, up_id, id_count, is_ext, sort, code, name) VALUES
@@ -95,4 +94,3 @@ INSERT INTO class_action_acl (class_id, action_id, acl_id) VALUES
 
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:80_class.sql / 98 --'

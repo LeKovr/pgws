@@ -17,28 +17,27 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Таблицы API
 */
--- 21_main.sql - Таблицы API
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:21_main.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE method (
-  code         d_code   PRIMARY KEY
-  , class_id   d_class  NOT NULL
-  , action_id  d_id32   NOT NULL
-  , cache_id   d_id32   NOT NULL REFERENCES cache
-  , rvf_id     d_id32   NOT NULL REFERENCES method_rv_format
-  , is_write   bool     NOT NULL DEFAULT FALSE
-  , is_i18n    bool     NOT NULL DEFAULT FALSE
-  , is_sql     bool     NOT NULL DEFAULT TRUE
-  , code_real  d_sub    NOT NULL
-  , arg_dt_id  d_id32   NULL REFERENCES dt
-  , rv_dt_id   d_id32   NULL REFERENCES dt
-  , name       text     NOT NULL
-  , args_exam  text     NULL
-  , args       text     NOT NULL
-  , CONSTRAINT method_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action
+  code       d_code   PRIMARY KEY
+, class_id   d_class  NOT NULL
+, action_id  d_id32   NOT NULL
+, cache_id   d_id32   NOT NULL
+, rvf_id     d_id32   NOT NULL REFERENCES method_rv_format
+, is_write   bool     NOT NULL DEFAULT FALSE
+, is_i18n    bool     NOT NULL DEFAULT FALSE
+, is_sql     bool     NOT NULL DEFAULT TRUE
+, code_real  d_sub    NOT NULL
+, arg_dt_id  d_id32   NULL REFERENCES dt
+, rv_dt_id   d_id32   NULL REFERENCES dt
+, name       text     NOT NULL
+, args_exam  text     NULL
+, args       text     NOT NULL
+, pkg        TEXT     NOT NULL DEFAULT ws.pg_cs()
+, CONSTRAINT method_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action
 );
 
 COMMENT ON TABLE method IS 'Метод API';
@@ -63,22 +62,19 @@ CREATE INDEX method_code ON method USING btree(lower(code)  text_pattern_ops);
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE page_data (
-  code         d_code   PRIMARY KEY
-  , up_code    d_code   REFERENCES page_data
-  , class_id   d_class  NOT NULL
-  , action_id  d_id32   NOT NULL
-  , group_id   d_id32   REFERENCES i18n_def.page_group
-  , sort       d_sort   NULL
-  , uri        d_regexp UNIQUE
-  , tmpl       d_path   NULL
-  , id_source  d_code   NULL
-  , is_hidden  BOOL     NOT NULL DEFAULT TRUE
-  , target     text     NOT NULL DEFAULT ''
-  , uri_re     text     NULL
-  , uri_fmt    text     NOT NULL
-  , CONSTRAINT page_fkey_class_action FOREIGN KEY (class_id, action_id) REFERENCES class_action
+  code       d_code   PRIMARY KEY
+, up_code    d_code   REFERENCES page_data
+, class_id   d_class  NOT NULL
+, action_id  d_id32   NOT NULL
+, group_id   d_id32   REFERENCES i18n_def.page_group
+, sort       d_sort   NULL
+, uri        d_regexp UNIQUE
+, tmpl       d_path   NULL
+, id_source  d_code   NULL
+, is_hidden  BOOL     NOT NULL DEFAULT TRUE
+, target     text     NOT NULL DEFAULT ''
+, uri_re     text     NULL
+, uri_fmt    text     NOT NULL
+, pkg        TEXT     NOT NULL
+, CONSTRAINT page_fkey_class_action FOREIGN KEY (class_id, action_id) REFERENCES class_action
 );
-
-
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:21_main.sql / 84 --'

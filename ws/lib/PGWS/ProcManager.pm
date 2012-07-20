@@ -24,14 +24,16 @@ use base qw(FCGI::ProcManager);
 use Fcntl qw(:DEFAULT :flock);
 use IO::File;
 
+use PGWS;
+
 #----------------------------------------------------------------------
 sub pm_write_pid_file {
   my ($this,$fname) = FCGI::ProcManager::self_or_default(@_);
-  $fname ||= $this->pid_fname() or die "pidfile is required";
+  $fname ||= $this->pid_fname() or PGWS::bye "pidfile is required";
 
   my $fh = $this->{'_PIDFILE'} = new IO::File;
-  open $fh, '>',$fname or die "Pidfile $fname open error:".$!;
-  flock ($fh, LOCK_EX) or die "Pidfile $fname lock error:".$!;
+  open $fh, '>',$fname or PGWS::bye "Pidfile $fname open error:".$!;
+  flock ($fh, LOCK_EX) or PGWS::bye "Pidfile $fname lock error:".$!;
   print $fh "$$\n";
 }
 
@@ -44,7 +46,20 @@ sub pm_remove_pid_file {
   my $ret = unlink($fname) or $this->pm_warn("unlink pidfile error: $!");
   return $ret;
 }
+use Data::Dumper;
 
+#----------------------------------------------------------------------
+sub pm_exit {
+  my ($this, $msg, $n) = FCGI::ProcManager::self_or_default(@_);
+
+  if ($this->{'role'} eq 'manager') {
+    print STDERR 'RESULTS: ', Dumper($this);
+    # remove in shell:
+    # ipcs -m | grep 666 | while read a b c d ; do ipcrm -m $b ; done
+    # ipcs -s | grep 666 | while read a b c d ; do ipcrm -s $b ; done
+  }
+  $this->SUPER::pm_exit($msg, $n);
+}
 #----------------------------------------------------------------------
 1;
 

@@ -1,9 +1,0 @@
-{
-  "pm": {
-    "n_processes": 10,
-    "die_timeout": 4,
-    "pm_title": "pgws-dev"
-  },
-  "sock":   "back.test.local:9001",
-  "sock_wait": 10,
-}

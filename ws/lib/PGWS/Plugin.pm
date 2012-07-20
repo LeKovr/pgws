@@ -29,6 +29,7 @@ sub new {
   my ($class, $self) = @_;
   $self ||= {};
   bless $self, $class;
+
   return $self;
 }
 

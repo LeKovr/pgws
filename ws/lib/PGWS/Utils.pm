@@ -23,10 +23,10 @@ package PGWS::Utils;
 use PGWS;
 use JSON;
 
-use Data::Dumper;
+use File::Basename;
+use File::Path;
 
-# Доступный извне номер версии
-our $VERSION = $PGWS::VERSION;
+use Data::Dumper;
 
 #----------------------------------------------------------------------
 ## @fn hash data_load($config_file)
@@ -35,7 +35,7 @@ our $VERSION = $PGWS::VERSION;
 # TODO: загружать форматы, отличные от JSON
 sub data_load {
   my $cfile = shift;
-  open my $F, '<', $cfile or die "File: $cfile error:".$!;
+  open my $F, '<', $cfile or PGWS::bye "File: $cfile error:".$!;
   my @cdata=<$F>;
   close $F;
   my $json = new JSON;
@@ -67,6 +67,43 @@ sub json_in {
   my $json = new JSON;
   my $flag = utf8::is_utf8($json_text);
   return $json->utf8(!$flag)->decode($json_text);
+}
+
+#----------------------------------------------------------------------
+sub check_path {
+  my $path = shift;
+  my($filename, $dir, $suffix) = fileparse($path);
+  unless (-d $dir) {
+    my $u = umask 0;
+    eval { mkpath($dir) };
+    umask $u;
+    if ($@) {
+      PGWS::bye "Path $dir create error: ".$@;
+    }
+  }
+  -w $dir or PGWS::bye "$dir does not allow write";
+}
+
+#----------------------------------------------------------------------
+sub load_env {
+  my $cfile = shift;
+  my $data = PGWS::Utils::data_load($cfile);
+  my $cfg = $data->{'ACTIVE'};
+  $cfg->{'root'} = $ENV{'PWD'}.'/';
+  foreach my $key (keys %$cfg) {
+    $ENV{'PGWS_'.uc($key)} = $cfg->{$key};
+  }
+}
+
+#----------------------------------------------------------------------
+sub data_write {
+  my ($data, $path, $do_gzip) = @_;
+  check_path($path);
+  open my $F, '>', $path or PGWS::bye "File: $path error:".$!;
+  print $F json_out_utf8($data, 1);
+  close $F;
+  my $mode = "0666";
+  chmod oct($mode), $path;
 }
 
 #----------------------------------------------------------------------
@@ -139,41 +176,53 @@ sub lang_mk {
 
 #----------------------------------------------------------------------
 ## @method retval hashtree_mk($list)
-# Конвертация массива пар [поле1][поле2] в дерево
-#   Если поле1 имеет вид "имя.тег", поле2 сохраняется в $res->{имя}{тег}
-#   Если поле1 имеет вид "имя.цифра.тег", поле2 сохраняется в $res->{имя}[цифра]{тег}
-#   Если поле1 имеет вид "имя.тег.цифра", поле2 сохраняется в $res->{имя}{тег}[цифра]
-#   Если поле1 имеет вид "имя.цифра.тег.цифра.тег", поле2 сохраняется в $res->{имя}[цифра]{тег}[цифра]{тег}
+# Конвертация массива пар <имя>,<значение> в дерево.
+# Поле <имя> имеет вид "тег(.тег){}"
+# Если тег числовой, в дерево добавляется массив. Иначе - хэш
+# Примеры:
+#   "тег1.тег2.цифра1" сохраняется в $res->{тег1}{тег2}[цифра1]
+#   "тег1.цифра1.тег2.цифра2.тег3" сохраняется в $res->{тег1}[цифра1]{тег2}[цифра2]{тег3}
 sub hashtree_mk {
   my $list = shift;
-
-  my $res = {};
-  foreach my $row (@$list) {
-    my ($id, $value) = @$row;
-    my @ids = split /\./,$id;
-    if (scalar(@ids) == 2) {
-      $res->{$ids[0]} ||= {};
-      $res->{$ids[0]}{$ids[1]} = $value;
-    } elsif (scalar(@ids) == 3 and $ids[1] =~ /^\d+$/) {
-      $res->{$ids[0]} ||= [];
-      $res->{$ids[0]}[$ids[1]] ||= {};
-      $res->{$ids[0]}[$ids[1]]{$ids[2]} = $value;
-    } elsif (scalar(@ids) == 3 and $ids[2] =~ /^\d+$/) {
-      $res->{$ids[0]} ||= {};
-      $res->{$ids[0]}{$ids[1]} ||= [];
-      $res->{$ids[0]}{$ids[1]}[$ids[2]] = $value;
-    } elsif (scalar(@ids) == 5 and $ids[1] =~ /^\d+$/ and $ids[3] =~ /^\d+$/) {
-      $res->{$ids[0]} ||= [];
-      $res->{$ids[0]}[$ids[1]] ||= {};
-      $res->{$ids[0]}[$ids[1]]{$ids[2]} ||= [];
-      $res->{$ids[0]}[$ids[1]]{$ids[2]}[$ids[3]] ||= {};
-      $res->{$ids[0]}[$ids[1]]{$ids[2]}[$ids[3]]{$ids[4]} = $value;
-    } else {
-      $res->{$id} = $value;
+  my $tree = {};
+  foreach my $row (sort @$list) {
+    my ($key, $value) = @$row;
+    my @tags = split /\./, $key;
+    my ($node, $tree_used);
+    foreach my $tag (@tags) {
+      if ($tree_used and $tag =~ /^\d+$/) {
+        $node ||= \[];
+        $node = \$$node->[$tag]
+      } else {
+        if (!$tree_used) { $node = \$tree; $tree_used=1; } else { $node ||= \{}; }
+        $node = \$$node->{$tag}
+      }
     }
+    $$node = $value;
   }
-  return $res;
+  return $tree;
 }
+
+#----------------------------------------------------------------------
+sub hashtree_go {
+  my $tree = shift;
+  my $key = shift;
+  return $tree unless $key;
+  my @tags = split /\./, $key;
+  my $node = $tree;
+  my $walked = '';
+  foreach my $tag (@tags, @_) {
+    if ($walked and $tag =~ /^\d+$/) {
+        $node = $node->[$tag];
+    } else {
+        $node = $node->{$tag};
+    }
+    defined($node) or PGWS::bye "Tree node $walked.$tag does not exists";
+    $walked .= ".$tag";
+  }
+  return $node;
+}
+
 1;
 
 __END__

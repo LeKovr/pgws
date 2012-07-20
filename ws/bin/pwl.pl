@@ -25,11 +25,18 @@ use warnings;
 
 use FindBin qw($Bin);
 
+use PGWS;
+use PGWS::Frontend;
 use PGWS::Frontend::CGI;
 
 $| = 1;
 
-my $frontend = PGWS::Frontend::CGI->new({'root' => "$Bin/../../../"});
-$frontend->run(@ARGV);
+$ENV{'PGWS_ROOT'} = "$Bin/../../../";
+my $fe = PGWS::Frontend->new({
+  'backend_poid' => 1
+, 'frontend_poid' => 1
+});
+my $req = PGWS::Frontend::CGI->new();
+$fe->run($req);
 
 1;

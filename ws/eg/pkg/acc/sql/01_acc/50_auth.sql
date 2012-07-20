@@ -17,37 +17,35 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Методы API
 */
--- 50_add.sql - Метод API add
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: acc:acc:50_auth.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION sid_info(a__sid d_sid, a__ip INET) RETURNS SETOF acc_data.session STABLE LANGUAGE 'sql' AS
-$_$  -- FD: acc:acc:50_auth.sql / 27 --
-  SELECT * FROM acc_data.session WHERE deleted_at IS NULL AND sid::text = $1 /* AND ($2 IS NULL OR ip = $2) */ LIMIT 1;
+CREATE OR REPLACE FUNCTION sid_info(a__sid d_sid, a__ip INET) RETURNS SETOF wsd.session STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT * FROM wsd.session WHERE deleted_at IS NULL AND sid::text = $1 /* AND ($2 IS NULL OR ip = $2) */ LIMIT 1;
 $_$;
 SELECT pg_c('f', 'sid_info', 'Атрибуты своей сессии');
 
 /* ------------------------------------------------------------------------- */
 -- вернуть описание сервера, отвечающего за экземпляр текущего класса
-CREATE OR REPLACE FUNCTION sid_info_cook(a_cook TEXT, a__ip INET) RETURNS SETOF acc_data.session STABLE LANGUAGE 'sql' AS
-$_$  -- FD: acc:acc:50_auth.sql / 35 --
+CREATE OR REPLACE FUNCTION sid_info_cook(a_cook TEXT, a__ip INET) RETURNS SETOF wsd.session STABLE LANGUAGE 'sql' AS
+$_$
 -- TODO: изменить a_cook на a__cook при переходе на тотальное использование cookie
-  SELECT * FROM acc_data.session WHERE deleted_at IS NULL AND sid = $1 /*AND ($2 IS NULL OR ip = $2)*/
+  SELECT * FROM wsd.session WHERE deleted_at IS NULL AND sid = $1 /*AND ($2 IS NULL OR ip = $2)*/
     ORDER BY updated_at DESC LIMIT 1
 $_$;
 SELECT pg_c('f', 'sid_info_cook', 'Атрибуты своей сессии по cookie');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION logout (a__sid TEXT, a__ip TEXT) RETURNS INTEGER LANGUAGE 'plpgsql' AS
-$_$  -- FD: acc:acc:50_auth.sql / 44 --
+$_$
   -- a__sid: ID сессии
   -- a__ip: IP-адреса сессии
   DECLARE
     v_cnt INTEGER;
   BEGIN
-    UPDATE acc_data.session SET
+    UPDATE wsd.session SET
       deleted_at = now()
       WHERE sid = a__sid
         AND deleted_at IS NULL
@@ -56,18 +54,17 @@ $_$  -- FD: acc:acc:50_auth.sql / 44 --
     RETURN v_cnt;
   END;
 $_$;
-
 SELECT pg_c('f', 'logout', 'Завершить авторизации пользователя и вернуть количество завершенных');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION login (
   a__cook TEXT
-  , a__ip TEXT
-  , a_login TEXT
-  , a_psw TEXT
-  , a__sid TEXT DEFAULT NULL
-  ) RETURNS SETOF account_info LANGUAGE 'plpgsql' AS
-$_$  -- FD: acc:acc:50_auth.sql / 70 --
+, a__ip TEXT
+, a_login TEXT
+, a_psw TEXT
+, a__sid TEXT DEFAULT NULL
+) RETURNS SETOF account_info LANGUAGE 'plpgsql' AS
+$_$
   -- a__cook: ID cookie
   -- a__ip: IP-адреса сессии
   -- a_login: пароль
@@ -75,11 +72,12 @@ $_$  -- FD: acc:acc:50_auth.sql / 70 --
   -- a__sid: ID сессии, если есть
   DECLARE
     r_account_info acc.account_info;
+    r_account_bad acc.account_info;
     v_key text;
   BEGIN
     SELECT INTO r_account_info
       *
-      FROM acc_data.account
+      FROM wsd.account
       WHERE login = a_login
     ;
     IF FOUND THEN
@@ -101,16 +99,20 @@ $_$  -- FD: acc:acc:50_auth.sql / 70 --
         PERFORM acc.logout(v_key, a__ip);
 
         -- создаем сессию
-        INSERT INTO acc_data.session (account_id, ip, sid)
+        INSERT INTO wsd.session (account_id, ip, sid)
           VALUES (r_account_info.id, a__ip, v_key)
         ;
         RETURN NEXT r_account_info;
       ELSE
-        -- TODO: журналировать потенциальный подбор пароля
+        -- TODO: журналировать потенциальный подбор пароля (это причина не делать EXCEPTION)
         RAISE DEBUG 'Password does not match for %', a_login;
+        r_account_bad.status_id := acc.const_status_id_unknown();
+        RETURN NEXT r_account_bad;
       END IF;
     ELSE
       RAISE DEBUG 'Unknown account %', a_login;
+      r_account_bad.status_id := acc.const_status_id_unknown();
+      RETURN NEXT r_account_bad;
     END IF;
     RETURN;
   END;
@@ -120,7 +122,7 @@ SELECT pg_c('f', 'login', 'Авторизация пользователя');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION profile (a__sid TEXT, a__ip TEXT) RETURNS SETOF account_info LANGUAGE 'plpgsql' AS
-$_$  -- FD: acc:acc:50_auth.sql / 123 --
+$_$
   -- a__sid: ID сессии
   -- a__ip: IP-адреса сессии
   DECLARE
@@ -131,7 +133,7 @@ $_$  -- FD: acc:acc:50_auth.sql / 123 --
 
     SELECT INTO v_account_id
       account_id
-      FROM acc_data.session
+      FROM wsd.session
       WHERE sid = a__sid
         AND deleted_at IS NULL
     ;
@@ -149,8 +151,4 @@ $_$  -- FD: acc:acc:50_auth.sql / 123 --
     RETURN;
   END;
 $_$;
-
 SELECT pg_c('f', 'profile', 'Профиль текущего пользователя');
-
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: acc:acc:50_auth.sql / 156 --'

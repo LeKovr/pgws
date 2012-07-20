@@ -17,14 +17,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Функции поддержки типов данных
 */
--- 52_dt.sql - Функции поддержки типов данных
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:52_dt.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_parent_base_id(a_id d_id32) RETURNS d_id32 STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 27 --
+$_$
   SELECT base_id FROM ws.dt WHERE id = $1 AND NOT is_complex;
   -- у элементов массива может быть check
   -- SELECT base_id FROM ws.dt WHERE id = $1 AND NOT is_list AND NOT is_complex;
@@ -33,70 +31,70 @@ SELECT pg_c('f', 'dt_parent_base_id', 'Базовый тип для заданн
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_part_parent_base_id(a_id d_id32) RETURNS d_id32 STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 36 --
+$_$
   SELECT base_id FROM ws.dt WHERE id = $1 AND NOT is_complex;
 $_$;
 SELECT pg_c('f', 'dt_part_parent_base_id', 'Базовый тип для заданной части комплексного типа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_is_complex(a_id d_id32) RETURNS bool STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 43 --
+$_$
   SELECT is_complex FROM ws.dt WHERE id = $1;
 $_$;
 SELECT pg_c('f', 'dt_is_complex', 'Значение is_complex для заданного типа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_by_code(a_code d_code_like DEFAULT NULL) RETURNS SETOF dt STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 50 --
+$_$
   SELECT * FROM ws.dt WHERE code LIKE COALESCE($1, '%') ORDER BY 2;
 $_$;
 SELECT pg_c('f', 'dt_by_code', 'Атрибуты типа по маске кода');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt(a_id d_id32) RETURNS SETOF dt STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 57 --
+$_$
   SELECT * FROM ws.dt WHERE $1 IN (0, id) ORDER BY 2;
 $_$;
 SELECT pg_c('f', 'dt', 'Атрибуты типа по id');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_part(a_id d_id32, a_part_id d_id32 DEFAULT 0) RETURNS SETOF dt_part STABLE LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 64 --
+$_$
   SELECT * FROM ws.dt_part WHERE id = $1 AND $2 IN (part_id, 0) ORDER BY 2;
 $_$;
 SELECT pg_c('f', 'dt_part', 'Атрибуты полей комплексного типа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION facet_id(a_code d_codei) RETURNS d_id32 STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 71 --
+$_$
   SELECT id FROM ws.facet WHERE code = $1;
 $_$;
 SELECT pg_c('f', 'facet_id', 'ID ограничения типа по коду');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION facet(a_id d_id32) RETURNS SETOF facet STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 78 --
+$_$
   SELECT * FROM ws.facet WHERE $1 IN (0, id) ORDER BY 2;
 $_$;
 SELECT pg_c('f', 'facet', 'Атрибуты ограничения по id');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_facet(a_id d_id32) RETURNS SETOF dt_facet STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 85 --
+$_$
   SELECT * FROM ws.dt_facet WHERE id = $1 order by 2;
 $_$;
 SELECT pg_c('f', 'dt_facet', 'Атрибуты ограничения типа по id типа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_id(a_code d_code) RETURNS d_id32 STABLE STRICT LANGUAGE 'sql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 92 --
+$_$
   SELECT id FROM ws.dt WHERE code IN ($1, ws.pg_cs($1), 'ws.'||$1); -- TODO : проверять уникальность результата
 $_$;
 SELECT pg_c('f', 'dt_id', 'ID типа по коду');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_parts(a_id d_id32) RETURNS text STABLE LANGUAGE 'plpgsql' AS
-$_$  -- FD: pgws:ws:52_dt.sql / 99 --
+$_$
   DECLARE
     v_names TEXT[];
     r ws.dt_part;
@@ -118,7 +116,7 @@ SELECT pg_c('f', 'dt_parts', 'Список полей комплексного �
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_tree(a_id d_id32) RETURNS SETOF d_id32 STABLE LANGUAGE 'plpgsql' AS
-$_$ -- FD: pgws:ws:52_dt.sql / 121 --
+$_$
   DECLARE
     v_id d_id32;
     rec ws.dt;
@@ -135,4 +133,3 @@ $_$ -- FD: pgws:ws:52_dt.sql / 121 --
 $_$;
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:52_dt.sql / 138 --'

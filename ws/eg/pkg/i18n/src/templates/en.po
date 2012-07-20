@@ -92,7 +92,7 @@ msgstr ""
 msgid "default"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:74
+#: pkg/wiki/tmpl/page/edit.tt2:133
 msgid "html"
 msgstr ""
 
@@ -108,7 +108,7 @@ msgstr ""
 msgid "Автодокументация по объектам API"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/index.tt2:37
+#: pkg/wiki/tmpl/page/index.tt2:35
 msgid "Автор"
 msgstr ""
 
@@ -116,7 +116,7 @@ msgstr ""
 msgid "Авторизованная сессия завершена. Спасибо, что были с нами, приходите еще."
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:85
+#: pkg/wiki/tmpl/page/edit.tt2:145
 msgid "Актуальная версия"
 msgstr ""
 
@@ -131,6 +131,10 @@ msgstr "Action"
 
 msgid "Анонимный режим"
 msgstr "Anomymous mode"
+
+#: pkg/wiki/tmpl/page/edit.tt2:49
+msgid "Атрибуты"
+msgstr ""
 
 #: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Базовый"
@@ -149,11 +153,11 @@ msgid "Ваша учетная запись имеет недостаточно 
 msgstr ""
 
 #. (info.revision, info.updated_at)
-#: pkg/wiki/tmpl/page/index.tt2:36
+#: pkg/wiki/tmpl/page/index.tt2:34
 msgid "Версия документа: %1 от %2"
 msgstr ""
 
-#: pkg/acc/tmpl/block/loginform.tt2:25
+#: pkg/acc/tmpl/block/loginform.tt2:23
 msgid "Войти"
 msgstr ""
 
@@ -165,9 +169,13 @@ msgid "Вы будете переадресованы на главную стр
 msgstr ""
 
 #: pkg/style01/tmpl/block/page_path.tt2:3
-#: pkg/style01/tmpl/layout/default.tt2:60
+#: pkg/style01/tmpl/layout/default.tt2:42
 msgid "Главная"
 msgstr "Main page"
+
+#: pkg/job/tmpl/page/prop.tt2:41
+msgid "Группа тарифов"
+msgstr ""
 
 #: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 #: pkg/apidoc/tmpl/page/xsd.tt2:23
@@ -178,19 +186,23 @@ msgstr "Yes"
 msgid "Демонстрация базовых примеров работы с API"
 msgstr ""
 
-#: pkg/acc/tmpl/block/loginform.tt2:45
+#: pkg/wiki/tmpl/page/edit.tt2:89
+msgid "Добавить новое ключевое слово"
+msgstr ""
+
+#: pkg/acc/tmpl/block/loginform.tt2:43
 msgid "Добро пожаловать"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:83
+#: pkg/wiki/tmpl/page/edit.tt2:143
 msgid "Документ изменен"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:82
+#: pkg/wiki/tmpl/page/edit.tt2:142
 msgid "Документ создан"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:84
+#: pkg/wiki/tmpl/page/edit.tt2:144
 msgid "Загружается страница просмотра"
 msgstr ""
 
@@ -198,7 +210,12 @@ msgstr ""
 msgid "Извините, мы пока не готовы показать содержимое этой страницы"
 msgstr "Sorry, we are not ready to show this page yet"
 
-#: pkg/apidoc/tmpl/page/smd1.tt2:215
+#: pkg/wiki/tmpl/page/edit.tt2:55
+#: pkg/wiki/tmpl/page/edit.tt2:92
+msgid "Изменить"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/smd1.tt2:214
 msgid "Имя метода:"
 msgstr "Method name:"
 
@@ -206,6 +223,10 @@ msgstr "Method name:"
 #: pkg/apidoc/tmpl/page/pagemap.tt2:27
 msgid "Класс"
 msgstr "Class"
+
+#: pkg/wiki/tmpl/page/edit.tt2:81
+msgid "Ключевые слова"
+msgstr ""
 
 #: pkg/apidoc/tmpl/page/class.tt2:34
 msgid "Код"
@@ -223,7 +244,7 @@ msgstr "Constructor"
 msgid "Кэш"
 msgstr "Cache"
 
-#: pkg/acc/tmpl/block/loginform.tt2:16
+#: pkg/acc/tmpl/block/loginform.tt2:14
 msgid "Логин:"
 msgstr ""
 
@@ -235,7 +256,7 @@ msgstr "URI mask"
 msgid "Массив"
 msgstr "Array"
 
-#: pkg/apidoc/tmpl/page/class.tt2:105
+#: pkg/apidoc/tmpl/page/class.tt2:110
 msgid "Методы"
 msgstr "Methods"
 
@@ -246,8 +267,8 @@ msgstr "Name"
 msgid "Найден класс \"%1\""
 msgstr "Class found: \"%1\""
 
-#: pkg/apidoc/tmpl/page/smd1.tt2:149
-#: pkg/apidoc/tmpl/page/smd1.tt2:217
+#: pkg/apidoc/tmpl/page/smd1.tt2:148
+#: pkg/apidoc/tmpl/page/smd1.tt2:216
 msgid "Найти"
 msgstr "Find"
 
@@ -284,15 +305,20 @@ msgstr "Description"
 msgid "Опционален"
 msgstr "Optional"
 
+#: pkg/wiki/tmpl/page/edit.tt2:58
+#: pkg/wiki/tmpl/page/edit.tt2:95
+msgid "Отмена"
+msgstr ""
+
 msgid "Ошибка %1. %2"
 msgstr "Error %1. %2"
 
-#: pkg/acc/tmpl/block/loginform.tt2:20
+#: pkg/acc/tmpl/block/loginform.tt2:18
 msgid "Пароль:"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:53
-#: pkg/wiki/tmpl/page/edit.tt2:57
+#: pkg/wiki/tmpl/page/edit.tt2:112
+#: pkg/wiki/tmpl/page/edit.tt2:116
 msgid "Перейти на вкладку предпросмотра"
 msgstr ""
 
@@ -300,11 +326,15 @@ msgstr ""
 msgid "По умолчанию"
 msgstr "Default"
 
-#: pkg/apidoc/tmpl/page/smd1.tt2:149
+#: pkg/job/tmpl/page/prop.tt2:84
+msgid "Показать"
+msgstr ""
+
+#: pkg/apidoc/tmpl/page/smd1.tt2:148
 msgid "Показать все"
 msgstr "Show all"
 
-#: pkg/style01/tmpl/layout/default.tt2:45
+#: pkg/style01/tmpl/layout/default.tt2:27
 msgid "Пользователь авторизован"
 msgstr ""
 
@@ -316,8 +346,8 @@ msgstr "Fields"
 msgid "Похоже, сессия была завершена ранее."
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:52
-#: pkg/wiki/tmpl/page/edit.tt2:56
+#: pkg/wiki/tmpl/page/edit.tt2:111
+#: pkg/wiki/tmpl/page/edit.tt2:115
 msgid "Предварительный просмотр"
 msgstr ""
 
@@ -325,6 +355,10 @@ msgstr ""
 #: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Предок"
 msgstr "Parent"
+
+#: pkg/job/tmpl/page/prop.tt2:23
+msgid "Представительство"
+msgstr ""
 
 #: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 msgid "Пример вызова"
@@ -342,8 +376,12 @@ msgstr "Page example"
 msgid "Производный"
 msgstr "Derivative"
 
-#: pkg/wiki/tmpl/page/index.tt2:38
+#: pkg/wiki/tmpl/page/index.tt2:36
 msgid "Редактировать"
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:80
+msgid "Родительская статья"
 msgstr ""
 
 #: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
@@ -358,12 +396,18 @@ msgstr "Service unavailable"
 msgid "Скаляр"
 msgstr "Scalar"
 
-#: pkg/wiki/tmpl/page/edit.tt2:51
-#: pkg/wiki/tmpl/page/edit.tt2:55
+#: pkg/wiki/tmpl/page/edit.tt2:70
+msgid "Следующий статус"
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:110
+#: pkg/wiki/tmpl/page/edit.tt2:114
+#: pkg/wiki/tmpl/page/edit.tt2:57
+#: pkg/wiki/tmpl/page/edit.tt2:94
 msgid "Сохранить"
 msgstr ""
 
-#: pkg/apidoc/tmpl/page/class.tt2:69
+#: pkg/apidoc/tmpl/page/class.tt2:70
 msgid "Статус"
 msgstr "Status"
 
@@ -371,13 +415,21 @@ msgstr "Status"
 msgid "Страница не найдена"
 msgstr "Page not found"
 
-#: pkg/apidoc/tmpl/page/class.tt2:94
+#: pkg/apidoc/tmpl/page/class.tt2:99
 msgid "Страницы"
 msgstr "Pages"
 
 #: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Структура"
 msgstr "Structure"
+
+#: pkg/job/tmpl/page/prop.tt2:64
+msgid "Тариф"
+msgstr ""
+
+#: pkg/wiki/tmpl/page/edit.tt2:61
+msgid "Текущий статус"
+msgstr ""
 
 #: pkg/apidoc/tmpl/page/xsd.tt2:23
 msgid "Тип"
@@ -391,9 +443,13 @@ msgstr "Arguments type"
 msgid "Тип результата"
 msgstr "Result type"
 
-#: pkg/apidoc/tmpl/page/class.tt2:69
+#: pkg/apidoc/tmpl/page/class.tt2:70
 msgid "Уровень доступа"
 msgstr "Access level"
+
+#: pkg/job/tmpl/page/prop.tt2:3
+msgid "Фильтр настроек"
+msgstr ""
 
 #: pkg/apidoc/tmpl/block/smd_table_inc.tt2:1
 msgid "Формат результата"
@@ -410,12 +466,12 @@ msgstr ""
 msgid "Это главная страница проекта по умолчанию"
 msgstr "This is default project main page"
 
-#: pkg/wiki/tmpl/page/edit.tt2:70
+#: pkg/wiki/tmpl/page/edit.tt2:129
 msgid "изменения"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:88
-#: pkg/wiki/tmpl/page/edit.tt2:89
+#: pkg/wiki/tmpl/page/edit.tt2:148
+#: pkg/wiki/tmpl/page/edit.tt2:149
 msgid "нет данных"
 msgstr ""
 
@@ -427,7 +483,7 @@ msgstr "required"
 msgid "по умолчанию"
 msgstr "default"
 
-#: pkg/wiki/tmpl/page/edit.tt2:66
+#: pkg/wiki/tmpl/page/edit.tt2:125
 msgid "просмотр"
 msgstr ""
 
@@ -435,6 +491,6 @@ msgstr ""
 msgid "раздел, посвященный программному интерфейсу к функционалу сайта"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:42
+#: pkg/wiki/tmpl/page/edit.tt2:101
 msgid "редактор"
 msgstr ""

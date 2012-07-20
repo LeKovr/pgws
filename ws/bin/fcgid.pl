@@ -19,31 +19,45 @@
 #
 # fcgid.pl - FastCGI daemon
 
-use strict;
-use warnings;
+use lib $ENV{'PWD'}.'/lib'; # fix for require.  TODO: use Module::Pluggable
 
-use Cwd;
-our $dir;
-BEGIN {
-    $dir = getcwd;
-}
-use lib "$dir/lib";
-
-use PGWS::Frontend::CGI;
+use PGWS;
 use PGWS::Daemon;
+use PGWS::Frontend;
+use PGWS::Frontend::CGI;
 
+use constant POGC     => 'fcgi';                      # Property Owner Group Code
+use constant POID     => ($ENV{PGWS_FCGI_POID} or 1); # Property Owner ID
+use constant SOCKET   => ($ENV{PGWS_FCGI_SOCKET} or 'back.test.local:9001');    # socket nginx forward to
 #----------------------------------------------------------------------
 $| = 1;
-my $daemon = PGWS::Daemon->new({'root' => "$dir/", 'proc_loop' => \&proc_loop });
+
+my $daemon = PGWS::Daemon->new({
+  'pogc' => POGC
+, 'poid' => POID
+, 'socket' => SOCKET
+, 'mgr_init' => \&init
+, 'proc_loop' => \&proc_loop
+});
 $daemon->run(shift);
 
 #----------------------------------------------------------------------
-1;
+# init manager
+sub init {
+  my ($self, $proc_manager) = @_;
+
+  my $cfg = $self->mgr_dbc->config('fcgi');
+#  $proc_manager->{'frontend'} = PGWS::Frontend->new($cfg);
+  $self->{'frontend'} = PGWS::Frontend->new($cfg);
+}
 
 #----------------------------------------------------------------------
 sub proc_loop {
-  my ($self, $req_env) = @_;
+  my ($self, $proc_manager, $req_env) = @_;
   local @ENV{keys %$req_env}=values %$req_env;
-  my $frontend = PGWS::Frontend::CGI->new({'root' => $self->{'root'}});
-  $frontend->run();
+  my $req = PGWS::Frontend::CGI->new();
+#  $proc_manager->{'frontend'}->run($req);
+  $self->{'frontend'}->run($req);
 }
+
+1;

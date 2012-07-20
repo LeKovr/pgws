@@ -17,13 +17,10 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Регистрация методов и страниц
 */
--- 89_reg.sql - Регистрация методов и страниц
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:89_reg.sql / 23 --'
 
 /* ------------------------------------------------------------------------- */
-
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id) VALUES
   ('wiki.group_id_by_code',   2, 1, 3, 2)
   , ('wiki.ids_by_code',      2, 1, 3, 3)
@@ -44,12 +41,12 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write) V
   , ('wiki.doc_update_attr',  2, 1, 1, 2, true)
 ;
 
-INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, is_sql, arg_dt_id, rv_dt_id, name, args_exam) VALUES
-  ('wiki.format', 2, 1, 3, 2, 'Wiki::format', false, dt_id('z_format'), dt_id('text'), 'Форматирование wiki в html','a_text="*Hello* _world_"')
+INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, name, args_exam) VALUES
+  ('wiki.format', 2, 1, 3, 2, 'wiki:format', dt_id('z_format'), dt_id('text'), 'Форматирование wiki в html','a_text="*Hello* _world_"')
 ;
 
-INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, is_sql, arg_dt_id, rv_dt_id, is_write, name) VALUES
-  ('wiki.save', 2, 1, 3, 2, 'Wiki::save', false, dt_id('z_save'), dt_id('text'), true, 'Сохранение wiki')
+INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, is_write, name) VALUES
+  ('wiki.save', 2, 1, 3, 2, 'wiki:save', dt_id('z_save'), dt_id('text'), true, 'Сохранение wiki')
 ;
 
 /* ------------------------------------------------------------------------- */
@@ -67,5 +64,3 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
   , ( 'Y9904', 0, 'Документ не содержит изменений')
   , ( 'Y9905', 0, 'Документ не найден')
 ;
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:89_reg.sql / 71 --'

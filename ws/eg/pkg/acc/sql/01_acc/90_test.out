@@ -1,19 +1,31 @@
-1. login
+        test        
+--------------------
+  ***** login *****
+
  login | status_id |      email       | psw 
 -------+-----------+------------------+-----
- admin |         1 | admin@pgws.local | ***
+ admin |         2 | admin@pgws.local | ***
 
-2. session
+         test         
+----------------------
+  ***** session *****
+
     ip     | sid 
 -----------+-----
  127.0.0.1 | ; 
 
-3. profile
+         test         
+----------------------
+  ***** profile *****
+
  id | group_id | status_id | login |      email       | psw | name  | group_name 
 ----+----------+-----------+-------+------------------+-----+-------+------------
-  1 |        2 |         1 | admin | admin@pgws.local | *** | Admin | Writers
+  1 |        2 |         2 | admin | admin@pgws.local | *** | Admin | Writers
 
-4. logout
+        test         
+---------------------
+  ***** logout *****
+
  logout 
 --------
       1

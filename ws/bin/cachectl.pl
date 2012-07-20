@@ -19,21 +19,20 @@
 #
 # PGWS cache control (dump/restore) script
 
-use strict;
-use warnings;
-
-use lib qw(lib);
+use lib 'lib';
 
 use PGWS;
-use PGWS::Utils;
+use PGWS::DBConfig;
+#use PGWS::Plugin::Frontend;
+#use PGWS::Frontend::CGI;
 
-use Cache::FastMmap;
 use Data::Dumper;
 
-use JSON;
-
+use constant POGC => 'be';                      # Core Property Owner Group Code
+use constant POID => 1;                         # Core Property Owner ID
 #----------------------------------------------------------------------
-# config
+$| = 1;
+
 
 my $cmd = shift || 'stat';       # command (save|load|stat)
 my $tag = shift || '*';       # cache tag
@@ -63,31 +62,37 @@ $Data::Dumper::Useqq = 1;
 }
 
 my $cfg;
-
+my $cache;
 #----------------------------------------------------------------------
 sub load_cfg {
-  my $file = shift;
-  $file ||= 'conf/cache.json';
-  $cfg ||= PGWS::Utils::data_load($file);
+
+  my $core_dbc = PGWS::DBConfig->new({
+    'pogc' => POGC
+  , 'poid' => POID
+  });
+  $cfg = $core_dbc->config('be.plugin.cache');
+  $cache = PGWS::DBConfig::_plugin_load($cfg, 'ws.plugin.cache');
+#print Dumper($cache);
 }
 
 #----------------------------------------------------------------------
 sub init {
   my $tag = shift;
   load_cfg() unless $cfg;
-  my $c = $cfg->{$tag} or die sprintf 'Unrecognized cache tag (%s)', $tag;
+  my $c = $cache->{'_caches'}{$tag} or die sprintf 'Unrecognized cache tag (%s)', $tag;
+  return $c;
 
-  my $f = $c->{'share_file'};
-  if ($f !~ /^\//) {
-    $c->{'share_file'} = 'var/cache/'.$f;
-  }
-  my $new;
+#  my $f = $c->{'share_file'};
+#  if ($f !~ /^\//) {
+#    $c->{'share_file'} = 'var/cache/'.$f;
+#  }
+#  my $new;
 
-  -f $c->{'share_file'} or $new = 1;
-  my $cache = Cache::FastMmap->new($c);
-  chmod 0666, $c->{'share_file'} if $new;
+#  -f $c->{'share_file'} or $new = 1;
+#  my $cache = Cache::FastMmap->new($c);
+#  chmod 0666, $c->{'share_file'} if $new;
 
-  return $cache;
+#  return $cache;
 }
 
 #----------------------------------------------------------------------
@@ -106,7 +111,7 @@ sub stats {
   if ($tag eq '*') {
     load_cfg;
     printf "%-10s %10s %10s %10s %8s\n", qw(Tag Keys Reads Hits Ratio);
-    stats_line($_) foreach sort keys %$cfg;
+    stats_line($_) foreach sort keys %{$cache->{'_caches'}};
   } else {
     stats_line($tag);
   }
@@ -123,7 +128,7 @@ sub clear_line {
 sub clear {
   if ($tag eq '*') {
     load_cfg;
-    clear_line($_) foreach sort keys %$cfg;
+    clear_line($_) foreach sort keys %{$cache->{'_caches'}};
   } else {
     clear_line($tag);
   }
@@ -132,7 +137,7 @@ sub clear {
 #----------------------------------------------------------------------
 sub save {
   -d $dir || mkdir $dir || die "No access to dir $dir";
-  printf 'Saving cache %s to dir %s...', $tag, $dir; 
+  printf 'Saving cache %s to dir %s...', $tag, $dir;
   my $c = init($tag);
   my $defs = {};
 
@@ -162,14 +167,14 @@ sub save {
     print FILE $json->pretty->encode($defs->{$method});
     close FILE;
   }
-  print "\nDone\n"; 
+  print "\nDone\n";
 }
 
 #----------------------------------------------------------------------
 sub load {
   -d $dir or die "No access to dir $dir";
   my $c = init($tag);
-  printf 'Loading cache %s from dir %s...', $tag, $dir; 
+  printf 'Loading cache %s from dir %s...', $tag, $dir;
   my $defs = {};
 
   my @elems = split /\./, $dir;
@@ -193,30 +198,34 @@ sub load {
       my $key = PGWS::Utils::json_out($prekey);
 
       print Dumper($key, $def) if ($DEBUG);
-      
+
       $c->set($key, $res) or die 'ERROR: cache set fail for key '.$key;
       print '.';
     }
   }
-  print "\nDone\n"; 
+  print "\nDone\n";
 }
 
 #----------------------------------------------------------------------
 sub help {
 
 print <<TEXT
-Usage: $0 cmd tag DIR
+  Usage:
+    $0 CMD TAG DIR
+
   Where
-    cmd - command (stat|load|save|clear)
-    tag - cache tag from conf/cache.json
+    CMD - command (stat|load|save|clear)
+    TAG - cache tag from conf/cache.json
     DIR - directory for save/load
 
-Example:
+  Example:
     pgws.sh cache save meta e11
     pgws.sh cache load meta e11
-    pgws.sh cache stat meta 
+    pgws.sh cache stat meta
+    pgws.sh cache clear
 TEXT
 }
+
 
 #----------------------------------------------------------------------
 if ($cmd eq 'save') { save();
@@ -227,3 +236,5 @@ if ($cmd eq 'save') { save();
 }
 
 1;
+
+__END__

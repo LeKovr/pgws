@@ -19,6 +19,36 @@
 # pgctl.sh - Postgresql schema control script
 #
 
+AWK_BIN=gawk
+# ------------------------------------------------------------------------------
+db_anno() {
+  echo "  db    - Database control"
+}
+
+# ------------------------------------------------------------------------------
+db_help() {
+  cat <<EOF
+
+  Usage:
+    $0 db (init|make|drop|doc) [SRC] [PKG]
+
+  Where
+    init - create DB objects
+    make - compile code
+    drop - drop DB objects
+    erase - drop DB objects
+
+    doc  - make docs for schema SRC (Default: ws)
+    dump - dump schema SRC (Default: i18n_def)
+
+    restore KEY - restore schema(s) from dbdump-KEY.tar.gz
+
+    SRC  - pgws|pkg. Default: pgws
+    PKG  - dirname(s) from SRC. Default: "$PGWS_PKG" (if SRC=pgws) or "$PGWS_APP_PKG"
+
+EOF
+}
+
 # ------------------------------------------------------------------------------
 db_show_logfile() {
   cat <<EOF
@@ -32,13 +62,17 @@ db_run_sql_begin() {
   local file=$1
   cat > $file <<EOF
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: _build.sql / BEGIN --'
+\qecho '-- _build.sql / BEGIN --'
 
 BEGIN;
 \set ON_ERROR_STOP 1
 SET CLIENT_ENCODING TO 'utf-8';
-SET CLIENT_MIN_MESSAGES TO 'WARNING';
 EOF
+  if [[ "$BUILD_DEBUG" ]] ; then
+    echo "SET CLIENT_MIN_MESSAGES TO 'DEBUG';" >> $file
+  else
+    echo "SET CLIENT_MIN_MESSAGES TO 'WARNING';" >> $file
+  fi
 }
 
 # ------------------------------------------------------------------------------
@@ -47,7 +81,7 @@ db_run_sql_end() {
   cat >> $file <<EOF
 COMMIT;
 
-\qecho '-- FD: _build.psql / END --'
+\qecho '-- _build.psql / END --'
 /* ------------------------------------------------------------------------- */
 EOF
 }
@@ -80,12 +114,14 @@ EOF
 }
 
 # ------------------------------------------------------------------------------
-db_empty_file_if_schema() {
-  local schema=$1
-  local file=$2
-  local dest=$3
-  echo "SELECT schema_name FROM information_schema.schemata WHERE schema_name = '$schema'" >> $dest
-  echo "\\g | read col; read delim ; read answer ; [ "\$answer" ] && echo \"-- File was erased because target schema exists (\$answer)\" > $file" >> $dest
+is_file_protected() {
+  local pkg=$1
+  local ver=$2
+  local file=$3
+
+  ${PG_BINDIR}psql -X -d "$CONN" -P tuples_only -c "SELECT code FROM wsd.pkg_script_protected WHERE pkg = '$pkg' AND ver='$ver' AND code = '$file'" 2>> /dev/null | while read result ; do
+    [[ "$result" == "$file" ]] && echo "1"
+  done
 }
 
 # ------------------------------------------------------------------------------
@@ -172,11 +208,15 @@ EOF
     sn=${s#*/sql/??_} # schema name
     bd=$pn-${s#*/sql/} # build dir
     dn="${sn}_data"   # persistent data schema
-    [[ "$pn" == "pg" ]] && pn="pgws" # system package got project name
-    [[ "$p" != "$p_pre" ]] && echo "\\qecho '-- ******* Package: $pn --'" >> $BLD/build.sql
-    [[ "$p" != "$p_pre" ]] && ( [[ "$pn" != "pgws" ]] || [[ "$run_op" != "add" ]] ) && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
-
+    [[ "$pn" == "pg" ]] && pn="ws" # system package got project name
+    if [[ "$p" != "$p_pre" ]] ; then
+      echo "\\qecho '-- ******* Package: $pn --'" >> $BLD/build.sql
+      echo "\\set PKG $pn" >> $BLD/build.sql
+      echo "\\set VER $ver" >> $BLD/build.sql
+      ( [[ "$pn" != "ws" ]] || [[ "$run_op" != "add" ]] ) && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+    fi
     echo "\\qecho '-- ------- Schema: $sn'" >> $BLD/build.sql
+
     [ -d "$BLD/$bd" ] || mkdir $BLD/$bd
     echo -n > $BLD/errors.diff
     pushd $s > /dev/null
@@ -185,12 +225,20 @@ EOF
         n=$(basename $f)
 #        echo "Found: $s/$f"
         echo "Processing file: $s/$f" >> $LOGFILE
-        awk "{gsub(/-- FD:(.*)--/, \"-- FD: $pn:$sn:$n / \" FNR \" --\")}; 1" $f > $BLD/$bd/$n
-        if [[ $n != ${n%_$dn.sql} ]]; then
-          # file named SCHEMA_data.sql - empty if schema exists
-          db_empty_file_if_schema $dn $BLD/$bd/$n $BLD/build.sql
+        # вариант с заменой 1го вхождения + поддержка plperl
+        $AWK_BIN "{ print gensub(/(\\\$_\\\$)($| +#?)/, \"\\\1\\\2 /* $pn:$sn:\" FILENAME \" / \" FNR \" */ \",\"g\")};" $f > $BLD/$bd/$n
+        # вариант без удаления прошлых комментариев
+        # awk "{gsub(/\\\$_\\\$(\$| #?)/, \"/* $pn:$sn:$n / \" FNR \" */ \$_\$ /* $pn:$sn:$n / \" FNR \" */ \")}; 1" $f > $BLD/$bd/$n
+        # вариант с удалением прошлых комментариев
+        # awk "{gsub(/(\/\* .+ \/ [0-9]+ \*\/ )?\\\$_\\\$( \/\* .+ \/ [0-9]+ \*\/)?/, \"/* $pn:$sn:$n / \" FNR \" */ \$_\$ /* $pn:$sn:$n / \" FNR \" */ \")}; 1" $f > $BLD/$bd/$n
+        local is_prot=$(is_file_protected $pn $ver $n)
+        if [[ ! $is_prot ]]; then
+          echo "\\qecho '----- $pn:$sn:$n -----'">> $BLD/build.sql
+          echo "\\set FILE $n" >> $BLD/build.sql
+          echo "\i $bd/$n" >> $BLD/build.sql
+        else
+          echo "\\qecho '----- PROTECTED FILE $pn:$sn:$n -----'">> $BLD/build.sql
         fi
-        echo "\i $bd/$n" >> $BLD/build.sql
       fi
     done
     popd > /dev/null
@@ -205,7 +253,7 @@ EOF
         echo "Processing file: $f" >> $LOGFILE
         c=$(grep -ciE "^\s*select\s+ws.test\(" $f)
         [[ "$c" ]] && echo -n "+$c" >> $BLD/test.cnt
-        awk "{gsub(/-- FD:(.*)--/, \"-- FD: $pn:$sn:$n / \" FNR \" --\")}; 1" $f > $BLD/$bd/$n
+        cp -p $f $BLD/$bd/$n # no replaces in test file
         n1=${n%.sql} # remove ext
         db_run_test $bd $n $n1 $sn $BLD/build.sql
         cp $s/$n1.out $BLD/$bd/$n1.out.orig 2>>  $BLD/errors.diff
@@ -215,7 +263,7 @@ EOF
     fi
 
     [[ -f "$BLD/keep_sql" ]] || echo "\! rm -rf $bd" >> $BLD/build.sql
-    [[ "$p" != "$p_pre" ]] && [[ "$pn" == "pgws" ]] && [[ "$run_op" == "add" ]] \
+    [[ "$p" != "$p_pre" ]] && [[ "$pn" == "ws" ]] && [[ "$run_op" == "add" ]] \
       && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
     p_pre=$p
   done
@@ -318,38 +366,17 @@ db_doc() {
   c=${CONN#dbname=}
   postgresql_autodoc -s $schema -f $BLD/$schema -d "$c"
 }
-# ------------------------------------------------------------------------------
-db_help() {
-cat <<EOF
-  Usage:
-    $0 db (init|make|drop|doc) [SRC] [PKG]
-
-  Where
-    init - create DB objects
-    make - compile code
-    drop - drop DB objects
-    doc  - make docs for schema SRC (Default: ws)
-    dump - dump schema SRC (Default: i18n_def)
-
-    dumpdata - dump *_data schemas to dbdump-KEY.tar.gz
-    restoredata KEY - restore *_data schemas from dbdump-KEY.tar.gz
-    dropdata - drop *_data schemas
-
-    SRC  - pgws|pkg. Default: pgws
-    PKG  - dirname(s) from SRC. Default: "$PGWS_PKG" (if SRC=pgws) or "$PGWS_APP_PKG"
-EOF
-}
 
 # ------------------------------------------------------------------------------
-CONN=$(perl $PGWS_ROOT/$PGWS/$PGWS_WS/bin/json2conninfo.pl < $PGWS_ROOT/conf/db.json)
+
+CONN=$(perl $PGWS_ROOT/$PGWS/$PGWS_WS/bin/json2var.pl DB < $PGWS_ROOT/config.json)
 [[ "$CONN" ]] || { echo "Fatal: No DB connect info"; exit 1; }
 
 DO_SQL=1
 BLD=$PGWS_ROOT/var/build
 
-cat <<EOF
-  DB Command:  $@
-  DB Connect:  $CONN
+[[ "$cmd" == "anno" ]] || cat <<EOF
+  Connect:  $CONN
   ---------------------------------------------------------
 EOF
 
@@ -364,10 +391,13 @@ case "$cmd" in
     db_run add "[1-8]?_*.sql" $src "$pkg"
     ;;
   drop)
+    db_run del "00_*.sql" $src "$pkg"
+    ;;
+  erase)
     db_run del "0?_*.sql" $src "$pkg"
     ;;
   make)
-    db_run make "11_*.sql [3-6]?_*.sql" $src "$pkg"
+    db_run make "19_*.sql [3-6]?_*.sql" $src "$pkg"
     ;;
   doc)
     db_doc $src
@@ -375,14 +405,17 @@ case "$cmd" in
   dump)
     db_dump $src
     ;;
-  dumpdata)
-    db_dumpdata
-    ;;
-  restoredata)
-    db_restoredata $src
-    ;;
-  dropdata)
-    db_dropdata
+#  dumpdata)
+#    db_dumpdata
+#    ;;
+#  restoredata)
+#    db_restoredata $src
+#    ;;
+#  dropdata)
+#    db_dropdata
+#    ;;
+  anno)
+    db_anno
     ;;
   *)
     db_help

@@ -17,12 +17,9 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Удаление схем
 */
---  00_drop.sql - Удаление схем
+
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: i18n:i18n_en:00_drop.sql / 23 --'
 
 DROP SCHEMA i18n_en CASCADE;
-
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: i18n:i18n_en:00_drop.sql / 28 --'

@@ -17,13 +17,22 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Проверка возможности удаления пакета
+    Удаление связей с wsd
 */
---  00_cleanup.sql - Подготовка к удалению схемы
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:00_cleanup.sql / 23 --'
 
+/* ------------------------------------------------------------------------- */
 -- Будет ошибка если есть неудаленные пакеты приложения
 SELECT ws.pkg_is_core_only();
 
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: pgws:ws:00_cleanup.sql / 29 --'
+ALTER TABLE wsd.prop_group ALTER COLUMN pkg DROP DEFAULT;
+
+ALTER TABLE wsd.prop_owner ALTER COLUMN pkg DROP DEFAULT;
+
+ALTER TABLE wsd.prop_value ALTER COLUMN pkg DROP DEFAULT;
+
+ALTER TABLE wsd.pkg_script_protected ALTER COLUMN pkg DROP DEFAULT;
+
+/* ------------------------------------------------------------------------- */
+DROP TRIGGER IF EXISTS insupd ON wsd.prop_value;

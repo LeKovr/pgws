@@ -17,14 +17,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Вторичные данные wiki
 */
--- 82_doc.sql - Вторичные данные wiki
+
 /* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:82_doc.sql / 23 --'
 
 -- Пометим все вторичные данные как требующие переформирования
-UPDATE wiki_data.doc SET cached_at = NULL;
+UPDATE wsd.doc SET cached_at = NULL;
 
--- TODO: создать в tm задачу переформирования вторичных данных
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:82_doc.sql / 30 --'
+-- TODO: создать в job задачу переформирования вторичных данных

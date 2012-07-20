@@ -17,36 +17,29 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Таблицы пакета
 */
--- 21_main.sql - Таблицы API
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:22_doc.sql / 23 --'
-
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE doc_extra (
-  id                  d_id32  PRIMARY KEY REFERENCES wiki_data.doc
-  , is_toc_preferred  bool    NOT NULL DEFAULT FALSE
-  , toc               text
-  , anno              text
+  id                d_id32  PRIMARY KEY REFERENCES wsd.doc
+, is_toc_preferred  bool    NOT NULL DEFAULT FALSE
+, toc               text
+, anno              text
 );
 SELECT pg_c('t', 'doc_extra', 'Дополнительные данные статьи wiki')
-  ,pg_c('c', 'doc_extra.id', 'ID статьи')
-  ,pg_c('c', 'doc_extra.is_toc_preferred', 'В кратком списке выводить не аннотацию а содержание')
+, pg_c('c', 'doc_extra.id', 'ID статьи')
+, pg_c('c', 'doc_extra.is_toc_preferred', 'В кратком списке выводить не аннотацию а содержание')
 ;
-
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE doc_link (
-  id            d_id32  NOT NULL REFERENCES wiki_data.doc
-  , path        text    NOT NULL
-  , is_wiki     bool    NOT NULL DEFAULT TRUE -- TODO считать триггером или при запросе
-  , link_id     d_id    REFERENCES wiki_data.doc
-  , CONSTRAINT  doc_link_pkey PRIMARY KEY (id, path)
+  id          d_id32  NOT NULL REFERENCES wsd.doc
+, path        text    NOT NULL
+, is_wiki     bool    NOT NULL DEFAULT TRUE -- TODO считать триггером или при запросе
+, link_id     d_id    REFERENCES wsd.doc
+, CONSTRAINT  doc_link_pkey PRIMARY KEY (id, path)
 );
 SELECT pg_c('t', 'doc_link', 'Ссылка на внутренние документы статьи wiki')
-  ,pg_c('c', 'doc_link.id', 'ID статьи')
+, pg_c('c', 'doc_link.id', 'ID статьи')
 ;
-
-/* ------------------------------------------------------------------------- */
-\qecho '-- FD: wiki:wiki:22_doc.sql / 52 --'

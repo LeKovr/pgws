@@ -20,6 +20,32 @@
 #
 
 # ------------------------------------------------------------------------------
+i18n_anno() {
+  echo "  i18n  - i18n control"
+}
+
+# ------------------------------------------------------------------------------
+i18n_help() {
+  cat <<EOF
+
+  Usage:
+    $0 i18n (init|make|clean)
+
+  Where
+    init [LANG] - create or update .po files from DB and templates for LANG
+    make [LANG] - compile .po files and generate schema sql for LANG
+    make [LANG] - remove temp files
+
+    LANG - translation name. Default: en
+
+  After schema sql generation, you should load all of them into DB with command:
+
+    pgws.sh db init pkg i18n
+
+EOF
+}
+
+# ------------------------------------------------------------------------------
 i18n_init() {
   local lang=$1 ; shift
 
@@ -87,26 +113,6 @@ i18n_clean() {
 }
 
 # ------------------------------------------------------------------------------
-i18n_help() {
-cat <<EOF
-
-Usage:
-  $0 i18n (init|make)
-  Where
-    init [LANG] - create or update .po files from DB and templates for LANG
-    make [LANG] - compile .po files and generate schema sql for LANG
-
-    LANG - translation name. Default: en
-
-  After schema sql generation, you should load all of them into DB with command:
-
-    pgws.sh db init pkg i18n
-EOF
-}
-
-# ------------------------------------------------------------------------------
-
-BLD=$PGWS_ROOT/var/build
 
 cmd=$1
 shift
@@ -115,10 +121,12 @@ shift
 
 [[ "$lang" ]] || lang="en"
 
-BLD=$PGWS_ROOT/var/build
+[[ "$cmd" == "anno" ]] || cat <<EOF
+  Language:    $lang
+  ---------------------------------------------------------
+EOF
 
-echo "Command:     $cmd"
-echo "Translation: $lang"
+BLD=$PGWS_ROOT/var/build
 
 case "$cmd" in
   init)
@@ -129,6 +137,9 @@ case "$cmd" in
     ;;
   clean)
     i18n_clean
+    ;;
+  anno)
+    i18n_anno
     ;;
   *)
     i18n_help

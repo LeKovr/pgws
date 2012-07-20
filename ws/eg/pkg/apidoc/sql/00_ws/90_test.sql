@@ -17,10 +17,10 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Тесты
 */
--- 90_test.sql - Тесты
+
 /* ------------------------------------------------------------------------- */
 SELECT ws.test('apidoc_empty');
 
 /* ------------------------------------------------------------------------- */
--- No end qecho
