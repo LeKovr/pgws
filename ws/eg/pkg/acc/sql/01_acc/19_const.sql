@@ -9,18 +9,32 @@
 SET LOCAL search_path = acc, ws, i18n_def, public;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION const_status_id_unknown() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION const_status_id_active() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 4
+$_$;
+SELECT pg_c('f', 'const_status_id_active', 'Константа: ID статуса активного аккаунта');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_status_id_active_locked() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 5
+$_$;
+SELECT pg_c('f', 'const_status_id_active', 'Константа: ID статуса активного аккаунта');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_role_id_guest() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 1
 $_$;
-SELECT pg_c('f', 'const_status_id_unknown', 'Константа: ID статуса для неизвестного аккаунта');
+SELECT pg_c('f', 'const_role_id_guest', 'Константа: ID роли неавторизованного пользователя');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION const_status_id_active() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION const_role_id_user() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 2
 $_$;
-SELECT pg_c('f', 'const_status_id_active', 'Константа: ID статуса активного аккаунта');
+SELECT pg_c('f', 'const_role_id_user', 'Константа: ID роли авторизованного пользователя');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_admin_psw_default() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
@@ -29,5 +43,25 @@ $_$
 $_$;
 SELECT pg_c('f', 'const_admin_psw_default', 'Константа: Первичный пароль администратора');
 
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_password() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'Y0301'::TEXT
+$_$;
+SELECT pg_c('f', 'const_error_password', 'Константа: Код ошибки авторизации с неправильным паролем');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_login() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'Y0302'::TEXT
+$_$;
+SELECT pg_c('f', 'const_error_login', 'Константа: Код ошибки авторизации с неизвестным логином');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_status() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'Y0303'::TEXT
+$_$;
+SELECT pg_c('f', 'const_error_status', 'Константа: Код ошибки авторизации с недопустимым статусом');
 
 /* ------------------------------------------------------------------------- */

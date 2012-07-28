@@ -232,33 +232,41 @@ my @links = keys %{$m->{_metadata}{'links'}};
 }
 
 #----------------------------------------------------------------------
+sub add {
+  my ($self, $srv, $meta, $args) = @_;
+  my ($sid, $uri, $group_id, $code, $src) = (@$args);
+
+  my @ids = ($sid, $group_id, $code ||'', $src);
+  my $fmt_args = [$sid, $uri, $src, 1];
+  my $tag = 'wiki.doc_create';
+
+  return $self->_store($srv, $meta, $fmt_args, undef, $tag, @ids);
+}
+
+#----------------------------------------------------------------------
 sub save {
   my ($self, $srv, $meta, $args) = @_;
-  my ($sid, $group_id, $uri, $code, $src, $id, $rev) = (@$args);
+  my ($sid, $uri, $id, $rev, $src) = (@$args);
 
-  my $tag;
-  my @ids = ($sid);
-  my $fmt_args = [$sid, $uri, $src, 1];
+  my @ids = ($sid, $id, $rev, $src);
+  my $fmt_args = [$sid, $uri, $src, 1, $id];
+  my $tag = 'wiki.doc_update_src';
+
+  return $self->_store($srv, $meta, $fmt_args, 'diff', $tag, @ids);
+}
+
+#----------------------------------------------------------------------
+sub _store {
+  my ($self, $srv, $meta, $fmt_args, $parse_fld, $tag, @ids) = @_;
 
   my @parsed_args = qw(name links anno toc);
-  unless (defined($id)) {
-    # create
-    $tag = 'wiki.doc_create';
-    push @ids, $group_id, $code ||'';
-  } else {
-    $tag = 'wiki.doc_update_src';
-    push @ids, $id, $rev;
-    push @$fmt_args, $id;
-    push @parsed_args, 'diff';
-  }
-
+  push (@parsed_args, $parse_fld) if ($parse_fld);
   my $wiki_def = $self->format($srv, $meta, $fmt_args);
 
   if ($tag eq 'wiki.doc_update_src' and !$wiki_def->{'result'}{'data'}{'diff'}) {
       return { 'result' => { 'error' => [{ 'code' => 'Y9904', 'message' => $srv->_error_fmt($meta, 'Y9904')}]}};
   }
 
-  push @ids, $src;
   push @ids, map { $wiki_def->{'result'}{'data'}{$_} || '' } @parsed_args;
 
   $meta->dump({
@@ -273,8 +281,9 @@ sub save {
   }
   my $doc_id = $res->{'result'}{'data'};
   # reset cache
-  $srv->_call_meta($srv->def_uncache, $meta, 'wiki.ids_by_code', $code);
-  $srv->_call_meta($srv->def_uncache, $meta, 'wiki.doc_info', $doc_id);
+  my $res1 = $srv->_call_meta($srv->def_uncache, $meta, 'nc:wiki.doc_info', $doc_id);
+  my $def = $res1->{'result'}{'data'};
+  $srv->_call_meta($srv->def_uncache, $meta, 'wiki.doc_id_by_code', $def->{'group_id'}, $def->{'code'} || undef);
   $srv->_call_meta($srv->def_uncache, $meta, 'wiki.doc_src', $doc_id);
 
   return $res;

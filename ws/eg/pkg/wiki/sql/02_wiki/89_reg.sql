@@ -21,46 +21,62 @@
 */
 
 /* ------------------------------------------------------------------------- */
+\set WID wiki.const_class_id()      -- wiki class id
+\set DID wiki.const_doc_class_id()  -- doc class id
+
+/* ------------------------------------------------------------------------- */
+
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id) VALUES
-  ('wiki.group_id_by_code',   2, 1, 3, 2)
-  , ('wiki.ids_by_code',      2, 1, 3, 3)
-  , ('wiki.doc_info',         2, 1, 3, 3)
-  , ('wiki.doc_src',          2, 1, 3, 2)
-  , ('wiki.doc_extra',        2, 1, 3, 3)
-  , ('wiki.doc_link',         2, 1, 3, 7)
-  , ('wiki.doc_by_name',      2, 1, 3, 7)
-  , ('wiki.keyword_by_name',  2, 1, 3, 6)
-  , ('wiki.doc_keyword',      2, 1, 3, 6)
-  , ('wiki.doc_diff',         2, 1, 3, 3)
-  , ('wiki.can_create',       2, 1, 3, 2)
+  ('wiki.status',                2, 1, 3, 2) --, pg_cs('wiki_status'))
+, ('wiki.acl',                   2, 1, 3, 6) --, pg_cs('wiki_acl'))
+
+, ('wiki.id_by_code',       :WID, 1, 3, 2)
+, ('wiki.doc_id_by_code',   :WID, 1, 3, 2)
+, ('wiki.doc_by_name',      :WID, 1, 3, 7)
+, ('wiki.keyword_by_name',  :WID, 1, 3, 6)
+
+
+, ('wiki.doc_info',         :DID, 1, 3, 3)
+, ('wiki.doc_keyword',      :DID, 1, 3, 6)
+, ('wiki.doc_src',          :DID, 1, 3, 2)
+, ('wiki.doc_extra',        :DID, 1, 3, 3)
+, ('wiki.doc_link',         :DID, 1, 3, 7)
+, ('wiki.doc_diff',         :DID, 1, 3, 3)
+;
+
+INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
+  ('doc.status',                2, 1, 3, 2, pg_cs('doc_status'))
+, ('doc.acl',                   2, 1, 3, 6, pg_cs('doc_acl'))
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write) VALUES
-  ('wiki.doc_create',         2, 1, 1, 2, true)
-  , ('wiki.doc_update_src',   2, 1, 1, 2, true)
-  , ('wiki.doc_update_attr',  2, 1, 1, 2, true)
+  ('wiki.doc_create',       :WID, 4, 1, 2, true)
+
+, ('wiki.doc_update_src',   :DID, 3, 1, 2, true)
+, ('wiki.doc_update_attr',  :DID, 3, 1, 2, true)
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, name, args_exam) VALUES
-  ('wiki.format', 2, 1, 3, 2, 'wiki:format', dt_id('z_format'), dt_id('text'), 'Форматирование wiki в html','a_text="*Hello* _world_"')
+  ('doc.format', :DID, 1, 3, 2, 'wiki:format', dt_id('z_format'), dt_id('text'), 'Форматирование wiki в html','a_text="*Hello* _world_"')
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, is_write, name) VALUES
-  ('wiki.save', 2, 1, 3, 2, 'wiki:save', dt_id('z_save'), dt_id('text'), true, 'Сохранение wiki')
+  ('wiki.add',  :WID, 3, 3, 2, 'wiki:add',    dt_id('z_add'), dt_id('text'), true, 'Создание статьи wiki')
+, ('doc.save',  :DID, 3, 3, 2, 'wiki:save',   dt_id('z_save'), dt_id('text'), true, 'Сохранение статьи wiki')
 ;
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-  ('wiki.wk',           'main',     2, 1, 8,    '(wk):u$',      'wiki/index',          'Вики')
-  , ('wiki.wk.edit',    'wiki.wk',  2, 1, NULL, '(wk):u/edit$', 'wiki/edit',           'Редактирование')
-  , ('wiki.wk.history', 'wiki.wk',  2, 1, NULL, '(wk):u/history$', 'wiki/history',     'История изменений')
+INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, id_fixed, name) VALUES
+  ('wiki.wk',         'main',     :WID, 1, 8,    '(wk):u$',         'wiki/index',   id_by_code('wk'), 'Вики')
+, ('wiki.wk.edit',    'wiki.wk',  :WID, 3, NULL, '(wk):u/edit$',    'wiki/edit',    id_by_code('wk'), 'Редактирование')
+, ('wiki.wk.history', 'wiki.wk',  :WID, 1, NULL, '(wk):u/history$', 'wiki/history', id_by_code('wk'), 'История изменений')
 ;
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.error (code, id_count, message) VALUES
-  (   'Y9901', 1, 'Не найдена группа "%s"')
-  , ( 'Y9902', 1, 'Версия документа (%s) не актуальна и(или) устарела')
-  , ( 'Y9903', 1, 'Документ с таким адресом уже создан (%s)')
-  , ( 'Y9904', 0, 'Документ не содержит изменений')
-  , ( 'Y9905', 0, 'Документ не найден')
+  ('Y9901', 1, 'Не найдена группа "%s"')
+, ('Y9902', 1, 'Версия документа (%s) не актуальна и(или) устарела')
+, ('Y9903', 1, 'Документ с таким адресом уже создан (%s)')
+, ('Y9904', 0, 'Документ не содержит изменений')
+, ('Y9905', 0, 'Документ не найден')
 ;

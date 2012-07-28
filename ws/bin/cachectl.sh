@@ -39,7 +39,7 @@ cache_help() {
   Example:
     pgws.sh cache save meta e11
     pgws.sh cache load meta e11
-    pgws.sh cache stat meta 
+    pgws.sh cache stat meta
     pgws.sh cache clear
 
 EOF
@@ -48,7 +48,6 @@ EOF
 # ------------------------------------------------------------------------------
 
 cmd=$1
-
 case "$cmd" in
   (save|load|stat|clear)
     pgws_run_perl $PGWS/$PGWS_WS/bin/cachectl.pl "$@"

@@ -17,23 +17,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Удаление объектов пакета из схемы wsd
+    Реестр свойств. Дополнение
 */
 
 /* ------------------------------------------------------------------------- */
+ALTER TABLE wsd.job ADD CONSTRAINT job_fk_class_id  FOREIGN KEY (class_id) REFERENCES job.class(id);
+ALTER TABLE wsd.job ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
 
-DROP TABLE wsd.session;
-DROP TABLE wsd.account_role;
-DROP TABLE wsd.account;
-DROP TABLE wsd.role_acl;
-DROP TABLE wsd.role_team;
-DROP TABLE wsd.role;
-DROP TABLE wsd.team;
-
-DROP SEQUENCE wsd.account_id_seq;
-DROP SEQUENCE wsd.session_id_seq;
-DROP SEQUENCE wsd.team_id_seq;
-DROP SEQUENCE wsd.role_id_seq;
-
-/* ------------------------------------------------------------------------- */
-DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';
+ALTER TABLE wsd.job_todo ADD CONSTRAINT job_fk_class_id  FOREIGN KEY (class_id) REFERENCES job.class(id);
+ALTER TABLE wsd.job_todo ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);

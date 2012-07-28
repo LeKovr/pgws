@@ -36,6 +36,7 @@ CREATE OR REPLACE VIEW doc_info AS SELECT
 , d.status_next_id
 , d.status_next_at
 , d.name
+, dg.status_id AS group_status_id
 , dg.name AS group_name
 , a.name AS updated_by_name
   FROM wsd.doc d

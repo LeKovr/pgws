@@ -21,33 +21,43 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE VIEW account_info AS SELECT
+/*
+CREATE OR REPLACE VIEW team_account_attr AS SELECT
+  ta.*
+  , t.name AS team_name
+  , a.name AS account_name
+  FROM wsd.team_account ta
+    JOIN wsd.account a ON (a.id = ta.account_id)
+    JOIN wsd.team t ON (t.id = ta.team_id)
+;
+*/
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW account_attr AS SELECT
   a.*
-  , ag.name AS group_name
+, ws.class_status_name('account', a.status_id) AS status_name
   FROM wsd.account a
-    JOIN wsd.account_group ag ON (a.group_id = ag.id)
 ;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE VIEW account_info_pub AS SELECT
-  a.id
-  , a.group_id
-  , a.status_id
-  , a.name
-  , a.created_at
-  , ag.name AS group_name
-  FROM wsd.account a
-    JOIN wsd.account_group ag ON (a.group_id = ag.id)
+CREATE OR REPLACE VIEW account_attr_pub AS SELECT
+  id
+, status_id
+, name
+, created_at
+, status_name
+  FROM acc.account_attr
 ;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW session_info AS SELECT
   s.*
+  , a.status_id
   , a.name AS account_name
-  , ag.id AS group_id
-  , ag.name AS group_name
+  , r.name AS role_name
+-- team_id
+-- team_name
   FROM wsd.session s
-    JOIN wsd.account a ON (s.account_id = a.id)
-    JOIN wsd.account_group ag ON (a.group_id = ag.id)
+    JOIN wsd.account a ON (a.id = s.account_id)
+    JOIN wsd.role r ON (r.id = s.role_id)
 ;
 

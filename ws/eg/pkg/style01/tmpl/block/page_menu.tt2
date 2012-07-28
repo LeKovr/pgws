@@ -3,8 +3,10 @@
     target = page;
   ELSIF page.up_code;
     target = api('ws.page_by_code', code => page.up_code, id => page.args.0, id1 => page.args.1, id2 => page.args.2);
-    IF target.id_source;
-      target.args.0 = session.${target.id_source};
+    IF target.id_fixed;
+      target.args.unshift(target.id_fixed);
+    ELSIF target.id_session;
+      target.args.unshift(session.${target.id_session});
     END;
   END;
   uris = api('ws.page_childs', code => target.code, id => target.args.0, id1 => target.args.1, id2 => target.args.2);

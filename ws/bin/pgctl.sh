@@ -160,6 +160,7 @@ db_run() {
     src=$PGWS
     [[ "$pkg" != "" ]] || pkg=$PGWS_PKG
   else
+    [[ "$src" == "pkg" ]] || pkg="$src $pkg"
     src=$PGWS_APP
     [[ "$pkg" ]] || pkg=$PGWS_APP_PKG
   fi
@@ -177,6 +178,8 @@ EOF
   db_run_sql_begin $BLD/build.sql
 
   log_end=""
+  op_is_del=""
+  [[ "$run_op" == "del" || "$run_op" == "erase" ]] && op_is_del=1
   local path=$PGWS_ROOT/$src
   if [[ "$src" == "$PGWS" ]] ; then
     [[ "$run_op" == "add" ]] && log_end="1"
@@ -196,7 +199,7 @@ EOF
   done
   echo "Seeking files..."
   local cat_cmd="cat"
-  if [[ "$run_op" == "del" ]] ; then
+  if [[ "$op_is_del" ]] ; then
     cat_cmd="tac"
     local is_tac=$(whereis -b $cat_cmd)
     [[ "$is_tac" == "$cat_cmd:" ]] && cat_cmd="tail -r"
@@ -213,7 +216,11 @@ EOF
       echo "\\qecho '-- ******* Package: $pn --'" >> $BLD/build.sql
       echo "\\set PKG $pn" >> $BLD/build.sql
       echo "\\set VER $ver" >> $BLD/build.sql
-      ( [[ "$pn" != "ws" ]] || [[ "$run_op" != "add" ]] ) && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+      # операция add для всех пакетов, кроме ws, регистрируется в начале
+      if [[ "$p" != "$p_pre" ]] && [[ "$pn" != "ws" ]] && [[ "$run_op" == "add" ]] ; then
+        echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+        p_pre=$p
+      fi
     fi
     echo "\\qecho '-- ------- Schema: $sn'" >> $BLD/build.sql
 
@@ -242,7 +249,7 @@ EOF
       fi
     done
     popd > /dev/null
-    if [[ "$run_op" != "del" ]] ; then
+    if [[ ! "$op_is_del" ]] ; then
       echo "SET LOCAL search_path = i18n_def, public;" >> $BLD/build.sql
 
       # TODO: 01_require.sql
@@ -263,7 +270,8 @@ EOF
     fi
 
     [[ -f "$BLD/keep_sql" ]] || echo "\! rm -rf $bd" >> $BLD/build.sql
-    [[ "$p" != "$p_pre" ]] && [[ "$pn" == "ws" ]] && [[ "$run_op" == "add" ]] \
+
+    [[ "$p" != "$p_pre" ]] && ( [[ "$pn" != "ws" ]] || [[ ! "$op_is_del" ]] ) \
       && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
     p_pre=$p
   done
@@ -275,7 +283,7 @@ EOF
 
   db_run_sql_end $BLD/build.sql
   # print last "Ok"
-  [[ "$run_op" == "del" ]] || echo "SELECT ws.test(NULL);" >> $BLD/build.sql
+  [[ "$op_is_del" ]] || echo "SELECT ws.test(NULL);" >> $BLD/build.sql
   pushd $BLD > /dev/null
   echo "Running build.sql..."
   [[ "$DO_SQL" ]] && ${PG_BINDIR}psql -X -P footer=off -d "$CONN" -f build.sql 3>&1 1>$LOGFILE 2>&3 | log $TEST_TTL
@@ -290,7 +298,7 @@ EOF
       local flagfile=${flag}.pkg
     fi
     [[ "$run_op" == "add" ]] && touch $flagfile
-    [[ "$run_op" == "del" ]] && [ -f $flagfile ] && rm $flagfile
+    [[ "$op_is_del" ]] && [ -f $flagfile ] && rm $flagfile
     echo "Complete"
   else
 #    echo "*** Errors found"
@@ -394,7 +402,7 @@ case "$cmd" in
     db_run del "00_*.sql" $src "$pkg"
     ;;
   erase)
-    db_run del "0?_*.sql" $src "$pkg"
+    db_run erase "0?_*.sql" $src "$pkg"
     ;;
   make)
     db_run make "19_*.sql [3-6]?_*.sql" $src "$pkg"

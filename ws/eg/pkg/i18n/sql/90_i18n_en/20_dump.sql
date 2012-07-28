@@ -307,7 +307,7 @@ CREATE TABLE page_name (
 --
 
 CREATE VIEW page AS
-    SELECT d.code, d.up_code, d.class_id, d.action_id, d.group_id, d.sort, d.uri, d.tmpl, d.id_source, d.is_hidden, d.target, d.uri_re, d.uri_fmt, d.pkg, n.name FROM (ws.page_data d JOIN page_name n USING (code));
+    SELECT d.code, d.up_code, d.class_id, d.action_id, d.group_id, d.sort, d.uri, d.tmpl, d.id_fixed, d.id_session, d.is_hidden, d.target, d.uri_re, d.uri_fmt, d.pkg, n.name FROM (ws.page_data d JOIN page_name n USING (code));
 
 
 --
@@ -374,10 +374,17 @@ COMMENT ON COLUMN page.tmpl IS 'template file (NULL for external URL)';
 
 
 --
--- Name: COLUMN page.id_source; Type: COMMENT; Schema: i18n_en; Owner: -
+-- Name: COLUMN page.id_fixed; Type: COMMENT; Schema: i18n_en; Owner: -
 --
 
-COMMENT ON COLUMN page.id_source IS 'Session field to get object ID from';
+COMMENT ON COLUMN page.id_fixed IS 'ID объекта взять из этого поля';
+
+
+--
+-- Name: COLUMN page.id_session; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN page.id_session IS 'Session field to get object ID from';
 
 
 --
@@ -475,20 +482,22 @@ INSERT INTO error_message VALUES ('Y0001', 0, 'required value does not given');
 INSERT INTO error_message VALUES ('Y0002', 2, 'value does not conform to condition "%s %s"');
 INSERT INTO error_message VALUES ('Y0003', 1, 'value does not conform to template "%s %s"');
 INSERT INTO error_message VALUES ('Y0010', 0, 'no data');
-INSERT INTO error_message VALUES ('Y0051', 0, 'Указанный логин уже занят. Выберите другой логин');
 INSERT INTO error_message VALUES ('Y0101', 1, 'incorrect acl code "%s"');
 INSERT INTO error_message VALUES ('Y0102', 1, 'внешний доступ к методу с "%s" запрещен');
 INSERT INTO error_message VALUES ('Y0103', 0, 'authorization required (no session id)');
 INSERT INTO error_message VALUES ('Y0104', 1, 'incorrect session id "%s"');
 INSERT INTO error_message VALUES ('Y0105', 1, 'no check for acl "%s"');
 INSERT INTO error_message VALUES ('Y0106', 1, 'incorrect status id "%s"');
+INSERT INTO error_message VALUES ('Y0301', 0, 'неправильный пароль');
+INSERT INTO error_message VALUES ('Y0302', 0, 'неизвестный логин');
+INSERT INTO error_message VALUES ('Y0303', 1, 'статус пользователя (%s) не допускает авторизацию');
+INSERT INTO error_message VALUES ('Y0021', 1, 'no access to sum result when a = %i');
+INSERT INTO error_message VALUES ('Y0022', 1, 'no data for a = %i');
 INSERT INTO error_message VALUES ('Y9901', 1, 'Не найдена группа "%s"');
 INSERT INTO error_message VALUES ('Y9902', 1, 'Версия документа (%s) не актуальна и(или) устарела');
 INSERT INTO error_message VALUES ('Y9903', 1, 'Документ с таким адресом уже создан (%s)');
 INSERT INTO error_message VALUES ('Y9904', 0, 'Документ не содержит изменений');
 INSERT INTO error_message VALUES ('Y9905', 0, 'Документ не найден');
-INSERT INTO error_message VALUES ('Y0021', 1, 'no access to sum result when a = %i');
-INSERT INTO error_message VALUES ('Y0022', 1, 'no data for a = %i');
 
 
 --
@@ -502,12 +511,19 @@ INSERT INTO error_message VALUES ('Y0022', 1, 'no data for a = %i');
 --
 
 INSERT INTO page_name VALUES ('main', 'API');
+INSERT INTO page_name VALUES ('api', 'API docs');
+INSERT INTO page_name VALUES ('api.smd', 'Methods');
+INSERT INTO page_name VALUES ('api.map', 'Pages');
+INSERT INTO page_name VALUES ('api.xsd', 'Types');
+INSERT INTO page_name VALUES ('api.class', 'Classes');
+INSERT INTO page_name VALUES ('api.smd1', 'Methods via JS');
+INSERT INTO page_name VALUES ('api.class.single', 'Class');
 INSERT INTO page_name VALUES ('login', 'Вход');
 INSERT INTO page_name VALUES ('logout', 'Выход');
+INSERT INTO page_name VALUES ('api.test', 'Test page');
 INSERT INTO page_name VALUES ('wiki.wk', 'Вики');
 INSERT INTO page_name VALUES ('wiki.wk.edit', 'Редактирование');
 INSERT INTO page_name VALUES ('wiki.wk.history', 'История изменений');
-INSERT INTO page_name VALUES ('api.test', 'Test page');
 
 
 --
@@ -545,7 +561,7 @@ CREATE RULE error_ins AS ON INSERT TO error DO INSTEAD (INSERT INTO ws.error_dat
 -- Name: page_ins; Type: RULE; Schema: i18n_en; Owner: -
 --
 
-CREATE RULE page_ins AS ON INSERT TO page DO INSTEAD (INSERT INTO ws.page_data (code, up_code, class_id, action_id, group_id, sort, uri, tmpl, id_source, is_hidden, target, uri_re, uri_fmt, pkg) VALUES (new.code, new.up_code, new.class_id, new.action_id, new.group_id, new.sort, new.uri, new.tmpl, new.id_source, DEFAULT, DEFAULT, new.uri_re, new.uri_fmt, COALESCE(new.pkg, (ws.pg_cs())::text)); UPDATE ws.page_data SET is_hidden = COALESCE(new.is_hidden, page_data.is_hidden), target = COALESCE(new.target, page_data.target) WHERE ((page_data.code)::text = (new.code)::text); INSERT INTO page_name (code, name) VALUES (new.code, new.name); );
+CREATE RULE page_ins AS ON INSERT TO page DO INSTEAD (INSERT INTO ws.page_data (code, up_code, class_id, action_id, group_id, sort, uri, tmpl, id_fixed, id_session, is_hidden, target, uri_re, uri_fmt, pkg) VALUES (new.code, new.up_code, new.class_id, new.action_id, new.group_id, new.sort, new.uri, new.tmpl, new.id_fixed, new.id_session, DEFAULT, DEFAULT, new.uri_re, new.uri_fmt, COALESCE(new.pkg, (ws.pg_cs())::text)); UPDATE ws.page_data SET is_hidden = COALESCE(new.is_hidden, page_data.is_hidden), target = COALESCE(new.target, page_data.target) WHERE ((page_data.code)::text = (new.code)::text); INSERT INTO page_name (code, name) VALUES (new.code, new.name); );
 
 
 --

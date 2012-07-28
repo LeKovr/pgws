@@ -1,10 +1,22 @@
+          test           
+-------------------------
+  ***** role_const *****
+
+ id | level_id | has_team | name  | anno 
+----+----------+----------+-------+------
+  1 |        1 | f        | Guest | 
+
+ id | level_id | has_team |   name    | anno 
+----+----------+----------+-----------+------
+  2 |        1 | f        | Logged in | 
+
         test        
 --------------------
   ***** login *****
 
  login | status_id |      email       | psw 
 -------+-----------+------------------+-----
- admin |         2 | admin@pgws.local | ***
+ admin |         4 | admin@pgws.local | ***
 
          test         
 ----------------------
@@ -18,9 +30,9 @@
 ----------------------
   ***** profile *****
 
- id | group_id | status_id | login |      email       | psw | name  | group_name 
-----+----------+-----------+-------+------------------+-----+-------+------------
-  1 |        2 |         2 | admin | admin@pgws.local | *** | Admin | Writers
+ id | status_id | login |      email       | psw | name  | status_name 
+----+-----------+-------+------------------+-----+-------+-------------
+  1 |         4 | admin | admin@pgws.local | *** | Admin | Активен
 
         test         
 ---------------------

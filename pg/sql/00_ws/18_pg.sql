@@ -120,7 +120,12 @@ $_$
   ;
 $_$;
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.pg_c(a_type ws.t_pg_object, a_code name, a_text text) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION ws.pg_c(
+  a_type ws.t_pg_object    -- тип объекта (из перечисления ws.t_pg_object)
+, a_code name              -- имя объекта
+, a_text text              -- комментарий
+, a_anno text DEFAULT NULL -- аннотация (не сохраняется, предназначено для размещения описания рядом с кодом)
+) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     v_code TEXT;
@@ -144,6 +149,7 @@ $_$
       WHEN a_type = 's' THEN 'SEQUENCE'
       ELSE NULL -- a_type = 'a'
     END;
+RAISE NOTICE 'COMMENT FOR % %: % (%)', v_name, v_code, a_text, a_anno;
     IF v_name IS NULL THEN
       -- a(rgument)
       UPDATE ws.dt_part SET anno = a_text
@@ -177,7 +183,10 @@ $_$
     RAISE NOTICE '%', a_text;
   END
 $_$ ;
-SELECT pg_c('f', 'notice', 'Вывод предупреждения посредством RAISE NOTICE');
+SELECT pg_c('f', 'notice', 'Вывод предупреждения посредством RAISE NOTICE', $_$/*
+Метод позволяет вызывать NOTICE из SQL-запросов и скриптов psql.
+Кроме прочего, используется в скриптах 9?_*.sql для передачи в pgctl.sh названия теста
+*/$_$);
 
 
 

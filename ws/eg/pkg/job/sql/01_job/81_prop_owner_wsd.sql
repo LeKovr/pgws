@@ -41,4 +41,3 @@ UPDATE ws.prop SET pogc_list = array_append(pogc_list, 'job') WHERE code IN (
 , 'ws.daemon.mgr.listen_wait'
 , 'ws.daemon.mgr.listen.job'
 );
-

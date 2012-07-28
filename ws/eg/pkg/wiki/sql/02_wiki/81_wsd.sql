@@ -33,3 +33,10 @@ INSERT INTO wsd.doc_group (id, code, name, anno) VALUES
   (1, 'wk',   'Public',   'Public info')
 , (2, 'sys',  'Internal', 'Internal info')
 ;
+
+/* ------------------------------------------------------------------------- */
+INSERT INTO wsd.role_acl (role_id, class_id, object_id, acl_id) VALUES
+  (4, wiki.const_class_id(), 1, 5)
+, (acc.const_role_id_guest(), wiki.const_class_id(), 1, 2) -- доступ на чтение для неавторизованных
+, (acc.const_role_id_user(),  wiki.const_class_id(), 1, 2) -- доступ на чтение для авторизованных
+;

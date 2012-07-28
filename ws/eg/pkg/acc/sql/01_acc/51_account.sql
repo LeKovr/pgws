@@ -38,6 +38,52 @@ $_$;
 SELECT pg_c('f', 'sid_info_cook', 'Атрибуты своей сессии по cookie');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION account_status(a_id d_id) RETURNS d_id32 STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT status_id::ws.d_id32 FROM wsd.account WHERE id = $1
+$_$;
+SELECT pg_c('f', 'account_status', 'Статус учетной записи пользователя');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION account_acl(a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'plpgsql' AS
+$_$
+  /*
+    Получить уровень доступа пользователя сессии a_sid на экземпляр a_id класса "user"
+    Например: администратор отдела, в котором состоит заданный пользователь a_id
+      или для ws.part_topic_message - пользователь является автором поста
+  */
+  DECLARE
+    v_acl ws.d_acl;
+  BEGIN
+    -- получить роль пользователя и ее описание
+    -- получить информацию про экземпляр
+    -- определить acl
+    RETURN NEXT 1::ws.d_acl;
+    RETURN;
+  END
+$_$;
+SELECT pg_c('f', 'account_acl', 'ACL к учетной записи пользователя');
+
+/* ------------------------------------------------------------------------- */
+-- вернуть описание сервера, отвечающего за экземпляр текущего класса
+CREATE OR REPLACE FUNCTION account_server(a_id d_id) RETURNS SETOF server STABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_id  ws.d_id32;
+    r_srv ws.server;
+  BEGIN
+    v_id := 1; -- расчет id ответственного сервера по id компании
+    RETURN QUERY
+      SELECT *
+        FROM ws.server
+        WHERE id = v_id
+    ;
+    RETURN;
+  END
+$_$;
+SELECT pg_c('f', 'account_server', 'Сервер учетной записи пользователя');
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION logout (a__sid TEXT, a__ip TEXT) RETURNS INTEGER LANGUAGE 'plpgsql' AS
 $_$
   -- a__sid: ID сессии
@@ -63,7 +109,7 @@ CREATE OR REPLACE FUNCTION login (
 , a_login TEXT
 , a_psw TEXT
 , a__sid TEXT DEFAULT NULL
-) RETURNS SETOF account_info LANGUAGE 'plpgsql' AS
+) RETURNS SETOF account_attr LANGUAGE 'plpgsql' AS
 $_$
   -- a__cook: ID cookie
   -- a__ip: IP-адреса сессии
@@ -71,11 +117,10 @@ $_$
   -- a_psw: пароль
   -- a__sid: ID сессии, если есть
   DECLARE
-    r_account_info acc.account_info;
-    r_account_bad acc.account_info;
+    r_account_attr acc.account_attr;
     v_key text;
   BEGIN
-    SELECT INTO r_account_info
+    SELECT INTO r_account_attr
       *
       FROM wsd.account
       WHERE login = a_login
@@ -83,12 +128,17 @@ $_$
     IF FOUND THEN
       RAISE DEBUG 'Account % found', a_login;
 
+      IF r_account_attr.status_id NOT IN (acc.const_status_id_active(), acc.const_status_id_active_locked()) THEN
+        RAISE EXCEPTION '%', ws.error_str(acc.const_error_status(), r_account_attr.status_id::text);
+      END IF;
+
       -- TODO: контроль IP
-      IF r_account_info.is_psw_plain AND r_account_info.psw = a_psw
-        OR NOT r_account_info.is_psw_plain AND r_account_info.psw = md5(a_psw) THEN
+      IF r_account_attr.is_psw_plain AND r_account_attr.psw = a_psw
+        OR NOT r_account_attr.is_psw_plain AND r_account_attr.psw = md5(a_psw) THEN
         RAISE DEBUG 'Password matched for %', a_login;
+
         -- прячем пароль
-        r_account_info.psw := '***';
+        r_account_attr.psw := '***';
         -- определяем ключ авторизации
         IF a__sid IS NOT NULL THEN
           v_key = a__sid;
@@ -99,20 +149,16 @@ $_$
         PERFORM acc.logout(v_key, a__ip);
 
         -- создаем сессию
-        INSERT INTO wsd.session (account_id, ip, sid)
-          VALUES (r_account_info.id, a__ip, v_key)
+        INSERT INTO wsd.session (account_id, role_id, ip, sid)
+          VALUES (r_account_attr.id, r_account_attr.def_role_id, a__ip, v_key)
         ;
-        RETURN NEXT r_account_info;
+        RETURN NEXT r_account_attr;
       ELSE
-        -- TODO: журналировать потенциальный подбор пароля (это причина не делать EXCEPTION)
-        RAISE DEBUG 'Password does not match for %', a_login;
-        r_account_bad.status_id := acc.const_status_id_unknown();
-        RETURN NEXT r_account_bad;
+        -- TODO: журналировать потенциальный подбор пароля через cache
+        RAISE EXCEPTION '%', ws.error_str(acc.const_error_password(), a_login::text);
       END IF;
     ELSE
-      RAISE DEBUG 'Unknown account %', a_login;
-      r_account_bad.status_id := acc.const_status_id_unknown();
-      RETURN NEXT r_account_bad;
+      RAISE EXCEPTION '%', ws.error_str(acc.const_error_login(), a_login::text);
     END IF;
     RETURN;
   END;
@@ -121,13 +167,13 @@ $_$;
 SELECT pg_c('f', 'login', 'Авторизация пользователя');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION profile (a__sid TEXT, a__ip TEXT) RETURNS SETOF account_info LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION profile (a__sid TEXT, a__ip TEXT) RETURNS SETOF account_attr LANGUAGE 'plpgsql' AS
 $_$
   -- a__sid: ID сессии
   -- a__ip: IP-адреса сессии
   DECLARE
     v_account_id ws.d_id;
-    r_account_info acc.account_info;
+    r_account_attr acc.account_attr;
   BEGIN
     -- TODO: контроль IP?
 
@@ -138,14 +184,14 @@ $_$
         AND deleted_at IS NULL
     ;
     IF FOUND THEN
-      SELECT INTO r_account_info
+      SELECT INTO r_account_attr
         *
-        FROM acc.account_info
+        FROM acc.account_attr
         WHERE id = v_account_id
       ;
       -- прячем пароль
-      r_account_info.psw := '***';
-      RETURN NEXT r_account_info;
+      r_account_attr.psw := '***';
+      RETURN NEXT r_account_attr;
     END IF;
 
     RETURN;

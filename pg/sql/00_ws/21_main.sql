@@ -39,22 +39,23 @@ CREATE TABLE method (
 , pkg        TEXT     NOT NULL DEFAULT ws.pg_cs()
 , CONSTRAINT method_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action
 );
-
-COMMENT ON TABLE method IS 'Метод API';
-COMMENT ON COLUMN method.code       IS 'внешнее имя метода';
-COMMENT ON COLUMN method.class_id   IS 'ID класса, к которому относится метод';
-COMMENT ON COLUMN method.action_id  IS 'ID акции, которой соответствует метод';
-COMMENT ON COLUMN method.cache_id   IS 'ID кэша, в котором размещается результат вызова метода';
-COMMENT ON COLUMN method.rvf_id     IS 'ID формата результата (для SQL-методов)';
-COMMENT ON COLUMN method.is_write   IS 'метод меняет БД';
-COMMENT ON COLUMN method.is_i18n    IS 'метод поддерживает интернационализацию';
-COMMENT ON COLUMN method.is_sql     IS 'метод реализован как sql function';
-COMMENT ON COLUMN method.code_real  IS 'имя вызываемого метода (для не-sql - включая package)';
-COMMENT ON COLUMN method.arg_dt_id  IS 'ID типа, описывающего аргументы';
-COMMENT ON COLUMN method.rv_dt_id   IS 'ID типа результата';
-COMMENT ON COLUMN method.name       IS 'внешнее описание метода';
-COMMENT ON COLUMN method.args_exam  IS 'пример вызова функции';
-COMMENT ON COLUMN method.args       IS 'строка списка аргументов';
+SELECT pg_c('r', 'method', 'Метод API')
+, pg_c('c', 'method.code'     , 'внешнее имя метода')
+, pg_c('c', 'method.class_id' , 'ID класса, к которому относится метод')
+, pg_c('c', 'method.action_id', 'ID акции, которой соответствует метод')
+, pg_c('c', 'method.cache_id' , 'ID кэша, в котором размещается результат вызова метода')
+, pg_c('c', 'method.rvf_id'   , 'ID формата результата (для SQL-методов)')
+, pg_c('c', 'method.is_write' , 'метод меняет БД')
+, pg_c('c', 'method.is_i18n'  , 'метод поддерживает интернационализацию')
+, pg_c('c', 'method.is_sql'   , 'метод реализован как sql function')
+, pg_c('c', 'method.code_real', 'имя вызываемого метода (для не-sql - включая package)')
+, pg_c('c', 'method.arg_dt_id', 'ID типа, описывающего аргументы')
+, pg_c('c', 'method.rv_dt_id' , 'ID типа результата')
+, pg_c('c', 'method.name'     , 'внешнее описание метода')
+, pg_c('c', 'method.args_exam', 'пример вызова функции')
+, pg_c('c', 'method.args'     , 'строка списка аргументов')
+, pg_c('c', 'method.pkg'      , 'пакет, в котором метод зарегистрирован')
+;
 
 /* ------------------------------------------------------------------------- */
 -- для текущего размера таблицы несущественно, используется как пример
@@ -70,7 +71,8 @@ CREATE TABLE page_data (
 , sort       d_sort   NULL
 , uri        d_regexp UNIQUE
 , tmpl       d_path   NULL
-, id_source  d_code   NULL
+, id_fixed   d_id     NULL
+, id_session d_code   NULL
 , is_hidden  BOOL     NOT NULL DEFAULT TRUE
 , target     text     NOT NULL DEFAULT ''
 , uri_re     text     NULL
@@ -78,3 +80,4 @@ CREATE TABLE page_data (
 , pkg        TEXT     NOT NULL
 , CONSTRAINT page_fkey_class_action FOREIGN KEY (class_id, action_id) REFERENCES class_action
 );
+SELECT pg_c('r', 'page_data', 'Атрибуты страниц для i18n_def.page');

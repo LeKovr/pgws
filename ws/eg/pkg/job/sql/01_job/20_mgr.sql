@@ -17,9 +17,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Таблицы JobManager
 */
--- 22_mgr.sql - Таблицы JabManager
-/* ------------------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE job.mgr_stat (
@@ -35,7 +34,7 @@ CREATE TABLE job.mgr_stat (
 , shadow_at   TIMESTAMP(0)
 , updated_at  TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP
 );
-SELECT pg_c('t', 'mgr_stat', 'Статистика процессов JobManager')
+SELECT pg_c('r', 'mgr_stat', 'Статистика процессов JobManager')
   ,pg_c('c', 'mgr_stat.pid', 'PID процесса')
 ;
 
@@ -49,7 +48,7 @@ CREATE TABLE job.mgr_error (
 , updated_at  TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP
 , CONSTRAINT  mgr_error_pkey PRIMARY KEY (pid, anno)
 );
-SELECT pg_c('t', 'mgr_error', 'Ошибки процессов JobManager')
+SELECT pg_c('r', 'mgr_error', 'Ошибки процессов JobManager')
   ,pg_c('c', 'mgr_error.pid', 'PID процесса')
 ;
 

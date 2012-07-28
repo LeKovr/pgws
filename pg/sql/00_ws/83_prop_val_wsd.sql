@@ -36,7 +36,6 @@ INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
 , ('be',    1,  'ws.daemon.lang.allowed.0',             'ru')
 , ('be',    1,  'ws.daemon.lang.allowed.1',             'en')
 
-, ('fe',    1,  'ws.daemon.fe.tt2.PRE_PROCESS',         'config.tt2')
 , ('fe',    1,  'ws.daemon.fe.tt2.ENCODING',            'utf-8')
 , ('fe',    1,  'ws.daemon.fe.tt2.CACHE_SIZE',          '100')
 , ('fe',    1,  'ws.daemon.fe.tt2.COMPILE_EXT',         '.pm')
@@ -171,7 +170,7 @@ INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
 , ('cache', 2,  'ws.plugin.cache.code',                 'meta')
 , ('cache', 2,  'ws.plugin.cache.expire_time',          '0')
 , ('cache', 3,  'ws.plugin.cache.code',                 'short')
-, ('cache', 3,  'ws.plugin.cache.expire_time',          '30s')
+, ('cache', 3,  'ws.plugin.cache.expire_time',          '3')
 , ('cache', 4,  'ws.plugin.cache.code',                 'session')
 , ('cache', 5,  'ws.plugin.cache.code',                 'big')
 , ('cache', 5,  'ws.plugin.cache.cache_size',           '4096k')

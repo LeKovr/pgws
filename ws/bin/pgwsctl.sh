@@ -54,11 +54,8 @@ lookup_sudo() {
 
 # ------------------------------------------------------------------------------
 pgws_run_perl() {
-  local bin=$1
-  local cmd=$2
-
-  $SUDO_CMD "cd $PGWS_ROOT && perl $PGWS/$PGWS_WS/bin/starter.pl $bin $cmd"
-
+  local bin=$1; shift
+  $SUDO_CMD "cd $PGWS_ROOT && perl $PGWS/$PGWS_WS/bin/starter.pl $bin $1 $2 $3 $4"
 }
 
 # ------------------------------------------------------------------------------

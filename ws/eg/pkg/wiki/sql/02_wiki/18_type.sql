@@ -24,11 +24,5 @@
 SET LOCAL search_path = wiki, ws, i18n_def, public;
 
 /* ------------------------------------------------------------------------- */
-CREATE TYPE t_wiki_ids AS (
-  id d_id
-, group_id d_id32
-);
-
-/* ------------------------------------------------------------------------- */
 CREATE DOMAIN d_links  AS TEXT[]; -- список ссылок
  --TODO: make like CHECK (VALUE = '' OR VALUE ~ E'^[^ ]+@[^ ]+\\.[^ ]{2,6}(,\\s+[^ ]+@[^ ]+\\.[^ ]{2,6})*');

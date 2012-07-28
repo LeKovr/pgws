@@ -566,7 +566,7 @@ sub _validate_field {
     # массив
     # my $val = (ref \$value eq 'SCALAR')?[$value]:$value;
     my $val;
-    if (ref \$value eq 'SCALAR') {
+    if (defined($value) and ref \$value eq 'SCALAR') {
       @$val = split(/,\s+/, $value); # TODO: отменить передачу массива в таком виде
     } else {
       $val = $value;

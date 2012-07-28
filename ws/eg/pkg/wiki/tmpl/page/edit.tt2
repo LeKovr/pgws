@@ -7,41 +7,45 @@
   meta.head.datepicker = 1;
   meta.head.timepicker = 1;
   meta.head.autocomplete = 1;
-  group_code = page.args.0;
-  doc_path = page.args.1;
+
+  group_id = page.args.shift;
+  group_code = page.args.shift;
+  doc_path = page.args.shift;
   code = doc_path.remove('^/');
-  ids = api('wiki.ids_by_code', group_code => group_code, code => code);
-  wiki_class_id =  api('ws.class_id', code => 'wiki');
-  wiki_word_str =  api('wiki.doc_keyword', id => ids.id);
- IF wiki_class_id;
-  wiki_class_status =  api('ws.class_status:7', class_id => wiki_class_id);
- END ;
+  doc_id = api('wiki.doc_id_by_code', id => group_id, code => code || undef);
+
+  doc_class_id =  api('ws.class_id', code => 'doc');
+  wiki_word_str =  api('wiki.doc_keyword', id => doc_id);
+  IF doc_class_id;
+    doc_class_status =  api('ws.class_status:7', class_id => doc_class_id);
+  END ;
   view_uri = uri(code => page.up_code, id => doc_path);
   view_pathname = uri_mk(view_uri.req);
-  IF !ids || !ids.group_id;
+  IF !group_id;
     meta.status = '404';
     meta.status_note = 'Incorrect uri';
     STOP;
-  ELSIF !ids.id;
-    can_do = api('wiki.can_create', group_id => ids.group_id, code => code);
-    IF !can_do;
+  END;
+  can_do = api('acl:wiki.add', id => group_id);
+  IF !doc_id && !can_do;
       meta.status = '403';
       meta.status_note = 'No access to create';
       STOP;
-    END;
+  END;
+  IF !doc_id;
     src=l("Title: Заголовок\nTOC:   UnOrdered\n\nАннотация\n<!-- CUT -->\nТекст");
   ELSE;
-    can_do = api('wiki.can_create', group_id => ids.group_id, code => code);
-      #can_do = api('acl:wiki.save', id => ids.id); # TODO: при переносе в ACL изменить на acl:wiki.save
+    can_do = api('acl:doc.save', id => doc_id);
+    # TODO: реализовать вариант, когда редактировать можно только атрибуты
     IF !can_do;
       meta.status = '403';
-      meta.status_note = 'No access to save';
+      meta.status_note = 'No access to save-' _ doc_id;
       STOP;
     END;
-    info = api('wiki.doc_info', id => ids.id);
+    info = api('wiki.doc_info', id => doc_id);
     name_doc_up = api('wiki.doc_info', id => info.up_id);
     resp.title = info.name;
-    src = api('wiki.doc_src', id => ids.id);
+    src = api('wiki.doc_src', id => doc_id);
   END;
 %]
 <div id="accordion">
@@ -50,7 +54,7 @@
     <div class="acc-body" id="p-attr">
 	 <form id="attr-form" action="js_required_but_not_available" onsubmit="return false;">
 	<input type="hidden" name="_sid" value="[% session.sid %]"/>
-	<input type="hidden" name="id" value="[% ids.id %]"/>
+	<input type="hidden" name="id" value="[% doc_id %]"/>
 	<input type="hidden" id="up_id" name="up_id" value="[% info.up_id %]"/>
 	<button class="button_change" style="display:none" onclick="to_Save()">[% l("Изменить") %]</button>
 		<div class="div_button" style="display:none">
@@ -59,20 +63,20 @@
 		</div>
 		<div id="div_attr">
 			<p><label>[% l("Текущий статус") %] <select id="status_id" name="status_id">
-			[% FOREACH wiki_class_status; %]
-				[% IF id==info.status_id; %]
-					<option value="[% id %]" selected>[%  name %]</option>
+			[% FOREACH s IN doc_class_status; %]
+				[% IF s.id == info.status_id; %]
+					<option value="[% s.id %]" selected="selected">[% s.name %]</option>
 				[% ELSE; %]
-					<option value="[% id %]">[%  name %]</option>
+					<option value="[% s.id %]">[% s.name %]</option>
 				[% END; %]
 			[% END; %]
 			</select></label></p>
 			<p><label>[% l("Следующий статус") %] <select id="nextStatus" name="status_next_id">
-			[% FOREACH wiki_class_status; %]
-				[% IF id==info.status_next_id; %]
-					<option value="[% id %]" selected>[%  name %]</option>
+			[% FOREACH s IN doc_class_status; %]
+				[% IF s.id == info.status_next_id; %]
+					<option value="[% s.id %]" selected="selected">[% s.name %]</option>
 				[% ELSE; %]
-					<option value="[% id %]">[%  name %]</option>
+					<option value="[% s.id %]">[% s.name %]</option>
 				[% END; %]
 			[% END; %]
 			</select> от
@@ -102,17 +106,25 @@
     <div class="acc-body" id="p-edit">
       <form id="main-form" action="js_required_but_not_available" onsubmit="return false;">
         <input type="hidden" name="uri" value="[% req.prefix _ '/' _ group_code  %]">
-        <input type="hidden" name="group_id" value="[% ids.group_id %]">
-        <input type="hidden" name="id" value="[% ids.id %]">
         <input type="hidden" name="code" value="[% code %]">
-        <input type="hidden" name="revision" value="[% info.revision %]">
+[% IF doc_id %]
         <input type="hidden" name="extended" value="1">
-        <button id="btnSave0" onClick="return formSend('main', 'wiki.save')">[% l("Сохранить") %]</button>
-        <button id="btnFormat0" onClick="return formSend('main', 'wiki.format')">[% l("Предварительный просмотр") %]</button>
+        <input type="hidden" name="id" value="[% doc_id %]">
+        <input type="hidden" name="revision" value="[% info.revision %]">
+        <button id="btnSave0" onClick="return formSend('main', 'doc.save')">[% l("Сохранить") %]</button>
+[% ELSE %]
+        <input type="hidden" name="id" value="[% group_id %]">
+        <button id="btnSave0" onClick="return formSend('main', 'wiki.add')">[% l("Создать") %]</button>
+[% END %]
+        <button id="btnFormat0" onClick="return formSend('main', 'doc.format')">[% l("Предварительный просмотр") %]</button>
         <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view0" checked onClick="return toggleChk(this, 1)"></label>
         <textarea name="src">[% src %]</textarea>
-        <button id="btnSave1" onClick="return formSend('main', 'wiki.save')">[% l("Сохранить") %]</button>
-        <button id="btnFormat1" onClick="return formSend('main', 'wiki.format')">[% l("Предварительный просмотр") %]</button>
+[% IF doc_id %]
+        <button id="btnSave1" onClick="return formSend('main', 'doc.save')">[% l("Сохранить") %]</button>
+[% ELSE %]
+        <button id="btnSave1" onClick="return formSend('main', 'wiki.add')">[% l("Создать") %]</button>
+[% END %]
+        <button id="btnFormat1" onClick="return formSend('main', 'doc.format')">[% l("Предварительный просмотр") %]</button>
         <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view1" checked onClick="return toggleChk(this,0)"></label>
         <div id="errors" class="error"></div>
         <div id="main-form__err" class="error"></div>
@@ -238,14 +250,15 @@ var animation_complete = function(t) {
   $("#accordion>div.acc-panel>p.acc-nav").height(new_height > 400?new_height:400 + 10);
 }
 
-var acl_wikisave = [% api('acl:wiki.save', id => ids.id) %]; //права на сохранение
+var acl_wikisave = [% can_do %]; //права на сохранение
 
 $(document).ready(function(){
-  // http://www.designchemical.com/blog/index.php/jquery/jquery-simple-horizontal-accordion/
-  activeItem = $("#accordion div.acc-panel:first");
-	[% IF !ids.id; %]
-		activeItem = $("#p-edit").parent();
-	[% END; %]
+  /* http://www.designchemical.com/blog/index.php/jquery/jquery-simple-horizontal-accordion/ */
+  [% IF doc_id; %]
+    activeItem = $("#accordion div.acc-panel:first");
+  [% ELSE %]
+    activeItem = $("#p-edit").parent();
+  [% END; %]
 
   $(activeItem).addClass('active');
 
@@ -286,7 +299,7 @@ $(function() {
 $(document).ready(function(){
 var options = {
     serviceUrl:'[% req.prefix %]/_wiki.doc_by_name.json?',
-    params: { group_id: "[% ids.group_id %]", string: "{query}", sid: "[% session.sid %]", lang: "[% session.lang %]"},
+    params: { id: "[% group_id %]", string: "{query}", sid: "[% session.sid %]", lang: "[% session.lang %]"},
     return_data: { id:'{id}',name:'{name}',retargs:'string'},
     onSelect: function(value, data){
 	$("#up_id").val(data);
@@ -374,7 +387,7 @@ var options = {
 //////////////автокомплит для ключевых слов///////////
   var optionskey = {
     serviceUrl:'[% req.prefix %]/_wiki.keyword_by_name.json?',
-    params: { group_id: "[% ids.group_id %]", string: "{query}", sid: "[% session.sid %]", lang: "[% session.lang %]"},
+    params: { id: "[% group_id %]", string: "{query}", sid: "[% session.sid %]", lang: "[% session.lang %]"},
     return_data: { name:'{name}',retargs:'string'},
     width: 150,
     onSelect: function(value, data){

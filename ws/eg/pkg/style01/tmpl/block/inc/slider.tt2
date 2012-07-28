@@ -1,6 +1,6 @@
 [%
   meta.html_headers.push(
-    "/js/jquery-ui-slider.js"
-    "/css/jquery-ui-slider.css"
+    "/js/$L/jquery-ui-slider.js"
+    "/css/$L/jquery-ui-slider.css"
   );
 %]

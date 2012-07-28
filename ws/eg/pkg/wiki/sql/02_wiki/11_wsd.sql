@@ -26,11 +26,12 @@ INSERT INTO wsd.pkg_script_protected (code, pkg, ver) VALUES (:'FILE', :'PKG', :
 SET LOCAL search_path = ws, i18n_def, public;
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE wsd.doc_group (
-  id      INTEGER PRIMARY KEY
-  , code  TEXT    NOT NULL UNIQUE
-  , name  TEXT    NOT NULL
-  , anno  TEXT    NOT NULL
+CREATE TABLE wsd.doc_group ( -- wsd.wiki_book
+  id          INTEGER PRIMARY KEY
+  , status_id INTEGER NOT NULL DEFAULT 1
+  , code      TEXT    NOT NULL UNIQUE
+  , name      TEXT    NOT NULL
+  , anno      TEXT    NOT NULL
 );
 
 /* ------------------------------------------------------------------------- */
@@ -54,7 +55,7 @@ CREATE TABLE wsd.doc (
   , CONSTRAINT group_id_code_ukey UNIQUE (group_id, code)
 );
 
-SELECT pg_c('t', 'wsd.doc', 'Статья wiki')
+SELECT pg_c('r', 'wsd.doc', 'Статья wiki')
   ,pg_c('c', 'wsd.doc.code', 'Код статьи (URI)')
   ,pg_c('c', 'wsd.doc.updated_at', 'Момент последнего редактирования')
   ,pg_c('c', 'wsd.doc.cached_at', 'Момент актуализации кэша')
@@ -72,7 +73,7 @@ CREATE TABLE wsd.doc_diff (
   , diff_src    TEXT
   , CONSTRAINT  doc_diff_pkey PRIMARY KEY (id, revision)
 );
-SELECT pg_c('t', 'wsd.doc_diff', 'Изменения между ревизиями статьи wiki')
+SELECT pg_c('r', 'wsd.doc_diff', 'Изменения между ревизиями статьи wiki')
   ,pg_c('c', 'wsd.doc_diff.id', 'ID статьи')
 ;
 
@@ -82,7 +83,7 @@ CREATE TABLE wsd.doc_keyword (
   , name       TEXT
   , CONSTRAINT doc_keyword_pkey PRIMARY KEY (id, name)
 );
-SELECT pg_c('t', 'wsd.doc_keyword', 'Ключевые слова')
+SELECT pg_c('r', 'wsd.doc_keyword', 'Ключевые слова')
   ,pg_c('c', 'wsd.doc_keyword.id', 'ID статьи')
   ,pg_c('c', 'wsd.doc_keyword.name', 'Слово')
 ;

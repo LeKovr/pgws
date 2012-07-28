@@ -1,4 +1,4 @@
-<link href="/favicon.ico?19721023"     rel="shortcut icon" />
+<link href="/img/[% L %]/favicon.ico?19721023"     rel="shortcut icon" />
 <link href="/css/[% L %]/common.css?19721023"  media="all" rel="stylesheet" type="text/css" />
 [%
 IF meta.head.autocomplete;

@@ -27,9 +27,10 @@
 /* ------------------------------------------------------------------------- */
 SELECT login, status_id, email, psw FROM acc.login(:SID,'127.0.0.1','admin', (SELECT psw FROM wsd.account WHERE login='admin'));
 
-SELECT wiki.group_id_by_code('wk') IS NOT NULL AS group_exists;
+SELECT wiki.id_by_code('wk') IS NOT NULL AS group_exists;
 
 /* ------------------------------------------------------------------------- */
+/*
 SELECT ws.test('create');
 
 SELECT wiki.can_create(:SID, wiki.group_id_by_code('wk'), 'definitely/new/page');
@@ -37,8 +38,9 @@ SELECT wiki.can_create(:SID, wiki.group_id_by_code('wk'), 'definitely/new/page')
 SELECT wiki.doc_create(:SID, wiki.group_id_by_code('wk'), 'definitely/new/page',E'==test title\n\ntest body','New test page') IS NOT NULL AS doc_created;
 
 SELECT ((wiki.ids_by_code('wk', 'definitely/new/page')).id IS NOT NULL) AS doc_exists;
-
+*/
 /* ------------------------------------------------------------------------- */
+/*
 SELECT ws.test('update');
 
 SELECT wiki.doc_update_src(:SID, (wiki.ids_by_code('wk', 'definitely/new/page')).id, 1,E'==test title\n\ntest body2','New test page updated', NULL, NULL, NULL, E'>\n<2') = (wiki.ids_by_code('wk', 'definitely/new/page')).id AS src_updated;
@@ -48,8 +50,9 @@ SELECT wiki.doc_update_attr(:SID, (wiki.ids_by_code('wk', 'definitely/new/page')
 SELECT status_id, group_id, up_id, code, revision, name, group_name, updated_by_name
   FROM wiki.doc_info((wiki.ids_by_code('wk', 'definitely/new/page')).id)
 ;
-
+*/
 /* ------------------------------------------------------------------------- */
+/*
 SELECT ws.test('keywords');
 
 SELECT * FROM wiki.doc_keyword((wiki.ids_by_code('wk', 'definitely/new/page')).id);
@@ -59,3 +62,4 @@ SELECT * FROM wiki.doc_keyword((wiki.ids_by_code('wk', 'definitely/new/page')).i
 SELECT acc.logout(:SID,'127.0.0.1');
 -- TODO: delete account ?
 
+*/

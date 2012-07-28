@@ -27,7 +27,7 @@ CREATE TABLE doc_extra (
 , toc               text
 , anno              text
 );
-SELECT pg_c('t', 'doc_extra', 'Дополнительные данные статьи wiki')
+SELECT pg_c('r', 'doc_extra', 'Дополнительные данные статьи wiki')
 , pg_c('c', 'doc_extra.id', 'ID статьи')
 , pg_c('c', 'doc_extra.is_toc_preferred', 'В кратком списке выводить не аннотацию а содержание')
 ;
@@ -40,6 +40,6 @@ CREATE TABLE doc_link (
 , link_id     d_id    REFERENCES wsd.doc
 , CONSTRAINT  doc_link_pkey PRIMARY KEY (id, path)
 );
-SELECT pg_c('t', 'doc_link', 'Ссылка на внутренние документы статьи wiki')
+SELECT pg_c('r', 'doc_link', 'Ссылка на внутренние документы статьи wiki')
 , pg_c('c', 'doc_link.id', 'ID статьи')
 ;

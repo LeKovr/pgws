@@ -144,6 +144,29 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pkg_erase(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    r_pkg ws.pkg%ROWTYPE;
+    v_id  INTEGER;
+  BEGIN
+    r_pkg := ws.pkg(a_code);
+    IF a_ver = r_pkg.ver THEN
+      INSERT INTO ws.pkg_log (id, code, ver, log_name, user_name, ssh_client, op)
+        VALUES (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client, '0')
+      ;
+      DELETE FROM ws.pkg
+        WHERE code = a_code
+      ;
+      RETURN 'Ok';
+    END IF;
+
+    RAISE EXCEPTION '***************** Package % (%) is not actial (%) *****************'
+      , a_code, a_ver, r_pkg.ver
+    ;
+  END
+$_$;
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_require(a_code TEXT) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
 $_$
   BEGIN

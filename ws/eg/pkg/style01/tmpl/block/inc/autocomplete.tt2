@@ -1,6 +1,6 @@
 [%
-  meta.html_headers.push("/js/jquery.autocomplete.js");
-  meta.html_headers.push("/css/autocomplete.css");
+  meta.html_headers.push("/js/$L/jquery.autocomplete.js");
+  meta.html_headers.push("/css/$L/autocomplete.css");
 %]<!--[if lte IE 7]>
   <style type="text/css">
     .autocomplete-w1 { left:0px; top:8px; }

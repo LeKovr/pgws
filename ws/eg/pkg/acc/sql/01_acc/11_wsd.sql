@@ -26,49 +26,106 @@ INSERT INTO wsd.pkg_script_protected (code, pkg, ver) VALUES (:'FILE', :'PKG', :
 SET LOCAL search_path = ws, i18n_def, public;
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE wsd.account_group (
-  id                INTEGER      PRIMARY KEY
-  , name            TEXT        NOT NULL
-  , anno            TEXT        NOT NULL
+CREATE TABLE wsd.team (
+  id              INTEGER      PRIMARY KEY
+, name            TEXT        NOT NULL
+, anno            TEXT        NOT NULL
 );
+SELECT pg_c('r', 'wsd.team', 'Группа пользователей')
+, pg_c('c', 'wsd.team.id', 'ID группы')
+;
+CREATE SEQUENCE wsd.team_id_seq;
+ALTER TABLE wsd.team ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.team_id_seq');
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.role (
+  id              INTEGER       PRIMARY KEY
+, level_id        INTEGER       NOT NULL            -- REFERENCES acc.role_level
+, has_team        BOOL          NOT NULL DEFAULT TRUE
+, name            TEXT          NOT NULL
+, anno            TEXT          NOT NULL
+);
+SELECT pg_c('r', 'wsd.role', 'Глобальная роль')
+, pg_c('c', 'wsd.role.id', 'ID роли')
+;
+
+CREATE SEQUENCE wsd.role_id_seq;
+ALTER TABLE wsd.role ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.role_id_seq');
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.role_team (
+  role_id         INTEGER       PRIMARY KEY REFERENCES wsd.role
+, team_id         INTEGER       NOT NULL REFERENCES wsd.team
+);
+SELECT pg_c('r', 'wsd.role_team', 'Роль группы пользователей')
+, pg_c('c', 'wsd.role_team.team_id', 'ID группы')
+;
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.role_acl (
+  role_id         INTEGER REFERENCES wsd.role
+, class_id        INTEGER
+, object_id       INTEGER
+, acl_id          INTEGER
+, CONSTRAINT role_acl_pkey PRIMARY KEY (role_id,class_id,object_id)
+);
+SELECT pg_c('r', 'wsd.role_acl', 'ACL глобальной роли')
+, pg_c('c', 'wsd.role_acl.role_id', 'ID роли')
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.account (
-  id                INTEGER       PRIMARY KEY
-  , group_id        INTEGER       NOT NULL REFERENCES wsd.account_group
-  , status_id       INTEGER       NOT NULL DEFAULT 1
-  , login           TEXT          NOT NULL UNIQUE
-  , email           TEXT          NOT NULL
-  , psw             TEXT          NOT NULL
-  , name            TEXT          NOT NULL
-  , is_psw_plain    BOOL          NOT NULL DEFAULT TRUE
-  , created_at      TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
-  , updated_at      TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
-  , psw_updated_at  TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
+  id              INTEGER       PRIMARY KEY
+, status_id       INTEGER       NOT NULL DEFAULT 1
+, def_role_id     INTEGER       NOT NULL REFERENCES wsd.role
+, login           TEXT          NOT NULL UNIQUE
+, email           TEXT          NOT NULL
+, psw             TEXT          NOT NULL
+, name            TEXT          NOT NULL
+, is_psw_plain    BOOL          NOT NULL DEFAULT TRUE
+, created_at      TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
+, updated_at      TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
+, psw_updated_at  TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-SELECT pg_c('t', 'wsd.account', 'Пользователь')
-  , pg_c('c', 'wsd.account.psw_updated_at', 'Момент изменения пароля')
+SELECT pg_c('r', 'wsd.account', 'Учетные записи пользователей')
+, pg_c('c', 'wsd.account.def_role_id', 'ID роли по умолчанию')
+, pg_c('c', 'wsd.account.psw_updated_at', 'Момент изменения пароля')
 ;
 
 CREATE SEQUENCE wsd.account_id_seq;
 ALTER TABLE wsd.account ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.account_id_seq');
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE wsd.session (
-  id           INTEGER      PRIMARY KEY
-  , account_id INTEGER      NOT NULL REFERENCES wsd.account
-  , ip         TEXT         NOT NULL
-  , sid        TEXT
-  , created_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
-  , updated_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
-  , deleted_at TIMESTAMP(0)
+CREATE TABLE wsd.account_role (
+  account_id      INTEGER      NOT NULL REFERENCES wsd.account
+, role_id        INTEGER       NOT NULL REFERENCES wsd.role
+, CONSTRAINT account_role_pkey PRIMARY KEY (account_id, role_id)
 );
-SELECT pg_c('t', 'wsd.session', 'Сессия авторизованного пользователя')
-  , pg_c('c', 'wsd.session.deleted_at', 'Признак и время завершения сессии')
+SELECT pg_c('r', 'wsd.account_role', 'Роли учетной записи')
+, pg_c('c', 'wsd.account_role.account_id', 'ID учетной записи')
+, pg_c('c', 'wsd.account_role.role_id', 'ID роли')
+;
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.session (
+  id         INTEGER      PRIMARY KEY
+, account_id INTEGER      NOT NULL REFERENCES wsd.account
+, role_id    INTEGER      NOT NULL REFERENCES wsd.role -- текущая роль
+, ip         TEXT         NOT NULL
+, sid        TEXT
+, created_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
+, updated_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
+, deleted_at TIMESTAMP(0)
+);
+SELECT pg_c('r', 'wsd.session', 'Сессия авторизованного пользователя')
+, pg_c('c', 'wsd.session.deleted_at', 'Признак и время завершения сессии')
 ;
 
 CREATE SEQUENCE wsd.session_id_seq;
 ALTER TABLE wsd.session ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.session_id_seq');
 
+/* TODO
+CREATE TABLE wsd.session_log (LIKE wsd.session INCLUDING CONSTRAINTS INCLUDING COMMENTS);
+*/
 /* ------------------------------------------------------------------------- */
 CREATE INDEX sid_deleted_at ON wsd.session (sid, deleted_at);

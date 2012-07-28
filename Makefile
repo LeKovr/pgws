@@ -25,9 +25,18 @@ help:
 all: help
 usage: help
 
-install: test pkg lib lib-app var ctl tmpl masterconf installcomplete
+install: test var pkg lib lib-app ctl tmpl masterconf installcomplete
 
-installapp: test pkg-app lib lib-app var ctl tmpl masterconf installcomplete
+installapp: test var pkg-app lib lib-app ctl tmpl masterconf installcomplete
+
+# ------------------------------------------------------------------------------
+
+var:
+	@echo "*** $@ ***"
+	pushd .. > /dev/null ; \
+[ -d var ] || mkdir var ; \
+for p in build cache conf ctl log run tmpl tmpc www ; do [ -d var/$$p ] || mkdir -m g+w var/$$p ; done ; \
+popd > /dev/null
 
 # ------------------------------------------------------------------------------
 
@@ -45,15 +54,6 @@ pkg-app:
 	pushd .. > /dev/null ; root=$$PWD ; pushd pgws/ws/eg > /dev/null ; \
 for p in pkg/* ; do [ -e $$root/$$p ] || ln -s ../pgws/ws/eg/$$p $$root/$$p ; done ; \
 popd > /dev/null ; popd > /dev/null
-
-# ------------------------------------------------------------------------------
-
-var:
-	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-[ -d var ] || mkdir var ; \
-for p in build cache conf ctl log run tmpl tmpc ; do [ -d var/$$p ] || mkdir -m g+w var/$$p ; done ; \
-popd > /dev/null
 
 # ------------------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ PD=$$(ls pkg/) ; \
 for p in $$PD ; do if [ -d $$R/pkg/$$p ] && [ -d $$R/pkg/$$p/tmpl ] ; then \
 pushd $$R/pkg/$$p/tmpl ; \
 for d in * ; do if [[ "$$d" == "config.tt2" ]] ; then \
-  [ -e $$R/var/tmpl/$$d ] || ln -s $$R/pkg/$$p/tmpl/$$d $$R/var/tmpl/$$d ; \
+  [ -e $$R/var/tmpl/$$p.tt2 ] || ln -s $$R/pkg/$$p/tmpl/$$d $$R/var/tmpl/$$p.tt2 ; \
   elif [[ "$$d" == "macro" ]] ; then \
   [ -d $$R/var/tmpl/$$d ] || mkdir -p $$R/var/tmpl/$$d ; \
 for n in $$d/*.tt2 ; do \
@@ -108,7 +108,20 @@ done else \
   [ -e $$R/var/tmpl/$$d/$$p ] || ln -s $$R/pkg/$$p/tmpl/$$d $$R/var/tmpl/$$d/$$p ; \
 fi ; done ; \
 popd > /dev/null ; \
-fi ; done ; \
+fi ; \
+if [ -d $$R/pkg/$$p ] && [ -d $$R/pkg/$$p/www ] ; then \
+pushd $$R/pkg/$$p/www ; \
+for d in $$(ls -A) ; do \
+if [ -d $$d ] ; then \
+  [ -d $$R/var/www/$$d ] || mkdir -p $$R/var/www/$$d ; \
+  [ -e $$R/var/www/$$d/$$p ] || ln -s $$R/pkg/$$p/www/$$d $$R/var/www/$$d/$$p ; \
+else \
+  [ -e $$R/var/www/$$d ] || ln -s $$R/pkg/$$p/www/$$d $$R/var/www/$$d ; \
+fi \
+done ; \
+popd > /dev/null ; \
+fi ; \
+done ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------

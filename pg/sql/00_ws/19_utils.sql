@@ -30,6 +30,7 @@ $_$;
 CREATE OR REPLACE FUNCTION e_nodata() RETURNS text IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT ws.sprintf('[{"code": "%s"}]', ws.const_rpc_err_nodata());
+-- P0002  no_data_found
 $_$;
 
 /* ------------------------------------------------------------------------- */

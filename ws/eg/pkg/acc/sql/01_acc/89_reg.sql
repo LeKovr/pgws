@@ -28,13 +28,21 @@ INSERT INTO method (code, class_id , action_id, cache_id, rvf_id) VALUES
 ;
 
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, is_write) VALUES
-  ('acc.login',             2, 1, 3, 3, true)
-  , ('acc.logout',          2, 1, 3, 2, true)
+  ('acc.login',             1, 8, 3, 3, true)
+  , ('acc.logout',          1, 2, 3, 2, true)
 ;
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-  ('login',     'main', 2, 1, null, 'login$',     'acc/login',    'Вход')
-  , ('logout',  'main', 2, 1, null, 'logout$',    'acc/logout',   'Выход')
+  ('login',     'main', 1, 8, null, 'login$',     'acc/login',    'Вход')
+  , ('logout',  'main', 1, 2, null, 'logout$',    'acc/logout',   'Выход')
 ;
 
+/* ------------------------------------------------------------------------- */
+INSERT INTO i18n_def.error (code, id_count, message) VALUES
+  (acc.const_error_password(),  0, 'неправильный пароль')
+, (acc.const_error_login(),     0, 'неизвестный логин')
+, (acc.const_error_status(),    1, 'статус пользователя (%s) не допускает авторизацию')
+;
+
+--   ,('Y0051', 0, 'Указанный логин уже занят. Выберите другой логин')

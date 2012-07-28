@@ -70,10 +70,13 @@ sub new {
   , 'poid' => $self->{'frontend_poid'}
   , 'data_write' => 1
   });
+  my $layout  = $dbc->config('fe.tmpl.layout_default'),
+  my $ext     = $dbc->config('fe.tmpl.ext');
 
   my %template_config = (
     INCLUDE_PATH  => ROOT.'var/tmpl',
     COMPILE_DIR   => ROOT.'var/tmpc',
+    PRE_PROCESS   => $layout.$ext,
     %{$dbc->config('fe.tt2')}
   );
 
@@ -256,9 +259,12 @@ sub response {
   my $acl;
 
   if ($page) {
-    if ($page->{'id_source'}) {
-      $page->{'args'}->[0] = $session->{$page->{'id_source'}};
-      $meta->debug('setup id %s from session field %s', $page->{'args'}[0], $page->{'id_source'});
+    if ($page->{'id_fixed'}) {
+      unshift @{$page->{'args'}}, $page->{'id_fixed'};
+      $meta->debug('setup id %s from fixed %s', $page->{'args'}[0], $page->{'id_fixed'});
+    } elsif ($page->{'id_session'}) {
+      unshift @{$page->{'args'}}, $session->{$page->{'id_session'}};
+      $meta->debug('setup id %s from session field %s', $page->{'args'}[0], $page->{'id_session'});
     }
     $acl = $self->acl($ws, $errors, $meta, $session, $page, $params);
     $page->{'req'} = $req->prefix.'/'.$page->{'req'} if($page and $page->{'req'});
@@ -333,9 +339,12 @@ sub acl {
     id1 => $page->{'args'}[1] || $params->{'id1'},
     id2 => $page->{'args'}[2] || $params->{'id2'},
   };
-  if ($page->{'id_source'}) {
-    $acl_params->{'id'} = $session->{$page->{'id_source'}};
+  if ($page->{'id_fixed'}) {
+    $acl_params->{'id'} = $page->{'id_fixed'}; # TODO: если id уже занят - сдвинуть на id2
+  } elsif ($page->{'id_session'}) {
+    $acl_params->{'id'} = $session->{$page->{'id_session'}}; # TODO: если id уже занят - сдвинуть на id2
   }
+
   $meta->dump({'page' => $page, 'acl_params' => $acl_params});
   return $self->api($ws, $errors, $meta, 'acl', $self->dbc->config('fe.def.acl'), $acl_params);
 }

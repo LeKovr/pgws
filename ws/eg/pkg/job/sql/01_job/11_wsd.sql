@@ -24,34 +24,62 @@
 INSERT INTO wsd.pkg_script_protected (code, pkg, ver) VALUES (:'FILE', :'PKG', :'VER');
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE wsd.job_current (
-  id    INTEGER PRIMARY KEY
-, code  TEXT    NOT NULL UNIQUE
-, name  TEXT    NOT NULL
-, anno  TEXT    NOT NULL
+CREATE TABLE wsd.job (
+  id          INTEGER PRIMARY KEY         -- ID задачи
+, validfrom   TIMESTAMP(0)  NOT NULL      -- дата активации
+, prio        INTEGER NOT NULL            -- фактический приоритет
+, class_id    INTEGER NOT NULL            -- класс задачи (обработчика)
+, status_id   INTEGER NOT NULL            -- текущий статус
+, created_by  INTEGER                     -- id задачи/сессии, создавшей
+, waiting_for INTEGER                     -- id задачи, которую ждем
+, arg_id      INTEGER                     -- аргумент id
+, arg_date    DATE                        -- аргумент date
+, arg_num     DECIMAL                     -- аргумент num
+, arg_more    TEXT                        -- аргумент more
+, arg_id2     INTEGER                     -- аргумент id2
+, arg_date2   DATE                        -- аргумент, 2я дата для периодов
+, arg_id3     INTEGER                     -- аргумент id3
+, created_at  TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP  -- время создания
+, run_pid     INTEGER                     -- pid выполняющего процесса
+, run_ip      INET                        -- ip хоста выполняющего процесса
+, run_at      TIMESTAMP(0)                -- время начала выполнения
+, exit_at     TIMESTAMP(0)                -- время завершения выполнения
+, exit_code   INTEGER NOT NULL DEFAULT 0  -- код завершения (битовая маска: 0-wait, 1-ignore)
 );
+SELECT pg_c('r', 'wsd.job',  'Задачи текущего дня')
+, pg_c('c', 'wsd.job.id'          , 'ID задачи')
+, pg_c('c', 'wsd.job.validfrom'   , 'дата активации')
+, pg_c('c', 'wsd.job.prio'        , 'фактический приоритет')
+, pg_c('c', 'wsd.job.class_id'    , 'класс задачи (обработчика)')
+, pg_c('c', 'wsd.job.status_id'   , 'текущий статус')
+, pg_c('c', 'wsd.job.created_by'  , 'id задачи/сессии, создавшей')
+, pg_c('c', 'wsd.job.waiting_for' , 'id задачи, которую ждем')
+, pg_c('c', 'wsd.job.arg_id'      , 'аргумент id')
+, pg_c('c', 'wsd.job.arg_date'    , 'аргумент date')
+, pg_c('c', 'wsd.job.arg_num'     , 'аргумент num')
+, pg_c('c', 'wsd.job.arg_more'    , 'аргумент more')
+, pg_c('c', 'wsd.job.arg_id2'     , 'аргумент id2')
+, pg_c('c', 'wsd.job.arg_date2'   , 'аргумент, 2я дата для периодов')
+, pg_c('c', 'wsd.job.arg_id3'     , 'аргумент id3')
+, pg_c('c', 'wsd.job.created_at'  , 'время создания')
+, pg_c('c', 'wsd.job.run_pid'     , 'pid выполняющего процесса')
+, pg_c('c', 'wsd.job.run_ip'      , 'ip хоста выполняющего процесса')
+, pg_c('c', 'wsd.job.run_at'      , 'время начала выполнения')
+, pg_c('c', 'wsd.job.exit_at'     , 'время завершения выполнения')
+, pg_c('c', 'wsd.job.exit_code'   , 'код завершения (битовая маска: 0-wait, 1-ignore)')
+;
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE wsd.job_future (
-  id    INTEGER PRIMARY KEY
-, code  TEXT    NOT NULL UNIQUE
-, name  TEXT    NOT NULL
-, anno  TEXT    NOT NULL
-);
+CREATE SEQUENCE wsd.job_seq;
+ALTER TABLE wsd.job ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.job_seq');
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE wsd.job_past (
-  id    INTEGER PRIMARY KEY
-, code  TEXT    NOT NULL UNIQUE
-, name  TEXT    NOT NULL
-, anno  TEXT    NOT NULL
-);
+CREATE TABLE wsd.job_todo (LIKE wsd.job INCLUDING ALL);
+CREATE TABLE wsd.job_past (LIKE wsd.job INCLUDING CONSTRAINTS INCLUDING COMMENTS);
+CREATE TABLE wsd.job_dust (LIKE wsd.job INCLUDING CONSTRAINTS INCLUDING COMMENTS);
 
-/* ------------------------------------------------------------------------- */
-CREATE TABLE wsd.job_dust (
-  id    INTEGER PRIMARY KEY
-, code  TEXT    NOT NULL UNIQUE
-, name  TEXT    NOT NULL
-, anno  TEXT    NOT NULL
-);
-
+SELECT
+  pg_c('r', 'wsd.job_todo',  'Задачи будущих дней')
+, pg_c('r', 'wsd.job_past',  'Архив выполненных задач')
+, pg_c('r', 'wsd.job_dust',  'Временное хранение выполненных задач до удаления')
+;

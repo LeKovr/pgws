@@ -26,8 +26,8 @@ DELETE FROM wsd.prop_owner WHERE pkg = :'PKG';
 DELETE FROM wsd.prop_group WHERE pkg = :'PKG';
 
 /* ------------------------------------------------------------------------- */
-DROP TABLE wsd.job_current;
-DROP TABLE wsd.job_future;
+DROP TABLE wsd.job;
+DROP TABLE wsd.job_todo;
 DROP TABLE wsd.job_past;
 DROP TABLE wsd.job_dust;
 

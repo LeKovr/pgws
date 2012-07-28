@@ -28,3 +28,15 @@ DELETE FROM ws.method                WHERE pkg = :'PKG';
 
 DELETE FROM ws.dt_part          WHERE id IN (SELECT id FROM ws.dt WHERE code LIKE 'acc.%');
 DELETE from ws.dt               WHERE code LIKE 'acc.%';
+
+DELETE FROM ws.class_action_acl WHERE class_id IN (3, 4);
+DELETE FROM ws.class_status_action_acl_addon WHERE class_id IN (3, 4);
+DELETE FROM ws.class_acl WHERE class_id IN (3, 4);
+
+DELETE FROM ws.class_status_action WHERE class_id IN (3, 4);
+DELETE FROM ws.class_action WHERE class_id IN (3, 4);
+
+DELETE FROM ws.class_status WHERE class_id IN (3, 4);
+DELETE FROM ws.class WHERE id IN (3, 4);
+
+DELETE FROM ws.error_data WHERE code ~ E'^Y0[34]';

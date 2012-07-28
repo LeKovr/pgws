@@ -65,7 +65,7 @@ $_$
       -- определить base_id если задан parent_id
       v_id := ws.dt_part_parent_base_id(NEW.parent_id);
       IF v_id IS NULL THEN
-        RAISE EXCEPTION 'Incorrect parent_id: %', NEW.parent_id;
+        RAISE EXCEPTION 'Incorrect part parent_id: %', NEW.parent_id;
       END IF;
       NEW.base_id := v_id;
     END IF;

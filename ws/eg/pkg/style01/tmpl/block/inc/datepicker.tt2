@@ -1,7 +1,7 @@
 [%
   meta.html_headers.push(
-    "/js/jquery-ui.datepicker.js"
-    "/js/jquery-ui.datepicker-ru.js"
-    "/css/jquery-ui.datepicker.css"
+    "/js/$L/jquery-ui.datepicker.js"
+    "/js/$L/jquery-ui.datepicker-ru.js"
+    "/css/$L/jquery-ui.datepicker.css"
   );
 %]

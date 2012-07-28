@@ -21,6 +21,12 @@
 */
 
 /* ------------------------------------------------------------------------- */
+DELETE FROM wsd.prop_value WHERE code ='ws.daemon.be.plugin.wiki.lib';
+
+/* ------------------------------------------------------------------------- */
+DELETE FROM wsd.role_acl WHERE class_id = 10; -- TODO: wiki.const_class_id();
+
+/* ------------------------------------------------------------------------- */
 
 DROP TABLE wsd.doc_keyword;
 DROP TABLE wsd.doc_diff;

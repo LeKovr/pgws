@@ -1,6 +1,6 @@
 <script type="text/javascript" src="http://jquery-json.googlecode.com/files/jquery.json-2.3.min.js"></script>
 [%
-  meta.html_headers.push("/js/jquery.pwl.js");
+  meta.html_headers.push("/js/$L/jquery.pwl.js");
 %]<script type="text/javascript">
   //<![CDATA[
   var PWL_post_uri = "[% resp.post_uri %]";

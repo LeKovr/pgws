@@ -27,6 +27,7 @@ CREATE DOMAIN d_id_positive AS INTEGER CHECK (VALUE > 0);
 CREATE DOMAIN d_id32 AS INTEGER CHECK (VALUE > -32768 AND VALUE < 32767);
 
 CREATE DOMAIN d_acl  AS d_id32; -- уровень доступа
+CREATE DOMAIN d_bitmask AS d_id32; -- уровень доступа
 
 CREATE DOMAIN d_acls  AS INTEGER[]; -- уровни доступа
 
@@ -118,7 +119,8 @@ CREATE TYPE t_page_info AS (
 , sort          d_sort
 , uri           d_regexp
 , tmpl          d_path
-, id_source     d_code
+, id_fixed      d_id
+, id_session    d_code
 , is_hidden     bool
 , target        text
 , uri_re        text

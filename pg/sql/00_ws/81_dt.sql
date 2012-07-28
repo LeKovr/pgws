@@ -184,6 +184,8 @@ INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('t_hashta
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_acl'), dt_id('d_id32'), 'Уровень доступа');
 INSERT INTO dt (code, parent_id, anno, is_list) VALUES (pg_cs('d_acls'), dt_id('d_acl'), 'Массив уровней доступа', true);
 
+INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_bitmask'), dt_id('d_id32'), 'Битовая маска');
+
 INSERT INTO dt (code, parent_id, anno, is_list) VALUES (pg_cs('d_booleana'), dt_id('boolean'), 'Массив boolean', true);
 INSERT INTO dt (code, parent_id, anno, is_list) VALUES (pg_cs('d_texta'), dt_id('text'), 'Массив text', true);
 INSERT INTO dt (code, parent_id, anno, is_list) VALUES (pg_cs('d_id32a'), dt_id('d_id32'), 'Массив d_id32', true);

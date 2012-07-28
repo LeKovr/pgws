@@ -33,7 +33,7 @@ CREATE TABLE wsd.prop_group (
 , anno            TEXT
 );
 
-SELECT pg_c('t', 'wsd.prop_group', 'Группа владельцев свойств')
+SELECT pg_c('r', 'wsd.prop_group', 'Группа владельцев свойств')
 , pg_c('c', 'wsd.prop_group.pogc', 'Код группы (Property Owner Group Code)')
 , pg_c('c', 'wsd.prop_group.sort', 'Порядок сортировки')
 , pg_c('c', 'wsd.prop_group.name', 'Название')
@@ -51,7 +51,7 @@ CREATE TABLE wsd.prop_owner (
 , CONSTRAINT  prop_id_pkey PRIMARY KEY (pogc, poid)
 );
 
-SELECT pg_c('t', 'wsd.prop_owner', 'Владельцы свойств (Property Owner)')
+SELECT pg_c('r', 'wsd.prop_owner', 'Владельцы свойств (Property Owner)')
 , pg_c('c', 'wsd.prop_owner.pogc', 'Код группы (Property Owner Group Code)')
 , pg_c('c', 'wsd.prop_owner.poid', 'ID владельца (Property Owner ID)')
 , pg_c('c', 'wsd.prop_owner.pkg',  'Пакет, в котором добавлена группа')
@@ -72,7 +72,7 @@ CREATE TABLE wsd.prop_value (
 , CONSTRAINT  prop_value_pogc_poid_fkey FOREIGN KEY (pogc, poid) REFERENCES wsd.prop_owner
 );
 
-SELECT pg_c('t', 'wsd.prop_value',       'Значения свойств объектов')
+SELECT pg_c('r', 'wsd.prop_value',       'Значения свойств объектов')
 , pg_c('c', 'wsd.prop_value.pogc',       'Код группы (Property Owner Group Code)')
 , pg_c('c', 'wsd.prop_value.poid',       'ID владельца (Property Owner ID)')
 , pg_c('c', 'wsd.prop_value.code',       'Код свойства')

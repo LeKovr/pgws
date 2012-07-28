@@ -32,7 +32,7 @@ CREATE TABLE prop (
 , anno        TEXT
 );
 
-SELECT pg_c('t', 'prop',        'Справочник свойств')
+SELECT pg_c('r', 'prop',        'Справочник свойств')
 , pg_c('c', 'prop.code',        'Код свойства')
 , pg_c('c', 'prop.pkg',         'Пакет, в котором добавлено свойство')
 , pg_c('c', 'prop.pogc_list',   'Массив кодов разрешенных групп (prop_group)')

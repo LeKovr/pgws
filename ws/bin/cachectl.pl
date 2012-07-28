@@ -30,6 +30,8 @@ use Data::Dumper;
 
 use constant POGC => 'be';                      # Core Property Owner Group Code
 use constant POID => 1;                         # Core Property Owner ID
+
+use constant DEBUG        => ($ENV{PGWS_CACHECTL_DEBUG} || 0);
 #----------------------------------------------------------------------
 $| = 1;
 
@@ -39,16 +41,14 @@ my $tag = shift || '*';       # cache tag
 my $dirtag = shift || '';    # directory prefix
 my $enc = 'UtF-8';     # encoding (will be language)
 
-#print "Got: $cmd, $tag. $dirtag\n";
+print "Got ($ENV{'PWD'}): $cmd, $tag. $dirtag\n" if (DEBUG);
 #----------------------------------------------------------------------
 # End of config
 
 $enc = lc($enc);
-my $dir = join '.', $dirtag, $tag, $enc;
+my $dir = 'var/'.join '.', $dirtag, $tag, $enc;
 
 my $json = new JSON;
-
-my $DEBUG = 0;
 
 #----------------------------------------------------------------------
 # http://www.perlmonks.org/?node_id=759457
@@ -136,7 +136,7 @@ sub clear {
 
 #----------------------------------------------------------------------
 sub save {
-  -d $dir || mkdir $dir || die "No access to dir $dir";
+  -d $dir or mkdir $dir or die "No access to dir $dir";
   printf 'Saving cache %s to dir %s...', $tag, $dir;
   my $c = init($tag);
   my $defs = {};
@@ -144,7 +144,7 @@ sub save {
   my @keys = $c->get_keys();
   foreach my $k (sort @keys) {
     my $value = $c->get($k);
-    print Dumper($k, $value) if ($DEBUG);
+    print Dumper($k, $value) if (DEBUG);
     my $key = $json->utf8(0)->decode($k);
     next unless (lc(shift @$key) eq $enc);
     my $method = shift @$key; #$key->[1];
@@ -197,7 +197,7 @@ sub load {
       unshift @$prekey, $enc;
       my $key = PGWS::Utils::json_out($prekey);
 
-      print Dumper($key, $def) if ($DEBUG);
+      print Dumper($key, $def) if (DEBUG);
 
       $c->set($key, $res) or die 'ERROR: cache set fail for key '.$key;
       print '.';

@@ -45,12 +45,12 @@ sub run {
 sub mgr_init {
   my ($self, $proc_manager) = @_;
 
-  my $mode = 0666;
+  my $mode = "0666";
   my %options = (
     create    => 1
   , exclusive => 1
   , destroy   => 1
-  , mode      => $mode
+  , mode      => oct($mode)
   , size      => $self->mgr_dbc->config('mgr.mem_size')
   );
   # хэш событий по ID, обрабатываемых индивидуально в реальном времени

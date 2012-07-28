@@ -92,7 +92,7 @@ msgstr ""
 msgid "default"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:133
+#: pkg/wiki/tmpl/page/edit.tt2:145
 msgid "html"
 msgstr ""
 
@@ -108,7 +108,7 @@ msgstr ""
 msgid "Автодокументация по объектам API"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/index.tt2:35
+#: pkg/wiki/tmpl/page/index.tt2:40
 msgid "Автор"
 msgstr ""
 
@@ -116,7 +116,7 @@ msgstr ""
 msgid "Авторизованная сессия завершена. Спасибо, что были с нами, приходите еще."
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:145
+#: pkg/wiki/tmpl/page/edit.tt2:157
 msgid "Актуальная версия"
 msgstr ""
 
@@ -132,7 +132,7 @@ msgstr "Action"
 msgid "Анонимный режим"
 msgstr "Anomymous mode"
 
-#: pkg/wiki/tmpl/page/edit.tt2:49
+#: pkg/wiki/tmpl/page/edit.tt2:53
 msgid "Атрибуты"
 msgstr ""
 
@@ -153,7 +153,7 @@ msgid "Ваша учетная запись имеет недостаточно 
 msgstr ""
 
 #. (info.revision, info.updated_at)
-#: pkg/wiki/tmpl/page/index.tt2:34
+#: pkg/wiki/tmpl/page/index.tt2:39
 msgid "Версия документа: %1 от %2"
 msgstr ""
 
@@ -186,7 +186,7 @@ msgstr "Yes"
 msgid "Демонстрация базовых примеров работы с API"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:89
+#: pkg/wiki/tmpl/page/edit.tt2:93
 msgid "Добавить новое ключевое слово"
 msgstr ""
 
@@ -194,15 +194,15 @@ msgstr ""
 msgid "Добро пожаловать"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:143
+#: pkg/wiki/tmpl/page/edit.tt2:155
 msgid "Документ изменен"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:142
+#: pkg/wiki/tmpl/page/edit.tt2:154
 msgid "Документ создан"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:144
+#: pkg/wiki/tmpl/page/edit.tt2:156
 msgid "Загружается страница просмотра"
 msgstr ""
 
@@ -210,8 +210,8 @@ msgstr ""
 msgid "Извините, мы пока не готовы показать содержимое этой страницы"
 msgstr "Sorry, we are not ready to show this page yet"
 
-#: pkg/wiki/tmpl/page/edit.tt2:55
-#: pkg/wiki/tmpl/page/edit.tt2:92
+#: pkg/wiki/tmpl/page/edit.tt2:59
+#: pkg/wiki/tmpl/page/edit.tt2:96
 msgid "Изменить"
 msgstr ""
 
@@ -224,7 +224,7 @@ msgstr "Method name:"
 msgid "Класс"
 msgstr "Class"
 
-#: pkg/wiki/tmpl/page/edit.tt2:81
+#: pkg/wiki/tmpl/page/edit.tt2:85
 msgid "Ключевые слова"
 msgstr ""
 
@@ -305,8 +305,8 @@ msgstr "Description"
 msgid "Опционален"
 msgstr "Optional"
 
-#: pkg/wiki/tmpl/page/edit.tt2:58
-#: pkg/wiki/tmpl/page/edit.tt2:95
+#: pkg/wiki/tmpl/page/edit.tt2:62
+#: pkg/wiki/tmpl/page/edit.tt2:99
 msgid "Отмена"
 msgstr ""
 
@@ -317,8 +317,8 @@ msgstr "Error %1. %2"
 msgid "Пароль:"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:112
-#: pkg/wiki/tmpl/page/edit.tt2:116
+#: pkg/wiki/tmpl/page/edit.tt2:120
+#: pkg/wiki/tmpl/page/edit.tt2:128
 msgid "Перейти на вкладку предпросмотра"
 msgstr ""
 
@@ -346,8 +346,8 @@ msgstr "Fields"
 msgid "Похоже, сессия была завершена ранее."
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:111
-#: pkg/wiki/tmpl/page/edit.tt2:115
+#: pkg/wiki/tmpl/page/edit.tt2:119
+#: pkg/wiki/tmpl/page/edit.tt2:127
 msgid "Предварительный просмотр"
 msgstr ""
 
@@ -376,11 +376,11 @@ msgstr "Page example"
 msgid "Производный"
 msgstr "Derivative"
 
-#: pkg/wiki/tmpl/page/index.tt2:36
+#: pkg/wiki/tmpl/page/index.tt2:41
 msgid "Редактировать"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:80
+#: pkg/wiki/tmpl/page/edit.tt2:84
 msgid "Родительская статья"
 msgstr ""
 
@@ -396,14 +396,19 @@ msgstr "Service unavailable"
 msgid "Скаляр"
 msgstr "Scalar"
 
-#: pkg/wiki/tmpl/page/edit.tt2:70
+#: pkg/wiki/tmpl/page/edit.tt2:74
 msgid "Следующий статус"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:110
+#: pkg/wiki/tmpl/page/edit.tt2:117
+#: pkg/wiki/tmpl/page/edit.tt2:125
+msgid "Создать"
+msgstr ""
+
 #: pkg/wiki/tmpl/page/edit.tt2:114
-#: pkg/wiki/tmpl/page/edit.tt2:57
-#: pkg/wiki/tmpl/page/edit.tt2:94
+#: pkg/wiki/tmpl/page/edit.tt2:123
+#: pkg/wiki/tmpl/page/edit.tt2:61
+#: pkg/wiki/tmpl/page/edit.tt2:98
 msgid "Сохранить"
 msgstr ""
 
@@ -427,7 +432,7 @@ msgstr "Structure"
 msgid "Тариф"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:61
+#: pkg/wiki/tmpl/page/edit.tt2:65
 msgid "Текущий статус"
 msgstr ""
 
@@ -466,12 +471,12 @@ msgstr ""
 msgid "Это главная страница проекта по умолчанию"
 msgstr "This is default project main page"
 
-#: pkg/wiki/tmpl/page/edit.tt2:129
+#: pkg/wiki/tmpl/page/edit.tt2:141
 msgid "изменения"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:148
-#: pkg/wiki/tmpl/page/edit.tt2:149
+#: pkg/wiki/tmpl/page/edit.tt2:160
+#: pkg/wiki/tmpl/page/edit.tt2:161
 msgid "нет данных"
 msgstr ""
 
@@ -483,7 +488,7 @@ msgstr "required"
 msgid "по умолчанию"
 msgstr "default"
 
-#: pkg/wiki/tmpl/page/edit.tt2:125
+#: pkg/wiki/tmpl/page/edit.tt2:137
 msgid "просмотр"
 msgstr ""
 
@@ -491,6 +496,6 @@ msgstr ""
 msgid "раздел, посвященный программному интерфейсу к функционалу сайта"
 msgstr ""
 
-#: pkg/wiki/tmpl/page/edit.tt2:101
+#: pkg/wiki/tmpl/page/edit.tt2:105
 msgid "редактор"
 msgstr ""

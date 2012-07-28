@@ -40,10 +40,6 @@ function formSend(id, action) {
 };
 
 var formOK = function(formid, res) {
-  if (res.status_id == 1) {
-    $('#status').text('[% l("Неизвестная пара логин/пароль") %]');
-    return;
-  }
   $('#status').html('[% l("Добро пожаловать") %]' + ', ' + res.name);
 [%
   IF page.code == 'login';

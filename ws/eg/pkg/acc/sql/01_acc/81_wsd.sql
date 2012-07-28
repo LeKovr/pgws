@@ -24,12 +24,29 @@
 INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.account_group (id, name, anno) VALUES
-  (1, 'Readers', '')
-  , (2, 'Writers', '')
+INSERT INTO wsd.team (name, anno) VALUES
+  ('Users', '')
 ;
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.account (group_id, status_id, login, email, psw, name) VALUES
-  (2, acc.const_status_id_active(), 'admin', 'admin@pgws.local', acc.const_admin_psw_default(), 'Admin')
+INSERT INTO wsd.role (level_id, has_team, name, anno) VALUES
+  (1, false,  'Guest', '')
+, (1, false,  'Logged in', '')
+, (5, true,   'Any group member', '')
+, (6, true,   'Admins', '')
+, (6, true,   'Readers', '')
+, (6, true,   'Writers', '')
+;
+
+/* ------------------------------------------------------------------------- */
+INSERT INTO wsd.role_team (team_id, role_id) VALUES
+  (1,3)
+, (1,4)
+, (1,5)
+, (1,6)
+;
+
+/* ------------------------------------------------------------------------- */
+INSERT INTO wsd.account (status_id, def_role_id, login, email, psw, name) VALUES
+  (acc.const_status_id_active(), 4, 'admin', 'admin@pgws.local', acc.const_admin_psw_default(), 'Admin')
 ;
