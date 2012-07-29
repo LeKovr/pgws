@@ -1,6 +1,12 @@
 [%
-  meta.html_headers.push(
-    "/js/$L/jquery-ui-slider.js"
-    "/css/$L/jquery-ui-slider.css"
+  meta.top_headers.push(
+    "/js/external/ui/jquery.ui.core.js"
+    "/js/external/ui/jquery.ui.widget.js"
+    "/js/external/ui/jquery.ui.mouse.js"
+    "/js/external/ui/jquery.ui.slider.js"
+    "/css/$TMPL_UI_THEME/jquery.ui.core.css"
+    "/css/$TMPL_UI_THEME/jquery.ui.theme.css"
+    "/css/$TMPL_UI_THEME/jquery.ui.slider.css"
+    "/css/$TMPL_LAYOUT/jquery-ui.theme.pgws.css"
   );
 %]

@@ -2,7 +2,8 @@
   description = 'Глобальные настройки'
 %][%
   our_title         = l("PGWS");
-  L = 'style01';
+  TMPL_LAYOUT       = 'style01';
+  TMPL_UI_THEME     = 'external/ui/smoothness';
   # IF session.sid
     # для тестов layout покажем авторизованным другой вариант
     # resp.layout = 'grey';

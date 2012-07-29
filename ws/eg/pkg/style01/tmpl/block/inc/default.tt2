@@ -1,6 +1,8 @@
-<link href="/img/[% L %]/favicon.ico?19721023"     rel="shortcut icon" />
-<link href="/css/[% L %]/common.css?19721023"  media="all" rel="stylesheet" type="text/css" />
+<link href="/img/[% TMPL_LAYOUT %]/favicon.ico?19721023"     rel="shortcut icon" />
 [%
+meta.top_headers.push(
+  "/css/$TMPL_LAYOUT/common.css?19721023"
+);
 IF meta.head.autocomplete;
   meta.head.api = 1;
 END;
@@ -8,10 +10,13 @@ IF meta.head.api;
   meta.head.jquery = 1;
 END;
 IF meta.head.timepicker;
+  meta.head.datepicker = 1;
   meta.head.slider = 1;
 END;
 IF meta.head.jquery;
-  %]<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>[%
+  meta.top_headers.push(
+    "/js/external/core/jquery-1.7.2.js"
+  );
   meta.head.delete('jquery');
 END;
 %]

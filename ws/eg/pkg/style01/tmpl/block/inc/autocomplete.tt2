@@ -1,9 +1,14 @@
 [%
-  meta.html_headers.push("/js/$L/jquery.autocomplete.js");
-  meta.html_headers.push("/css/$L/autocomplete.css");
-%]<!--[if lte IE 7]>
-  <style type="text/css">
-    .autocomplete-w1 { left:0px; top:8px; }
-    pre { padding-bottom:25px; overflow-y:hidden; }
-  </style>
-<![endif]-->
+  meta.top_headers.push(
+    "/js/external/ui/jquery.ui.core.js"
+    "/js/external/ui/jquery.ui.widget.js"
+    "/js/external/ui/jquery.ui.position.js"
+    "/js/external/ui/jquery.ui.autocomplete.js"
+    "/js/$TMPL_LAYOUT/jquery-ui.autocomplete.pgws.js"
+    "/css/$TMPL_UI_THEME/jquery.ui.core.css"
+    "/css/$TMPL_UI_THEME/jquery.ui.theme.css"
+    "/css/$TMPL_UI_THEME/jquery.ui.autocomplete.css"
+    "/css/$TMPL_LAYOUT/jquery-ui.theme.pgws.css"
+    "/css/$TMPL_LAYOUT/jquery-ui.autocomplete.pgws.css"
+  );
+%]

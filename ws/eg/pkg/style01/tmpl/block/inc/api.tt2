@@ -1,6 +1,8 @@
-<script type="text/javascript" src="http://jquery-json.googlecode.com/files/jquery.json-2.3.min.js"></script>
 [%
-  meta.html_headers.push("/js/$L/jquery.pwl.js");
+meta.top_headers.push(
+  "/js/external/core/jquery.json-2.3.js"
+  "/js/$TMPL_LAYOUT/pgws-api.jquery.js"
+);
 %]<script type="text/javascript">
   //<![CDATA[
   var PWL_post_uri = "[% resp.post_uri %]";

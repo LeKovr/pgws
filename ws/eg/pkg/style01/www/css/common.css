@@ -1,5 +1,5 @@
 html, body, input, select {
-  font-size: 10pt;
+  font-size: 0.9em;
   font-family: Tahoma, Helvetica;
 }
 
@@ -75,7 +75,7 @@ input[type=text].slim {
 
 input[disabled], input[readonly], select[disabled], select[readonly], checkbox[disabled], checkbox[readonly], textarea[disabled], textarea[readonly] {
   background-color: #FFF8C6;
-  border: #3532ff 1px solid;
+/*  border: #3532ff 1px solid; */
   color: #000000;
   cursor: default;
 }

@@ -25,9 +25,7 @@ help:
 all: help
 usage: help
 
-install: test var pkg lib lib-app ctl tmpl masterconf installcomplete
-
-installapp: test var pkg-app lib lib-app ctl tmpl masterconf installcomplete
+install: test var pkg lib lib-pkg ctl setups tmpl masterconf installcomplete
 
 # ------------------------------------------------------------------------------
 
@@ -49,14 +47,6 @@ popd > /dev/null
 
 # ------------------------------------------------------------------------------
 
-pkg-app:
-	@echo "*** $@ ***"
-	pushd .. > /dev/null ; root=$$PWD ; pushd pgws/ws/eg > /dev/null ; \
-for p in pkg/* ; do [ -e $$root/$$p ] || ln -s ../pgws/ws/eg/$$p $$root/$$p ; done ; \
-popd > /dev/null ; popd > /dev/null
-
-# ------------------------------------------------------------------------------
-
 lib:
 	@echo "*** $@ ***"
 	pushd .. > /dev/null ; \
@@ -72,7 +62,7 @@ popd > /dev/null
 
 # ------------------------------------------------------------------------------
 
-lib-app:
+lib-pkg:
 	@echo "*** $@ ***"
 	pushd .. > /dev/null ; \
 R=$$(dirs +0) ; \
@@ -140,6 +130,18 @@ find pkg/$$p/bin -name *ctl.sh -print | while read f ; do \
   d=$$(dirname $$f) ; n=$$(basename $$f) ; \
   [ -e $$R/var/ctl/$$n ] || ln -s $$R/$$d/$$n $$R/var/ctl/$$n ; \
 done ; \
+fi ; done ; \
+popd > /dev/null
+
+# ------------------------------------------------------------------------------
+
+setups:
+	@echo "*** $@ ***"
+	pushd .. > /dev/null ; \
+R=$$(dirs +0) ; \
+PD=$$(ls pkg/) ; \
+for p in $$PD ; do if [ -e $$R/pkg/$$p/setup.sh ] ; then \
+pushd $$R/pkg/$$p ; $$SHELL setup.sh ; popd > /dev/null ; \
 fi ; done ; \
 popd > /dev/null
 

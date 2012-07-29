@@ -1,6 +1,8 @@
 [%
-  meta.html_headers.push(
-    "/js/$L/jquery-ui.timepicker.js"
-    "/js/$L/jquery-ui.timepicker-ru.js"
+  meta.top_headers.push(
+    "/js/external/addon/jquery-ui-timepicker-addon.js"
+    "/js/external/addon/i18n/jquery-ui-timepicker-ru.js"
+    "/css/external/jquery-ui-timepicker-addon.css"
+    "/css/$TMPL_LAYOUT/jquery-ui.datepicker.pgws.css"
   );
 %]

@@ -34,7 +34,7 @@
       %]<li class="list active">[%
     END;
     %]<a href="[% uri_mk(u.req) %]" class="link">[% u.name %]</a>[%
-    IF u.code == page.code AND !meta.nochilds AND !meta.nosiblings; INCLUDE "block/$L/page_childs.tt2" target = u; END;
+    IF u.code == page.code AND !meta.nochilds AND !meta.nosiblings; INCLUDE "block/$TMPL_LAYOUT/page_childs.tt2" target = u; END;
     %]</li>
     [%
   END;

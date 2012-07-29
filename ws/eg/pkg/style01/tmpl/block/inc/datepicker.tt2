@@ -1,7 +1,13 @@
 [%
-  meta.html_headers.push(
-    "/js/$L/jquery-ui.datepicker.js"
-    "/js/$L/jquery-ui.datepicker-ru.js"
-    "/css/$L/jquery-ui.datepicker.css"
+  meta.top_headers.push(
+    "/js/external/ui/jquery.ui.core.js"
+    "/js/external/ui/jquery.ui.datepicker.js"
+    "/js/external/ui/i18n/jquery.ui.datepicker-ru.js"
+    "/css/$TMPL_UI_THEME/jquery.ui.core.css"
+    "/css/$TMPL_UI_THEME/jquery.ui.theme.css"
+    "/css/$TMPL_UI_THEME/jquery.ui.datepicker.css"
+    "/css/$TMPL_LAYOUT/jquery-ui.theme.pgws.css"
+    "/css/$TMPL_LAYOUT/jquery-ui.datepicker.pgws.css"
   );
 %]
+

@@ -76,8 +76,8 @@ sub _GenerateAnchor {
       if ($url =~ /^[^:]+:/) {
         $attributes = ' class="external"';
       } else {
-        $title ||= 'Титул внутренней ссылкы';
-        $link_text ||= 'Название внутренней ссылки';
+        $title ||= 'TODO: Титул внутренней ссылки';
+        $link_text ||= 'TODO: Название внутренней ссылки';
         if ($url !~ m|^/|) {
           # относительная ссылка, добавить $self->{'base_url'}
           $url = '/'.$url if ($url);
@@ -213,7 +213,7 @@ my @links = keys %{$m->{_metadata}{'links'}};
 
   if ($extended and $id) {
     my @args = ($sid, $src, $id);
-    my $diff = $self->mkdiff($srv, $meta, \@args);
+    my $diff = $self->_mkdiff($srv, $meta, \@args);
     my $d = $diff->{'result'}{'data'};
     if ($d) {
       my $df;
@@ -291,7 +291,7 @@ sub _store {
 }
 
 #----------------------------------------------------------------------
-sub mkdiff {
+sub _mkdiff {
   my ($self, $srv, $meta, $args) = @_;
   my ($sid, $src, $id, $rev) = (@$args);
 

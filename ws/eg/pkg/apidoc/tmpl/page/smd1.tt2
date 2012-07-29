@@ -16,7 +16,6 @@
   meta.head.autocomplete = 1;
   pg = uri(code => 'api.smd1');
 %]
-
 <script type="text/javascript">
 //<![CDATA[
   //Для кеширования результатов вызовов списка методов и детализации по методу
@@ -41,97 +40,33 @@ $(document).ready(function(){
     checkAvailability();
 
   //Опции для autocomplete
-  //вместо {code}, {name} и {query} на этапе выполнения подставяться значения этих параметров
-  var options = {
-    serviceUrl:'[% req.prefix %]/_ws.method_lookup.json?',
-    params: { code: "{query}%", sid: "[% session.sid %]", lang: "[% session.lang %]"},
-    return_data: {id:'{code}', name:'{code} - {name}',retargs:'code'},
-    onSelect: function(value, data){
-      form_send(value,data);
-      $('#autoc').val(data);
-    }
-  };
-  var a = $('#autoc').autocomplete(options);
-  //Перезаписываем стандартные методы на свои для данного обекта
-  //что бы можно было использовать любые опубликованные методы, а не только те,
-  // которые используют входной параметр "query" и выходной [{id,name}]
-  a.getSuggestions = function(q) {
-    var cr, me,temp,saveparams=[];
-    cr = this.isLocal ? this.getSuggestionsLocal(q) : this.cachedResponse[q];
-    if (cr && $.isArray(cr.suggestions)) {
-      this.suggestions = cr.suggestions;
-      this.data = cr.data;
-      this.suggest();
-    } else if (!this.isBadQuery(q)) {
-      me = this;
-      me.options.params.query = q;
-      //Сохранили шаблоны параметров
-      for (temp in me.options.params){
-        saveparams[temp]=me.options.params[temp];
-        me.options.params[temp]=me.options.params[temp].replace(/{query}/g,me.options.params.query);
-      }
-      //Сохранили шаблоны параметров
-      $.get(this.serviceUrl, me.options.params, function(txt) { me.processResponse(txt); }, 'text');
-      //cpn Востановили шаблоны параметров
-      for (temp in me.options.params){
-        me.options.params[temp]=saveparams[temp];
-      }
-      //Востановили шаблоны параметров
-    }
-  };
-  a.processResponse = function(text) {
-    var response,nameEval,nameTemp,idRegexp,xRegexp,mkey;
-    try {
-      response = eval('(' + text + ')');
-    } catch (err) { return; }
-    if (!$.isArray(response.result.data)) { response.result.data = []; }
-    var len = response.result.data.length;
-    var suggestions = [];
-    var data = [];
-    for (i = 0; i < len; i++) {
-      s = response.result.data[i];
-      //формируем данные для отображения выпадающего списка
-      //призводим подмены из опции return_data[]
-      if (this.options.return_data["name"]!=null) {
-        nameTemp=this.options.return_data["name"];
-        for (mkey in s){
-          xRegexp=new RegExp('{'+mkey+'}','g');
-          nameTemp=nameTemp.replace(xRegexp,s[mkey]);
+  monkeyPatchAutocomplete();
+  $( "#autoc" ).autocomplete({
+    source: function( request, response ) {
+      $.ajax({
+        url: "[% req.prefix %]/_ws.method_lookup.json",
+        dataType: "json",
+        data: {
+          code: request.term + '%'
+        },
+        success: function( data ) {
+          if(typeof data.result.data != 'undefined'){
+            response( $.map( data.result.data, function( item ) {
+              return {
+                label: item.code + ' - ' +item.name,
+                value: item.code
+              }
+            }));
+          }
         }
-      } else {
-          nameTemp=s.name;
-      }
-      if (this.options.return_data["id"]!=null) {
-        idTemp=this.options.return_data["id"];
-        for ( mkey in s){
-          xRegexp=new RegExp('{'+mkey+'}','g');
-          idTemp=idTemp.replace(xRegexp,s[mkey]);
-         }
-      } else {
-        idTemp=s.id;
-      }
-      suggestions.push(nameTemp);
-      data.push(idTemp);
-    }
-    var resp = {
-      query: response.result.args[this.options.return_data.retargs],
-      suggestions: suggestions,
-      data: data
-    };
-    if(!this.options.noCache){
-      this.cachedResponse[resp.query] = resp;
-      if (resp.suggestions.length === 0) { this.badQueries.push(resp.query); }
-    }
-    //Добавили % что бы набранное в autocomplete совпадало с тем что искали через code:'{query}%'
-    if (resp.query === this.getQuery(this.currentValue)+'%') {
-      this.suggestions = resp.suggestions;
-      this.data = resp.data;
-      this.suggest();
-    };
-  };
-
+      });
+    },
+    minLength: 1,
+    select: function( event, ui ) {
+      $('#myB').click();
+    },
+  });
 });
-//$(document).ready(function(){}
 function show_method_li(method){
   var div_id=method.replace(/\./g,"_");
   var key = method+'%';

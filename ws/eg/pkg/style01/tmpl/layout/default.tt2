@@ -10,20 +10,25 @@
 <title>[% resp.title %] - [% our_title %]</title>
 <meta http-equiv="Content-Type" content="[% resp.ctype %]; [% resp.enc %]" />
 [%
-  INCLUDE "block/$L/inc/default.tt2";
+  meta.top_headers = [];
+  INCLUDE "block/$TMPL_LAYOUT/inc/default.tt2";
   FOREACH i IN meta.head;
-    INCLUDE "block/$L/inc/${i.key}.tt2";
+    INCLUDE "block/$TMPL_LAYOUT/inc/${i.key}.tt2";
   END;
-  FOREACH h IN meta.html_headers;
-    (h.search('\.css') ? "<link rel='stylesheet' href='$h' type='text/css' />" : "<script src='$h' type='text/javascript'></script>") _ "\n";
+  x=meta.top_headers.import(meta.html_headers);
+  FOREACH h IN meta.top_headers;
+    NEXT IF temp.exists(h);
+    temp.$h = 1;
+    f=(h.search('\.css') ? '<link  href=%-60s type="text/css" rel="stylesheet" />' : '<script src=%-60s type="text/javascript"></script>') _ "\n";
+    FILTER format(f); '"' _ h _ '"'; END;
   END;
 %]
 </head>
 <body>
 [% IF page.code != 'main'; root_page = uri(code => 'main'); root_href = uri_mk(root_page.req); END; %]
-<h1 class="title"><a name="top"[% IF root_href; ' href="' _ root_href _ '"'; END; %]><img src="/img/style01/pgws-logo.png" alt="PGWS. Postgresql WebServices" /></a>[% resp.title %]</h1>
+<h1 class="title"><a name="top"[% IF root_href; ' href="' _ root_href _ '"'; END; %]><img src="/img/[% TMPL_LAYOUT %]/pgws-logo.png" alt="PGWS. Postgresql WebServices" /></a>[% resp.title %]</h1>
 <div id="top" class="bar">
-[% SET meta.page_menu_used = 0; INCLUDE "block/$L/page_menu.tt2" %]
+[% SET meta.page_menu_used = 0; INCLUDE "block/$TMPL_LAYOUT/page_menu.tt2" %]
 [%
   # <!-- menu point -->
   IF session.sid;
@@ -47,6 +52,6 @@
   # подвал страницы -------------------------------------------------------------------
 %]
 </div>
-[% IF debug; INCLUDE "block/$L/debug.tt2"; END %]
+[% IF debug; INCLUDE "block/$TMPL_LAYOUT/debug.tt2"; END %]
 </body></html>
 [% END %]

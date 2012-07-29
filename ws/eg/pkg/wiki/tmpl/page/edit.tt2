@@ -4,7 +4,6 @@
     '/css/wiki/common.css'
     '/css/wiki/edit.css'
   );
-  meta.head.datepicker = 1;
   meta.head.timepicker = 1;
   meta.head.autocomplete = 1;
 
@@ -49,56 +48,57 @@
   END;
 %]
 <div id="accordion">
-<div class="acc-panel">
+  <div class="acc-panel">
     <p class="acc-nav acc-attr">[% l('Атрибуты').replace('(.)','$1 ') %]</p>
     <div class="acc-body" id="p-attr">
-	 <form id="attr-form" action="js_required_but_not_available" onsubmit="return false;">
-	<input type="hidden" name="_sid" value="[% session.sid %]"/>
-	<input type="hidden" name="id" value="[% doc_id %]"/>
-	<input type="hidden" id="up_id" name="up_id" value="[% info.up_id %]"/>
-	<button class="button_change" style="display:none" onclick="to_Save()">[% l("Изменить") %]</button>
-		<div class="div_button" style="display:none">
-			<button onClick="saveAttr()">[% l("Сохранить") %]</button>
-			<button onclick="Cancel()">[% l("Отмена") %]</button>
-		</div>
-		<div id="div_attr">
-			<p><label>[% l("Текущий статус") %] <select id="status_id" name="status_id">
-			[% FOREACH s IN doc_class_status; %]
-				[% IF s.id == info.status_id; %]
-					<option value="[% s.id %]" selected="selected">[% s.name %]</option>
-				[% ELSE; %]
-					<option value="[% s.id %]">[% s.name %]</option>
-				[% END; %]
-			[% END; %]
-			</select></label></p>
-			<p><label>[% l("Следующий статус") %] <select id="nextStatus" name="status_next_id">
-			[% FOREACH s IN doc_class_status; %]
-				[% IF s.id == info.status_next_id; %]
-					<option value="[% s.id %]" selected="selected">[% s.name %]</option>
-				[% ELSE; %]
-					<option value="[% s.id %]">[% s.name %]</option>
-				[% END; %]
-			[% END; %]
-			</select> от
-				<input type="text" size="17" id="date" name="status_next_at" value="[% info.status_next_at %]"/></label></p>
-			<p><label>[% l("Родительская статья") %] <input type="text" id="autoc"  autocomplete="off" value="[% name_doc_up.name %]"/></p>
-			<font style="float:left;"><label>[% l("Ключевые слова") %]:</label></font>
-			<div id="keyword" style="float:left;">
-			[%  FOREACH this = wiki_word_str; %]
-				<div style='float:left;margin-left:5px;margin-right:5px;'>[% this %]<input type='hidden' name='keywords' value='[% this %]'/></div>
-			[%  END; %]
-			</div>
-			<div class="div_button" style="display:none;">
-				<input type="text" id="inputnewkey" style="float:left;" autocomplete="off"/>
-				<button onclick="addWord()">[% l("Добавить новое ключевое слово") %]</button>
-			</div>
-		</div>
-		<br/><br/><button class="button_change" style="display:none" onclick="to_Save()">[% l("Изменить") %]</button>
-		<div class="div_button" style="display:none">
-			<button onClick="saveAttr()">[% l("Сохранить") %]</button>
-			<button onclick="Cancel()">[% l("Отмена") %]</button>
-		</div>
-	 </form>
+      <form id="attr-form" action="js_required_but_not_available" onsubmit="return false;">
+        <input type="hidden" name="_sid" value="[% session.sid %]"/>
+        <input type="hidden" name="id" value="[% doc_id %]"/>
+        <input type="hidden" id="up_id" name="up_id" value="[% info.up_id %]"/>
+        <button class="button_change" style="display:none" onclick="to_Save()">[% l("Изменить") %]</button>
+        <div class="div_button" style="display:none">
+          <button onClick="saveAttr()">[% l("Сохранить") %]</button>
+          <button onclick="Cancel()">[% l("Отмена") %]</button>
+        </div>
+        <div id="div_attr">
+          <p><label>[% l("Текущий статус") %] <select id="status_id" name="status_id">
+            [% FOREACH s IN doc_class_status; %]
+              [% IF s.id == info.status_id; %]
+                <option value="[% s.id %]" selected="selected">[% s.name %]</option>
+              [% ELSE; %]
+                <option value="[% s.id %]">[% s.name %]</option>
+              [% END; %]
+            [% END; %]
+          </select></label></p>
+          <p><label>[% l("Следующий статус") %] <select id="nextStatus" name="status_next_id">
+            [% FOREACH s IN doc_class_status; %]
+              [% IF s.id == info.status_next_id; %]
+                <option value="[% s.id %]" selected="selected">[% s.name %]</option>
+              [% ELSE; %]
+                <option value="[% s.id %]">[% s.name %]</option>
+              [% END; %]
+            [% END; %]
+            </select> от
+            <input type="text" size="17" id="date" name="status_next_at" value="[% info.status_next_at %]"/></label>
+          </p>
+          <p><label>[% l("Родительская статья") %] <input type="text" id="autoc"  autocomplete="off" value="[% name_doc_up.name %]"/></p>
+          <font style="float:left;"><label>[% l("Ключевые слова") %]:</label></font>
+          <div id="keyword" style="float:left;">
+            [%  FOREACH this = wiki_word_str; %]
+              <div style='float:left;margin-left:5px;margin-right:5px;'>[% this %]<input type='hidden' name='keywords' value='[% this %]'/></div>
+            [%  END; %]
+          </div>
+          <div class="div_button" style="display:none;">
+            <input type="text" id="inputnewkey" style="float:left;" autocomplete="off"/>
+            <button onclick="addWord()">[% l("Добавить новое ключевое слово") %]</button>
+          </div>
+        </div>
+        <br/><br/><button class="button_change" style="display:none" onclick="to_Save()">[% l("Изменить") %]</button>
+        <div class="div_button" style="display:none">
+          <button onClick="saveAttr()">[% l("Сохранить") %]</button>
+          <button onclick="Cancel()">[% l("Отмена") %]</button>
+        </div>
+      </form>
     </div>
   </div>
   <div class="acc-panel">
@@ -145,7 +145,6 @@
     <p class="acc-nav acc-src">[% l('html').replace('(.)','$1 ') %]</p>
     <div class="acc-body" id="p-src"><pre id="html-src"></pre></div>
   </div>
-
 </div>
 
 <script type="text/javascript">
@@ -174,41 +173,41 @@ function formSend(id, action) {
   return false;
 };
 function to_Save(){
-	$(".button_change").hide();
-	$(".div_button").show();
-	addLinkDelete();
-	InputDisabled(false);
+  $(".button_change").hide();
+  $(".div_button").show();
+  addLinkDelete();
+  InputDisabled(false);
 };
 function Cancel(){
-	$(".div_button").hide();
-	$(".button_change").show();
-	delX();
-	InputDisabled(true);
+  $(".div_button").hide();
+  $(".button_change").show();
+  delX();
+  InputDisabled(true);
 };
 function InputDisabled(param){
   $("#div_attr").find("input").attr("disabled",param);
   $("#div_attr").find("select").attr("disabled",param);
 };
-function addLinkDelete(){			// функция для добавления [x]
-	var arrFont = $("#keyword").find("div");
-	if($(arrFont).find("a").length==0){
-		$.each(arrFont, function(){
-			$(this).html($(this).html()+" <a href='#' onClick='delThis(this)'>[x]</a>");
-		});
-	}
+function addLinkDelete(){     // функция для добавления [x]
+  var arrFont = $("#keyword").find("div");
+  if($(arrFont).find("a").length==0){
+    $.each(arrFont, function(){
+      $(this).html($(this).html()+" <a href='#' onClick='delThis(this)'>[x]</a>");
+    });
+  }
 };
-function delX(){				// скрыть [x]
-	$("#keyword").find("a").remove();
+function delX(){        // скрыть [x]
+  $("#keyword").find("a").remove();
 };
-function delThis(l){				//функция для удаления слова из ключевой строки
-	$(l).parent().remove();
+function delThis(l){        //функция для удаления слова из ключевой строки
+  $(l).parent().remove();
 };
-function addWord(){				//добявляем новое слово в ключевую строку
-	obj =  $("#inputnewkey");
-		if($(obj).val().trim().length>0){
-		$("#keyword").html($("#keyword").html()+constructorDivKeyWord($(obj).val()));
-		$(obj).val("")
-	}
+function addWord(){       //добавляем новое слово в ключевую строку
+  obj =  $("#inputnewkey");
+  if($(obj).val().trim().length>0){
+    $("#keyword").html($("#keyword").html()+constructorDivKeyWord($(obj).val()));
+    $(obj).val("")
+  }
 };
 
 function constructorDivKeyWord(param){
@@ -285,176 +284,68 @@ $(document).ready(function(){
   });
 
   if (acl_wikisave){
-	$(".button_change").show();
+    $(".button_change").show();
   }
   if(!acl_wikisave){
-	$("#accordion").hide();
+    $("#accordion").hide();
   }
   InputDisabled(true);
 });
 $(function() {
-	$("#date").datetimepicker(); //дата-время
+	$("#date").datetimepicker({minDate: 0}); //дата-время не раньше текущего
 });
 
 $(document).ready(function(){
-var options = {
-    serviceUrl:'[% req.prefix %]/_wiki.doc_by_name.json?',
-    params: { id: "[% group_id %]", string: "{query}", sid: "[% session.sid %]", lang: "[% session.lang %]"},
-    return_data: { id:'{id}',name:'{name}',retargs:'string'},
-    onSelect: function(value, data){
-	$("#up_id").val(data);
-    }
-  };
-  a = $('#autoc').autocomplete(options);
-  //Перезаписываем стандартные методы на свои для данного обекта
-  //что бы можно было использовать любые опубликованные методы, а не только те,
-  // которые используют входной параметр "query" и выходной [{id,name}]
-  a.getSuggestions = function(q) {
-    var cr, me,temp,saveparams=[];
-    cr = this.isLocal ? this.getSuggestionsLocal(q) : this.cachedResponse[q];
-    if (cr && $.isArray(cr.suggestions)) {
-      this.suggestions = cr.suggestions;
-      this.data = cr.data;
-      this.suggest();
-    } else if (!this.isBadQuery(q)) {
-      me = this;
-      me.options.params.query = q;
-      //Сохранили шаблоны параметров
-      for (temp in me.options.params){
-        saveparams[temp]=me.options.params[temp];
-        me.options.params[temp]=me.options.params[temp].replace(/{query}/g,me.options.params.query);
-      }
-      //Сохранили шаблоны параметров
-      $.get(this.serviceUrl, me.options.params, function(txt) { me.processResponse(txt); }, 'text');
-      //cpn Востановили шаблоны параметров
-      for (temp in me.options.params){
-        me.options.params[temp]=saveparams[temp];
-      }
-      //Востановили шаблоны параметров
-    }
-  };
-  a.processResponse = function(text) {
-    var response,nameEval,nameTemp,idRegexp,xRegexp,mkey;
-    try {
-      response = eval('(' + text + ')');
-    } catch (err) { return; }
-    if (!$.isArray(response.result.data)) { response.result.data = []; }
-    var len = response.result.data.length;
-    var suggestions = [];
-    var data = [];
-    for (i = 0; i < len; i++) {
-      s = response.result.data[i];
-      //формируем данные для отображения выпадающего списка
-      //призводим подмены из опции return_data[]
-      if (this.options.return_data["name"]!=null) {
-        nameTemp=this.options.return_data["name"];
-        for (mkey in s){
-          xRegexp=new RegExp('{'+mkey+'}','g');
-          nameTemp=nameTemp.replace(xRegexp,s[mkey]);
+  monkeyPatchAutocomplete();
+  $( "#autoc" ).autocomplete({
+    source: function( request, response ) {
+      $.ajax({
+        url: "[% req.prefix %]/_wiki.doc_by_name.json",
+        dataType: "json",
+        data: {
+          id: "[% group_id %]",
+          string: request.term
+        },
+        success: function( data ) {
+          if(typeof data.result.data != 'undefined'){
+            response( $.map( data.result.data, function( item ) {
+              return {
+                label: item.name,
+                value: item.name,
+                id: item.id
+              }
+            }));
+          }
         }
-      } else {
-          nameTemp=s.name;
-      }
-      if (this.options.return_data["id"]!=null) {
-        idTemp=this.options.return_data["id"];
-        for ( mkey in s){
-          xRegexp=new RegExp('{'+mkey+'}','g');
-          idTemp=idTemp.replace(xRegexp,s[mkey]);
-         }
-      } else {
-        idTemp=s.id;
-      }
-      suggestions.push(nameTemp);
-      data.push(idTemp);
-    }
-    var resp = {
-      query: response.result.args[this.options.return_data.retargs],
-      suggestions: suggestions,
-      data: data
-    };
-    if(!this.options.noCache){
-      this.cachedResponse[resp.query] = resp;
-      if (resp.suggestions.length === 0) { this.badQueries.push(resp.query); }
-    }
-    //Добавили % что бы набранное в autocomplete совпадало с тем что искали через code:'{query}%'
-    if (resp.query === this.getQuery(this.currentValue)) {
-      this.suggestions = resp.suggestions;
-      this.data = resp.data;
-      this.suggest();
-    };
-  };
+      });
+    },
+    minLength: 1,
+    select: function( event, ui ) {
+      $("#up_id").val(ui.item.id);
+    },
+  });
+  $( "#inputnewkey" ).autocomplete({
+    source: function( request, response ) {
+      $.ajax({
+        url: "[% req.prefix %]/_wiki.keyword_by_name.json",
+        dataType: "json",
+        data: {
+          id: "[% group_id %]",
+          string: request.term
+        },
+        success: function( data ) {
+          if(typeof data.result.data != 'undefined'){
+            response( $.map( data.result.data, function( item ) {
+              return {
+                label: item,
+                value: item
+              }
+            }));
+          }
+        }
+      });
+    },
+    minLength: 1
+  });
 });
-//////////////автокомплит для ключевых слов///////////
-  var optionskey = {
-    serviceUrl:'[% req.prefix %]/_wiki.keyword_by_name.json?',
-    params: { id: "[% group_id %]", string: "{query}", sid: "[% session.sid %]", lang: "[% session.lang %]"},
-    return_data: { name:'{name}',retargs:'string'},
-    width: 150,
-    onSelect: function(value, data){
-	   addWord();
-    }
-  };
-	var b = $('#inputnewkey').autocomplete(optionskey);
-
-b.getSuggestions = function(q) {
-    var cr, me,temp,saveparams=[];
-    cr = this.isLocal ? this.getSuggestionsLocal(q) : this.cachedResponse[q];
-    if (cr && $.isArray(cr.suggestions)) {
-      this.suggestions = cr.suggestions;
-      this.data = cr.data;
-      this.suggest();
-    } else if (!this.isBadQuery(q)) {
-      me = this;
-      me.options.params.query = q;
-      //Сохранили шаблоны параметров
-      for (temp in me.options.params){
-        saveparams[temp]=me.options.params[temp];
-        me.options.params[temp]=me.options.params[temp].replace(/{query}/g,me.options.params.query);
-      }
-      //Сохранили шаблоны параметров
-      $.get(this.serviceUrl, me.options.params, function(txt) { me.processResponse(txt); }, 'text');
-      //cpn Востановили шаблоны параметров
-      for (temp in me.options.params){
-        me.options.params[temp]=saveparams[temp];
-      }
-      //Востановили шаблоны параметров
-    }
-  };
-  b.processResponse = function(text) {
-    var response,nameEval,nameTemp,idRegexp,xRegexp,mkey;
-    try {
-      response = eval('(' + text + ')');
-    } catch (err) { return; }
-    if (!$.isArray(response.result.data)) { response.result.data = []; }
-    var len = response.result.data.length;
-    var suggestions = [];
-    var data = [];
-    for (i = 0; i < len; i++) {
-      s = response.result.data[i];
-      //формируем данные для отображения выпадающего списка
-      //призводим подмены из опции return_data[]
-      nameTemp=s;
-      idTemp=i;
-
-      suggestions.push(nameTemp);
-      data.push(idTemp);
-    }
-    var resp = {
-      query: response.result.args[this.options.return_data.retargs],
-      suggestions: suggestions,
-      data: data
-    };
-    if(!this.options.noCache){
-      this.cachedResponse[resp.query] = resp;
-      if (resp.suggestions.length === 0) { this.badQueries.push(resp.query); }
-    }
-    //Добавили % что бы набранное в autocomplete совпадало с тем что искали через code:'{query}%'
-    if (resp.query === this.getQuery(this.currentValue)) {
-      this.suggestions = resp.suggestions;
-      this.data = resp.data;
-      this.suggest();
-    };
-  };
-
 </script>
-
