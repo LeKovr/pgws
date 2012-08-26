@@ -48,6 +48,8 @@ my $S;
  # set_die_handler(\&handle_errors);
 #}
 
+use constant COOKIE_MASK        => ($ENV{PGWS_FE_COOKIE_MASK});
+
 #----------------------------------------------------------------------
 sub user_ip { $_[0]->{'user_ip'}  }
 sub proto   { $_[0]->{'proto'}    }
@@ -57,6 +59,7 @@ sub uri     { $_[0]->{'uri'}      }
 sub prefix  { $_[0]->{'prefix'}   }
 sub accept  { $_[0]->{'accept'}   }
 sub cookie  { $_[0]->{'cookie'}   }
+sub params  { $_[0]->{'params'}   }
 
 #----------------------------------------------------------------------
 
@@ -64,6 +67,7 @@ sub cookie  { $_[0]->{'cookie'}   }
 #    $CGI::Simple::DISABLE_UPLOADS = 0;   # enable uploads
 $CGI::Simple::PARAM_UTF8 = 1;
 
+use Data::Dumper;
 #----------------------------------------------------------------------
 sub new {
   my ($class, $self) = @_;
@@ -82,6 +86,26 @@ sub new {
   $self->{'accept'} ||= $ENV{'HTTP_ACCEPT'} || '';
   $S = $self;
 
+  $self->{'encode_utf'} = $ENV{'FCGI_ROLE'}?1:0;
+
+  if ($self->{'method'} eq 'JOB') {
+    delete $ENV{'REQUEST_METHOD'};
+    delete $ENV{'FCGI_ROLE'};
+    $self->{'prefix'} = delete $ENV{'REQUEST_PKG'};
+    $self->{'uri'}    = delete $ENV{'REQUEST_CODE'};
+    $self->{'params'} = \%ENV;
+    binmode(STDOUT, ':encoding(utf8)');
+    return $self;
+  }
+
+  $self->{'_q'} = new CGI::Simple;
+
+  if ($self->{'method'} eq 'POST') {
+    $self->{'params'} = $self->{'_q'}->param('POSTDATA'); # TODO: POST_MAX
+  } elsif ($self->{'method'} eq 'GET') {
+    my %params = $self->{'_q'}->Vars;
+    $self->{'params'} = \%params;
+  }
 
   my $uri = $self->{'uri'} || $ENV{'PATH_INFO'} || $ENV{'REDIRECT_PINFO'} || '';
   my $uri_full = $ENV{'REDIRECT_URL'};
@@ -94,8 +118,8 @@ sub new {
   $self->{'uri'} = $uri;
   $self->{'prefix'} ||= $prefix;
 
-  $self->{'_q'} = new CGI::Simple;
-  $self->{'encode_utf'} = $ENV{'FCGI_ROLE'}?1:0;
+
+  $self->fetch_cook(COOKIE_MASK);
 
   return $self;
 }
@@ -106,20 +130,6 @@ sub fetch_cook {
   if ($mask and $ENV{'HTTP_COOKIE'} and $ENV{'HTTP_COOKIE'} =~ /(^| )$mask(;|$)/) {
     $self->{'cookie'} = $2;
   }
-}
-
-#----------------------------------------------------------------------
-sub post_data {
-  my $self = shift;
-  my $data = $self->{'_q'}->param('POSTDATA'); # TODO: POST_MAX
-  return $data;
-}
-
-#----------------------------------------------------------------------
-sub get_data {
-  my $self = shift;
-  my %params = $self->{'_q'}->Vars;
-  return \%params;
 }
 
 #----------------------------------------------------------------------

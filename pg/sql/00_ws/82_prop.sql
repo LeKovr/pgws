@@ -50,6 +50,9 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.fe.post.:u',              ARRAY['fe'],                '',       'Адрес, на который будут отправляться POST-запросы к PGWS')
 
 , ('ws.daemon.fe.def.sid',              ARRAY['fe'],                'acc.sid_info',   '')
+, ('ws.daemon.fe.def.login',            ARRAY['fe'],                'acc.login',  'Метод авторизации')
+, ('ws.daemon.fe.def.logout',           ARRAY['fe'],                'acc.logout', 'Метод завершения сессии')
+
 , ('ws.daemon.fe.def.acl',              ARRAY['fe'],                'info.acl_check', '')
 , ('ws.daemon.fe.def.uri',              ARRAY['fe'],                'ws.page_by_uri', '')
 , ('ws.daemon.fe.def.code',             ARRAY['fe'],                'ws.page_by_code','')
@@ -58,6 +61,7 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 
 , ('ws.daemon.fe.tmpl.error',           ARRAY['fe'],                'app/error', 'Каталог шаблонов страниц описаний ошибок')
 , ('ws.daemon.fe.tmpl.pages',           ARRAY['fe'],                'page/','Каталог шаблонов, вызываемых по GET-запросу')
+, ('ws.daemon.fe.tmpl.jobs',            ARRAY['fe'],                'job/', 'Каталог шаблонов, вызываемых из Job')
 
 , ('ws.daemon.be.check_prefix',         ARRAY['be'],                'check:', 'Префикс запроса на валидацию аргументов ACL')
 , ('ws.daemon.be.acl_prefix',           ARRAY['be'],                'acl:',   'Префикс запроса на проверку ACL')
@@ -65,11 +69,11 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.be.nocache_prefix',       ARRAY['be'],                'nc:',   'Префикс запроса без проверки кэша')
 
 , ('ws.daemon.be.db_noacc_code',        ARRAY['be'],                '42501',   'Код ошибки БД при запрете доступа')
-, ('ws.daemon.be.acl_trigger',          ARRAY['be'],                'acc.login',   'Код метода меняющего ACL')
+, ('ws.daemon.be.acl_trigger',          ARRAY['be'],                'acc.log(in|out)',   'Regexp кодов методов меняющих ACL')
 
 , ('ws.daemon.lang.sql.default',        ARRAY['be'],                'SET search_path TO i18n_def, public', 'Выбор языка по умолчанию')
 , ('ws.daemon.lang.sql.other',          ARRAY['be'],                'SET search_path TO i18n_%s, i18n_def, public', 'Выбор языка')
-, ('ws.daemon.lang.sql.encoding',       ARRAY['be'],                E'SET client_encoding TO \'%s\'', 'Выбор кодировки')
+, ('ws.daemon.lang.sql.encoding',       ARRAY['be'],                $_$SET client_encoding TO '%s'$_$, 'Выбор кодировки')
 
 , ('ws.daemon.be.def_method.code',      ARRAY['be'],                'ws.method_by_code', '')
 , ('ws.daemon.be.def_method.code_real', ARRAY['be'],                'ws.method_by_code', '')
@@ -122,8 +126,6 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 
 ;
 
-
--- JOB reload: select pg_notify('job_reload','job_secret_reload');
 
 /* ------------------------------------------------------------------------- */
 

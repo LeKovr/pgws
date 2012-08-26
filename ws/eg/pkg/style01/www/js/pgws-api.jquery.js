@@ -1,11 +1,12 @@
 /*
- Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+  Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
 
- This document is licensed as free software under the terms of the
- MIT License: http://www.opensource.org/licenses/mit-license.php
+  This document is licensed as free software under the terms of the
+  MIT License: http://www.opensource.org/licenses/mit-license.php
 
- jQuery PWL Plugin
- version: 2.1 (2009-08-14)
+  jQuery PGWS utility functions
+  project: PGWS, http://rm2.tender.pro/projects/pgws/
+  version: 2.1 (2009-08-14)
 */
 
 function l() {

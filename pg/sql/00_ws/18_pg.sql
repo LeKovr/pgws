@@ -59,6 +59,27 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pg_exec_func(a_name text) RETURNS text STABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v TEXT;
+  BEGIN
+    EXECUTE 'SELECT * FROM ' || a_name || '()' INTO v;
+    RETURN v;
+  END;
+$_$;
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pg_exec_func(a_schema TEXT, a_name TEXT) RETURNS TEXT STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT ws.pg_exec_func($1 || '.' || $2)
+$_$;
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pg_schema_by_oid(a_oid oid) RETURNS TEXT STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT nspname::TEXT FROM pg_namespace WHERE oid = $1
+$_$;
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_type_name(a_oid oid) RETURNS text STABLE LANGUAGE 'sql' AS
 $_$
 SELECT CASE WHEN nspname = 'pg_catalog' THEN pg_catalog.format_type($1, NULL) ELSE  nspname || '.' || typname END

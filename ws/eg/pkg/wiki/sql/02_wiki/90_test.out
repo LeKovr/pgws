@@ -1,6 +1,14 @@
- login | status_id |      email       | psw 
--------+-----------+------------------+-----
- admin |         4 | admin@pgws.local | ***
+        test        
+--------------------
+  ***** login *****
+
+    ip     | status_id | account_id | role_id | account_name | role_name 
+-----------+-----------+------------+---------+--------------+-----------
+ 127.0.0.1 |         4 |          1 |       4 | Admin        | Admins
+
+      test       
+-----------------
+  ***** wk *****
 
  group_exists 
 --------------

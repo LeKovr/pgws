@@ -21,22 +21,28 @@
 */
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION e_code(code d_errcode) RETURNS text IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT ws.sprintf('[{"code": "%s"}]', $1);
+$_$;
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION e_noaccess() RETURNS text IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT ws.sprintf('[{"code": "%s"}]', ws.const_rpc_err_noaccess());
+  SELECT ws.e_code(ws.const_rpc_err_noaccess());
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION e_nodata() RETURNS text IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT ws.sprintf('[{"code": "%s"}]', ws.const_rpc_err_nodata());
+  SELECT ws.e_code(ws.const_rpc_err_nodata());
 -- P0002  no_data_found
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION error_str (code d_errcode, arg TEXT DEFAULT '') RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT ws.sprintf('[{"code": "Y%s", "id":"%s", "arg": "%s"}]', $1::TEXT, '_', $2);
+  SELECT ws.sprintf('[{"code": "%s", "id":"%s", "arg": "%s"}]', $1::TEXT, '_', $2);
 $_$;
 
 --CREATE OR REPLACE FUNCTION error_str (code errcode, arg TEXT, arg1 TEXT) RETURNS TEXT AS $_$
@@ -46,7 +52,7 @@ $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION perror_str (code d_errcode, param_name TEXT, arg TEXT DEFAULT '') RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT ws.sprintf('[{"code": "Y%s", "id":"%s", "arg": "%s"}]', $1::TEXT, $2, $3);
+  SELECT ws.sprintf('[{"code": "%s", "id":"%s", "arg": "%s"}]', $1::TEXT, $2, $3);
 $_$;
 
 /* ------------------------------------------------------------------------- */

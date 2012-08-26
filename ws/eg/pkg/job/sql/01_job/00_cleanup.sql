@@ -25,13 +25,8 @@ DELETE FROM ws.page_data             WHERE pkg = :'PKG';
 
 DELETE FROM ws.method                WHERE pkg = :'PKG';
 
-DELETE FROM ws.prop                 WHERE pkg = :'PKG';
-
-ALTER TABLE wsd.job DROP CONSTRAINT job_fk_class_id;
 ALTER TABLE wsd.job DROP CONSTRAINT job_fk_status_id;
-
-ALTER TABLE wsd.job_todo DROP CONSTRAINT job_fk_class_id;
 ALTER TABLE wsd.job_todo DROP CONSTRAINT job_fk_status_id;
 
-UPDATE ws.prop SET pogc_list = ws.array_remove(pogc_list::text[], 'job') WHERE 'job' = ANY(pogc_list);
-
+DROP TRIGGER IF EXISTS notify_oninsert ON wsd.job;
+DROP TRIGGER IF EXISTS notify_onupdate ON wsd.job;

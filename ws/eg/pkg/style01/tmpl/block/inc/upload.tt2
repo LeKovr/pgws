@@ -1,0 +1,7 @@
+[%
+  meta.top_headers.push(
+    "/js/external/ui/jquery.ui.progressbar.js"
+    "/js/external/addon/jquery.form.js"
+    "/js/$TMPL_LAYOUT/pgws-upload.jquery.js"
+  );
+%]

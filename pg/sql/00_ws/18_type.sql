@@ -94,8 +94,7 @@ CREATE DOMAIN d_ida AS INTEGER[];
 CREATE DOMAIN d_moneya AS DECIMAL(16,2)[];
 /* ------------------------------------------------------------------------- */
 CREATE DOMAIN d_classcode AS char(2);
-CREATE DOMAIN d_errchar AS char(1) DEFAULT 'Y';
-CREATE DOMAIN d_errcode AS char(5);
+CREATE DOMAIN d_errcode AS char(5) CHECK (VALUE ~ E'^Y\\d{4}$') ;
 CREATE DOMAIN d_format  AS text;
 
 /* ------------------------------------------------------------------------- */

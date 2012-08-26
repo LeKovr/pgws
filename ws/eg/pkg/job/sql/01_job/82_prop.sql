@@ -22,6 +22,9 @@
 */
 
 /* ------------------------------------------------------------------------- */
+INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
+
+/* ------------------------------------------------------------------------- */
 UPDATE ws.prop SET pogc_list = array_append(pogc_list, 'job') WHERE code IN (
   'ws.daemon.startup.pm.n_processes'
 , 'ws.daemon.startup.pm.die_timeout'
@@ -39,6 +42,5 @@ INSERT INTO ws.prop (code,                 pogc_list,               def_value, n
 , ('ws.daemon.mgr.listen.stat',         ARRAY['job'],               '',       'Канал команд (NOTIFY) об обновлении статистики процессов')
 , ('ws.daemon.mgr.listen.reload',       ARRAY['job'],               '',       'Канал команд (NOTIFY) о рестарте процессов')
 
-, ('ws.daemon.mgr.sql.stat_load',       ARRAY['job'],               '',       'SQL загрузки статистики процессов')
-, ('ws.daemon.mgr.sql.error_load',      ARRAY['job'],               '',       'SQL загрузки ошибок процессов')
+,  ('ws.daemon.log.syslog.job.(default,call,sid,acl,cache,validate)',   ARRAY['fe'],  '3', 'Уровень отладки запросов JOB')
 ;

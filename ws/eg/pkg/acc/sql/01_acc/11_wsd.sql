@@ -79,16 +79,18 @@ CREATE TABLE wsd.account (
 , status_id       INTEGER       NOT NULL DEFAULT 1
 , def_role_id     INTEGER       NOT NULL REFERENCES wsd.role
 , login           TEXT          NOT NULL UNIQUE
-, email           TEXT          NOT NULL
 , psw             TEXT          NOT NULL
 , name            TEXT          NOT NULL
 , is_psw_plain    BOOL          NOT NULL DEFAULT TRUE
+, is_ip_checked   BOOL          NOT NULL DEFAULT TRUE
 , created_at      TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
 , updated_at      TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
 , psw_updated_at  TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 SELECT pg_c('r', 'wsd.account', 'Учетные записи пользователей')
 , pg_c('c', 'wsd.account.def_role_id', 'ID роли по умолчанию')
+, pg_c('c', 'wsd.account.is_psw_plain', 'Пароль хранить незашифрованным')
+, pg_c('c', 'wsd.account.is_ip_checked', 'IP проверять при валидации сессии')
 , pg_c('c', 'wsd.account.psw_updated_at', 'Момент изменения пароля')
 ;
 
@@ -107,15 +109,30 @@ SELECT pg_c('r', 'wsd.account_role', 'Роли учетной записи')
 ;
 
 /* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.account_contact (
+  account_id      INTEGER      NOT NULL REFERENCES wsd.account
+, contact_type_id INTEGER      NOT NULL
+, value           TEXT
+, varified_at     TIMESTAMP(0)
+, deleted_at      TIMESTAMP(0)
+, CONSTRAINT account_contact_pkey PRIMARY KEY (account_id, contact_type_id, value)
+);
+SELECT pg_c('r', 'wsd.account_contact',         'Контакты учетной записи')
+, pg_c('c', 'wsd.account_contact.account_id',      'ID учетной записи')
+, pg_c('c', 'wsd.account_contact.contact_type_id', 'ID типа контакта')
+;
+/* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.session (
   id         INTEGER      PRIMARY KEY
 , account_id INTEGER      NOT NULL REFERENCES wsd.account
 , role_id    INTEGER      NOT NULL REFERENCES wsd.role -- текущая роль
-, ip         TEXT         NOT NULL
 , sid        TEXT
+, ip         TEXT         NOT NULL
+, is_ip_checked BOOL      NOT NULL
 , created_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
 , updated_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
 , deleted_at TIMESTAMP(0)
+, CONSTRAINT session_sid_key UNIQUE (sid)
 );
 SELECT pg_c('r', 'wsd.session', 'Сессия авторизованного пользователя')
 , pg_c('c', 'wsd.session.deleted_at', 'Признак и время завершения сессии')

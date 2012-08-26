@@ -35,5 +35,10 @@ DROP TABLE wsd.doc_group;
 
 DROP SEQUENCE wsd.doc_id_seq;
 
+
+DROP TABLE wsd.doc_file;
+DROP TABLE wsd.file;
+DROP SEQUENCE wsd.file_id_seq;
+
 /* ------------------------------------------------------------------------- */
 DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';

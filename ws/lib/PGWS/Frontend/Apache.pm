@@ -29,6 +29,8 @@ use Apache::Constants ':response';
 # Доступный извне номер версии
 our $VERSION = $PGWS::VERSION;
 
+use constant COOKIE_MASK        => ($ENV{PGWS_FE_COOKIE_MASK});
+
 # Хэш хост-объект для каждого серверного процесса
 use constant APPS => {};
 
@@ -39,6 +41,7 @@ sub method  { $_[0]->{'method'}   }
 sub uri     { $_[0]->{'uri'}      }
 sub prefix  { $_[0]->{'prefix'}   }
 sub accept  { $_[0]->{'accept'}   }
+sub params  { $_[0]->{'params'}   }
 
 #----------------------------------------------------------------------
 ## @fn hash data_load($config_file)
@@ -74,11 +77,19 @@ sub new {
   $self->{'method'} ||= $r->method;
   $self->{'uri'} ||= $r->path_info || '/';
 
+  $self->{'_q'} = new CGI::Simple;
+
+  if ($self->{'method'} eq 'POST') {
+    $self->{'params'} = $self->post_data;
+  } elsif ($self->{'method'} eq 'GET') {
+    $self->{'params'} = $self->get_data;
+  }
   my $prefix = $r->location;
 #  if ($ENV{'REQUEST_URI'} and $ENV{'REQUEST_URI'} =~ /^(.*)$self->{'uri'}/) {
 #    $prefix = $1;
 #  }
   $self->{'prefix'} ||= $prefix;
+  $self->fetch_cook(COOKIE_MASK);
 
   return $self;
 }

@@ -78,7 +78,6 @@ sub init {
   , 'poid' => $self->{'poid'}
   , 'data_write' => 1
   });
-
   my $startup = $dbc->config('startup');
   my $name = $dbc->proc_name;
 
@@ -87,6 +86,7 @@ sub init {
   $startup->{'pm'}{'pid_fname'} ||= ROOT.'var/run/'.$name.'.pid';
   $startup->{'sock'}            ||= ROOT.'var/run/'.$name.'.sock';
   $startup->{'log_file'}        ||= ROOT.'var/log/'.$name.'.log';
+  $self->{'mgr_start'}          ||= \&mgr_start;
   $self->{'mgr_init'}           ||= \&mgr_init;
   $self->{'proc_init'}          ||= \&proc_init;
   $self->{'proc_loop'}          ||= \&proc_loop unless ($self->{'proc_main'}); # FCGI loop used
@@ -97,6 +97,9 @@ sub start {
   my $self = shift;
   my $silent = shift; # Don't print "started"
   my $dbc = $self->mgr_dbc;
+
+  &{$self->{'mgr_start'}}($self);
+
   $self->daemonize($silent);
 
   open my $NULL, '+>', '/dev/null' or die "Can't open /dev/null: $!"; # no nginx stderr
@@ -130,6 +133,12 @@ sub start {
   } else {
     &{$self->{'proc_main'}}($self, $proc_manager);
   }
+}
+
+#----------------------------------------------------------------------
+# run before STDERR detach
+sub mgr_start {
+  my ($self) = @_;
 }
 
 #----------------------------------------------------------------------

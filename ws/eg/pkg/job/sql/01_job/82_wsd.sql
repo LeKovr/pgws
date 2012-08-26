@@ -17,12 +17,9 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Реестр свойств. Дополнение
+    Настройка связей объектов jb. с объектами wsd.
 */
 
 /* ------------------------------------------------------------------------- */
-ALTER TABLE wsd.job ADD CONSTRAINT job_fk_class_id  FOREIGN KEY (class_id) REFERENCES job.class(id);
 ALTER TABLE wsd.job ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
-
-ALTER TABLE wsd.job_todo ADD CONSTRAINT job_fk_class_id  FOREIGN KEY (class_id) REFERENCES job.class(id);
 ALTER TABLE wsd.job_todo ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);

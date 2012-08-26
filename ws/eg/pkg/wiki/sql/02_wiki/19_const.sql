@@ -28,60 +28,60 @@ CREATE OR REPLACE FUNCTION const_class_id() RETURNS d_class IMMUTABLE LANGUAGE '
 $_$
   SELECT 10::ws.d_class
 $_$;
-SELECT pg_c('f', 'const_class_id', 'Константа: ID класса wiki');
+SELECT pg_c('f', 'const_class_id', 'ID класса wiki');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_doc_class_id() RETURNS d_class IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 11::ws.d_class
 $_$;
-SELECT pg_c('f', 'const_doc_class_id', 'Константа: ID класса статьи wiki');
+SELECT pg_c('f', 'const_doc_class_id', 'ID класса статьи wiki');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_status_id_online() RETURNS d_id32 IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 1::ws.d_id32
 $_$;
-SELECT pg_c('f', 'const_status_id_online', 'Константа: ID статуcа wiki, при котором статьи имеют свой статус');
+SELECT pg_c('f', 'const_status_id_online', 'ID статуcа wiki, при котором статьи имеют свой статус');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION wiki.const_doc_status_id_draft() RETURNS d_id32 IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 3::ws.d_id32
 $_$;
-SELECT pg_c('f', 'wiki.const_doc_status_id_draft', 'Константа: ID начального статуcа статьи wiki');
+SELECT pg_c('f', 'wiki.const_doc_status_id_draft', 'ID начального статуcа статьи wiki');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_nogroupcode() RETURNS ws.d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT '9901'::ws.d_errcode
+  SELECT 'Y9901'::ws.d_errcode
 $_$;
-SELECT pg_c('f', 'const_error_nogroupcode', 'Константа: ошибка поиска группы по коду');
+SELECT pg_c('f', 'const_error_nogroupcode', 'Код ошибки поиска группы по коду');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_norevision() RETURNS ws.d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT '9902'::ws.d_errcode
+  SELECT 'Y9902'::ws.d_errcode
 $_$;
-SELECT pg_c('f', 'const_error_norevision', 'Константа: ошибка соответствия версии документа');
+SELECT pg_c('f', 'const_error_norevision', 'Код ошибки соответствия версии документа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_codeexists() RETURNS ws.d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT '9903'::ws.d_errcode
+  SELECT 'Y9903'::ws.d_errcode
 $_$;
-SELECT pg_c('f', 'const_error_codeexists', 'Константа: ошибка повторного создания кода документа');
+SELECT pg_c('f', 'const_error_codeexists', 'Код ошибки повторного создания кода документа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_nochgtosave() RETURNS ws.d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT '9904'::ws.d_errcode
+  SELECT 'Y9904'::ws.d_errcode
 $_$;
-SELECT pg_c('f', 'const_error_nochgtosave', 'Константа: ошибка сохранения версии, не содержащей изменений');
+SELECT pg_c('f', 'const_error_nochgtosave', 'Код ошибки сохранения версии, не содержащей изменений');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_nodoc() RETURNS ws.d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT '9905'::ws.d_errcode
+  SELECT 'Y9905'::ws.d_errcode
 $_$;
-SELECT pg_c('f', 'const_error_nodoc', 'Константа: ошибка поиска статьи');
+SELECT pg_c('f', 'const_error_nodoc', 'Код ошибки поиска статьи');

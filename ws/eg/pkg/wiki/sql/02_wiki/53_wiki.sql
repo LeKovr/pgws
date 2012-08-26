@@ -92,7 +92,7 @@ SELECT pg_c('f', 'doc_by_name', 'список статей, название к�
 CREATE OR REPLACE FUNCTION keyword_by_name (a_id ws.d_id32, a_string TEXT, a_max_rows ws.d_cnt DEFAULT 15) RETURNS SETOF text STABLE LANGUAGE 'sql' AS
 $_$
   -- a_id: ID wiki
-  SELECT name FROM wiki.doc_keyword_info WHERE group_id = $1 AND name ~ $2 ORDER BY name LIMIT $3;
+  SELECT DISTINCT name FROM wiki.doc_keyword_info WHERE group_id = $1 AND name ~* $2 ORDER BY name LIMIT $3;
 $_$;
 SELECT pg_c('f', 'keyword_by_name', 'список ключевых слов wiki, содержащих строку string');
 
@@ -120,7 +120,7 @@ $_$
     v_account_id ws.d_id;
     v_doc_id ws.d_id;
   BEGIN
-    v_account_id := (acc.profile(a__sid,'')).id;
+    v_account_id := (acc.profile(a__sid)).id;
     IF v_account_id IS NULL THEN
       RAISE EXCEPTION 'unknown account'; -- TODO: ERRORCODE from acc.
     END IF;

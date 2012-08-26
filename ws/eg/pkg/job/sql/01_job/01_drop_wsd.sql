@@ -25,11 +25,15 @@ DELETE FROM wsd.prop_value WHERE pkg = :'PKG';
 DELETE FROM wsd.prop_owner WHERE pkg = :'PKG';
 DELETE FROM wsd.prop_group WHERE pkg = :'PKG';
 
+DELETE FROM ws.prop                 WHERE pkg = :'PKG';
+UPDATE ws.prop SET pogc_list = ws.array_remove(pogc_list::text[], 'job') WHERE 'job' = ANY(pogc_list);
+
 /* ------------------------------------------------------------------------- */
 DROP TABLE wsd.job;
 DROP TABLE wsd.job_todo;
 DROP TABLE wsd.job_past;
 DROP TABLE wsd.job_dust;
 
+DROP SEQUENCE wsd.job_seq;
 /* ------------------------------------------------------------------------- */
 DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';

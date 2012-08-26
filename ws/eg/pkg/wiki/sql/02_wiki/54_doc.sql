@@ -136,7 +136,7 @@ $_$
     v_account_id ws.d_id;
     v_revision ws.d_id;
   BEGIN
-    v_account_id := (acc.profile(a__sid,'')).id;
+    v_account_id := (acc.profile(a__sid)).id;
     IF v_account_id IS NULL THEN
       RAISE EXCEPTION 'unknown account'; -- TODO: ERRORCODE
     END IF;
@@ -189,7 +189,7 @@ $_$
     v_account_id ws.d_id;
     v_revision ws.d_id;
   BEGIN
-    v_account_id := (acc.profile(a__sid,'')).id;
+    v_account_id := (acc.profile(a__sid)).id;
     IF v_account_id IS NULL THEN
       RAISE EXCEPTION 'unknown account'; -- TODO: ERRORCODE
     END IF;

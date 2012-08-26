@@ -30,6 +30,12 @@ INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
 , ('job',   1,  'ws.daemon.mgr.listen.stat',            'job_stat')
 , ('job',   1,  'ws.daemon.mgr.listen.reload',          'job_reload')
 , ('job',   1,  'ws.daemon.mgr.reload_key',             'job_secret_reload')
-, ('job',   1,  'ws.daemon.mgr.sql.stat_load',          'SELECT job.mgr_stat_load(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-, ('job',   1,  'ws.daemon.mgr.sql.error_load',         'SELECT job.mgr_error_load(?, ?, ?, ?, ?)')
+, ('job',   1,  'ws.daemon.startup.pm.n_processes',     '5')
+
+, ('fe',    1,  'ws.daemon.log.syslog.job.default',     '6')
+, ('fe',    1,  'ws.daemon.log.syslog.job.call',        NULL)
+, ('fe',    1,  'ws.daemon.log.syslog.job.sid',         NULL)
+, ('fe',    1,  'ws.daemon.log.syslog.job.acl',         NULL)
+, ('fe',    1,  'ws.daemon.log.syslog.job.cache',       NULL)
+, ('fe',    1,  'ws.daemon.log.syslog.job.validate',    NULL)
 ;

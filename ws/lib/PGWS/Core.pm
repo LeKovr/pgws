@@ -154,6 +154,7 @@ sub run {
   my $session = {};
   if ($sid) {
     $session = $self->_call_meta($self->def_sid, $meta, $sid, $meta->{'ip'});
+    return $self->_rpc_error($meta, 'bad_sid') unless ($session->{'sid'});
   }
   $meta->setsid($session->{'sid'}); # sid после валидации or undef
   if (!$lang and $session->{'lang'}) {
@@ -242,6 +243,7 @@ sub _process {
   if ($class->{'id_count'}) {
     for my $i (0..$class->{'id_count'} - 1) {
       my $k = 'id'.($i || '');
+      return $self->_rpc_error($meta, 'bad_args') unless defined($params->{$k});
       $acl_params{$k} = $params->{$k};
     }
   }
@@ -257,7 +259,7 @@ sub _process {
   # TODO: добавить acl в res->{'meta'}
 
   unless(defined($acl) or $check_mode == 2) {
-    return $self->_rpc_error($meta, 'ws_no_acc', $args);
+    return $self->_rpc_error($meta, 'ws_no_acc');
   } elsif (defined($acl) and $acl == 0) {
     # нет такого объекта
     $res->{'result'} = { 'error' => [ $self->_app_error($meta, 'Y0010') ] };
@@ -315,9 +317,10 @@ sub _process {
   if (exists($res->{'result'}) and exists($res->{'result'}{'data'})) {
     $res->{'success'} = 'true';
     $meta->dump({'call_ok' => $res });
-    if ($mtd_def->{'is_write'} and $mtd_def->{'code'} eq $dbc->config('be.acl_trigger')) {
+    my $mask = '^'.$dbc->config('be.acl_trigger').'$';
+    if ($mtd_def->{'is_write'} and $mtd_def->{'code'} =~ /$mask/) {
       # успешное выполнение авторизации, надо сбросить кэш для def_sid($meta->{'cook'})
-      $self->_call_meta($self->def_uncache, $meta, $self->def_sid, $meta->{'cook'});
+      $self->_call_meta($self->def_uncache, $meta, $self->def_sid, $meta->{'sid'});
     }
   } else {
     $meta->dump({'call_error' => $res });
@@ -551,7 +554,7 @@ sub _validate_field {
       return $v;
     }
     unless ($arg_def->{'allow_null'}) {
-      push @$errors, $self->_app_error($meta,'Y0001', $code);
+      push @$errors, $self->_app_error($meta, 'Y0001', $code);
       return;
     } elsif ($is_base) {
       return;

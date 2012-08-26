@@ -5,9 +5,9 @@
 <form id="form2" onsubmit="return false;">
 <div id="form2___err" style="color:red"></div>
 ID:<input type="text" name="id" size="3" value="2">
-<div id="form2_id_err" style="color:red; height:15px"></div>
-<p id="form2_result" style="height:15px"></p>
 <button id="send" onClick="form2send();">Get class</button>
+<div id="form2_id_err" style="color:red; height:15px"></div>
+<div id="form2_result" style="height:15px"></div>
 </form>
 <script type="text/javascript">
 //<![CDATA[

@@ -24,15 +24,15 @@
 SET LOCAL search_path = app, ws, i18n_def, public;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION const_error_forbidden() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION const_error_forbidden() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT '0021'::TEXT
+  SELECT 'Y0021'::d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_forbidden', 'Константа: ошибка доступа уровня приложения');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION const_error_notfound() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION const_error_notfound() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT '0021'::TEXT
+  SELECT 'Y0021'::d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_notfound', 'Константа: ошибка поиска уровня приложения');

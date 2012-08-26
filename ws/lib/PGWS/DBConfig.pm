@@ -25,21 +25,21 @@ use DBI;
 use PGWS;
 use PGWS::Utils;
 
-use constant ROOT               => ($ENV{PGWS_ROOT} || '');   # PGWS root dir
-use constant DB_CONNECT         => ($ENV{PGWS_DB_CONNECT});   # DB connect string
+use constant ROOT               => ($ENV{'PGWS_ROOT'} || '');               # PGWS root dir
+use constant DB_CONNECT         => ($ENV{'PGWS_DB_CONNECT'});               # DB connect string
 
-use constant PROCESS_PREFIX     => ($ENV{PGWS_PROCESS_PREFIX} || 'pgws');   # PGWS process prefix
+use constant PROCESS_PREFIX     => ($ENV{'PGWS_PROCESS_PREFIX'} || 'pgws'); # PGWS process prefix
 
-use constant POGC               => 'db';                      # Property Owner Group Code
-use constant POID               => ($ENV{PGWS_DB_POID} or 1); # Property Owner ID
+use constant POGC               => 'db';                                    # Property Owner Group Code
+use constant POID               => ($ENV{'PGWS_DB_POID'}        or 1);      # Property Owner ID
 
-use constant LOG_CONNECT        => ($ENV{PGWS_DB_LOG_CONNECT});
+use constant LOG_CONNECT        => ($ENV{'PGWS_DB_LOG_CONNECT'});
 
-use constant PROP_FUNC          => ($ENV{PGWS_DB_PROP_FUNC} or 'ws.prop_group_value_list(?, ?, ?, FALSE, NULL)');
-use constant PROP_PREFIX        => ($ENV{PGWS_DB_PROP_PREFIX} or 'ws.daemon');
+use constant PROP_FUNC          => ($ENV{'PGWS_DB_PROP_FUNC'}   or 'ws.prop_group_value_list(?, ?, ?, FALSE, NULL)');
+use constant PROP_PREFIX        => ($ENV{'PGWS_DB_PROP_PREFIX'} or 'ws.daemon');
 
-use constant SET_APPNAME        => ($ENV{PGWS_DB_SET_APPNAME} or 0);
-use constant SQL_APPNAME        => ($ENV{PGWS_DB_SQL_APPNAME} or 'SET application_name = \'%s\'');
+use constant SET_APPNAME        => ($ENV{'PGWS_DB_SET_APPNAME'} or 0);
+use constant SQL_APPNAME        => ($ENV{'PGWS_DB_SQL_APPNAME'} or 'SET application_name = \'%s\'');
 
 use constant SQL_SELECT_FORMAT  => 'SELECT * FROM %s';
 

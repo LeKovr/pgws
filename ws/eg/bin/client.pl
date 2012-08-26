@@ -28,14 +28,21 @@ use strict;
 use JSON::RPC::Client;
 use Data::Dumper;
 
-my $url = 'http://www.test.local/api/';
+# SSL:
+# 1. Install LWP::Protocol::https
+# 2. If server uses Self-Signed server cert, call:
+# PERL_LWP_SSL_VERIFY_HOSTNAME=0 perl client.pl
+
+#my $url = 'https://www.pgws.local/api/';
+
+my $url = 'http://www.pgws.local/api/';
 
 #----------------------------------------------------------------------
 # End of config
 #----------------------------------------------------------------------
+our $DEBUG = $ENV{'DEBUG'} || 0; # выводить промежуточные результаты
 
 my $client = new JSON::RPC::Client;
-my $sid = shift;
 
 # http://www.perlmonks.org/?node_id=759457
 $Data::Dumper::Useqq = 1;
@@ -57,7 +64,7 @@ sub out {
            print "Error : ", Dumper($obj, $res->error_message);
        }
        else {
-           print Dumper($obj, $res->result);
+           print Dumper($obj, $res->result) if ($DEBUG);
        }
     }
     else {
@@ -75,41 +82,69 @@ my $object1 = {
 };
 
 my $res = $client->call( $url, $object1);
-print '333 + 444:', "\n";
 out ($client, $object1, $res);
+print '333 + 444 = ', $res->result->{'data'}, "\n";
 
 #----------------------------------------------------------------------
 print '-' x 60, "\n";
 
 my $object2 = {
   jsonrpc => '2.0',
-  method => 'company.billing_info',
+  method => 'acc.login',
+  id => $$,
+  params => { 'login' => 'admin', 'psw' => 'pgws' }
+};
+$res = $client->call( $url, $object2);
+out ($client, $object2, $res);
+my $sid = $res->result->{'data'}{'sid'};
+print "Logged in with SID = $sid\n";
+
+
+#----------------------------------------------------------------------
+print '-' x 60, "\n";
+
+my $object3 = {
+  jsonrpc => '2.0',
+  method => 'acc.profile',
   id => $$,
   sid => $sid,
-  params => { 'id' => 270 }
 };
-if ($sid) {
-    $res = $client->call( $url, $object2);
-    print "Authorised req with sid=$sid:\n";
-    out ($client, $object2, $res);
-} else {
-    print "Call $0 <correct_sid> to see more\n";
-}
+$res = $client->call( $url, $object3);
+$DEBUG=1;
+out ($client, $object3, $res);
+$DEBUG = $ENV{'DEBUG'} || 0;
 #----------------------------------------------------------------------
 print '-' x 60, "\n";
 
-$object2->{'params'}{'id'}='4';
-$res = $client->call( $url, $object2);
-print "Authorised req with sid=$sid and unknown company_id:\n";
-out ($client, $object2, $res);
+my $object3 = {
+  jsonrpc => '2.0',
+  method => 'acc.logout',
+  id => $$,
+  sid => $sid,
+};
+$res = $client->call( $url, $object3);
+out ($client, $object3, $res);
+print "Logged out\n" if ($res->result->{'data'} == 1);
 
 #----------------------------------------------------------------------
 print '-' x 60, "\n";
 
-$object2->{'method'} = 'unknown';
-$res = $client->call( $url, $object2);
-print "System error with full response: \n";
-print Dumper($object2, $res->content);
+exit(1) unless ($DEBUG);
+
+my $object3 = {
+  jsonrpc => '2.0',
+  method => 'acc.profile',
+  id => $$,
+  sid => $sid,
+};
+$res = $client->call( $url, $object3);
+print "Logged out error example:\n";
+out ($client, $object3, $res);
+
+delete $object3->{'sid'};
+$res = $client->call( $url, $object3);
+print "Anonymous error example:\n";
+out ($client, $object3, $res);
 
 #----------------------------------------------------------------------
 print '-' x 60, "\n";

@@ -16,6 +16,8 @@
     "TM_CMD": "",
     "TM_DEBUG" : 1,
     "TRACE_DIE" : 1,
+    "JOB_AUTH_LOGIN": "pgws-job-service",
+    "JOB_AUTH_PSW" : "change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql",
   },
   "inactive": {
     "JOB_DEBUG": 1,

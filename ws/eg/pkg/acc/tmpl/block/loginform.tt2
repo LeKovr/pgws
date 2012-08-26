@@ -40,7 +40,7 @@ function formSend(id, action) {
 };
 
 var formOK = function(formid, res) {
-  $('#status').html('[% l("Добро пожаловать") %]' + ', ' + res.name);
+  $('#status').html('[% l("Добро пожаловать") %]' + ', ' + res.account_name);
 [%
   IF page.code == 'login';
   root_page = uri(code => 'main');

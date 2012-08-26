@@ -23,10 +23,13 @@
 /* ------------------------------------------------------------------------- */
 
 \set SID '\'; \''
+\set LOGIN admin
 
 /* ------------------------------------------------------------------------- */
-SELECT login, status_id, email, psw FROM acc.login(:SID,'127.0.0.1','admin', (SELECT psw FROM wsd.account WHERE login='admin'));
+SELECT ws.test('login');
+SELECT ip, status_id, account_id, role_id, account_name, role_name FROM acc.login('127.0.0.1', :'LOGIN', (SELECT psw FROM wsd.account WHERE login=:'LOGIN'), :SID);
 
+SELECT ws.test('wk');
 SELECT wiki.id_by_code('wk') IS NOT NULL AS group_exists;
 
 /* ------------------------------------------------------------------------- */

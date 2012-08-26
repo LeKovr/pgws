@@ -52,3 +52,11 @@ CREATE OR REPLACE VIEW doc_keyword_info AS SELECT
   FROM wsd.doc d
     JOIN wsd.doc_keyword dk USING (id)
 ;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW doc_file_info AS SELECT
+  d.id
+, df.*
+  FROM wsd.doc_file d
+    JOIN wsd.file df USING (file_id)
+;

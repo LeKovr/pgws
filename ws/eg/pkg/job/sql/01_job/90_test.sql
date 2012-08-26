@@ -23,7 +23,23 @@
 /* ------------------------------------------------------------------------- */
 \set SID '\'; \''
 
-SELECT ws.test('job_empty');
+SELECT ws.test('job_single_server');
+
+SELECT
+  job.create(job.handler_id('job.today'), NULL, -2, '2012-08-05') > 0 AS "today created"
+  , job.create(job.handler_id('job.stop'), NULL, -2, '2012-08-14') > 0 AS "stop created"
+;
+SELECT job.server(-1);
+
+SELECT validfrom, handler_id, status_id, arg_id, arg_date, arg_num, arg_more, arg_id2, arg_date2, arg_id3
+  FROM wsd.job_dust
+  ORDER BY id
+;
+
+SELECT validfrom, handler_id, status_id, arg_id, arg_date, arg_num, arg_more, arg_id2, arg_date2, arg_id3
+  FROM wsd.job
+  ORDER BY id
+;
 
 /*
 
@@ -38,6 +54,16 @@ select * from job.mgr_error;
 select job.mgr_test_event(1000, 1100);
 
 
+select
+  job.create(job.handler_id('job.today'), null, -2, '2012-08-05') > 0
+  , job.create(job.handler_id('job.stop'), null, -2, '2012-08-14') > 0
+;
+
+
+
+
+
+select job.create(job.handler_id('acc.mailtest'), null, -2, '2012-08-16');
 
 -- отправить команду рестарта процессов
 SELECT pg_notify('job_reload', ws.prop_value('job',1,'ws.daemon.mgr.reload_key'));

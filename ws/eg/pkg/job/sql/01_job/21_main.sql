@@ -21,6 +21,18 @@
 */
 
 /* ------------------------------------------------------------------------- */
+CREATE TABLE cron (
+  is_active bool DEFAULT TRUE PRIMARY KEY
+, run_at  TIMESTAMP NOT NULL
+, prev_at TIMESTAMP
+);
+SELECT pg_c('r', 'cron',  'Время старта cron')
+, pg_c('c', 'cron.is_active', 'Активный крон')
+, pg_c('c', 'cron.run_at',    'Время последнего запуска')
+, pg_c('c', 'cron.prev_at',   'Время предыдущего запуска')
+;
+
+/* ------------------------------------------------------------------------- */
 CREATE TABLE status (
   id              d_id32    PRIMARY KEY
 , can_create      BOOL      NOT NULL
@@ -30,25 +42,25 @@ CREATE TABLE status (
 , anno            d_text    NOT NULL
 );
 SELECT pg_c('r', 'status',  'Статус')
-, pg_c('c', 'status.id',   'ID статуса')
-, pg_c('c', 'status.can_create', 'Допустим при создании')
-, pg_c('c', 'status.can_run', 'Допустим при выполнении')
-, pg_c('c', 'status.can_arc', 'Допустим при архивации')
-, pg_c('c', 'status.name', 'Название')
-, pg_c('c', 'status.anno', 'Аннотация')
+, pg_c('c', 'status.id',          'ID статуса')
+, pg_c('c', 'status.can_create',  'Допустим при создании')
+, pg_c('c', 'status.can_run',     'Допустимо выполнение')
+, pg_c('c', 'status.can_arc',     'Допустима архивация')
+, pg_c('c', 'status.name',        'Название')
+, pg_c('c', 'status.anno',        'Аннотация')
 ;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE srv_error (
   created_at      TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
 , job_id          INTEGER NOT NULL
-, exit_code       INTEGER NOT NULL
+, status_id       INTEGER NOT NULL
 , exit_text       TEXT NOT NULL
 );
 SELECT pg_c('r', 'srv_error',       'Ошибки выполнения job.srv')
 , pg_c('c', 'srv_error.created_at', 'Момент возникновения')
 , pg_c('c', 'srv_error.job_id',     'ID задачи')
-, pg_c('c', 'srv_error.exit_code',  'Код ошибки')
+, pg_c('c', 'srv_error.status_id',  'ID статуса завершения')
 , pg_c('c', 'srv_error.exit_text',  'Текст ошибки')
 ;
 
@@ -63,69 +75,48 @@ SELECT pg_c('r', 'arg_type',  'Тип аргумента')
 ;
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE run_type (
+CREATE TABLE handler (
   id              d_id32    PRIMARY KEY
-, name            d_string  NOT NULL
-);
-SELECT pg_c('r', 'run_type',  'Тип запуска')
-, pg_c('c', 'run_type.id',    'ID типа')
-, pg_c('c', 'run_type.name',  'Название типа')
-;
-/* ------------------------------------------------------------------------- */
-CREATE TABLE category ( -- jq.type
-  code            d_code    PRIMARY KEY
 , pkg             d_string  NOT NULL DEFAULT ws.pg_cs() REFERENCES ws.pkg
+, code            d_code    NOT NULL
+, def_prio        d_id      NOT NULL
+, def_status_id   d_id32    NOT NULL DEFAULT job.const_status_id_ready() REFERENCES status
+, uk_bits         d_bitmask NOT NULL DEFAULT 0
+, is_sql          bool      NOT NULL DEFAULT TRUE
+, next_handler_id d_id32    REFERENCES handler
+, arg_date_type   d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
+, arg_id_type     d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
+, arg_num_type    d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
+, arg_more_type   d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
+, arg_date2_type  d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
+, arg_id2_type    d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
+, arg_id3_type    d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
+, dust_days       d_id32    NOT NULL DEFAULT 0
+, is_run_allowed  bool      NOT NULL DEFAULT TRUE
+, is_todo_allowed bool      NOT NULL DEFAULT TRUE
 , name            d_string  NOT NULL
+, CONSTRAINT handler_uk_type_id_code UNIQUE (pkg, code)
 );
-SELECT pg_c('r', 'category',  'Категория')
-, pg_c('c', 'category.code',  'Код категории')
-, pg_c('c', 'category.pkg',   'Код пакета')
-, pg_c('c', 'category.name',  'Название категории')
+SELECT pg_c('r', 'handler',  'Класс обработчика')
+, pg_c('c', 'handler.id',               'ID класса')
+, pg_c('c', 'handler.pkg',              'Код пакета')
+, pg_c('c', 'handler.code',             'символьный код класса')
+, pg_c('c', 'handler.def_prio',         'приоритет по умолчанию')
+, pg_c('c', 'handler.def_status_id',    'статус по умолчанию')
+, pg_c('c', 'handler.uk_bits',          'маска аргументов, которые должны быть уникальны')
+, pg_c('c', 'handler.is_sql',           'обработчик - метод БД (иначе - метод API)')
+, pg_c('c', 'handler.next_handler_id',  'ID обработчика задачи, создаваемой при успехе выполнения текущей')
+, pg_c('c', 'handler.arg_date_type',    'домен значений аргумента arg_date')
+, pg_c('c', 'handler.arg_id_type',      'домен значений аргумента arg_id')
+, pg_c('c', 'handler.arg_num_type',     'домен значений аргумента arg_num')
+, pg_c('c', 'handler.arg_more_type',    'домен значений аргумента arg_more')
+, pg_c('c', 'handler.arg_date2_type',   'домен значений аргумента arg_date2')
+, pg_c('c', 'handler.arg_id2_type',     'домен значений аргумента arg_id2')
+, pg_c('c', 'handler.arg_id3_type',     'домен значений аргумента arg_id3')
+, pg_c('c', 'handler.dust_days',        'через сколько дней удалять из dust (0 - перемещать в past)')
+, pg_c('c', 'handler.is_run_allowed',   'выполнение задач класса разрешено')
+, pg_c('c', 'handler.is_todo_allowed',  'создание задач класса в wsd.job_todo разрешено')
+, pg_c('c', 'handler.name',             'название класса')
 ;
-
-/* ------------------------------------------------------------------------- */
-CREATE TABLE class (
-  id              d_id32    PRIMARY KEY                   -- уникальный ID класса
-, category_code   d_code    NOT NULL REFERENCES category  -- категория обработчика
-, def_prio        d_id32    NOT NULL DEFAULT 1            -- приоритет по умолчанию
-, def_status_id   d_id32    NOT NULL REFERENCES status    -- статус по умолчанию
-, run_type        d_id32    NOT NULL REFERENCES run_type  -- режим запуска
-, uk_bits         d_bitmask NOT NULL DEFAULT 0            -- маска аргументов, которые должны быть уникальны
-, code            d_code    NOT NULL                      -- символьный код класса
-, sub             d_code    NOT NULL                      -- символьный код обработчика
-, notify_class_id d_id32    REFERENCES class              -- ID класса задачи уведомления о выполнении  текущей
-, arg_id_type     d_id32    NOT NULL REFERENCES arg_type  -- домен значений аргумента
-, arg_date_type   d_id32    NOT NULL REFERENCES arg_type  -- домен значений аргумента
-, arg_num_type    d_id32    NOT NULL REFERENCES arg_type  -- домен значений аргумента
-, arg_more_type   d_id32    NOT NULL REFERENCES arg_type  -- домен значений аргумента
-, arg_id2_type    d_id32    NOT NULL REFERENCES arg_type  -- домен значений аргумента
-, arg_date2_type  d_id32    NOT NULL REFERENCES arg_type  -- домен значений аргумента
-, arg_id3_type    d_id32    NOT NULL REFERENCES arg_type  -- домен значений аргумента
-, dust_days       d_id32    NOT NULL DEFAULT 0            -- через сколько дней удалять из dust (0 - перемещать в past)
-, name            d_string  NOT NULL                      -- название класса
-, CONSTRAINT class_uk_type_id_code UNIQUE (category_code, code)
-);
-SELECT pg_c('r', 'class',  'Класс задач')
-, pg_c('c', 'class.id',              'ID класса')
-, pg_c('c', 'class.category_code',   'категория обработчика')
-, pg_c('c', 'class.def_prio',        'приоритет по умолчанию')
-, pg_c('c', 'class.def_status_id',   'статус по умолчанию')
-, pg_c('c', 'class.run_type',        'тип запуска обработчика')
-, pg_c('c', 'class.uk_bits',         'маска аргументов, которые должны быть уникальны')
-, pg_c('c', 'class.code',            'символьный код класса')
-, pg_c('c', 'class.sub',             'символьный код обработчика')
-, pg_c('c', 'class.notify_class_id', 'ID класса задачи уведомления о выполнении текущей задачи')
-, pg_c('c', 'class.arg_id_type',     'домен значений аргумента arg_id')
-, pg_c('c', 'class.arg_date_type',   'домен значений аргумента arg_date')
-, pg_c('c', 'class.arg_num_type',    'домен значений аргумента arg_num')
-, pg_c('c', 'class.arg_more_type',   'домен значений аргумента arg_more')
-, pg_c('c', 'class.arg_id2_type',    'домен значений аргумента arg_id2')
-, pg_c('c', 'class.arg_date2_type',  'домен значений аргумента arg_date2')
-, pg_c('c', 'class.arg_id3_type',    'домен значений аргумента arg_id3')
-, pg_c('c', 'class.dust_days',       'через сколько дней удалять из dust (0 - перемещать в past)')
-, pg_c('c', 'class.name',            'название класса')
-;
-
-
 
 /* ------------------------------------------------------------------------- */

@@ -32,13 +32,13 @@ SELECT * FROM wsd.role WHERE id = acc.const_role_id_guest();
 SELECT * FROM wsd.role WHERE id = acc.const_role_id_user();
 
 SELECT ws.test('login');
-SELECT login, status_id, email, psw FROM acc.login(:SID, '127.0.0.1',:'LOGIN', (SELECT psw FROM wsd.account WHERE login=:'LOGIN'));
+SELECT ip, status_id, account_id, role_id, account_name, role_name FROM acc.login('127.0.0.1',:'LOGIN', (SELECT psw FROM wsd.account WHERE login=:'LOGIN'), :SID);
 
 SELECT ws.test('session');
-SELECT ip,sid FROM wsd.session WHERE ip='127.0.0.1' AND sid=:SID AND deleted_at IS NULL;
+SELECT ip,sid FROM acc.sid_info(:SID, '127.0.0.1');
 
 SELECT ws.test('profile');
-SELECT id, status_id, login, email, psw, name, status_name FROM acc.profile(:SID, '127.0.0.1');
+SELECT id, status_id, login, psw, name, status_name FROM acc.profile(:SID);
 
 SELECT ws.test('logout');
-SELECT acc.logout(:SID,'127.0.0.1');
+SELECT acc.logout(:SID);

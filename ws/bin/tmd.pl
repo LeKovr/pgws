@@ -24,16 +24,16 @@ use lib 'lib';
 use PGWS;
 use PGWS::Daemon;
 
-use constant ROOT               => ($ENV{PGWS_ROOT} || '');   # PGWS root dir
+use constant ROOT             => ($ENV{'PGWS_ROOT'} || '');   # PGWS root dir
 
-use constant POGC     => 'tm';                      # Property Owner Group Code
-use constant POID     => ($ENV{PGWS_FCGI_POID} or 1); # Property Owner ID
+use constant POGC             => 'tm';                      # Property Owner Group Code
+use constant POID             => ($ENV{'PGWS_FCGI_POID'} or 1); # Property Owner ID
 
-use constant CMD        => ($ENV{PGWS_TM_CMD});
+use constant CMD              => ($ENV{'PGWS_TM_CMD'});
 
-use constant DEBUG     => ($ENV{PGWS_TM_DEBUG} or 0);
+use constant DEBUG            => ($ENV{'PGWS_TM_DEBUG'} or 0);
 
-use constant EVENT_REQUIRED => ($ENV{PGWS_TM_EVENT_REQUIRED}); # Запускать cmd только по notify
+use constant EVENT_REQUIRED   => ($ENV{'PGWS_TM_EVENT_REQUIRED'}); # Запускать cmd только по notify
 
 #----------------------------------------------------------------------
 $| = 1;

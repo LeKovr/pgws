@@ -17,38 +17,49 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Данные таблиц из схемы wsd
+    Триггеры
 */
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.team (name, anno) VALUES
-  ('Users', '')
+CREATE TRIGGER
+  notify_oninsert
+  AFTER INSERT ON wsd.job
+  FOR EACH ROW
+  WHEN (NEW.status_id = job.const_status_id_ready())
+  EXECUTE PROCEDURE ws.tr_notify('job_event')
 ;
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.role (level_id, has_team, name, anno) VALUES
-  (1, false,  'Guest', '')
-, (1, false,  'Logged in', '')
-, (5, true,   'Any group member', '')
-, (6, true,   'Admins', '')
-, (6, false,  'Service', '')
-, (6, true,   'Readers', '')
-, (6, true,   'Writers', '')
+CREATE TRIGGER
+  notify_onupdate
+  AFTER UPDATE ON wsd.job
+  FOR EACH ROW
+  WHEN (OLD.status_id <> NEW.status_id
+   AND NEW.status_id IN (job.const_status_id_ready(), job.const_status_id_again()))
+  EXECUTE PROCEDURE ws.tr_notify('job_event')
 ;
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.role_team (team_id, role_id) VALUES
-  (1,3)
-, (1,4)
-, (1,5)
-, (1,6)
+CREATE TRIGGER
+  handler_id_update_forbidden
+  AFTER UPDATE ON wsd.job
+  FOR EACH ROW
+  WHEN (OLD.handler_id <> NEW.handler_id)
+  EXECUTE PROCEDURE ws.tr_exception('handler_id update is forbidden')
 ;
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.account (status_id, def_role_id, login, psw, name) VALUES
-  (acc.const_status_id_active(), 4, 'admin', acc.const_admin_psw_default(), 'Admin')
-, (acc.const_status_id_active(), 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job')
+CREATE TRIGGER
+  handler_id_update_forbidden
+  AFTER UPDATE ON wsd.job_todo
+  FOR EACH ROW
+  WHEN (OLD.handler_id <> NEW.handler_id)
+  EXECUTE PROCEDURE ws.tr_exception('handler_id update is forbidden')
 ;
+
+-- TODO: forbid direct insert/update into wsd.job*
+/* ------------------------------------------------------------------------- */
+

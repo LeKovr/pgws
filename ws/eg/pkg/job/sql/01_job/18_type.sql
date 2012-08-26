@@ -10,7 +10,7 @@ SET LOCAL search_path = job, ws, i18n_def, public;
 
 /* ------------------------------------------------------------------------- */
 CREATE TYPE t_attr AS (
-  class_id    INTEGER
+  handler_id  INTEGER
 , status_id   INTEGER
 , arg_id      INTEGER
 , arg_date    DATE
@@ -21,7 +21,7 @@ CREATE TYPE t_attr AS (
 , arg_id3     INTEGER
 );
 SELECT pg_c('t', 't_attr', 'Атрибуты задачи')
-, pg_c('c', 't_attr.class_id' , 'класс задачи (обработчика)')
+, pg_c('c', 't_attr.handler_id' , 'класс задачи (обработчика)')
 , pg_c('c', 't_attr.status_id', 'текущий статус')
 , pg_c('c', 't_attr.arg_id'   , 'аргумент id')
 , pg_c('c', 't_attr.arg_date' , 'аргумент date')

@@ -41,6 +41,7 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id) VALUES
 , ('wiki.doc_src',          :DID, 1, 3, 2)
 , ('wiki.doc_extra',        :DID, 1, 3, 3)
 , ('wiki.doc_link',         :DID, 1, 3, 7)
+, ('wiki.doc_file',         :DID, 1, 3, 7)
 , ('wiki.doc_diff',         :DID, 1, 3, 3)
 ;
 
@@ -54,6 +55,8 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write) V
 
 , ('wiki.doc_update_src',   :DID, 3, 1, 2, true)
 , ('wiki.doc_update_attr',  :DID, 3, 1, 2, true)
+, ('wiki.doc_file_add',     :DID, 3, 1, 3, true)
+, ('wiki.doc_file_del',     :DID, 3, 1, 2, true)
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, name, args_exam) VALUES

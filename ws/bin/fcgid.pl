@@ -27,8 +27,8 @@ use PGWS::Frontend;
 use PGWS::Frontend::CGI;
 
 use constant POGC     => 'fcgi';                      # Property Owner Group Code
-use constant POID     => ($ENV{PGWS_FCGI_POID} or 1); # Property Owner ID
-use constant SOCKET   => ($ENV{PGWS_FCGI_SOCKET} or 'back.test.local:9001');    # socket nginx forward to
+use constant POID     => ($ENV{'PGWS_FCGI_POID'}    or 1); # Property Owner ID
+use constant SOCKET   => ($ENV{'PGWS_FCGI_SOCKET'}  or 'back.test.local:9001');    # socket nginx forwards to
 #----------------------------------------------------------------------
 $| = 1;
 
@@ -54,7 +54,7 @@ sub init {
 #----------------------------------------------------------------------
 sub proc_loop {
   my ($self, $proc_manager, $req_env) = @_;
-  local @ENV{keys %$req_env}=values %$req_env;
+  local %ENV = %$req_env;
   my $req = PGWS::Frontend::CGI->new();
 #  $proc_manager->{'frontend'}->run($req);
   $self->{'frontend'}->run($req);

@@ -87,3 +87,40 @@ SELECT pg_c('r', 'wsd.doc_keyword', 'Ключевые слова')
   ,pg_c('c', 'wsd.doc_keyword.id', 'ID статьи')
   ,pg_c('c', 'wsd.doc_keyword.name', 'Слово')
 ;
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.file (
+  file_id         INTEGER      PRIMARY KEY /* добавлен file_ чтобы в join было удобно брать wsd.file.* */
+  , code          TEXT         NOT NULL
+  , name          TEXT         NOT NULL
+  , size          INTEGER      NOT NULL
+  , ctype         TEXT         NOT NULL DEFAULT 'application/unknown'
+  , csum          TEXT         NOT NULL
+  , link_cnt      INTEGER      NOT NULL DEFAULT 0
+  , created_by    INTEGER      NOT NULL REFERENCES wsd.account
+  , created_at    TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
+  , anno          TEXT
+);
+
+SELECT pg_c('r', 'wsd.file', 'Внешний файл')
+  ,pg_c('c', 'wsd.file.code', 'Код файла в хранилище nginx')
+  ,pg_c('c', 'wsd.file.name', 'Имя файла')
+  ,pg_c('c', 'wsd.file.ctype', 'Content type')
+  ,pg_c('c', 'wsd.file.csum', 'Контрольная сумма (sha1)')
+  ,pg_c('c', 'wsd.file.created_at', 'Момент загрузки/генерации')
+;
+
+CREATE SEQUENCE wsd.file_id_seq;
+ALTER TABLE wsd.file ALTER COLUMN file_id SET DEFAULT NEXTVAL('wsd.file_id_seq');
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.doc_file (
+  id            INTEGER       REFERENCES wsd.doc
+  , file_id     INTEGER       REFERENCES wsd.file
+  , CONSTRAINT  doc_file_pkey PRIMARY KEY (id, file_id)
+);
+SELECT pg_c('r', 'wsd.doc_file', 'Внешние файлы статьи wiki')
+  ,pg_c('c', 'wsd.doc_file.id', 'ID статьи')
+  ,pg_c('c', 'wsd.doc_file.file_id', 'ID файла')
+;
+

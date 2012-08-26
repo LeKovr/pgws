@@ -51,8 +51,6 @@ $_$
   END;
 $_$;
 
-
-
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_register_proarg_old(a_code ws.d_code) RETURNS ws.d_id32 VOLATILE LANGUAGE 'plpgsql' AS
 $_$
@@ -181,6 +179,7 @@ $_$
     RETURN v_id;
   END;
 $_$;
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_register_class(a_oid oid) RETURNS ws.d_id32 VOLATILE LANGUAGE 'plpgsql' AS
 $_$
@@ -244,3 +243,29 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION tr_notify (
+) RETURNS TRIGGER
+LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_channel TEXT;
+  BEGIN
+    v_channel := TG_ARGV[0];
+    PERFORM pg_notify(v_channel, NEW.id::TEXT);
+    RETURN NEW;
+  END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION tr_exception (
+) RETURNS TRIGGER
+LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_text TEXT;
+  BEGIN
+    v_text := TG_ARGV[0];
+    RAISE EXCEPTION '%', v_text;
+    RETURN NEW;
+  END;
+$_$;/* ------------------------------------------------------------------------- */

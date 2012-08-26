@@ -53,6 +53,7 @@ sub pm_exit {
   my ($this, $msg, $n) = FCGI::ProcManager::self_or_default(@_);
 
   if ($this->{'role'} eq 'manager') {
+    &{$this->{'_SHUTDOWN_SUB'}}($this) if ($this->{'_SHUTDOWN_SUB'});
     print STDERR 'RESULTS: ', Dumper($this);
     # remove in shell:
     # ipcs -m | grep 666 | while read a b c d ; do ipcrm -m $b ; done
@@ -61,6 +62,7 @@ sub pm_exit {
   $this->SUPER::pm_exit($msg, $n);
 }
 #----------------------------------------------------------------------
+
 1;
 
 __END__

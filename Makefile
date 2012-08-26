@@ -25,7 +25,16 @@ help:
 all: help
 usage: help
 
-install: test var pkg lib lib-pkg ctl setups tmpl masterconf installcomplete
+install: test data var pkg lib lib-pkg ctl setups tmpl masterconf installcomplete
+
+# ------------------------------------------------------------------------------
+
+data:
+	@echo "*** $@ ***"
+	pushd .. > /dev/null ; \
+[ -d data/upload ] || mkdir -p data/upload; \
+for p in {0..9} ; do [ -d data/upload/$$p ] || mkdir -m g+w data/upload/$$p ; done ; \
+popd > /dev/null
 
 # ------------------------------------------------------------------------------
 

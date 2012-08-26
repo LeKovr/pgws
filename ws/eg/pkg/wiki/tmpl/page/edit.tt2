@@ -6,6 +6,7 @@
   );
   meta.head.timepicker = 1;
   meta.head.autocomplete = 1;
+  meta.head.upload = 1;
 
   group_id = page.args.shift;
   group_code = page.args.shift;
@@ -349,3 +350,21 @@ $(document).ready(function(){
   });
 });
 </script>
+<style>
+  .ui-progressbar {
+  height:20px;
+}
+  .ui-progressbar-value {
+  height:18px;
+}
+.pblabel {
+  line-height: 1.9em;
+  position: absolute;
+  text-align: center;
+  width:150px;
+}
+</style>
+<div>
+  <input type='button' value='Загрузить файл' onclick='showBlock(this,"wiki.doc_file_add",[% doc_id %])' id='loadButton'>
+</div>
+

@@ -34,10 +34,10 @@ BEGIN
     RAISE EXCEPTION '%', ws.e_noaccess();
   ELSIF a = -3 THEN
     -- app form error
-    RAISE EXCEPTION '%', ws.error_str(app.const_error_forbidden()::ws.d_errcode, a::text);
+    RAISE EXCEPTION '%', ws.error_str(app.const_error_forbidden(), a::text);
   ELSIF a = -4 THEN
     -- app form field error
-    RAISE EXCEPTION '%', ws.perror_str(app.const_error_notfound()::ws.d_errcode, 'a', a::text);
+    RAISE EXCEPTION '%', ws.perror_str(app.const_error_notfound(), 'a', a::text);
   END IF;
 
   RETURN a + b;

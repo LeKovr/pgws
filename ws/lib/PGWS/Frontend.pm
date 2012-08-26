@@ -41,7 +41,6 @@ BEGIN {
 use constant ROOT               => ($ENV{PGWS_ROOT} || '');   # PGWS root dir
 use constant POGC               => 'fe';                      # Property Owner Group Code
 
-use constant COOKIE_MASK        => ($ENV{PGWS_FE_COOKIE_MASK});
 use constant DEBUG_IFACE        => ($ENV{PGWS_FE_DEBUG_IFACE} || 0);
 
 
@@ -96,19 +95,24 @@ sub new {
 sub run {
   my ($self, $req) = @_;
 
-  $req->fetch_cook(COOKIE_MASK);
   my $meta_cfg = $self->dbc->config('log');
   my $meta = PGWS::Meta->new($meta_cfg);
-  $meta->setip($req->user_ip);
-  $meta->setcook($req->cookie); # $cookie ...
-  if ($req->method eq 'OPTIONS') {
-    $req->options_header;
-  } elsif ($req->method eq 'POST' and $req->type =~m |application/json|) {
-    $self->process_post($meta, $req);
-  } elsif($req->uri =~ m|^_(.+)\.json$|) {
-    $self->process_direct($meta, $req, $1);
+
+  if ($req->method eq 'JOB') {
+    $self->process_job($meta, $req);
   } else {
-    $self->process_get($meta, $req);
+    $meta->{'sid_arg'} = $self->dbc->config('fe.sid_arg');
+    $meta->setip($req->user_ip);
+    $meta->setcook($req->cookie); # $cookie ...
+    if ($req->method eq 'OPTIONS') {
+      $req->options_header;
+    } elsif ($req->method eq 'POST' and $req->type =~m |application/json|) {
+      $self->process_post($meta, $req);
+    } elsif($req->uri =~ m|^_(.+)\.json$|) {
+      $self->process_direct($meta, $req, $1);
+    } else {
+      $self->process_get($meta, $req);
+    }
   }
 }
 
@@ -117,7 +121,7 @@ sub run {
 sub process_post {
   my ($self, $meta, $req) = @_;
 
-  my $data = $req->post_data;
+  my $data = $req->params;
   $meta->setsource('post');
   $meta->keyoff; # основной запрос - не от имени фронтенда
   #TODO: брать enc из входящей строки "application/json; charset=UTF-8"
@@ -133,19 +137,21 @@ sub process_post {
 sub process_direct {
   my ($self, $meta, $req, $method) = @_;
 
-  my $params = $req->get_data;
+  my $params = $req->params;
   $meta->setsource('post'); # dir
   $meta->debug('Direct req to %s', $method);
+  $meta->dump($req);
 
   my $ws = $self->ws;
-  $self->load_session($ws, $meta, $params);
-  $meta->keyoff; # основной запрос - не от имени фронтенда
-  my  $ret = $ws->run_prepared($meta, $method, $params);
+  my $session = $self->load_session($ws, $meta, $params);
+  $meta->keyoff; # остальные запросы - не от имени фронтенда
+  my $status = ($session->{'sid_error'})?'409 Conflict':'200 OK';
+  my $ret = $ws->run_prepared($meta, $method, $params);
   my $is_pretty;
   if ($req->accept =~ m|application/json|) {
-    $req->header('application/json; '.$meta->charset, '200 OK');
+    $req->header('application/json; '.$meta->charset, $status);
   } else {
-    $req->header('text/plain; '.$meta->charset, '200 OK');
+    $req->header('text/plain; '.$meta->charset, $status);
     $is_pretty = 1;
   }
   my $json = PGWS::Utils::json_out_utf8($ret, $is_pretty);
@@ -153,9 +159,56 @@ sub process_direct {
     # JSONP request
     $json=$params->{'callback'}."($json)";
   }
-  $req->print($json); # _utf8, иначе mod_perl портит utf
+  $req->print($json);
 }
 
+#----------------------------------------------------------------------
+# Обработка GET запроса на вывод страницы
+sub process_job {
+  my ($self, $meta, $req) = @_;
+
+  my $ws = $self->ws;
+  my $dbc = $self->dbc;
+  $meta->setsource('job');
+  $meta->dump($req->params);
+
+  $meta->keyoff; # остальные запросы - не от имени фронтенда
+  $meta->setsid(delete $req->params->{'REQUEST_SID'});
+  $meta->setip('0.0.0.0');
+  $meta->setlang($dbc->config('lang.default'));
+  loc_lang($meta->{'lang'});
+
+  my $status = '200 OK';
+  my $errors = [];
+  my $resp;
+  my $call;
+  unless ($req->prefix) {
+    #internal call (login/logout)
+    $meta->debug('internal call for %s', $req->uri);
+    $call = $dbc->config('fe.def.'.$req->uri);
+    $resp = $self->api($ws, $errors, $meta, undef, $call, $req->params);
+  } else {
+    # call job template
+    $meta->debug('call %s.%s', $req->prefix, $req->uri);
+    my $vars = {
+      'resp'     => {},
+      %{$self->tmpl_vars($ws, $errors, $meta, 'http', '/api', '', $dbc->config('fe.def.code'))}
+    }; # TODO: get from dbc values of 'http', '/api'
+    #$meta->setsource('tmpl');
+    my $jobs   = $dbc->config('fe.tmpl.jobs');
+    my $ext     = $dbc->config('fe.tmpl.ext');
+    my $call = $req->prefix.'/'.$req->uri;
+    my $out = '';
+    $self->template->process($jobs.$call.$ext, $vars, \$out) or $status = '500 '.$self->template->error();
+    $resp = $vars->{'resp'};
+    $meta->dump($vars);
+  }
+  $meta->debug('request status: %s', $status);
+  $meta->dump({ 'resp' => $resp});
+  my $json = PGWS::Utils::json_out_utf8({'result' => $resp});
+  $req->print("$status\n\n");
+  $req->print($json);
+}
 #----------------------------------------------------------------------
 # Обработка GET запроса на вывод страницы
 sub process_get {
@@ -243,12 +296,12 @@ sub response {
 
   my $dbc = $self->dbc;
 
-  my $params = $req->get_data;
+  my $params = $req->params;
   my $errors = $resp->{'errors'};
 
   my $session = $self->load_session($ws, $meta, $params, $errors);
   my $sid = $session->{'sid'}; # value or undef
-  my $sid_name = $dbc->config('fe.sid_arg');
+  my $sid_name = $meta->{'sid_arg'};
   my $have_sid_arg = ($sid_name and $sid);
 
   $session->{'sid_arg'} = $have_sid_arg?"?$sid_name=$sid":'';
@@ -277,33 +330,30 @@ sub response {
     $session->{'sid_pre'} .= 'lang='.$session->{'lang'}.'&';
   }
   my $tmpl_meta = { 'status' => '200', 'html_headers' => [], 'head' => {} };
-  my $vars = {
-    'api'         => sub { api($self, $ws, $errors, $meta, undef, @_) },
-    'uri'         => sub { api($self, $ws, $errors, $meta, undef, $dbc->config('fe.def.code'), @_); },
-    'uri_allowed' => sub { acl($self, $ws, $errors, $meta, $session, @_) },
-    'l'           => sub { i18n($self, $ws, $errors, $meta->{'lang'}, @_) },
-    'uri_mk'      => sub { PGWS::Utils::uri_mk($req->proto, $req->prefix, $stg_args, @_) },
-    'uri_mk_form' => sub { PGWS::Utils::uri_mk_form($req->proto, $req->prefix, $stg_args, @_) },
-    'json'        => sub { PGWS::Utils::json_out(@_) },
-    'is_bit_set'  => sub { my ($a,$b) = @_; return ($a & $b) == $b; },
-    'req'  => $req->attrs,
-    'resp'  => $resp,
-    'page' => $page,
-    'get'  => $params,
-    'acl'  => $acl,
-    'meta' => $tmpl_meta,
-    'debug' => DEBUG_IFACE ? $meta->debug_level : 0,
-    'session' => $session,
-  };
 
+  my $vars = {
+    'uri_allowed' => sub { acl($self, $ws, $errors, $meta, $session, @_) },
+    'req'         => $req->attrs,
+    'page'        => $page,
+    'get'         => $params,
+    'acl'         => $acl,
+    'meta'        => $tmpl_meta,
+    'debug'       => DEBUG_IFACE ? $meta->debug_level : 0,
+    'session'     => $session,
+    'resp'        => $resp,
+    %{$self->tmpl_vars($ws, $errors, $meta, $req->proto, $req->prefix, $stg_args, $dbc->config('fe.def.code'))}
+  };
   unless ($req->method eq 'GET' or $req->method eq 'HEAD') {
     return ('405', 'Method Not Allowed', $vars);
   } elsif (!$page or !$page->{'tmpl'}) {
     return ('404', 'Not Found', $vars);
+  } elsif ($session->{'sid_error'}) {
+    return ('409', 'Conflict', $vars); #
   } elsif (!$acl) {
     return ('403', 'Forbidden', $vars); # необходимость авторизации определяется по !$acl
   }
   return ('200', 'OK', $vars, $page->{'tmpl'});
+
 }
 
 #----------------------------------------------------------------------
@@ -382,8 +432,8 @@ sub load_session {
   my $dbc = $self->dbc;
   my $lang_default = $dbc->config('lang.default');
   my $sid;
-  if ($dbc->config('fe.sid_arg')) {
-    $sid = delete $params->{$dbc->config('fe.sid_arg')}; # sid - только в session.sid
+  if ($meta->{'sid_arg'}) {
+    $sid = delete $params->{$meta->{'sid_arg'}}; # sid - только в session.sid
   } else {
     $sid = $meta->{'cook'}; # TODO: геттер или иначе брать
   }
@@ -397,6 +447,7 @@ sub load_session {
   my $session;
   if ($sid) {
     $session = $self->api($ws, $errors, $meta, 'sid', $dbc->config('fe.def.sid'));
+    $session->{'sid_error'} = (!$session->{'sid'} and $meta->{'sid_arg'}); # был передан некорректный sid и он сброшен
   } else {
     $session = { 'sid' => undef };
   }
@@ -418,6 +469,19 @@ sub load_session {
   return $session;
 }
 
+#----------------------------------------------------------------------
+sub tmpl_vars {
+  my ($self, $ws, $errors, $meta, $proto, $prefix, $stg_args, $def_code) = @_;
+  return {
+    'l'           => sub { i18n($self, $ws, $errors, $meta->{'lang'}, @_) },
+    'uri_mk'      => sub { PGWS::Utils::uri_mk($proto, $prefix, $stg_args, @_) },
+    'uri_mk_form' => sub { PGWS::Utils::uri_mk_form($proto, $prefix, $stg_args, @_) },
+    'json'        => sub { PGWS::Utils::json_out(@_) },
+    'is_bit_set'  => sub { my ($a,$b) = @_; return ($a & $b) == $b; },
+    'api'         => sub { api($self, $ws, $errors, $meta, undef, @_) },
+    'uri'         => sub { api($self, $ws, $errors, $meta, undef, $def_code, @_); },
+  }
+}
 1;
 
 __END__

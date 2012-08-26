@@ -35,9 +35,3 @@ INSERT INTO wsd.prop_owner (pogc, poid, sort, name) VALUES
 ;
 
 /* ------------------------------------------------------------------------- */
-UPDATE ws.prop SET pogc_list = array_append(pogc_list, 'job') WHERE code IN (
-  'ws.daemon.startup.pm.n_processes'
-, 'ws.daemon.startup.pm.die_timeout'
-, 'ws.daemon.mgr.listen_wait'
-, 'ws.daemon.mgr.listen.job'
-);

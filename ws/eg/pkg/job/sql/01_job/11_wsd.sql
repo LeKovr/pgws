@@ -28,7 +28,7 @@ CREATE TABLE wsd.job (
   id          INTEGER PRIMARY KEY         -- ID задачи
 , validfrom   TIMESTAMP(0)  NOT NULL      -- дата активации
 , prio        INTEGER NOT NULL            -- фактический приоритет
-, class_id    INTEGER NOT NULL            -- класс задачи (обработчика)
+, handler_id  INTEGER NOT NULL            -- ID обработчика
 , status_id   INTEGER NOT NULL            -- текущий статус
 , created_by  INTEGER                     -- id задачи/сессии, создавшей
 , waiting_for INTEGER                     -- id задачи, которую ждем
@@ -37,20 +37,19 @@ CREATE TABLE wsd.job (
 , arg_num     DECIMAL                     -- аргумент num
 , arg_more    TEXT                        -- аргумент more
 , arg_id2     INTEGER                     -- аргумент id2
-, arg_date2   DATE                        -- аргумент, 2я дата для периодов
+, arg_date2   DATE                        -- аргумент date2
 , arg_id3     INTEGER                     -- аргумент id3
-, created_at  TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP  -- время создания
+, created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP  -- время создания
 , run_pid     INTEGER                     -- pid выполняющего процесса
 , run_ip      INET                        -- ip хоста выполняющего процесса
-, run_at      TIMESTAMP(0)                -- время начала выполнения
-, exit_at     TIMESTAMP(0)                -- время завершения выполнения
-, exit_code   INTEGER NOT NULL DEFAULT 0  -- код завершения (битовая маска: 0-wait, 1-ignore)
+, run_at      TIMESTAMP                -- время начала выполнения
+, exit_at     TIMESTAMP                -- время завершения выполнения
 );
 SELECT pg_c('r', 'wsd.job',  'Задачи текущего дня')
 , pg_c('c', 'wsd.job.id'          , 'ID задачи')
 , pg_c('c', 'wsd.job.validfrom'   , 'дата активации')
 , pg_c('c', 'wsd.job.prio'        , 'фактический приоритет')
-, pg_c('c', 'wsd.job.class_id'    , 'класс задачи (обработчика)')
+, pg_c('c', 'wsd.job.handler_id'  , 'ID обработчика')
 , pg_c('c', 'wsd.job.status_id'   , 'текущий статус')
 , pg_c('c', 'wsd.job.created_by'  , 'id задачи/сессии, создавшей')
 , pg_c('c', 'wsd.job.waiting_for' , 'id задачи, которую ждем')
@@ -59,14 +58,13 @@ SELECT pg_c('r', 'wsd.job',  'Задачи текущего дня')
 , pg_c('c', 'wsd.job.arg_num'     , 'аргумент num')
 , pg_c('c', 'wsd.job.arg_more'    , 'аргумент more')
 , pg_c('c', 'wsd.job.arg_id2'     , 'аргумент id2')
-, pg_c('c', 'wsd.job.arg_date2'   , 'аргумент, 2я дата для периодов')
+, pg_c('c', 'wsd.job.arg_date2'   , 'аргумент date2')
 , pg_c('c', 'wsd.job.arg_id3'     , 'аргумент id3')
 , pg_c('c', 'wsd.job.created_at'  , 'время создания')
 , pg_c('c', 'wsd.job.run_pid'     , 'pid выполняющего процесса')
 , pg_c('c', 'wsd.job.run_ip'      , 'ip хоста выполняющего процесса')
 , pg_c('c', 'wsd.job.run_at'      , 'время начала выполнения')
 , pg_c('c', 'wsd.job.exit_at'     , 'время завершения выполнения')
-, pg_c('c', 'wsd.job.exit_code'   , 'код завершения (битовая маска: 0-wait, 1-ignore)')
 ;
 
 /* ------------------------------------------------------------------------- */
