@@ -25,8 +25,8 @@ INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
-  ('db',    1,  'ws.daemon.db.sql.0',                   E'SET datestyle TO \'German\'')
-
+  ('db',    1,  'ws.daemon.db.sql.0',                   $_$SET datestyle TO 'German'$_$)
+, ('db',    1,  'ws.daemon.db.sql.1',                   $_$SET timezone TO 'Europe/Moscow'$_$)
 , ('fcgi',  1,  'ws.daemon.startup.sock_wait',          NULL)
 
 -- , ('fe',    1,  'ws.daemon.fe.tmpl.layout_default',     'style01')
@@ -146,6 +146,9 @@ INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
 , ('be',    1,  'ws.daemon.be.error.bad_sid.code',      '-32005')
 , ('be',    1,  'ws.daemon.be.error.bad_sid.message',   'SID error')
 , ('be',    1,  'ws.daemon.be.error.bad_sid.data',      'Incorrect SID value')
+, ('be',    1,  'ws.daemon.be.error.bad_realm.code',    '-32006')
+, ('be',    1,  'ws.daemon.be.error.bad_realm.message', 'Realm error')
+, ('be',    1,  'ws.daemon.be.error.bad_realm.data',    'Incorrect Realm code')
 , ('be',    1,  'ws.daemon.be.error.ws_bad_bt.code',    '-32011')
 , ('be',    1,  'ws.daemon.be.error.ws_bad_bt.message', 'Base type error')
 , ('be',    1,  'ws.daemon.be.error.ws_bad_bt.data',    'Error found in base type definition')
@@ -165,8 +168,9 @@ INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
 , ('be',    1,  'ws.daemon.be.plugin.cache.lib',        'PGWS::Plugin::System::Cache')
 , ('be',    1,  'ws.daemon.be.plugin.cache.pogc',       'cache')
 , ('be',    1,  'ws.daemon.be.plugin.cache.poid',       '0')
-, ('be',    1,  'ws.daemon.be.plugin.cache.data_write', '1')
+, ('be',    1,  'ws.daemon.be.plugin.cache.data_set',   '1')
 , ('be',    1,  'ws.daemon.be.plugin.acl.lib',          'PGWS::Plugin::System::ACL')
+, ('be',    1,  'ws.daemon.be.plugin.store.lib',        'PGWS::Plugin::System::Store')
 
 , ('cache', 1,  'ws.plugin.cache.code',                 'none')
 , ('cache', 1,  'ws.plugin.cache.is_active',            '0')

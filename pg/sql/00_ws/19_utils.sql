@@ -58,7 +58,7 @@ $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION uri_args (a_uri TEXT, a_mask TEXT) RETURNS text[] IMMUTABLE LANGUAGE 'plperl' AS
 $_$  #
-    my ($uri, $mask) = @_; if ($uri =~ /$mask/) { return [$1, $2, $3]; } return undef;
+    my ($uri, $mask) = @_; if ($uri =~ /$mask/) { return [$1, $2, $3, $4, $5]; } return undef;
 $_$;
 
 /* ------------------------------------------------------------------------- */

@@ -74,7 +74,7 @@ sub init {
     'pogc' => POGC
   , 'poid' => $self->{'poid'}
   , 'keep_db' => 1
-  , 'data_write' => 1
+  , 'data_set' => 1
   , 'use_readonly' => 1
   });
 
@@ -164,7 +164,7 @@ sub run {
   }
 
   $meta->stage_out;
-
+  delete $call->{'params'}{'_realm'}; # only in run_prepared direct call
   my $ret = $self->run_prepared($meta, $call->{'method'}, $call->{'params'});
   %$res = (%$res, %$ret);
   $meta->dump({'res' => $res});
@@ -225,6 +225,12 @@ sub _process {
     $mtd_def = $mtd_def->[0];
   }
 
+  # контроль области вызова
+  if ($mtd_def->{'realm_code'}) {
+    unless ($params->{'_realm'} and $params->{'_realm'} eq $mtd_def->{'realm_code'}) {
+      return $self->_rpc_error($meta, 'bad_realm');
+    }
+  }
   # системные аргументы
   my $info = {
     '_ip'    => $meta->{'ip'},
@@ -243,7 +249,7 @@ sub _process {
   if ($class->{'id_count'}) {
     for my $i (0..$class->{'id_count'} - 1) {
       my $k = 'id'.($i || '');
-      return $self->_rpc_error($meta, 'bad_args') unless defined($params->{$k});
+      return $self->_rpc_error($meta, 'bad_args', $i) unless defined($params->{$k});
       $acl_params{$k} = $params->{$k};
     }
   }
@@ -512,7 +518,7 @@ sub _call_plugin {
   $meta->debug('Loading plugin method %s: %s', $plugin, $mtd);
   eval {
     my $obj = $self->plugin($plugin);
-    $res = $obj->$mtd($self, $meta, $args);
+    $res = $obj->$mtd($self, $meta, $args, $mtd_def);
   };
   if ($@) {
     my $s = $@;

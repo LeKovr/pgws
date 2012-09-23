@@ -450,7 +450,7 @@ $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION cron() RETURNS VOID VOLATILE LANGUAGE 'sql' AS
 $_$
-  UPDATE job.cron SET
+  UPDATE wsd.job_cron SET
     prev_at = run_at
   , run_at = CURRENT_TIMESTAMP
     WHERE is_active

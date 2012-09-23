@@ -81,3 +81,15 @@ SELECT
 , pg_c('r', 'wsd.job_past',  'Архив выполненных задач')
 , pg_c('r', 'wsd.job_dust',  'Временное хранение выполненных задач до удаления')
 ;
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.job_cron (
+  is_active bool DEFAULT TRUE PRIMARY KEY
+, run_at  TIMESTAMP NOT NULL
+, prev_at TIMESTAMP
+);
+SELECT pg_c('r', 'wsd.job_cron',  'Время старта cron')
+, pg_c('c', 'wsd.job_cron.is_active', 'Активный крон')
+, pg_c('c', 'wsd.job_cron.run_at',    'Время последнего запуска')
+, pg_c('c', 'wsd.job_cron.prev_at',   'Время предыдущего запуска')
+;

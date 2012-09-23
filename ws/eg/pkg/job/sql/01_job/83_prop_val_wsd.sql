@@ -39,3 +39,13 @@ INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
 , ('fe',    1,  'ws.daemon.log.syslog.job.cache',       NULL)
 , ('fe',    1,  'ws.daemon.log.syslog.job.validate',    NULL)
 ;
+
+/* ------------------------------------------------------------------------- */
+-- запуск cron
+INSERT INTO wsd.job_cron (run_at) VALUES (CURRENT_TIMESTAMP); -- должна быть одна строка
+
+/* ------------------------------------------------------------------------- */
+-- запуск ежедневной обработки
+SELECT
+  job.create(job.handler_id('job.today'), NULL, -2, NULL)
+;

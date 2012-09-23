@@ -55,8 +55,11 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write) V
 
 , ('wiki.doc_update_src',   :DID, 3, 1, 2, true)
 , ('wiki.doc_update_attr',  :DID, 3, 1, 2, true)
-, ('wiki.doc_file_add',     :DID, 3, 1, 3, true)
 , ('wiki.doc_file_del',     :DID, 3, 1, 2, true)
+;
+
+INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, realm_code) VALUES
+  ('wiki.doc_file_add',     :DID, 3, 1, 3, true, ws.const_realm_upload())
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, name, args_exam) VALUES
@@ -73,6 +76,7 @@ INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, 
   ('wiki.wk',         'main',     :WID, 1, 8,    '(wk):u$',         'wiki/index',   id_by_code('wk'), 'Вики')
 , ('wiki.wk.edit',    'wiki.wk',  :WID, 3, NULL, '(wk):u/edit$',    'wiki/edit',    id_by_code('wk'), 'Редактирование')
 , ('wiki.wk.history', 'wiki.wk',  :WID, 1, NULL, '(wk):u/history$', 'wiki/history', id_by_code('wk'), 'История изменений')
+, ('wiki.wk.file',    'wiki.wk',  :WID, 1, NULL, '(wk):u/file/:i/:s$','wiki/file_redirect', id_by_code('wk'), 'Файл')
 ;
 
 /* ------------------------------------------------------------------------- */

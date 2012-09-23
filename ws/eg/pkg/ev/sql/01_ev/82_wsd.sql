@@ -21,7 +21,7 @@
 */
 
 /* ------------------------------------------------------------------------- */
+INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
 
-ALTER TABLE wsd.job ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
-ALTER TABLE wsd.job_todo ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
+/* ------------------------------------------------------------------------- */
 

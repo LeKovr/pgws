@@ -31,9 +31,9 @@ install: test data var pkg lib lib-pkg ctl setups tmpl masterconf installcomplet
 
 data:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-[ -d data/upload ] || mkdir -p data/upload; \
-for p in {0..9} ; do [ -d data/upload/$$p ] || mkdir -m g+w data/upload/$$p ; done ; \
+	pushd .. > /dev/null ; d=data/files/upload ; \
+[ -d $$d ] || mkdir -p $$d; \
+for p in {0..9} ; do [ -d $$d/$$p ] || mkdir -m g+w $$d/$$p ; done ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------

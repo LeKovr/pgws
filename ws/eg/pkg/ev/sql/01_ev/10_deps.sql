@@ -17,11 +17,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Настройка связей объектов jb. с объектами wsd.
+    Настройка путей поиска и контроль зависимостей
 */
 
 /* ------------------------------------------------------------------------- */
+SET LOCAL search_path = ws, i18n_def, public;
 
-ALTER TABLE wsd.job ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
-ALTER TABLE wsd.job_todo ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
+SELECT ws.pkg_require('ws');
 
+/* ------------------------------------------------------------------------- */

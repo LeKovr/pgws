@@ -41,6 +41,11 @@ BEGIN {
 use constant ROOT               => ($ENV{PGWS_ROOT} || '');   # PGWS root dir
 use constant POGC               => 'fe';                      # Property Owner Group Code
 
+use constant REALM              => ($ENV{PGWS_FE_REALM} || '');
+
+use constant FILE_URI           => ($ENV{PGWS_FILE_URI});
+use constant FILE_STORE_PATH    => ($ENV{PGWS_FILE_STORE_PATH});
+
 use constant DEBUG_IFACE        => ($ENV{PGWS_FE_DEBUG_IFACE} || 0);
 
 
@@ -67,7 +72,7 @@ sub new {
   my $dbc =  $self->{'_dbc'} = PGWS::DBConfig->new({
     'pogc' => POGC
   , 'poid' => $self->{'frontend_poid'}
-  , 'data_write' => 1
+  , 'data_set' => 1
   });
   my $layout  = $dbc->config('fe.tmpl.layout_default'),
   my $ext     = $dbc->config('fe.tmpl.ext');
@@ -146,6 +151,17 @@ sub process_direct {
   my $session = $self->load_session($ws, $meta, $params);
   $meta->keyoff; # остальные запросы - не от имени фронтенда
   my $status = ($session->{'sid_error'})?'409 Conflict':'200 OK';
+  my $realm = $params->{'_realm'};
+  if ($realm) {
+    my ($code, $key) = split /:/, $realm;
+    $params->{'_realm'} = $code if ($realm eq REALM);
+    if ($params->{'_realm'} eq 'upload') {
+      # nginx upload
+      my $prefix = FILE_STORE_PATH;
+      $params->{'_path'} =~ s/^$prefix// if ($params->{'_path'});
+    }
+  }
+print STDERR Dumper($method, $params);
   my $ret = $ws->run_prepared($meta, $method, $params);
   my $is_pretty;
   if ($req->accept =~ m|application/json|) {
@@ -163,7 +179,7 @@ sub process_direct {
 }
 
 #----------------------------------------------------------------------
-# Обработка GET запроса на вывод страницы
+# Обработка запроса от сервера Job
 sub process_job {
   my ($self, $meta, $req) = @_;
 
@@ -187,11 +203,13 @@ sub process_job {
     $meta->debug('internal call for %s', $req->uri);
     $call = $dbc->config('fe.def.'.$req->uri);
     $resp = $self->api($ws, $errors, $meta, undef, $call, $req->params);
+    $resp ||= { 'errors' => $errors };
   } else {
     # call job template
     $meta->debug('call %s.%s', $req->prefix, $req->uri);
     my $vars = {
-      'resp'     => {},
+      'resp'    => {},
+      'params'  => $req->params,
       %{$self->tmpl_vars($ws, $errors, $meta, 'http', '/api', '', $dbc->config('fe.def.code'))}
     }; # TODO: get from dbc values of 'http', '/api'
     #$meta->setsource('tmpl');
@@ -204,7 +222,7 @@ sub process_job {
     $meta->dump($vars);
   }
   $meta->debug('request status: %s', $status);
-  $meta->dump({ 'resp' => $resp});
+  $meta->dump({'resp' => $resp});
   my $json = PGWS::Utils::json_out_utf8({'result' => $resp});
   $req->print("$status\n\n");
   $req->print($json);
@@ -267,9 +285,8 @@ sub process_get {
     return $req->redirect($vars->{'meta'}{'redirect'});
   } elsif ($vars->{'meta'}{'redirect_file'}) {
     my $path = $vars->{'meta'}{'redirect_file'}{'path'}; # TODO: or die
-    $path =~ s|^(.+)(/generated/files)|/file1|; # TODO: хранить относительный путь и не обрезать
     $meta->debug('Send file: '.$path);
-    $vars->{'meta'}{'redirect_file'}{'path'} = $path;
+    $vars->{'meta'}{'redirect_file'}{'path'} = FILE_URI.'/'.$path;
     return $req->send_file($vars->{'meta'}{'redirect_file'});
   }
 
@@ -345,7 +362,7 @@ sub response {
   };
   unless ($req->method eq 'GET' or $req->method eq 'HEAD') {
     return ('405', 'Method Not Allowed', $vars);
-  } elsif (!$page or !$page->{'tmpl'}) {
+  } elsif (!$page or !$page->{'tmpl'} or (defined($acl) and $acl == 0)) {
     return ('404', 'Not Found', $vars);
   } elsif ($session->{'sid_error'}) {
     return ('409', 'Conflict', $vars); #
@@ -360,7 +377,7 @@ sub response {
 # вызов метода из темплейта
 sub api {
   my ($self, $ws, $errors, $meta, $type, $method, $params) = @_;
-
+  delete $params->{'_realm'}; # used only in process_direct
   my $ret = $ws->run_prepared($meta, $method, $params);
 
   if (defined ($ret->{'result'}{'data'})) {

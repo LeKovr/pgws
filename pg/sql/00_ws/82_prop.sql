@@ -97,7 +97,7 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.be.plugin.:s.lib',        ARRAY['be'],                '',       'Пакет плагина')
 , ('ws.daemon.be.plugin.:s.pogc',       ARRAY['be'],                '',       'POGC настроек плагина (если используется)')
 , ('ws.daemon.be.plugin.:s.poid',       ARRAY['be'],                '',       'POID настроек плагина')
-, ('ws.daemon.be.plugin.:s.data_write', ARRAY['be'],                '',       'Сохранять дамп настроек плагина')
+, ('ws.daemon.be.plugin.:s.data_set', ARRAY['be'],                '',       'Сохранять дамп настроек плагина')
 
 , ('ws.plugin.cache.code',              ARRAY['cache'],             '',       'Код кэша')
 , ('ws.plugin.cache.is_active',         ARRAY['cache'],             '1',      'Кэш включен')

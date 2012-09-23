@@ -1,0 +1,7 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Управляющий шаблон для отправки тестового письма';
+
+  resp.test1 = l('Успех');
+%]

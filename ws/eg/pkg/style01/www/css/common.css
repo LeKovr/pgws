@@ -68,10 +68,13 @@ div.bar {
   color: red;
 }
 
+.hide {
+  display: none;
+}
+
 input[type=text].slim {
   width: 200px;
 }
-
 
 input[disabled], input[readonly], select[disabled], select[readonly], checkbox[disabled], checkbox[readonly], textarea[disabled], textarea[readonly] {
   background-color: #FFF8C6;

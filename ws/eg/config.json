@@ -10,7 +10,14 @@
     "PROCESS_PREFIX": "pgws-dev",
     "FE_DEBUG_IFACE": 1,
 
+    "FILE_STORE_PATH": "/home/data/sampleapp/data/files/",
+    "FILE_GENERATED_PREFIX": "generated",
+    "FILE_URI": "/files",
+
+    "FE_REALM": "upload:880b2dbbd8ba1cc204406124f3195285",
+
     "FE_COOKIE_MASK": "PGWS_SID=([\\w+/]+)==",
+
     "DB_LOG_CONNECT": "SELECT ws.notice('DB PID:' || pg_backend_pid())",
     "DB_SET_APPNAME": 1,
     "TM_CMD": "",

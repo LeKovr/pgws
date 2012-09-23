@@ -17,11 +17,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Настройка связей объектов jb. с объектами wsd.
+    Создание схемы
 */
 
 /* ------------------------------------------------------------------------- */
+CREATE SCHEMA ev;
+COMMENT ON SCHEMA ev IS 'Диспетчер событий';
 
-ALTER TABLE wsd.job ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
-ALTER TABLE wsd.job_todo ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
 
+/* ------------------------------------------------------------------------- */

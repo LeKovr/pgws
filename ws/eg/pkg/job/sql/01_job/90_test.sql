@@ -33,11 +33,15 @@ SELECT job.server(-1);
 
 SELECT validfrom, handler_id, status_id, arg_id, arg_date, arg_num, arg_more, arg_id2, arg_date2, arg_id3
   FROM wsd.job_dust
+  WHERE handler_id < 10
+    AND validfrom < '2012-08-20'
   ORDER BY id
 ;
 
 SELECT validfrom, handler_id, status_id, arg_id, arg_date, arg_num, arg_more, arg_id2, arg_date2, arg_id3
   FROM wsd.job
+  WHERE handler_id < 10
+    AND validfrom < '2012-08-20'
   ORDER BY id
 ;
 

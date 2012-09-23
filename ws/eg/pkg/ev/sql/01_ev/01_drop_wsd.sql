@@ -17,11 +17,27 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Настройка связей объектов jb. с объектами wsd.
+    Удаление данных из схемы ws
 */
 
 /* ------------------------------------------------------------------------- */
+/*
+DELETE FROM wsd.prop_value WHERE pkg = :'PKG';
+DELETE FROM wsd.prop_owner WHERE pkg = :'PKG';
+DELETE FROM wsd.prop_group WHERE pkg = :'PKG';
 
-ALTER TABLE wsd.job ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
-ALTER TABLE wsd.job_todo ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
+DELETE FROM ws.prop                 WHERE pkg = :'PKG';
+*/
+/* ------------------------------------------------------------------------- */
+DROP TABLE wsd.event_notify_spec;
+DROP TABLE wsd.event_notify;
+DROP TABLE wsd.event_signup;
+DROP TABLE wsd.event_signup_profile;
+DROP TABLE wsd.event_role_signup;
+DROP TABLE wsd.event_spec;
+DROP TABLE wsd.event;
+DROP SEQUENCE wsd.event_seq;
+
+/* ------------------------------------------------------------------------- */
+DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';
 

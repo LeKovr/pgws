@@ -101,3 +101,10 @@ $_$;
 SELECT pg_c('f', 'const_status_id_idle', 'ID статуса задач, выполненных вхолостую');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_arg_type_none() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 1
+$_$;
+SELECT pg_c('f', 'const_arg_type_none', 'ID типа неиспользуемого аргумента');
+
+/* ------------------------------------------------------------------------- */

@@ -13,7 +13,6 @@
   doc_path = page.args.shift;
   code = doc_path.remove('^/');
   doc_id = api('wiki.doc_id_by_code', id => group_id, code => code || undef);
-
   doc_class_id =  api('ws.class_id', code => 'doc');
   wiki_word_str =  api('wiki.doc_keyword', id => doc_id);
   IF doc_class_id;
@@ -351,20 +350,83 @@ $(document).ready(function(){
 });
 </script>
 <style>
-  .ui-progressbar {
+.ui-progressbar {
   height:20px;
+  width:200px;
 }
-  .ui-progressbar-value {
+.ui-progressbar-value {
   height:18px;
 }
-.pblabel {
+.pb {
   line-height: 1.9em;
   position: absolute;
-  text-align: center;
-  width:150px;
+  display:inline-block;
+  left:20px;
 }
+
 </style>
-<div>
-  <input type='button' value='Загрузить файл' onclick='showBlock(this,"wiki.doc_file_add",[% doc_id %])' id='loadButton'>
+
+<div id='upload_form_template' class='hide'>
+  <div class='prepare'>
+    <form method='POST'>
+      <input type='hidden' name='id' value='[% doc_id; %]'>
+      <input type='file' class='inputFile' name='name' >
+      <input type='submit' class='hide' value='Отправить'>
+    </form>
+  </div>
+  <span class='label'></span>
+  <span class='process hide'>
+      <div class='progressbarDiv'>
+        <div class='pb'><span class='pb-percent'></span>%. [% l('Осталось') %]: <span class='pb-sec'></span> сек</div>
+      </div>
+      <input type='button' class='btnReset' value='Отменить'>
+  </span>
+  <span class='status'></span>
 </div>
+
+<div class="uploaded">
+[%
+  files = api('wiki.doc_file', id => doc_id);
+FOREACH f IN files;
+  file_uri = uri(code => page.up_code _ '.file', id => doc_path, id1 => f.file_id, id2 => f.name);
+%]<a href="[% uri_mk(file_uri.req) %]">[% f.name %]</a> [x]<br />[%
+END
+%]
+</div>
+
+
+<div class="upload">
+  <input type='button' class='add' value='Загрузить файл'>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+var onError = function(container, jqXHR, textStatus, errorThrown){
+  if (jqXHR.status == 413){
+    $(container).find('.status').text("[% l('Размер файла больше допустимого') %]");
+  }
+};
+
+var onSuccess = function(container, response){
+  var file = response.result.data;
+  $('.uploaded').append('<a href="[% view_pathname %]/file/' + file.file_id + '/' + file.name + '">' + file.name + '</a> [x]<br />')
+  container.find('.status').text('Файл загружен');
+
+};
+
+// ----------------------------------------------------------------------------
+$(document).ready(function(){
+  $('.upload').formFieldUpload({
+   action:       '/upload/_wiki.doc_file_add.json'
+  , template:  '#upload_form_template'
+  , onSuccess:    onSuccess
+  , onError:      onError
+  });
+});
+
+
+//]]>
+</script>
 

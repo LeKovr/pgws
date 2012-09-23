@@ -21,18 +21,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE cron (
-  is_active bool DEFAULT TRUE PRIMARY KEY
-, run_at  TIMESTAMP NOT NULL
-, prev_at TIMESTAMP
-);
-SELECT pg_c('r', 'cron',  'Время старта cron')
-, pg_c('c', 'cron.is_active', 'Активный крон')
-, pg_c('c', 'cron.run_at',    'Время последнего запуска')
-, pg_c('c', 'cron.prev_at',   'Время предыдущего запуска')
-;
-
-/* ------------------------------------------------------------------------- */
 CREATE TABLE status (
   id              d_id32    PRIMARY KEY
 , can_create      BOOL      NOT NULL
@@ -84,23 +72,23 @@ CREATE TABLE handler (
 , uk_bits         d_bitmask NOT NULL DEFAULT 0
 , is_sql          bool      NOT NULL DEFAULT TRUE
 , next_handler_id d_id32    REFERENCES handler
-, arg_date_type   d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
-, arg_id_type     d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
-, arg_num_type    d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
-, arg_more_type   d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
-, arg_date2_type  d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
-, arg_id2_type    d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
-, arg_id3_type    d_id32    NOT NULL DEFAULT 1 REFERENCES arg_type
+, arg_date_type   d_id32    NOT NULL DEFAULT job.const_arg_type_none() REFERENCES arg_type
+, arg_id_type     d_id32    NOT NULL DEFAULT job.const_arg_type_none() REFERENCES arg_type
+, arg_num_type    d_id32    NOT NULL DEFAULT job.const_arg_type_none() REFERENCES arg_type
+, arg_more_type   d_id32    NOT NULL DEFAULT job.const_arg_type_none() REFERENCES arg_type
+, arg_date2_type  d_id32    NOT NULL DEFAULT job.const_arg_type_none() REFERENCES arg_type
+, arg_id2_type    d_id32    NOT NULL DEFAULT job.const_arg_type_none() REFERENCES arg_type
+, arg_id3_type    d_id32    NOT NULL DEFAULT job.const_arg_type_none() REFERENCES arg_type
 , dust_days       d_id32    NOT NULL DEFAULT 0
 , is_run_allowed  bool      NOT NULL DEFAULT TRUE
 , is_todo_allowed bool      NOT NULL DEFAULT TRUE
 , name            d_string  NOT NULL
 , CONSTRAINT handler_uk_type_id_code UNIQUE (pkg, code)
 );
-SELECT pg_c('r', 'handler',  'Класс обработчика')
-, pg_c('c', 'handler.id',               'ID класса')
+SELECT pg_c('r', 'handler',  'Обработчик задач Job')
+, pg_c('c', 'handler.id',               'ID обработчика')
 , pg_c('c', 'handler.pkg',              'Код пакета')
-, pg_c('c', 'handler.code',             'символьный код класса')
+, pg_c('c', 'handler.code',             'символьный код обработчика')
 , pg_c('c', 'handler.def_prio',         'приоритет по умолчанию')
 , pg_c('c', 'handler.def_status_id',    'статус по умолчанию')
 , pg_c('c', 'handler.uk_bits',          'маска аргументов, которые должны быть уникальны')
@@ -114,9 +102,9 @@ SELECT pg_c('r', 'handler',  'Класс обработчика')
 , pg_c('c', 'handler.arg_id2_type',     'домен значений аргумента arg_id2')
 , pg_c('c', 'handler.arg_id3_type',     'домен значений аргумента arg_id3')
 , pg_c('c', 'handler.dust_days',        'через сколько дней удалять из dust (0 - перемещать в past)')
-, pg_c('c', 'handler.is_run_allowed',   'выполнение задач класса разрешено')
-, pg_c('c', 'handler.is_todo_allowed',  'создание задач класса в wsd.job_todo разрешено')
-, pg_c('c', 'handler.name',             'название класса')
+, pg_c('c', 'handler.is_run_allowed',   'выполнение обработчика разрешено')
+, pg_c('c', 'handler.is_todo_allowed',  'создание задач в wsd.job_todo разрешено')
+, pg_c('c', 'handler.name',             'название обработчика')
 ;
 
 /* ------------------------------------------------------------------------- */

@@ -42,13 +42,16 @@ use constant SQL_NEXT       => ($ENV{'PGWS_JOB_SQL_NEXT'   }    or 'SELECT * FRO
 use constant SQL_CRON       => ($ENV{'PGWS_JOB_SQL_NEXT'   }    or 'SELECT job.cron()');
 use constant SQL_STOP       => ($ENV{'PGWS_JOB_SQL_STOP'   }    or 'SELECT job.finish(?, ?, ?)');
 use constant SQL_FINISHED   => ($ENV{'PGWS_JOB_SQL_FINISHED'}   or 'SELECT job.finished(?)');
-use constant SQL_CREATE     => ($ENV{'PGWS_JOB_SQL_CREATE' }    or 'SELECT job.create(?, ?, ?, ?, ?, ?, ?, ?)');
+use constant SQL_CREATE     => ($ENV{'PGWS_JOB_SQL_CREATE' }    or 'SELECT job.create(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 use constant SQL_RUN        => ($ENV{'PGWS_JOB_SQL_RUN'    }    or 'SELECT %s.%s(?)');
 
-use constant AUTH_LOGIN     => ($ENV{'PGWS_JOB_AUTH_LOGIN' });
-use constant AUTH_PSW       => ($ENV{'PGWS_JOB_AUTH_PSW'   });
+use constant AUTH_LOGIN     => ($ENV{'PGWS_JOB_AUTH_LOGIN' }    or '');
+use constant AUTH_PSW       => ($ENV{'PGWS_JOB_AUTH_PSW'   }    or '');
 
 use constant SOCKET         => ($ENV{'PGWS_FCGI_SOCKET'}        or 'back.test.local:9001');    # socket nginx forwards to
+
+use constant DB_STATUS_ERROR    => 12; # job.const_status_id_error()
+use constant DB_STATUS_SUCCESS  => 10; # job.const_status_id_success()
 
 #----------------------------------------------------------------------
 sub run {
@@ -377,7 +380,7 @@ sub _process {
     my $sql = sprintf SQL_RUN, $handler->{'pkg'}, $handler->{'code'};
 print STDERR "SQL[$$] ",$sql,': ',$cmd{'id'},"\n";
     my $ret_arr = $dbh->selectrow_arrayref($sql, undef, $cmd{'id'});
-    $ret = $ret_arr->[0];
+    $ret = defined($ret_arr)?$ret_arr->[0]:DB_STATUS_ERROR;
   } else {
     # call API
     $ret = _api_process($self, $sid, $handler, \%cmd);
@@ -449,7 +452,7 @@ sub _api_process {
     $request->{$k} = $cmd->{$k} if (defined($cmd->{$k}) and ($k eq 'id' or $k =~ /^arg_/));
   }
   my $resp = _api(undef, $request);
-  return 10; # job.const_status_id_success()
+  return DB_STATUS_SUCCESS; # job.const_status_id_success()
 }
 #----------------------------------------------------------------------
 1;

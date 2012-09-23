@@ -73,7 +73,7 @@ sub new {
   my ($class, $self) = @_;
   $self ||= {};
   bless $self, $class;
-
+print STDERR 'EENV:',Dumper(\%ENV);
   # TODO: валидировать внешние ip, привязывать к сессии весь список
   # TODO: (передача клиентским прокси внутреннего ип увеличит безопасность)
   # TODO: для login использовать только один ip [proxy] клиента
@@ -100,9 +100,9 @@ sub new {
 
   $self->{'_q'} = new CGI::Simple;
 
-  if ($self->{'method'} eq 'POST') {
+  if ($self->{'method'} eq 'POST' and $self->type =~ /application\/json/) {
     $self->{'params'} = $self->{'_q'}->param('POSTDATA'); # TODO: POST_MAX
-  } elsif ($self->{'method'} eq 'GET') {
+  } else { #if ($self->{'method'} eq 'GET') {
     my %params = $self->{'_q'}->Vars;
     $self->{'params'} = \%params;
   }
@@ -203,7 +203,7 @@ sub send_file {
   my $name = $file_def->{'name'};
   utf8::encode($name);
   print $self->{'_q'}->header(
-    -type => $file_def->{'type'},
+    -type => $file_def->{'ctype'},
     -attachment => $name,
     -X_Accel_Redirect => $file_def->{'path'}
   );

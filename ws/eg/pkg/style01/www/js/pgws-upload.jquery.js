@@ -8,97 +8,119 @@
   project: PGWS, http://rm2.tender.pro/projects/pgws/
   version: 1.0 (2012-08-26)
 */
+$.fn.formFieldUpload = function(options) {
 
-function fetch(formId, uuid, options, uri) {
-  trueid = formId.substr(11);
-  req = new XMLHttpRequest();
-  req.open("GET", "/upload/status", 1);
-  req.setRequestHeader("X-Progress-ID", trueid);
-  req.onreadystatechange = function () {
-    if (req.readyState == 4) {
-      if (req.status == 200) {
-        /* poor-man JSON parser */
-        var upload = eval(req.responseText);
-        if (upload.state == 'uploading' && upload.received > 0) {
-          upload.percents = Math.floor((upload.received / upload.size)*1000/10);
-          var speed = 0;
-          speed = upload.received - $('#rq'+trueid).val();
-          $('#rq'+trueid).val(upload.received);
-          var remaining = (upload.size - upload.received) / speed;
-          var tRemaining = parseInt(remaining) + ' сек.';
-          $('#progressbar'+trueid).progressbar({value: upload.percents});
-          $('#progressbar'+trueid).find(".pblabel").text(upload.percents+'%'+' Осталось: '+tRemaining);
-        }
-        if (upload.state == 'done' || upload.state == 'error') {
-          window.clearTimeout(options.interval);
-        }
-      }
+  "use strict";
+
+  var generateUuid = function(){
+    var uuid = '';
+    for (var i = 0; i < 32; i++) {
+      uuid += Math.floor(Math.random() * 16).toString(16);
     }
-  }
-  req.send(null);
-}
-function showSubmit(t){
-  $(t).parent().parent().find('input[type=submit]').show();
-}
-function clickSubmit(t){
-  objParent = $(t).parent().parent();
-  objFile = $(objParent).find('input[type=file]');
-  $(objFile).parent().append('<font >'+$(objFile).val()+'</font>');
-  $(objFile).hide();
-  $(t).hide();
-}
-
-function stopreq(xhr,t) {
-  window.clearTimeout($(t).attr('id'));
-  xhr.abort();
-}
-
-function hideLoad(t, uuid){
-  $("#progressbar"+uuid).hide();
-  $(t).hide();
-  $(t).parent().parent().find('font').hide();
-  $('#loadButton').show();
-}
-
-function showBlock(t, uri, doc_id){
-  uuid = "";
-  for (i = 0; i < 32; i++) {
-    uuid += Math.floor(Math.random() * 16).toString(16);
-  }
-  var options = {
-    beforeSubmit: function (formData, jqForm, options) {
-      var formId = jqForm.context.id;
-
-      // patch the form-action tag to include the progress-id
-      //      options.url = "/upload/share?X-Progress-ID=" + uuid;
-      // call the progress-updater every 1000ms
-      trueid = formId.substr(11);
-      interval = window.setInterval(
-        function () {
-          fetch(formId, trueid, options, uri);
-        },
-        1000
-      );
-      options.interval = interval;
-      return true;
-    },
-    beforeSend: function(jqXHR, settings){
-      var link = $('<input />');
-      link.attr('value','Отмена');
-      link.attr('type', 'button');
-      link.attr('id', interval);
-      link.attr('onclick', 'hideLoad(this,\''+trueid+'\')');
-      link.click(function(){ return stopreq(jqXHR,this) });
-      objF = $('#upload-form'+trueid);
-      $(objF).find('#upload-form-close').html(link);
-    },
-    dataType: 'json',
-    contentType: 'multipart/form-data',
-    async: true
+    return uuid;
   };
 
-  $(t).parent().append("<form method='post' enctype='multipart/form-data' id='upload-form"+uuid+"' action='/upload/_"+uri+".json?X-Progress-ID=" + uuid+"'><div id='divUpload' ><div class='form' style='float:left;width: auto;'><input type='file' name='name' onchange='showSubmit(this)' /></div><div style=\'float:left;width: auto;\'><input type='submit' value='Отправить' hidden onclick='clickSubmit(this)'></div><div style='float:left;width: auto;'><div id='progressbar"+uuid+"' style='width: 150px'><span class='pblabel'></span><input id='rq"+uuid+"' type='hidden' value='0'></div></div><div id='upload-form-close'></div></div> </form><br><br>");
+  var fetchProgress = function(container, uuid, options) {
+    var req = new XMLHttpRequest();
+    req.open('GET', options.statusUrl, 1);
+    req.setRequestHeader('X-Progress-ID', uuid);
+    req.onreadystatechange = function () {
+      if (req.readyState === 4) {
+        if (req.status === 200) {
+          /* poor-man JSON parser */
+          var upload = eval(req.responseText);
+          if (upload.state === 'uploading' && upload.received > 0) {
+            var percentComplete = Math.floor((upload.received / upload.size)*1000/10);
+            var seconds = parseFloat(container.attr('seconds'));
+            var speed = upload.received / seconds;
+            container.attr('seconds', seconds + 1);
+            var remaining = Math.floor((upload.size - upload.received)/ speed) + 1;
+            container.find(options.objProgressBar).progressbar('option', 'value', percentComplete);
+            container.find(options.spanPercent).text(percentComplete);
+            container.find(options.spanSec).text(remaining);
+            container.find(options.spanStatus).show();
+          }
+          if (upload.state === 'done' || upload.state === 'error') {
+            var objButton = container.find(options.btnReset);
+            window.clearTimeout(objButton.attr('id'));
+          }
+        }
+      }
+    };
+    req.send(null);
+  };
+  var addForm = function($self, options){
+    var tmpl = $(options.template);
+    var container = tmpl.clone().appendTo($self);
+    container.find(options.inputFile).change(function(){ container.find('input[type=submit]').removeClass('hide'); });
+    container.removeClass('hide');
+    var interval;
+    container.find('form').ajaxForm({
+      beforeSubmit: function(formData, jqForm, settings) {
+        container.attr('seconds', 1);
+        var uuid = generateUuid();
+        settings.url = options.action + '?X-Progress-ID=' + uuid;
+        interval = window.setInterval(function () {
+          fetchProgress(container, uuid, options);
+          },
+          1000
+        );
+      },
+      beforeSend: function(jqXHR, settings){
+        container.find(options.btnReset).attr('id', interval).click(function(){
+          window.clearTimeout($(this).attr('id'));
+          jqXHR.abort();
+          if (options.clearOnStop) {
+            container.hide();
+          } else {
+            container.find(options.processContainer).addClass('hide');
+            container.find(options.prepareContainer).show();
+            container.find(options.spanLabel).text('');
+          }
+        });
+        var objInput = container.find(options.inputFile);
+        container.find(options.spanLabel).text(objInput.val()+': ');
+        container.find(options.prepareContainer).hide();
+        container.find(options.objProgressBar).progressbar({value: 0.0});
+        container.find(options.processContainer).removeClass('hide');
+        container.find(options.spanStatus).hide();
+      },
+      error: function(jqXHR, textStatus, errorThrown){
+        window.clearTimeout(interval);
+        jqXHR.abort();
+        options.onError(container, jqXHR, textStatus, errorThrown);
+      },
+      success: function(data, responseText, statusText, form) {
+        window.clearTimeout(interval);
+        container.find(options.processContainer).hide();
+        options.onSuccess(container, data);
+      },
+      dataType: 'json',
+      contentType: 'multipart/form-data',
+      async: true
+    });
+  };
 
-  $('#upload-form'+uuid).ajaxForm(options);
-}
+  // ----------------------------------------------------------------------------
+  // All options listed here
+  options = $.extend(true, {
+    onSuccess:        null,
+    onError:          null,
+    template:         null,
+    clearOnStop:      false,
+    statusUrl:        '/upload/status',
+    btnReset:         '.process .btnReset',
+    objProgressBar:   '.progressbarDiv',
+    prepareContainer: '.prepare',
+    processContainer: '.process',
+    spanLabel:        '.label',
+    spanPercent:      '.pb-percent',
+    spanSec:          '.pb-sec',
+    spanStatus:       '.pb',
+    inputFile:        '.inputFile'
+  }, options);
 
+  var $self = $(this);
+  $self.find('.add').click(function(){ addForm($self, options); });
+
+};

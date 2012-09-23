@@ -22,7 +22,7 @@
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO arg_type (id, name) VALUES
-  (1, 'Нет')
+  (job.const_arg_type_none(), 'Нет')
 , (2, 'Дата документа')
 , (3, 'ID учетной записи')
 , (4, 'ID группы')
@@ -37,8 +37,6 @@ INSERT INTO arg_type (id, name) VALUES
 , (10, 'Комментарий')
 */
 ;
-
-INSERT INTO cron (run_at) VALUES (CURRENT_TIMESTAMP); -- должна быть одна строка
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO status (id, can_create, can_run, can_arc, name, anno) VALUES
@@ -61,5 +59,5 @@ INSERT INTO status (id, can_create, can_run, can_arc, name, anno) VALUES
 INSERT INTO handler (id, code, def_prio, arg_date_type, dust_days, name) VALUES
   (1,  'stop',  86390, 1,  0, 'Остановка диспетчера')
 , (2,  'clean',  1, 2,  7, 'Очистка списка текущих задач')
-, (10, 'today', 85800, 2,  7, 'Завершение дня')
+, (9, 'today', 85800, 2,  7, 'Завершение дня')
 ;

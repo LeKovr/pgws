@@ -37,6 +37,7 @@ CREATE TABLE method (
 , args_exam  text     NULL
 , args       text     NOT NULL
 , pkg        TEXT     NOT NULL DEFAULT ws.pg_cs()
+, realm_code d_code
 , CONSTRAINT method_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action
 );
 SELECT pg_c('r', 'method', 'Метод API')
@@ -55,6 +56,7 @@ SELECT pg_c('r', 'method', 'Метод API')
 , pg_c('c', 'method.args_exam', 'пример вызова функции')
 , pg_c('c', 'method.args'     , 'строка списка аргументов')
 , pg_c('c', 'method.pkg'      , 'пакет, в котором метод зарегистрирован')
+, pg_c('c', 'method.realm_code' , 'код области вызова метода')
 ;
 
 /* ------------------------------------------------------------------------- */

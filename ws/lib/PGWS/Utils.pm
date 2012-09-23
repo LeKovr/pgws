@@ -29,13 +29,19 @@ use File::Path;
 use Data::Dumper;
 
 #----------------------------------------------------------------------
-## @fn hash data_load($config_file)
+## @fn hash data_get($config_file)
 # Загрузить данные из файла в perl-структуру
 # @return указатель на загруженную структуру данных
 # TODO: загружать форматы, отличные от JSON
-sub data_load {
-  my $cfile = shift;
-  open my $F, '<', $cfile or PGWS::bye "File: $cfile error:".$!;
+sub data_get {
+  my $path = shift;
+  my $out = ($path =~ /\.gz$/)?'| gzip >':'>';
+  my $mode = '<';
+  if ($path =~ /\.gz$/) {
+    $mode = '-|';
+    $path = 'gunzip - < '.$path;
+  }
+  open my $F, $mode, $path or PGWS::bye "File: $path error:".$!;
   my @cdata=<$F>;
   close $F;
   my $json = new JSON;
@@ -49,7 +55,8 @@ sub json_out_utf8 {
   my $data = shift;
   my $is_pretty = shift;
   my $json = new JSON;
-  my $ret = $is_pretty?$json->pretty->encode($data):$json->encode($data);
+  my $ret = to_json($data, {pretty => $is_pretty});
+#$is_pretty ? $json->pretty->encode($data) : $json->encode($data);
   utf8::decode($ret);
   return $ret;
 }
@@ -87,7 +94,7 @@ sub check_path {
 #----------------------------------------------------------------------
 sub load_env {
   my $cfile = shift;
-  my $data = PGWS::Utils::data_load($cfile);
+  my $data = PGWS::Utils::data_get($cfile);
   my $cfg = $data->{'ACTIVE'};
   $cfg->{'root'} = $ENV{'PWD'}.'/';
   foreach my $key (keys %$cfg) {
@@ -96,14 +103,19 @@ sub load_env {
 }
 
 #----------------------------------------------------------------------
-sub data_write {
+sub data_set {
   my ($data, $path, $do_gzip) = @_;
   check_path($path);
-  open my $F, '>', $path or PGWS::bye "File: $path error:".$!;
+  my $mode = '>';
+  if ($path =~ /\.gz$/) {
+    $mode = '|-';
+    $path = 'gzip - > '.$path;
+  }
+  open my $F, $mode, $path or PGWS::bye "File: $path error:".$!;
   print $F json_out_utf8($data, 1);
   close $F;
-  my $mode = "0666";
-  chmod oct($mode), $path;
+  my $mod = "0666";
+  chmod oct($mod), $path;
 }
 
 #----------------------------------------------------------------------

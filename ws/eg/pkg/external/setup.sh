@@ -2,6 +2,7 @@
 fetch() {
 cat <<-EOF
 LeKovr-jQuery-Form-3.14.zip https://nodeload.github.com/LeKovr/form/zipball/3.14
+LeKovr-formEV-v0.3.zip https://nodeload.github.com/LeKovr/formEV/zipball/v0.3
 trentrichardson-jQuery-Timepicker-Addon-v1.0.1-0.zip http://nodeload.github.com/trentrichardson/jQuery-Timepicker-Addon/zipball/v1.0.1
 jquery-ui-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-1.8.22.zip
 jquery-ui-themes-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-themes-1.8.22.zip
@@ -79,6 +80,10 @@ for s in * ; do
     LeKovr-form-*)
       echo "jquery.form setup"
       mk_lnd jquery.form.js js/addon $s/
+      ;;
+    LeKovr-formEV-*)
+      echo "jquery.formEV setup"
+      mk_lnd jquery.formev.js js/addon $s/
       ;;
     *)
       echo "js setup ($s)"

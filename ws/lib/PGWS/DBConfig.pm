@@ -73,12 +73,12 @@ sub init {
   # Подгрузить свойства, если задан POID
   if (DB_CONNECT) {
     $self->{'_conf'} = $self->config_from_db($dbh, $self->{'pogc'}, $self->{'poid'});
-    PGWS::Utils::data_write($self->{'_conf'}, $self->dump_name($self->{'pogc'}, $self->{'poid'})) if ($self->{'data_write'});
+    PGWS::Utils::data_set($self->{'_conf'}, $self->dump_name($self->{'pogc'}, $self->{'poid'})) if ($self->{'data_set'});
   } else {
     # load from file
     my $file = $self->dump_name($self->{'pogc'}, $self->{'poid'});
     warn "WARNING!! No database but keep_db is set. Read config from $file\n" if($self->{'keep_db'});
-    $self->{'_conf'} = PGWS::Utils::data_load($file);
+    $self->{'_conf'} = PGWS::Utils::data_get($file);
   }
 }
 
@@ -165,7 +165,7 @@ sub _connect {
   }
 
   $self->{'_dbh'} = $dbh if ($self->{'keep_db'} or $reconnect);
-  PGWS::Utils::data_write($conf_db, $self->dump_name(POGC, POID)) if ($self->{'data_write'} and !$reconnect);
+  PGWS::Utils::data_set($conf_db, $self->dump_name(POGC, POID)) if ($self->{'data_set'} and !$reconnect);
   return $dbh;
 }
 

@@ -22,9 +22,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
-
-/* ------------------------------------------------------------------------- */
 UPDATE ws.prop SET pogc_list = array_append(pogc_list, 'job') WHERE code IN (
   'ws.daemon.startup.pm.n_processes'
 , 'ws.daemon.startup.pm.die_timeout'

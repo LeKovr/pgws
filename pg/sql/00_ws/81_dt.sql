@@ -36,6 +36,7 @@ INSERT INTO dt (id, parent_id, code, anno) VALUES
 , (13,  13, 'oid',        'OID')
 , (14,  14, 'double',     'Длинное вещественное число')
 , (15,  15, 'bigint',     'Длинное целое')
+, (16,  16, 'json',       'Данные в формате JSON')
 ;
 -- parent для массива хэшей, но они пока не поддерживаются DBD::Pg
 -- INSERT INTO dt (id, parent_id, code, anno) VALUES (21, 21, 'composite', 'Структура');
@@ -211,6 +212,15 @@ INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_acl_ch
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_acl_check'), 4, 'id', dt_id('d_id'), 'ID объекта');
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_acl_check'), 5, 'id1', dt_id('d_id'), 'ID1 объекта');
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_acl_check'), 6, 'id2', dt_id('text'), 'ID2 объекта');
+
+INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_store_get'), 'Аргументы функций store_get', true);
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_get'), 1, 'id',     dt_id('d_id'), 'id объекта');
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_get'), 2, 'tag',   dt_id('d_code'), 'тэг данных');
+
+INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_store_set'), 'Аргументы функций store_get', true);
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_set'), 1, 'id',     dt_id('d_id'), 'id объекта');
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_set'), 2, 'tag',    dt_id('d_code'), 'тэг данных');
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_set'), 3, 'data',   dt_id('json'), 'ссылка на данные');
 
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('t_page_info'), 'Параметры страницы', true);
 

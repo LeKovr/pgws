@@ -17,11 +17,18 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Настройка связей объектов jb. с объектами wsd.
+    Данные основных таблиц пакета
 */
 
 /* ------------------------------------------------------------------------- */
+INSERT INTO status (id, name) VALUES
+  /*1*/ (ev.const_status_id_draft()   , 'Ожидает спецификацию')
+, /*2*/ (ev.const_status_id_rcpt()    , 'Расчет адресатов')
+, /*3*/ (ev.const_status_id_notify()  , 'Подготовка уведомлений')
+, /*4*/ (ev.const_status_id_done()    , 'Зарегистировано')
+, /*5*/ (ev.const_status_id_archive() , 'Архив')
+;
 
-ALTER TABLE wsd.job ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
-ALTER TABLE wsd.job_todo ADD CONSTRAINT job_fk_status_id FOREIGN KEY (status_id) REFERENCES job.status(id);
+ALTER TABLE wsd.event ADD CONSTRAINT event_fk_status_id FOREIGN KEY (status_id) REFERENCES ev.status(id);
 
+/* ------------------------------------------------------------------------- */

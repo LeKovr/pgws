@@ -76,7 +76,7 @@ sub init {
   my $dbc = $self->{'_mgr_dbc'} = PGWS::DBConfig->new({
     'pogc' => $self->{'pogc'}
   , 'poid' => $self->{'poid'}
-  , 'data_write' => 1
+  , 'data_set' => 1
   });
   my $startup = $dbc->config('startup');
   my $name = $dbc->proc_name;

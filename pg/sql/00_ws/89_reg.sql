@@ -74,8 +74,10 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real) VALU
 ;
 
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, name) VALUES
-   ('info.acl_check',      2, 1, 4, 3, 'acl:check',        dt_id('z_acl_check'),   dt_id('d_acls'), 'Получение acl на объект')
-  ,('ws.uncache',          2, 1, 1, 2, 'cache:uncache',    dt_id('z_uncache'), dt_id('d_id'), 'Сброс кэша метода')
+   ('info.acl_check',      2, 1, 4, 3, 'acl:check',     dt_id('z_acl_check'), dt_id('d_acls'), 'Получение acl на объект')
+  ,('ws.uncache',          2, 1, 1, 2, 'cache:uncache', dt_id('z_uncache'),   dt_id('d_id'), 'Сброс кэша метода')
+  ,('ws.store_get',        1, 3, 1, 2, 'store:get',     dt_id('z_store_get'), dt_id('d_id'), 'Получение данных из файлового хранилища')
+  ,('ws.store_set',        1, 5, 1, 2, 'store:set',     dt_id('z_store_set'), dt_id('d_id'), 'Сохранение данных в файловом хранилище')
 /*
   -- RESERVED
   ,('ws.cache_reset1',     2, 1, 1, 2, 'System::Cache::reset',      false, dt_id('z_cache_reset'), dt_id('d_id32'), 'Сброс кэша по 1 ключу')
@@ -93,15 +95,15 @@ INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, 
 -- ошибки уровня приложения. Коды синхронизированы с кодами PostgreSQL
 -- см. "http://www.postgresql.org/docs/8.4/static/errcodes-appendix.html"
 
-INSERT INTO i18n_def.error (code, id_count, message) VALUES
-   ('Y0001', 0, 'не задано обязательное значение')
-  ,('Y0002', 2, 'значение не соответствует условию "%s %s"')
-  ,('Y0003', 1, 'значение не соответствует шаблону "%s"')
-  ,('Y0010', 0, 'нет данных')
-  ,('Y0101', 1, 'недопустимый код acl "%s"')
-  ,('Y0102', 1, 'внешний доступ к методу с "%s" запрещен')
-  ,('Y0103', 0, 'необходима авторизация (не задан идентификатор сессии)')
-  ,('Y0104', 1, 'некорректный идентификатор сессии "%s"')
-  ,('Y0105', 1, 'не найдена проверка для acl "%s"')
-  ,('Y0106', 1, 'некорректный идентификатор статуса "%s"')
+INSERT INTO i18n_def.error (code                    , id_count, message) VALUES
+  (ws.const_error_core_no_required_value()          , 0, 'не задано обязательное значение')
+, (ws.const_error_core_value_not_match_rule()       , 2, 'значение не соответствует условию "%s %s"')
+, (ws.const_error_core_value_not_match_format()     , 1, 'значение не соответствует шаблону "%s"')
+, (ws.const_error_core_no_data()                    , 0, 'нет данных')
+, (ws.const_error_system_incorrect_acl_code()       , 1, 'недопустимый код acl "%s"')
+, (ws.const_error_system_external_access_forbidden(), 1, 'внешний доступ к методу с "%s" запрещен')
+, (ws.const_error_system_auth_required()            , 0, 'необходима авторизация (не задан идентификатор сессии)')
+, (ws.const_error_system_incorrect_session_id()     , 1, 'некорректный идентификатор сессии "%s"')
+, (ws.const_error_system_acl_check_not_found()      , 1, 'не найдена проверка для acl "%s"')
+, (ws.const_error_system_incorrect_status_id()      , 1, 'некорректный идентификатор статуса "%s"')
 ;

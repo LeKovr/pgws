@@ -56,8 +56,7 @@ sub cache_by_id {
   my ($self, $id) = @_;
   $id or PGWS::bye "Cache id required";
   my $def = $self->{'dbc'}->config($id) or PGWS::bye "Unknown cache id ".$id;
- # print STDERR 'PLUGIN2: ', $id,Dumper($def);
-
+  return unless ($def->{'is_active'});
   return $self->{'_caches'}{$def->{'code'}};
 }
 
