@@ -73,7 +73,6 @@ sub new {
   my ($class, $self) = @_;
   $self ||= {};
   bless $self, $class;
-print STDERR 'EENV:',Dumper(\%ENV);
   # TODO: валидировать внешние ip, привязывать к сессии весь список
   # TODO: (передача клиентским прокси внутреннего ип увеличит безопасность)
   # TODO: для login использовать только один ip [proxy] клиента

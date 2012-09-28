@@ -87,7 +87,7 @@ $.fn.formFieldUpload = function(options) {
       },
       error: function(jqXHR, textStatus, errorThrown){
         window.clearTimeout(interval);
-        jqXHR.abort();
+        container.find(options.processContainer).hide();
         options.onError(container, jqXHR, textStatus, errorThrown);
       },
       success: function(data, responseText, statusText, form) {

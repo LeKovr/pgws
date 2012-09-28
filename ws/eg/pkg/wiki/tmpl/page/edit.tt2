@@ -6,7 +6,6 @@
   );
   meta.head.timepicker = 1;
   meta.head.autocomplete = 1;
-  meta.head.upload = 1;
 
   group_id = page.args.shift;
   group_code = page.args.shift;
@@ -48,18 +47,15 @@
   END;
 %]
 <div id="accordion">
+[% IF doc_id %]
   <div class="acc-panel">
     <p class="acc-nav acc-attr">[% l('Атрибуты').replace('(.)','$1 ') %]</p>
     <div class="acc-body" id="p-attr">
+      <h2>[% l('Атрибуты') %]</h2>
       <form id="attr-form" action="js_required_but_not_available" onsubmit="return false;">
         <input type="hidden" name="_sid" value="[% session.sid %]"/>
         <input type="hidden" name="id" value="[% doc_id %]"/>
         <input type="hidden" id="up_id" name="up_id" value="[% info.up_id %]"/>
-        <button class="button_change" style="display:none" onclick="to_Save()">[% l("Изменить") %]</button>
-        <div class="div_button" style="display:none">
-          <button onClick="saveAttr()">[% l("Сохранить") %]</button>
-          <button onclick="Cancel()">[% l("Отмена") %]</button>
-        </div>
         <div id="div_attr">
           <p><label>[% l("Текущий статус") %] <select id="status_id" name="status_id">
             [% FOREACH s IN doc_class_status; %]
@@ -99,8 +95,11 @@
           <button onclick="Cancel()">[% l("Отмена") %]</button>
         </div>
       </form>
+      <h2>[% l('Файлы') %]</h2>
+      [% INCLUDE block/wiki/file_upload.tt2 %]
     </div>
   </div>
+[% END %]
   <div class="acc-panel">
     <p class="acc-nav acc-edit">[% l('редактор').replace('(.)','$1 ') %]</p>
     <div class="acc-body" id="p-edit">
@@ -152,7 +151,6 @@
 
 var msg_created = '[% l("Документ создан") %]';
 var msg_updated = '[% l("Документ изменен") %]';
-var msg_load    = '[% l("Загружается страница просмотра") %]'
 var view_name   = '[% l("Актуальная версия") %]';
 var view_path   = '[% view_pathname %]';
 
@@ -211,10 +209,10 @@ function addWord(){       //добавляем новое слово в ключ
 };
 
 function constructorDivKeyWord(param){
-	return "<div style='float:left;margin-left:5px;margin-right:5px;'>"+param+"<input type=\"hidden\" name=\"keywords\" value=\""+param+"\"/><a href='#' onClick='delThis(this)'>[x]</a></div>";
+  return "<div style='float:left;margin-left:5px;margin-right:5px;'>"+param+"<input type=\"hidden\" name=\"keywords\" value=\""+param+"\"/><a href='#' onClick='delThis(this)'>[x]</a></div>";
 };
-function saveAttr(){				//сохраняем атрибуты
-	api_form('wiki.doc_update_attr', '#attr-form',formOK);
+function saveAttr(){  //сохраняем атрибуты
+  api_form('wiki.doc_update_attr', '#attr-form',formOK);
 };
 var resOk = function(formid, res) {
 };
@@ -222,9 +220,9 @@ var formOK = function(formid, res) {
   if (typeof res == 'number') {
     // redirect to view page
     var m = (res == 1)?msg_created:msg_updated;
-    m = m + '. ' + msg_load;
     $('#status').text(m);
-    window.location.pathname = view_path;
+    // window.location.pathname = view_path;
+    window.location.reload(false);
   } else {
     document.title = res.name;
     page_html = res.html;
@@ -348,85 +346,5 @@ $(document).ready(function(){
     minLength: 1
   });
 });
-</script>
-<style>
-.ui-progressbar {
-  height:20px;
-  width:200px;
-}
-.ui-progressbar-value {
-  height:18px;
-}
-.pb {
-  line-height: 1.9em;
-  position: absolute;
-  display:inline-block;
-  left:20px;
-}
-
-</style>
-
-<div id='upload_form_template' class='hide'>
-  <div class='prepare'>
-    <form method='POST'>
-      <input type='hidden' name='id' value='[% doc_id; %]'>
-      <input type='file' class='inputFile' name='name' >
-      <input type='submit' class='hide' value='Отправить'>
-    </form>
-  </div>
-  <span class='label'></span>
-  <span class='process hide'>
-      <div class='progressbarDiv'>
-        <div class='pb'><span class='pb-percent'></span>%. [% l('Осталось') %]: <span class='pb-sec'></span> сек</div>
-      </div>
-      <input type='button' class='btnReset' value='Отменить'>
-  </span>
-  <span class='status'></span>
-</div>
-
-<div class="uploaded">
-[%
-  files = api('wiki.doc_file', id => doc_id);
-FOREACH f IN files;
-  file_uri = uri(code => page.up_code _ '.file', id => doc_path, id1 => f.file_id, id2 => f.name);
-%]<a href="[% uri_mk(file_uri.req) %]">[% f.name %]</a> [x]<br />[%
-END
-%]
-</div>
-
-
-<div class="upload">
-  <input type='button' class='add' value='Загрузить файл'>
-</div>
-
-
-<script type="text/javascript">
-//<![CDATA[
-
-var onError = function(container, jqXHR, textStatus, errorThrown){
-  if (jqXHR.status == 413){
-    $(container).find('.status').text("[% l('Размер файла больше допустимого') %]");
-  }
-};
-
-var onSuccess = function(container, response){
-  var file = response.result.data;
-  $('.uploaded').append('<a href="[% view_pathname %]/file/' + file.file_id + '/' + file.name + '">' + file.name + '</a> [x]<br />')
-  container.find('.status').text('Файл загружен');
-
-};
-
-// ----------------------------------------------------------------------------
-$(document).ready(function(){
-  $('.upload').formFieldUpload({
-   action:       '/upload/_wiki.doc_file_add.json'
-  , template:  '#upload_form_template'
-  , onSuccess:    onSuccess
-  , onError:      onError
-  });
-});
-
-
-//]]>
 </script>
 

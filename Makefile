@@ -260,6 +260,18 @@ test:
 	for f in ws/t/*.t ws/eg/pkg/*/t/*.t ; do \
 	d=$$(dirname $$f) ; \
 	n=$$(basename $$f) ; \
+	[[ "$$n" == "03-critic.t" ]] && continue ; \
+	pushd $$d/.. ; \
+	perl -I$$CORELIB -Ilib t/$$n ; \
+	popd ; \
+	done
+
+critic:
+	CORELIB=$$PWD/ws/lib ; \
+	for f in ws/t/*.t ws/eg/pkg/*/t/*.t ; do \
+	d=$$(dirname $$f) ; \
+	n=$$(basename $$f) ; \
+	[[ "$$n" == "03-critic.t" ]] || continue ; \
 	pushd $$d/.. ; \
 	perl -I$$CORELIB -Ilib t/$$n ; \
 	popd ; \

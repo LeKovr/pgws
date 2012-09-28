@@ -24,9 +24,9 @@
 CREATE OR REPLACE FUNCTION doc_file (
   a_id        ws.d_id
 , a_file_id   ws.d_id DEFAULT 0
-) RETURNS SETOF file_info LANGUAGE 'sql' AS
+) RETURNS SETOF ws.file_info LANGUAGE 'sql' AS
 $_$
-  SELECT * FROM wiki.file_info WHERE class_id = wiki.const_doc_class_id() AND obj_id = $1 AND $2 IN (file_id, 0) ORDER BY created_at;
+  SELECT * FROM ws.file_info WHERE class_id = wiki.const_doc_class_id() AND obj_id = $1 AND $2 IN (file_id, 0) ORDER BY created_at;
 $_$;
 SELECT pg_c('f', 'doc_file', 'Атрибуты файлов статьи');
 
@@ -40,7 +40,7 @@ CREATE OR REPLACE FUNCTION doc_file_add (
 , a_name      text
 , a_ctype     text
 , a_anno      text DEFAULT NULL
-  ) RETURNS SETOF file_info LANGUAGE 'plpgsql' AS
+  ) RETURNS SETOF ws.file_info LANGUAGE 'plpgsql' AS
 $_$
   -- a__sid:  ID сессии
   -- a__path: Путь к файлу в хранилище nginx
@@ -57,10 +57,7 @@ $_$
   BEGIN
     -- TODO: content-type & extention control
     v_account_id := (acc.profile(a__sid)).id;
-    INSERT INTO wsd.file (path, name, size, ctype, created_by, csum, anno, link_cnt) VALUES
-      (a__path, a_name, a__size, a_ctype, v_account_id, a__csum, a_anno, 1) -- TODO: move doc_cnt calc into doc_file trigger
-      RETURNING file_id INTO v_file_id
-    ;
+    v_file_id := ws.file_add(v_account_id, a__path, a__size, a__csum, a_name, a_ctype, a_anno);
     INSERT INTO wsd.file_link (file_id, obj_id, class_id, created_by)
       VALUES (v_file_id, a_id, wiki.const_doc_class_id(), v_account_id)
     ;

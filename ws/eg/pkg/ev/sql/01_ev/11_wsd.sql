@@ -134,7 +134,7 @@ CREATE TABLE wsd.event_notify (
 , notify_data   TEXT
 , confirm_at    TIMESTAMP(0)
 , confirm_data  TEXT
-, CONSTRAINT  event_notify_pkey PRIMARY KEY (event_id, account_id, role_id)
+, CONSTRAINT  event_notify_pkey PRIMARY KEY (event_id, account_id, role_id, cause_id)
 );
 SELECT pg_c('r', 'wsd.event_notify'           , 'Уведомление')
 , pg_c('c', 'wsd.event_notify.event_id', 'ID события')

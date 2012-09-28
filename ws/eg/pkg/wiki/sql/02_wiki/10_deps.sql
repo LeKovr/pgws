@@ -23,4 +23,5 @@
 /* ------------------------------------------------------------------------- */
 
 SELECT ws.pkg_require('ws');
+SELECT ws.pkg_require('fs');
 SELECT ws.pkg_require('acc');
