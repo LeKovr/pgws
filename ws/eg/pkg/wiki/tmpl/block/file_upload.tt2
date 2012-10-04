@@ -6,22 +6,6 @@
   meta.head.upload = 1;
 
 %]
-<style>
-.ui-progressbar {
-  height:20px;
-  width:200px;
-}
-.ui-progressbar-value {
-  height:18px;
-}
-.pb {
-  line-height: 1.9em;
-  position: absolute;
-  display:inline-block;
-  left:20px;
-}
-
-</style>
 
 <div id='upload_form_template' class='hide'>
   <div class='prepare'>
@@ -32,12 +16,12 @@
     </form>
   </div>
   <span class='label'></span>
-  <span class='process hide'>
+  <div class='process hide'>
       <div class='progressbarDiv'>
-        <div class='pb'><span class='pb-percent'></span>%. [% l('Осталось') %]: <span class='pb-sec'></span> [% l('сек')%]</div>
+        <div class='ui-progressbar-label'><span class='pb-percent'></span>%. [% l('Осталось') %]: <span class='pb-sec'></span> [% l('сек')%]</div>
       </div>
       <input type='button' class='btnReset' value='[% l('Отменить') %]'>
-  </span>
+  </div>
   <span class='status'></span>
 </div>
 
@@ -46,7 +30,7 @@
   files = api('wiki.doc_file', id => doc_id);
   FOREACH f IN files;
     file_uri = uri(code => page.up_code _ '.file', id => doc_path, id1 => f.file_id, id2 => f.name);
-    %]<a href="[% uri_mk(file_uri.req) %]">[% f.name %]</a> [x]<br />[%
+    %]<div class='fileDiv'><a href="[% uri_mk(file_uri.req) %]">[% f.name %]</a> <a href='#' fileid='"[% f.file_id %]"' class='btnDelete'>[x]</a><div class='deleteStatusError'></div></div>[%
   END
 %]
 </div>
@@ -56,20 +40,33 @@
 <script type="text/javascript">
 //<![CDATA[
 
-var onError = function(container, jqXHR, textStatus, errorThrown){
-  if (jqXHR.status == 413){
-    $(container).find('.status').text("[% l('Размер файла больше допустимого') %]");
+var deleteFileOptions = {
+  action:     '/_wiki.doc_file_del.json',
+  id:         [%doc_id%],
+  prefix:     '[% req.prefix %]',
+  onSuccess:  function(self, obj){
+    $(obj).addClass('hide');
+  },
+  onError:    function(self, obj, mess){
+    $(obj).find(self.options.classErrorMessage).text(mess);
   }
 };
 
 var onSuccess = function(container, response){
   if (response.success === "true") {
     var file = response.result.data;
-    $('.uploaded').append('<a href="[% view_pathname %]/file/' + file.file_id + '/' + file.name + '">' + file.name + '</a> [x]<br />')
+    $('.uploaded').append('<div class=\'fileDiv\'><a href="[% view_pathname %]/file/' + file.file_id + '/' + file.name + '">' + file.name + '</a> <a href="#" fileid="' + file.file_id + '" class="btnDelete">[x]</a><div class="deleteStatusError"></div></div>')
     container.find('.status').text("[% l('Файл загружен') %]");
+    $('.btnDelete').deleteFile(deleteFileOptions);
   } else {
     var error = response.result.error[0].message;
     container.find('.status').text(error);
+  }
+};
+
+var onError = function(container, jqXHR, textStatus, errorThrown){
+  if (jqXHR.status === 413){
+    $(container).find('.status').text("[% l('Размер файла больше допустимого') %]");
   }
 };
 
@@ -81,6 +78,7 @@ $(document).ready(function(){
   , onSuccess:  onSuccess
   , onError:    onError
   });
+  $('.btnDelete').deleteFile(deleteFileOptions);
 });
 
 //]]>

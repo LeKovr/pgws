@@ -1,0 +1,15 @@
+.ui-progressbar {
+  height:20px;
+  width:200px;
+}
+
+.ui-progressbar-value {
+  height:18px;
+}
+
+.ui-progressbar-label {
+  line-height: 1.9em;
+  position: absolute;
+  display:inline-block;
+  left:40px;
+}

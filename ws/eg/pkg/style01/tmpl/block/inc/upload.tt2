@@ -1,7 +1,16 @@
 [%
   meta.top_headers.push(
+    "/js/external/ui/jquery.ui.core.js"
+    "/js/external/ui/jquery.ui.widget.js"
     "/js/external/ui/jquery.ui.progressbar.js"
+
+    "/css/$TMPL_UI_THEME/jquery.ui.core.css"
+    "/css/$TMPL_UI_THEME/jquery.ui.theme.css"
+    "/css/$TMPL_LAYOUT/jquery-ui.theme.pgws.css"
     "/js/external/addon/jquery.form.js"
+    "/css/$TMPL_LAYOUT/jquery-ui.upload.pgws.css"
     "/js/$TMPL_LAYOUT/pgws-upload.jquery.js"
+
   );
+
 %]

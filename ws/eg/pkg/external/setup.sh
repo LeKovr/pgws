@@ -44,7 +44,7 @@ pushd $DIR > /dev/null
 
 echo "Fetch..."
 fetch | while read dest src ; do
- [ -e $dest ] || curl -R -o $dest $src
+ [ -e $dest ] || curl -k -R -o $dest $src
 done
 
 echo "Make src..."
