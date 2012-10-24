@@ -1,0 +1,10 @@
+[% META
+  description = 'Таблица имя-значение';
+
+mc = 'layout/' _ resp.layout _ '/widget';
+
+meta.head.tabs = 1;
+MACRO tabs_begin INCLUDE "$mc/tabs_begin.tt2";
+MACRO tabs_end   INCLUDE "$mc/tabs_end.tt2";
+
+%]

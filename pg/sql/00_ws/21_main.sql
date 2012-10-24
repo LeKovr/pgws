@@ -30,6 +30,7 @@ CREATE TABLE method (
 , is_write   bool     NOT NULL DEFAULT FALSE
 , is_i18n    bool     NOT NULL DEFAULT FALSE
 , is_sql     bool     NOT NULL DEFAULT TRUE
+, is_strict  bool     /*NOT NULL - TODO */ DEFAULT FALSE
 , code_real  d_sub    NOT NULL
 , arg_dt_id  d_id32   NULL REFERENCES dt
 , rv_dt_id   d_id32   NULL REFERENCES dt
@@ -49,6 +50,7 @@ SELECT pg_c('r', 'method', 'Метод API')
 , pg_c('c', 'method.is_write' , 'метод меняет БД')
 , pg_c('c', 'method.is_i18n'  , 'метод поддерживает интернационализацию')
 , pg_c('c', 'method.is_sql'   , 'метод реализован как sql function')
+, pg_c('c', 'method.is_strict', 'отсутствие результата порождает ошибку')
 , pg_c('c', 'method.code_real', 'имя вызываемого метода (для не-sql - включая package)')
 , pg_c('c', 'method.arg_dt_id', 'ID типа, описывающего аргументы')
 , pg_c('c', 'method.rv_dt_id' , 'ID типа результата')

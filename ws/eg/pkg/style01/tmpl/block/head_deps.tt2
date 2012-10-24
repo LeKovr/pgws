@@ -1,9 +1,10 @@
-<link href="/img/[% TMPL_LAYOUT %]/favicon.ico?19721023"     rel="shortcut icon" />
-[%
-meta.top_headers.push(
-  "/css/$TMPL_LAYOUT/common.css?19721023"
-);
+[% META
+  description = 'Зависимости заголовков head/*'
+%][%
 IF meta.head.autocomplete;
+  meta.head.api = 1;
+END;
+IF meta.head.tabs;
   meta.head.api = 1;
 END;
 IF meta.head.api;

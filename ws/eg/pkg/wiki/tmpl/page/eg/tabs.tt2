@@ -1,0 +1,86 @@
+[%
+
+  meta.page_tabs = api('ws.page_childs', code => page.up_code, id => page.args.0, id1 => page.args.1, id2 => page.args.2);
+  IF get.skin == 'blank';
+    resp.skin = 'blank';
+  ELSE;
+    meta.page_full = 1;
+  END;
+meta.nosiblings = 1;
+  resp.prefix = page.name;
+  resp.title = l('Тест вкладок');
+
+  IF meta.page_full; # =================== Шапка контента: НАЧАЛО
+    PROCESS 'macro/tabs.tt2';
+%]<script type="text/javascript">
+  //<![CDATA[
+  if (window.PGWS === undefined) { window.PGWS = {}; }
+  window.PGWS.page = {
+    titleSuffix: '[% resp.title _ " - " _ our_title %]',
+  };
+  //]]>
+</script>
+[%
+    tabs_begin();
+  END;
+%]
+
+Content for [% page.code %]
+
+
+[%
+  IF meta.page_full;
+    tabs_end();
+%]
+<script type="text/javascript">
+//<![CDATA[
+
+/* ------------------------------------------------------------------------- */
+// Инициализация вкладки
+
+window.PGWS.tabContentEvents = function(obj) {
+
+};
+
+/* ------------------------------------------------------------------------- */
+// Управление вкладками
+
+window.PGWS.tabSelected = function(objActive){
+  $(".ajax").removeClass("active");
+  var tabHead = $(objActive);
+  tabHead.addClass("active");
+
+  var tag = tabHead.attr('tag');
+  var tabBody = $("#ajaxcontent-" + tag);
+  $(".tabcontent").hide();
+  $("#error").html('');
+  tabBody.show();
+  if (tabBody.html() === '') {
+    var href = tabHead.attr('href');
+    var uri = href + ((href.indexOf('?') === -1)?'?':'&') + 'skin=blank';
+    tabBody.load(uri, function(response, status, xhr) {
+      if (status == "error") {
+        var msg = window.PGWS.page.errorMessage;
+        $("#error").html(msg + ': ' + xhr.status + ' ' + xhr.statusText);
+      } else {
+        window.PGWS.tabContentEvents("#ajaxcontent-" + tag + ' ');
+      }
+    });
+  }
+};
+
+/* ------------------------------------------------------------------------- */
+// Инициализация основной страницы
+
+$(document).ready(function(){
+  $('.ajax').ajaxUrl({
+    onSuccess:  window.PGWS.tabSelected,
+    titleSuffix: window.PGWS.page.titleSuffix
+  });
+  window.PGWS.tabContentEvents('');
+});
+//]]>
+</script>
+
+[%  END;
+%]

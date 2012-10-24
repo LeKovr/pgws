@@ -1,0 +1,15 @@
+[%
+meta.top_headers.push(
+  "/js/external/core/jquery.json-2.3.js"
+  "/js/$TMPL_LAYOUT/pgws-api.jquery.js"
+);
+%]<script type="text/javascript">
+  //<![CDATA[
+  if (window.PGWS === undefined) { window.PGWS = {}; }
+  window.PGWS.req = {
+    post_uri: "[% resp.post_uri %]",
+    sid: "[% session.sid %]",
+    lang: "[% session.lang %]"
+  };
+  //]]>
+</script>

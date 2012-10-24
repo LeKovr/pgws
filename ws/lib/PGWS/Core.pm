@@ -493,9 +493,11 @@ sub _call_db {
     }
     if (defined($ret)) {
       $res->{'result'} = { 'data' => $ret };
-    } else {
+    } elsif (!defined($mtd_def->{'is_strict'}) or $mtd_def->{'is_strict'}) {
+      # вернуть ошибку при пустом результате
       push @errors, $self->_app_error($meta, 'Y0010', $mtd_def->{'code'}) # no data;
-      # TODO: check other way: $res->{'result'} = { 'data' => undef }; # no data
+    } else {
+      $res->{'result'} = { 'data' => undef };
     }
   }
   if (scalar(@errors)) {

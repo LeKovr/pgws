@@ -1,0 +1,29 @@
+div.tabs ul {
+  list-style: none;
+  margin: auto;
+  display:inline;
+  text-indent: 5px;
+}
+
+div.tabs li {
+  float: left;
+  display: inline;
+}
+
+div.tabs li a {
+  padding: 3px 10px 0 0;
+  background-color: lightgrey;
+  display:inline-block;
+}
+
+div.tabs li a.active {
+  background-color: grey;
+  color: white;
+  display:inline-block;
+}
+
+div.tabs{
+  margin: 5px 5px 0 0;
+  text-align: justify;
+  height:25px;
+}

@@ -1,16 +1,46 @@
 .ui-autocomplete {
-  max-height: 300px;
-  overflow-y: auto;
-  /* prevent horizontal scrollbar */
-  overflow-x: hidden;
-  /* box shadow */
-  -moz-box-shadow: 0 3px 6px rgba(0,0,0,0.5);
-  -webkit-box-shadow: 0 3px 6px rgba(0,0,0,0.5);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+	max-height: 300px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	-moz-box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+	-webkit-box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+	border-radius: 0;
+	background: #fff;
+	line-height: 1.5;
+	border: 1px solid #d9d9d9;
 }
 /* IE 6 doesn't support max-height
  * we use height instead, but this forces the menu to always be this tall
  */
 * html .ui-autocomplete {
   height: 100px;
+}
+
+.ui-autocomplete li.ui-menu-item {
+	text-indent: 0;
+	padding-left: 5px;
+	box-sizing: border-box;
+}
+
+.ui-autocomplete li.ui-menu-item a,
+.ui-autocomplete li.ui-menu-item a.ui-state-hover {
+	background: #fff;
+	border-radius: 0;
+	border: 0 none;
+	margin: 0;
+	cursor: pointer;
+	padding: 0;
+	/*display: inline;*/
+	color: #d90d15;
+	text-decoration: underline;
+}
+
+.ui-autocomplete li.ui-menu-item a.ui-state-hover {
+	text-decoration: none;
+	background: #dbdbdb;
+}
+
+.ui-autocomplete li.ui-menu-item a span {
+	color: #D90D15 !important;
 }

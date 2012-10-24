@@ -3,7 +3,7 @@ fetch() {
 cat <<-EOF
 LeKovr-jQuery-Form-3.14.zip https://nodeload.github.com/LeKovr/form/zipball/3.14
 LeKovr-formEV-v0.3.zip https://nodeload.github.com/LeKovr/formEV/zipball/v0.3
-trentrichardson-jQuery-Timepicker-Addon-v1.0.1-0.zip http://nodeload.github.com/trentrichardson/jQuery-Timepicker-Addon/zipball/v1.0.1
+trentrichardson-jQuery-Timepicker-Addon-v1.0.5-0.zip http://nodeload.github.com/trentrichardson/jQuery-Timepicker-Addon/zipball/v1.0.5
 jquery-ui-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-1.8.22.zip
 jquery-ui-themes-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-themes-1.8.22.zip
 jquery-1.7.2.min.js http://code.jquery.com/jquery-1.7.2.min.js

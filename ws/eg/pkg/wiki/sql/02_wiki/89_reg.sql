@@ -79,6 +79,16 @@ INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, 
 , ('wiki.wk.file',    'wiki.wk',  :WID, 1, NULL, '(wk):u/file/:i/:s$','wiki/file_redirect', id_by_code('wk'), 'Файл')
 ;
 
+/*
+-- тестирование нового функционала общего назначения
+INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
+  ('wikitab',       'main',     2, 1, NULL, 'wikitest$',             NULL,           'TabTest')
+, ('wikitab.index', 'wikitab',  2, 1, 1,    'wikitab$',       'wiki/eg/tabs', 'Main' )
+, ('wikitab.tab1',  'wikitab',  2, 1, 2,    'wikitab/tab1$',  'wiki/eg/tabs',  'Tab1')
+, ('wikitab.tab2',  'wikitab',  2, 1, 3,    'wikitab/tab2$',  'wiki/eg/tabs',  'Tab2')
+;
+*/
+
 /* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.error (code, id_count, message) VALUES
   ('Y9901', 1, 'Не найдена группа "%s"')

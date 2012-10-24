@@ -34,6 +34,7 @@ CREATE DOMAIN d_acls  AS INTEGER[]; -- уровни доступа
 CREATE DOMAIN d_class  AS d_id32; -- id класса
 
 CREATE DOMAIN d_cnt AS INTEGER CHECK (VALUE >= 0);  -- целое >= 0
+CREATE DOMAIN d_amount AS NUMERIC(11,3) CHECK (VALUE > 0);
 
 CREATE DOMAIN d_decimal_positive AS DECIMAL CHECK (VALUE > 0);  -- вещественное больше 0
 CREATE DOMAIN d_decimal_non_neg AS DECIMAL CHECK (VALUE >= 0);  -- вещественное не меньше 0

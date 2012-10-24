@@ -152,6 +152,7 @@ INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_non_neg_int'), dt_id('d_
 INSERT INTO dt_facet VALUES (dt_id('d_non_neg_int'), facet_id('minInclusive'), 0);
 
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_cnt'), dt_id('d_non_neg_int'), 'Количество элементов');
+INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_amount'), dt_id('numeric'), 'Количество товара');
 
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_format'), dt_id('text'), 'Формат для printf');
 

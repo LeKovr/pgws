@@ -7,21 +7,10 @@
 %]<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xml:lang="[% session.lang %]" xmlns="http://www.w3.org/1999/xhtml" lang="[% session.lang %]">
 <head>
-<title>[% resp.title %] - [% our_title %]</title>
+<title>[% resp.prefix; IF resp.prefix; ' - '; END; resp.title _ ' - ' _ our_title %]</title>
 <meta http-equiv="Content-Type" content="[% resp.ctype %]; [% resp.enc %]" />
 [%
-  meta.top_headers = [];
-  INCLUDE "block/$TMPL_LAYOUT/inc/default.tt2";
-  FOREACH i IN meta.head;
-    INCLUDE "block/$TMPL_LAYOUT/inc/${i.key}.tt2";
-  END;
-  x=meta.top_headers.import(meta.html_headers);
-  FOREACH h IN meta.top_headers;
-    NEXT IF temp.exists(h);
-    temp.$h = 1;
-    f=(h.search('\.css') ? '<link  href=%-60s type="text/css" rel="stylesheet" />' : '<script src=%-60s type="text/javascript"></script>') _ "\n";
-    FILTER format(f); '"' _ h _ '"'; END;
-  END;
+  INCLUDE "block/$TMPL_LAYOUT/head.tt2";
 %]
 </head>
 <body>

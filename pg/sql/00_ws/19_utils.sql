@@ -124,7 +124,7 @@ SELECT pg_c('f', 'mask_is_multi', 'Шаблон соответствует не�
 
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION mask2format(a_mask TEXT) RETURNS TEXT IMMUTABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION ws.mask2format(a_mask TEXT) RETURNS TEXT IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     v TEXT;
@@ -134,7 +134,8 @@ $_$
     v := regexp_replace(v, ':i',    '%i', 'g');
     v := regexp_replace(v, ':s',    '%s', 'g');
     v := regexp_replace(v, ':u',    '%s', 'g');
-    v := regexp_replace(v, E'\\$$', ''       );
+    v := regexp_replace(v, E'\\$',  '',   'g');
+    v := regexp_replace(v, E'\\|',  '',   'g');
     v := regexp_replace(v, E'[()]', '',   'g');
     RETURN v;
   END;

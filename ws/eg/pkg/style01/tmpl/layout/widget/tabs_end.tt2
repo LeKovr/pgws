@@ -1,0 +1,22 @@
+[% META
+  description = 'Вкладки тендера, разметка после текущего блока'
+%][%
+  # завершение div текущей вкладки + пустой div для каждой вкладки после текущей
+  active_found = 0;
+  FOREACH u IN meta.page_tabs;
+    IF u.code == page.code;
+      # найдена текущая вкладка
+      active_found = 1;
+    ELSIF !active_found;
+      # пропускаем вкладки до текущей
+      NEXT;
+    ELSIF meta.page_full;
+      # начало вкладки для всех после текущей
+      %]<div id="ajaxcontent-[% loop.count %]" class="tabcontent">[%
+    END;
+    IF meta.page_full;
+      # конец вкладки для всех включая текущую
+      %]</div>[%
+    END;
+  END;
+%]

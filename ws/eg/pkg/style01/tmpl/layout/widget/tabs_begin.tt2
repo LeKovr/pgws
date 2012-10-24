@@ -1,0 +1,26 @@
+<div class="tabs">
+<ul>
+[%
+    FOR u IN meta.page_tabs;
+      %]<li>
+          <a href="[% uri_mk(u.req) %]" class="ajax[% IF u.code == page.code; ' active'; END %]" tag="[% loop.count %]">[% u.name %]</a>
+        </li>[%
+    END;
+%]
+</ul>
+</div>
+<div id="error"></div>
+[%
+  FOR u IN meta.page_tabs;
+  # пустой div для каждой вкладки до текущей + начало div текущей вкладки
+    IF meta.page_full;
+      %]<div id="ajaxcontent-[% loop.count %]" class="tabcontent">[%
+    END;
+    IF u.code == page.code;
+      LAST;
+    END;
+    IF meta.page_full;
+      %]</div>[%
+    END;
+  END;
+%]

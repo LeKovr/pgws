@@ -1,0 +1,8 @@
+[%
+  meta.html_headers.push(
+    "/js/external/ui/jquery.ui.core.js"
+    "/js/external/ui/jquery.ui.widget.js"
+    "/js/$TMPL_LAYOUT/pgws-ajaxUrl.jquery.js"
+    "/css/$TMPL_LAYOUT/tabs.css"
+  );
+%]
