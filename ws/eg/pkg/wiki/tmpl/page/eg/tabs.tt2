@@ -73,9 +73,10 @@ window.PGWS.tabSelected = function(objActive){
 // Инициализация основной страницы
 
 $(document).ready(function(){
-  $('.ajax').ajaxUrl({
+   $('.ajax').ajaxUrl({
     onSuccess:  window.PGWS.tabSelected,
-    titleSuffix: window.PGWS.page.titleSuffix
+    titleSuffix: window.PGWS.page.titleSuffix,
+    classMenuItemActive:'.active'
   });
   window.PGWS.tabContentEvents('');
 });

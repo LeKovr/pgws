@@ -4,7 +4,8 @@
     options: {
       onSuccess: null,
       titleSuffix: '',
-      titleDelim: ' - '
+      titleDelim: ' - ',
+      classMenuItemActive: null
     },
     generateUuid : function(){
       var uuid = '';
@@ -13,33 +14,37 @@
       }
       return uuid;
     },
-    clickUrl:function(obj){
-      var titleTotal = $(obj).text() + this.options.titleDelim + this.options.titleSuffix;
-      document.title = titleTotal;
-      var ident = $(obj).attr('ident');
+    identFunc: function(objIdent){
+      var ident = $(objIdent).attr('ident');
       if(typeof ident == "undefined"){
         ident = this.generateUuid();
-        $(obj).attr('ident', ident);
+        $(objIdent).attr('ident', ident);
       }
-      var data = { title: titleTotal, ident:ident};
+      return ident;
+    },
+    clickUrl:function(obj){
+      var titleTotal = $(obj).text() + this.options.titleDelim + this.options.titleSuffix;
+      var titleTotalOld = $(this.options.classMenuItemActive).text() + this.options.titleDelim + this.options.titleSuffix;
+      document.title = titleTotal;
+      var data = { title: titleTotal, ident:this.identFunc(obj),href:$(obj).attr('href')};
+      var dataOld = { title: titleTotalOld, ident:this.identFunc(this.options.classMenuItemActive),href:$(this.options.classMenuItemActive).attr('href')};
+      window.history.replaceState(dataOld,titleTotalOld, $(this.options.classMenuItemActive).attr('href'));
       window.history.pushState(data,titleTotal, $(obj).attr('href'));
       this.options.onSuccess(obj);
-    },
+      },
     _create: function() {
       self = this;
       $(window).bind("popstate",function(e){
         var state = e.originalEvent.state;
-        window.location.href.replace = location.pathname;
-        document.title = state.title;
-        $(self.options.contentBlockId).html(state.content);
-        self.options.onSuccess($('[ident='+state.ident+']'));
+	self.options.onSuccess($('[ident='+state.ident+']'));
+	document.title = state.title;
         return false;
       });
-
       $(this.element).click(function(){
-        self.clickUrl(this);
-        return false;
+	  self.clickUrl(this);
+	return false;
       });
     }
   });
 })(jQuery);
+

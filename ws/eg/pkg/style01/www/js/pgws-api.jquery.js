@@ -9,8 +9,8 @@
   version: 2.1 (2009-08-14)
 */
 
-function l() {
-   "use strict";
+var l = function(){
+  "use strict";
   // 4rows from http://www.webtoolkit.info/javascript-sprintf.html
   if (typeof arguments === "undefined") { return null; }
   if (arguments.length < 1) { return null; }
@@ -25,7 +25,29 @@ function l() {
     }
   }
   return string;
-}
+};
+
+var show_debug = function(data){
+  "use strict";
+  var s='';
+  var ht = $('#debug-console').html();
+  if (data && $('#debug-console')) {
+    var i, len, row;
+    for ( i = 0, len = data.length; i<len; ++i ){
+      row = data[i];
+      s = s + l('<tr class="[_1]"><td nowrap valign="top" width="30%">[ [_2] / [_3] / [_4] ] [_5] / [_6]</td><td>[_7]</td></tr>',
+      (i % 2)?'even':'odd', row.source, row.stage, row.level, row.caller, row.line,
+      (row.message)?row.message:'<pre id="debug-'+i+'" style="font-size:9px; color: grey"></pre>'
+      );
+    }
+    ht = (ht !== '') ? '<hr style="margin:15px 0px;" />' + ht : '';
+    $('#debug-console').html('<table class="debug">' + s + '</table>' + ht);
+    for ( i = 0, len = data.length; i<len; ++i ){
+      row = data[i];
+      if (! row.message) { $('#debug-'+ i).text(row.data); }
+    }
+  }
+};
 
 $.fn.serializeObject = function(formid) {
   "use strict";
@@ -45,17 +67,17 @@ $.fn.serializeObject = function(formid) {
   return o;
 };
 
-// based on: http://asistobe851.hp.infoseek.co.jp/JavaScript/json-rpc.html
-function api_form (mtd, formid, cb, cb_er){
+var api = function(mtd, formid, cb, vparams, cb_er, ena,options){
   "use strict";
-  var params = $(formid).serializeObject(formid);
-  $(formid+' :input').attr("disabled","disabled");
-  api(mtd, formid, cb, params, cb_er, true);
-}
-function api(mtd, formid, cb, vparams, cb_er, ena){
-  "use strict";
-  $("#status").text( "In process..." );
-  $("#errors").text('');
+  options = $.extend(true, {
+     statusBlock: '#status',
+     errorBlock:'#errors',
+     debugForm:'#debug-form',
+     apiLog:'#api-log'
+  }, options);
+
+  $(options.statusBlock).text( "In process..." );
+  $(options.errorBlock).text('');
   var req = {
     id: 77,
     jsonrpc: '2.0',
@@ -63,7 +85,7 @@ function api(mtd, formid, cb, vparams, cb_er, ena){
     sid: window.PGWS.req.sid,
     lang: window.PGWS.req.lang,
     params: vparams,
-    debug: $('#debug-form').serializeObject('#debug-form')
+    debug: $(options.debugForm).serializeObject(options.debugForm)
   };
   $.ajax({
     type:         "POST",
@@ -75,52 +97,44 @@ function api(mtd, formid, cb, vparams, cb_er, ena){
     contentType:  "application/json",
     dataType:     "json",
     success:      function(response){
-      if (ena) { $(formid+' :input').removeAttr("disabled"); }
+      if (ena) { $(formid+':input').removeAttr("disabled"); }
       show_debug(response.debug);
       if (response.error) {
-        $("#status").text("System error: " + response.error.code + ': '+ response.error.message);
-        $("#api-log").append(l('System error [_1]: [_2]<br />', response.error.code, response.error.message));
+        $(options.statusBlock).text("System error: " + response.error.code + ': '+ response.error.message);
+        $(options.apiLog).append(l('System error [_1]: [_2]<br />', response.error.code, response.error.message));
         if (cb_er) { cb_er(formid, response);}
       } else if (response.result.error) {
         for ( var i = 0, len = response.result.error.length; i < len; ++i ){
           var t = formid + '_' + response.result.error[i].id+'_err';
           $(t).text(response.result.error[i].message);
         }
-        $("#status").text( "Form error(s)" );
+        $(options.statusBlock).text( "Form error(s)" );
         if (cb_er) { cb_er(formid, response);}
       } else {
-        $("#status").text( "OK" );
+        $(options.statusBlock).text( "OK" );
         if (cb) { cb(formid, response.result.data);}
       }
     },
     error:        function(response){
-      $("#status").text("Request error: " + response.status + ': '+ response.statusText);
-      $("#api-log").append(l('Error [_1]: [_2]<br />', response.status, response.statusText));
+      $(options.statusBlock).text("Request error: " + response.status + ': '+ response.statusText);
+      $(options.apiLog).append(l('Error [_1]: [_2]<br />', response.status, response.statusText));
       if (ena) { $(formid+' :input').removeAttr("disabled"); }
       show_debug(response.debug);
       if (cb_er) { cb_er(formid, response);}
     }
   });
-}
+};
 
-function show_debug(data) {
+var api_form = function(action, form, onSuccesse, onError, options){
   "use strict";
-  var s='';
-  var ht = $("#debug-console").html();
-  if (data && $("#debug-console")) {
-    var i, len, row;
-    for ( i = 0, len = data.length; i<len; ++i ){
-      row = data[i];
-      s = s + l('<tr class="[_1]"><td nowrap valign="top" width="30%">[ [_2] / [_3] / [_4] ] [_5] / [_6]</td><td>[_7]</td></tr>',
-        (i % 2)?'even':'odd', row.source, row.stage, row.level, row.caller, row.line,
-        (row.message)?row.message:'<pre id="debug-'+i+'" style="font-size:9px; color: grey"></pre>'
-      );
-    }
-    ht = (ht !== '') ? '<hr style="margin:15px 0px;" />' + ht : '';
-    $("#debug-console").html('<table class="debug">' + s + '</table>' + ht);
-    for ( i = 0, len = data.length; i<len; ++i ){
-      row = data[i];
-      if (! row.message) { $("#debug-" + i).text(row.data); }
-    }
-  }
-}
+  options = $.extend(true, {
+    statusBlock: '#status',
+    errorBlock:'#errors',
+    debugForm:'#debug-form',
+    apiLog:'#api-log'
+  }, options);
+
+  var params = $(form).serializeObject($(form).attr('id'));
+  $($(form).attr('id')+' :input').attr("disabled","disabled");
+  api(action, $(form).attr('id'), onSuccesse, params, onError, true,options);
+};

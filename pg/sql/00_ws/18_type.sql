@@ -84,7 +84,8 @@ CREATE DOMAIN d_lang AS TEXT CHECK (VALUE ~ E'^(?:ru|en)$');
 
 CREATE DOMAIN d_stamp AS TIMESTAMP(0);
 
-
+CREATE DOMAIN d_rating AS NUMERIC(4,3) CHECK (VALUE BETWEEN -2 AND 2);
+COMMENT ON DOMAIN d_rating IS 'Рейтинг компании';
 
 /* ------------------------------------------------------------------------- */
 CREATE DOMAIN d_codea AS TEXT[] CHECK (array_to_string(VALUE,';') ~ E'^([a-z\\d][a-z\\d\\.\\-_]*)(;[a-z\\d][a-z\\d\\.\\-_]*)*$') ;

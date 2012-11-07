@@ -111,6 +111,10 @@ INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_id32'), dt_id('smallint'
 
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_stamp'), dt_id('timestamp'), 'Момент времени с точностью до секунды');
 
+INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_rating'), dt_id('numeric'), 'Рейтинг компании');
+INSERT INTO dt_facet VALUES (dt_id('d_rating'), facet_id('minInclusive'), -2);
+INSERT INTO dt_facet VALUES (dt_id('d_rating'), facet_id('maxInclusive'), 2);
+
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_sort'), dt_id('smallint'), 'Порядок сортировки');
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_regexp'), dt_id('text'), 'Регулярное выражение');
 

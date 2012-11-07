@@ -22,7 +22,7 @@
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, pkg, uri, tmpl, name) VALUES
-   ('api',     'main', 2, 1, 99,:'PKG', 'docs$',        'apidoc/index',   'Описание API')
+   ('api',     'main', 2, 1, NULL,:'PKG', 'docs$',        'apidoc/index',   'Описание API')
  , ('api.smd',  'api', 2, 1, 3, :'PKG', 'docs/smd$',    'apidoc/smd',     'Описание методов')
  , ('api.map',  'api', 2, 1, 2, :'PKG', 'docs/pagemap$','apidoc/pagemap', 'Описание страниц')
  , ('api.xsd',  'api', 2, 1, 5, :'PKG', 'docs/xsd$',    'apidoc/xsd',     'Описание типов')

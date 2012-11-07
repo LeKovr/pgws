@@ -6,6 +6,7 @@
   );
   meta.head.timepicker = 1;
   meta.head.autocomplete = 1;
+  meta.head.formev = 1;
 
   group_id = page.args.shift;
   group_code = page.args.shift;
@@ -51,13 +52,16 @@
   <div class="acc-panel">
     <p class="acc-nav acc-attr">[% l('Атрибуты').replace('(.)','$1 ') %]</p>
     <div class="acc-body" id="p-attr">
+    <div class="attrClass">
       <h2>[% l('Атрибуты') %]</h2>
       <form id="attr-form" action="js_required_but_not_available" onsubmit="return false;">
         <input type="hidden" name="_sid" value="[% session.sid %]"/>
         <input type="hidden" name="id" value="[% doc_id %]"/>
         <input type="hidden" id="up_id" name="up_id" value="[% info.up_id %]"/>
         <div id="div_attr">
-          <p><label>[% l("Текущий статус") %] <select id="status_id" name="status_id">
+          <p><label>[% l("Текущий статус") %]
+          <span class="editable">
+          <select id="status_id" name="status_id" class="edit hide">
             [% FOREACH s IN doc_class_status; %]
               [% IF s.id == info.status_id; %]
                 <option value="[% s.id %]" selected="selected">[% s.name %]</option>
@@ -65,8 +69,11 @@
                 <option value="[% s.id %]">[% s.name %]</option>
               [% END; %]
             [% END; %]
-          </select></label></p>
-          <p><label>[% l("Следующий статус") %] <select id="nextStatus" name="status_next_id">
+          </select>
+          <span class="view"></span>
+          </span>
+          </label></p>
+          <p><label>[% l("Следующий статус") %] <span class="editable"><select id="nextStatus" name="status_next_id" class="edit hide">
             [% FOREACH s IN doc_class_status; %]
               [% IF s.id == info.status_next_id; %]
                 <option value="[% s.id %]" selected="selected">[% s.name %]</option>
@@ -74,27 +81,34 @@
                 <option value="[% s.id %]">[% s.name %]</option>
               [% END; %]
             [% END; %]
-            </select> от
-            <input type="text" size="17" id="date" name="status_next_at" value="[% info.status_next_at %]"/></label>
+            </select><span class="view"></span></span> от
+            <span class="editable">
+            <input type="text" size="17" id="date" name="status_next_at" value="[% info.status_next_at %]" class="edit hide"/>
+            <span class="view"></span>
+            </span></label>
           </p>
-          <p><label>[% l("Родительская статья") %] <input type="text" id="autoc"  autocomplete="off" value="[% name_doc_up.name %]"/></p>
+          <p><label>[% l("Родительская статья") %] <span class="editable"><input type="text" id="autoc"  autocomplete="off" value="[% name_doc_up.name %]" class="edit hide"/>
+          <span class="view"></span>
+          </span></p>
           <font style="float:left;"><label>[% l("Ключевые слова") %]:</label></font>
           <div id="keyword" style="float:left;">
             [%  FOREACH this = wiki_word_str; %]
-              <div style='float:left;margin-left:5px;margin-right:5px;'>[% this %]<input type='hidden' name='keywords' value='[% this %]'/></div>
+              <div style='float:left;margin-left:5px;margin-right:5px;'>[% this %]<input type='hidden' name='keywords' value='[% this %]'/><a href='#' onClick='delThis(this)' class="edit hide">[x]</a></div>
             [%  END; %]
           </div>
-          <div class="div_button" style="display:none;">
-            <input type="text" id="inputnewkey" style="float:left;" autocomplete="off"/>
-            <button onclick="addWord()">[% l("Добавить новое ключевое слово") %]</button>
+          <div class="div_button">
+            <input type="text" id="inputnewkey" style="float:left;" autocomplete="off" class="edit hide"/>
+            <button onclick="addWord()" class="edit hide">[% l("Добавить новое ключевое слово") %]</button>
           </div>
         </div>
-        <br/><br/><button class="button_change" style="display:none" onclick="to_Save()">[% l("Изменить") %]</button>
-        <div class="div_button" style="display:none">
-          <button onClick="saveAttr()">[% l("Сохранить") %]</button>
-          <button onclick="Cancel()">[% l("Отмена") %]</button>
+        <br/><br/>
+        <div class="buttons">
+	  <input type="button" class="view edit_on" value="[% l("Изменить") %]" />
+	  <input type="button" class="edit save hide" value="[% l("Сохранить") %]"/>
+	  <input type="button" class="edit reset hide" value="[% l("Отмена") %]"/>
         </div>
       </form>
+      </div>
       <h2>[% l('Файлы') %]</h2>
       [% INCLUDE block/wiki/file_upload.tt2 %]
     </div>
@@ -167,35 +181,8 @@ function formSend(id, action) {
   $('#status').text('');
   $('div.error').text('');
   var form_id = '#' + id + '-form';
-  api_form(action, form_id, formOK,formErr);
+  api_form(action, form_id, formOK, formErr);
   return false;
-};
-function to_Save(){
-  $(".button_change").hide();
-  $(".div_button").show();
-  addLinkDelete();
-  InputDisabled(false);
-};
-function Cancel(){
-  $(".div_button").hide();
-  $(".button_change").show();
-  delX();
-  InputDisabled(true);
-};
-function InputDisabled(param){
-  $("#div_attr").find("input").attr("disabled",param);
-  $("#div_attr").find("select").attr("disabled",param);
-};
-function addLinkDelete(){     // функция для добавления [x]
-  var arrFont = $("#keyword").find("div");
-  if($(arrFont).find("a").length==0){
-    $.each(arrFont, function(){
-      $(this).html($(this).html()+" <a href='#' onClick='delThis(this)'>[x]</a>");
-    });
-  }
-};
-function delX(){        // скрыть [x]
-  $("#keyword").find("a").remove();
 };
 function delThis(l){        //функция для удаления слова из ключевой строки
   $(l).parent().remove();
@@ -210,11 +197,6 @@ function addWord(){       //добавляем новое слово в ключ
 
 function constructorDivKeyWord(param){
   return "<div style='float:left;margin-left:5px;margin-right:5px;'>"+param+"<input type=\"hidden\" name=\"keywords\" value=\""+param+"\"/><a href='#' onClick='delThis(this)'>[x]</a></div>";
-};
-function saveAttr(){  //сохраняем атрибуты
-  api_form('wiki.doc_update_attr', '#attr-form',formOK);
-};
-var resOk = function(formid, res) {
 };
 var formOK = function(formid, res) {
   if (typeof res == 'number') {
@@ -232,6 +214,13 @@ var formOK = function(formid, res) {
       $('html, body').scrollTop(0);
     }
   }
+};
+
+var saveAttr = function(container, cbSaveSuccess, cbFormDisable, cbFormEnable) {
+  api_form( 'wiki.doc_update_attr',  '#attr-form',  function(){
+    cbFormEnable(container);
+    cbSaveSuccess(container);
+  });
 };
 
 var formErr = function(formid, res) {
@@ -287,7 +276,6 @@ $(document).ready(function(){
   if(!acl_wikisave){
     $("#accordion").hide();
   }
-  InputDisabled(true);
 });
 $(function() {
 	$("#date").datetimepicker({minDate: 0}); //дата-время не раньше текущего
@@ -332,7 +320,7 @@ $(document).ready(function(){
           string: request.term
         },
         success: function( data ) {
-          if(typeof data.result.data != 'undefined'){
+          if(typeof data.result.data != 'undefined' && data.result.data!= null){
             response( $.map( data.result.data, function( item ) {
               return {
                 label: item,
@@ -345,6 +333,7 @@ $(document).ready(function(){
     },
     minLength: 1
   });
+  $(".attrClass").formEV({onSubmit:saveAttr});
 });
 //]]>
 </script>
