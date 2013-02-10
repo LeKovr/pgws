@@ -26,7 +26,7 @@ INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
 /* ------------------------------------------------------------------------- */
 INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
   ('db',    1,  'ws.daemon.db.sql.0',                   $_$SET datestyle TO 'German'$_$)
-, ('db',    1,  'ws.daemon.db.sql.1',                   $_$SET timezone TO 'Europe/Moscow'$_$)
+, ('db',    1,  'ws.daemon.db.sql.1',                   $_$SET time zone local$_$)
 , ('fcgi',  1,  'ws.daemon.startup.sock_wait',          NULL)
 
 -- , ('fe',    1,  'ws.daemon.fe.tmpl.layout_default',     'style01')
@@ -42,6 +42,7 @@ INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
 , ('fe',    1,  'ws.daemon.fe.tt2.EVAL_PERL',           '0')
 , ('fe',    1,  'ws.daemon.fe.tt2.PRE_CHOMP',           '1')
 , ('fe',    1,  'ws.daemon.fe.tt2.POST_CHOMP',          '1')
+, ('fe',    1,  'ws.daemon.fe.tt2.PLUGIN_BASE',         'PGWS::TT2::Plugin')
 
 , ('fe',    1,  'ws.daemon.fe.post./pwl',               '/pwl')
 , ('fe',    1,  'ws.daemon.fe.post./api',               '/api')
@@ -104,7 +105,7 @@ INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
 , ('fe',    1,  'ws.daemon.log.syslog.tmpl.call',       NULL)
 , ('fe',    1,  'ws.daemon.log.syslog.tmpl.sid',        NULL)
 , ('fe',    1,  'ws.daemon.log.syslog.tmpl.acl',        NULL)
-, ('fe',    1,  'ws.daemon.log.syslog.tmpl.cache',      5)
+, ('fe',    1,  'ws.daemon.log.syslog.tmpl.cache',      NULL)
 , ('fe',    1,  'ws.daemon.log.syslog.tmpl.validate',   NULL)
 
 , ('tm',    1,  'ws.daemon.mgr.listen.job',             'jq_event')

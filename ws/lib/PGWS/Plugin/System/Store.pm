@@ -26,7 +26,7 @@ use PGWS::Utils;
 use base qw(PGWS::Plugin);
 
 use constant FILE_STORE_PATH        => ($ENV{PGWS_FILE_STORE_PATH} || '/tmp');
-use constant FILE_GENERATED_PREFIX  => ($ENV{PGWS_FILE_GENERATED_PREFIX} || 'generated' );
+use constant FILE_GENERATED_PREFIX  => ($ENV{PGWS_FILE_GENERATED_PREFIX} || 'apidata' );
 
 use Data::Dumper;
 #----------------------------------------------------------------------
@@ -35,32 +35,31 @@ use Data::Dumper;
 #   api('ws.store.set', class => 'tender', type => 'process', id => tender_id, data => res);
 sub set {
   my ($pkg, $self, $meta, $args, $mtd_def) = @_;
-  my ($id, $tag, $data) = (@$args);
+  my ($path, $data) = (@$args);
 
-  my $class = $self->class_list->{$mtd_def->{'class_id'}};
-  my $path = _mk_path($class->{'code'}, $id, $tag);
   $meta->dump({ 'path'=> $path, 'data' => $data});
+  my ($size, $csum) = PGWS::Utils::data_set($data, FILE_STORE_PATH.'/'.$path);
 
-  PGWS::Utils::data_set($data, $path);
-  return { 'result' => { 'data' => 1 } };
+  return { 'result' => { 'data' => { 'path' => $path, 'size' => $size, 'csum' => $csum } } };
 }
 
+#----------------------------------------------------------------------
 sub get {
   my ($pkg, $self, $meta, $args, $mtd_def) = @_;
-  my ($id, $tag) = (@$args);
-
-  my $class = $self->class_list->{$mtd_def->{'class_id'}};
-  my $path = _mk_path($class->{'code'}, $id, $tag);
-  my $data = PGWS::Utils::data_get($path);
+  my ($path) = (@$args);
+  my $data = PGWS::Utils::data_get(FILE_STORE_PATH.'/'.$path);
   $meta->dump({ 'path'=> $path, 'data' => $data});
   return { 'result' => { 'data' => $data } };
 }
 
-sub _mk_path {
-  my ($class, $id, $tag) = @_;
-  return join '/', FILE_STORE_PATH, FILE_GENERATED_PREFIX, $class, $id, $tag.'.json.gz';
+#----------------------------------------------------------------------
+sub get64 {
+  my ($pkg, $self, $meta, $args, $mtd_def) = @_;
+  my ($path) = (@$args);
+  my $data = PGWS::Utils::data_get(FILE_STORE_PATH.'/'.$path, {'encode' => 'base64'});
+  $meta->dump({ 'path'=> $path, 'data' => $data});
+  return { 'result' => { 'data' => $data } };
 }
-
 1;
 
 __END__

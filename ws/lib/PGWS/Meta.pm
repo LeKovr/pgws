@@ -78,7 +78,7 @@ sub stat_db { return $_[0]->{'stat_db'} }
 #----------------------------------------------------------------------
 sub new {
   my ($class, $self) = @_;
-  $self ||= {};
+  $self = $self ? { %{$self} } : {};
   $self->{'buffer'} ||= [];
   $self->{'stage'} ||= ['default'];
   $self->{'source'} ||= 'default';
@@ -144,11 +144,22 @@ sub _log_mode {
   return defined($dss)?$dss:return $self->{'default_level'};
 }
 
+#----------------------------------------------------------------------
 # уровень отладки для запросов API
 sub debug_level {
   my $self = shift;
   return $self->{'debug'}{'post'} || $self->{'debug'}{'default'};
 }
+
+#----------------------------------------------------------------------
+# разрешение на выдачу в ответе отладочной информации
+sub debug_iface_allowed { 
+  my $self = shift;
+  my $flag = shift;
+  $self->{'debug_iface'} = $flag if (defined($flag)); 
+  return $self->{'debug_iface'}; 
+}
+
 1;
 
 __END__

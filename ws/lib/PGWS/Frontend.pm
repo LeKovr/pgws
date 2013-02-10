@@ -27,6 +27,8 @@ use PGWS::Core;
 use PGWS::DBConfig;
 
 use Template;
+use Template::Plugins;
+
 use strict;
 
 # проверка зависимостей
@@ -41,7 +43,8 @@ BEGIN {
 use constant ROOT               => ($ENV{PGWS_ROOT} || '');   # PGWS root dir
 use constant POGC               => 'fe';                      # Property Owner Group Code
 
-use constant REALM              => ($ENV{PGWS_FE_REALM} || '');
+use constant REALM_UPLOAD       => ($ENV{PGWS_FE_REALM_UPLOAD} || '');
+use constant REALM_FE           => ($ENV{PGWS_FE_REALM} || 'fe_only');
 
 use constant FILE_URI           => ($ENV{PGWS_FILE_URI});
 use constant FILE_STORE_PATH    => ($ENV{PGWS_FILE_STORE_PATH});
@@ -83,7 +86,7 @@ sub new {
     PRE_PROCESS   => $layout.$ext,
     %{$dbc->config('fe.tt2')}
   );
-
+  #$Template::Plugins::PLUGIN_BASE = '';
   $self->{'template'} = Template->new(%template_config);
   {
     no warnings 'once';
@@ -102,7 +105,7 @@ sub run {
 
   my $meta_cfg = $self->dbc->config('log');
   my $meta = PGWS::Meta->new($meta_cfg);
-
+  $meta->debug_iface_allowed(DEBUG_IFACE);
   if ($req->method eq 'JOB') {
     $self->process_job($meta, $req);
   } else {
@@ -154,14 +157,14 @@ sub process_direct {
   my $realm = $params->{'_realm'};
   if ($realm) {
     my ($code, $key) = split /:/, $realm;
-    $params->{'_realm'} = $code if ($realm eq REALM);
+    $params->{'_realm'} = $code if ($realm eq REALM_UPLOAD);
     if ($params->{'_realm'} eq 'upload') {
       # nginx upload
       my $prefix = FILE_STORE_PATH;
       $params->{'_path'} =~ s/^$prefix// if ($params->{'_path'});
     }
   }
-print STDERR Dumper($method, $params);
+#print STDERR Dumper($method, $params);
   my $ret = $ws->run_prepared($meta, $method, $params);
   my $is_pretty;
   if ($req->accept =~ m|application/json|) {
@@ -210,6 +213,10 @@ sub process_job {
     my $vars = {
       'resp'    => {},
       'params'  => $req->params,
+      'plugin'   => {
+        'root' => ROOT,
+#        'config' => $dbc,
+      },
       %{$self->tmpl_vars($ws, $errors, $meta, 'http', '/api', '', $dbc->config('fe.def.code'))}
     }; # TODO: get from dbc values of 'http', '/api'
     #$meta->setsource('tmpl');
@@ -379,18 +386,15 @@ sub api {
   my ($self, $ws, $errors, $meta, $type, $method, $params) = @_;
   delete $params->{'_realm'}; # used only in process_direct
   my $ret = $ws->run_prepared($meta, $method, $params);
-
-  if (defined ($ret->{'result'}{'data'})) {
-    return $ret->{'result'}{'data'};
-  }
-  if (defined($errors)) {
-    if ($type) {
-      push @$errors, { 'type' => $type, 'data' => $ret };
-    } else {
-      push @$errors, { 'method' => $method, 'params' => $params, 'data' => $ret};
-    }
-  }
-  return;
+  return _api_result($errors, $type, $method, $params, $ret);
+}
+#----------------------------------------------------------------------
+# вызов системного метода из темплейта
+sub sysapi {
+  my ($self, $ws, $errors, $meta, $type, $method, $params) = @_;
+  $params->{'_realm'} = REALM_FE;
+  my $ret = $ws->run_prepared($meta, $method, $params);
+  return _api_result($errors, $type, $method, $params, $ret);
 }
 
 #----------------------------------------------------------------------
@@ -496,9 +500,27 @@ sub tmpl_vars {
     'json'        => sub { PGWS::Utils::json_out(@_) },
     'is_bit_set'  => sub { my ($a,$b) = @_; return ($a & $b) == $b; },
     'api'         => sub { api($self, $ws, $errors, $meta, undef, @_) },
+    'sysapi'      => sub { sysapi($self, $ws, $errors, $meta, undef, @_) },
     'uri'         => sub { api($self, $ws, $errors, $meta, undef, $def_code, @_); },
   }
 }
+
+#----------------------------------------------------------------------
+sub _api_result {
+  my ($errors, $type, $method, $params, $ret) = @_;
+  if (defined ($ret->{'result'}{'data'})) {
+    return $ret->{'result'}{'data'};
+  }
+  if (defined($errors)) {
+    if ($type) {
+      push @$errors, { 'type' => $type, 'data' => $ret };
+    } else {
+      push @$errors, { 'method' => $method, 'params' => $params, 'data' => $ret};
+    }
+  }
+  return;
+}
+
 1;
 
 __END__

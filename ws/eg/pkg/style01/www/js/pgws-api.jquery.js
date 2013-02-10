@@ -49,12 +49,13 @@ var show_debug = function(data){
   }
 };
 
-$.fn.serializeObject = function(formid) {
+$.fn.serializeObject = function(formId) {
   "use strict";
   var o = {};
   var a = this.serializeArray();
+  var formId = '#' + this.attr('id');
   $.each(a, function() {
-    $(formid+'_'+this.name+'_err').text(''); // TODO: get formid from 'this"
+    $(formId + '_' + this.name + '_err').text('');
     if (o[this.name]) {
       if (!o[this.name].push) {
         o[this.name] = [o[this.name]];
@@ -67,7 +68,13 @@ $.fn.serializeObject = function(formid) {
   return o;
 };
 
-var api = function(mtd, formid, cb, vparams, cb_er, ena,options){
+var api_input_enable = function(formId) {
+  $.each($(formId)[0].elements, function(k, v) {
+    if ($(this).hasClass('tmpPGWSDisabled')) $(this).removeAttr('disabled').removeClass('tmpPGWSDisabled');
+  });
+}
+
+var api = function(mtd, formId, cb, vparams, cb_er, ena, options){
   "use strict";
   options = $.extend(true, {
      statusBlock: '#status',
@@ -76,7 +83,7 @@ var api = function(mtd, formid, cb, vparams, cb_er, ena,options){
      apiLog:'#api-log'
   }, options);
 
-  $(options.statusBlock).text( "In process..." );
+  $(options.statusBlock).text(options.processMsg);
   $(options.errorBlock).text('');
   var req = {
     id: 77,
@@ -85,7 +92,7 @@ var api = function(mtd, formid, cb, vparams, cb_er, ena,options){
     sid: window.PGWS.req.sid,
     lang: window.PGWS.req.lang,
     params: vparams,
-    debug: $(options.debugForm).serializeObject(options.debugForm)
+    debug: $(options.debugForm).serializeObject()
   };
   $.ajax({
     type:         "POST",
@@ -97,44 +104,53 @@ var api = function(mtd, formid, cb, vparams, cb_er, ena,options){
     contentType:  "application/json",
     dataType:     "json",
     success:      function(response){
-      if (ena) { $(formid+':input').removeAttr("disabled"); }
+      if (ena) { api_input_enable(formId) }
       show_debug(response.debug);
       if (response.error) {
-        $(options.statusBlock).text("System error: " + response.error.code + ': '+ response.error.message);
-        $(options.apiLog).append(l('System error [_1]: [_2]<br />', response.error.code, response.error.message));
-        if (cb_er) { cb_er(formid, response);}
+        var msg = options.sysErrorMsg + ': ' + response.error.code + '. '+ response.error.message;
+        $(options.statusBlock).text(msg);
+        $(options.apiLog).append(msg + '<br />');
+        if (cb_er) { cb_er(formId, response);}
       } else if (response.result.error) {
         for ( var i = 0, len = response.result.error.length; i < len; ++i ){
-          var t = formid + '_' + response.result.error[i].id+'_err';
+          var t = formId + '_' + response.result.error[i].id + '_err';
           $(t).text(response.result.error[i].message);
         }
-        $(options.statusBlock).text( "Form error(s)" );
-        if (cb_er) { cb_er(formid, response);}
+        $(options.statusBlock).text(options.formErrorMsg);
+        if (cb_er) { cb_er(formId, response);}
       } else {
-        $(options.statusBlock).text( "OK" );
-        if (cb) { cb(formid, response.result.data);}
+        $(options.statusBlock).text(options.successMsg);
+        if (cb) { cb(formId, response.result.data);}
       }
     },
     error:        function(response){
-      $(options.statusBlock).text("Request error: " + response.status + ': '+ response.statusText);
-      $(options.apiLog).append(l('Error [_1]: [_2]<br />', response.status, response.statusText));
-      if (ena) { $(formid+' :input').removeAttr("disabled"); }
+      var msg = options.reqErrorMsg + ': ' + response.status + '. '+ response.statusText;
+      $(options.statusBlock).text(msg);
+      $(options.apiLog).append(msg + '<br />');
+      if (ena) { api_input_enable(formId) }
       show_debug(response.debug);
-      if (cb_er) { cb_er(formid, response);}
+      if (cb_er) { cb_er(formId, response);}
     }
   });
 };
 
-var api_form = function(action, form, onSuccesse, onError, options){
+var api_form = function(action, formId, onSuccesse, onError, options){
   "use strict";
   options = $.extend(true, {
     statusBlock: '#status',
     errorBlock:'#errors',
     debugForm:'#debug-form',
-    apiLog:'#api-log'
+    apiLog:'#api-log',
+    sysErrorMsg: 'System error',
+    formErrorMsg: 'Form error(s)',
+    reqErrorMsg: 'Request error',
+    successMsg: 'OK',
+    processMsg: 'In process...'
   }, options);
 
-  var params = $(form).serializeObject($(form).attr('id'));
-  $($(form).attr('id')+' :input').attr("disabled","disabled");
-  api(action, $(form).attr('id'), onSuccesse, params, onError, true,options);
+  var params = $(formId).serializeObject();
+  $.each($(formId)[0].elements, function(k, v) {
+    if ($(this).attr('disabled') !== 'disabled') $(this).addClass('tmpPGWSDisabled').attr('disabled','disabled');
+  });
+  api(action, formId, onSuccesse, params, onError, true, options);
 };

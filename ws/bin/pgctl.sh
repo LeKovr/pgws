@@ -402,6 +402,9 @@ case "$cmd" in
     db_run del "00_*.sql" $src "$pkg"
     ;;
   erase)
+    echo "!!!WARNING!!! Erase will drop persistent data"
+    read -t 5 -n 1 -p "Continue? [N]"
+    [[ "$REPLY" != ${REPLY%[yYнН]} ]] || { echo "No confirm" ; exit ; }
     db_run erase "0?_*.sql" $src "$pkg"
     ;;
   make)

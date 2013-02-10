@@ -25,52 +25,102 @@ INSERT INTO wsd.pkg_script_protected (code, pkg, ver) VALUES (:'FILE', :'PKG', :
 
 SET LOCAL search_path = ws, i18n_def, public;
 
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.file_folder (
+  code              TEXT    PRIMARY KEY
+, class_id          INTEGER NOT NULL
+, sort              INTEGER NOT NULL DEFAULT 1
+, has_version       BOOL NOT NULL DEFAULT FALSE
+, has_file_code     BOOL NOT NULL DEFAULT FALSE
+, file_code_unpack  TEXT
+, file_code_mask    TEXT
+, page_code         TEXT
+, name              TEXT    NOT NULL
+, anno              TEXT
+, pkg               TEXT    NOT NULL DEFAULT ws.pg_cs()
+);
+SELECT pg_c('r', 'wsd.file_folder', 'Папки файлов, объединение файлов по смыслу и правам доступа')
+, pg_c('c', 'wsd.file_folder.code',             'Код папки')
+, pg_c('c', 'wsd.file_folder.class_id',         'Класс объектов, которым принадлежат файлы')
+, pg_c('c', 'wsd.file_folder.sort',             'Сортировка внутри класса')
+, pg_c('c', 'wsd.file_folder.has_version',      'Файлы в папке имеют версии')
+, pg_c('c', 'wsd.file_folder.has_file_code',    'Файлы в папке различаются кодом файла')
+, pg_c('c', 'wsd.file_folder.file_code_mask',   'Маска кода файла')
+, pg_c('c', 'wsd.file_folder.file_code_unpack', 'Функция декодирования кода файла')
+, pg_c('c', 'wsd.file_folder.page_code',        'Код страницы - ссылки на файл')
+, pg_c('c', 'wsd.file_folder.name',             'Название папки')
+, pg_c('c', 'wsd.file_folder.anno',             'Аннотация')
+, pg_c('c', 'wsd.file_folder.pkg',              'Папкет, в котором используется папка')
+;
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.file_folder_format (
+  folder_code TEXT REFERENCES wsd.file_folder
+, format_code TEXT
+, is_internal BOOL NOT NULL DEFAULT FALSE -- не показывать в списке доступных
+, CONSTRAINT  file_folder_format_pkey PRIMARY KEY (folder_code, format_code)
+);
+SELECT pg_c('r', 'wsd.file_folder', 'Допустимые в папке форматов файлов')
+;
+
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.file (
-  file_id         INTEGER      PRIMARY KEY /* добавлен file_ чтобы в join было удобно брать wsd.file.* */
-, path          TEXT         NOT NULL
-, size          INTEGER      NOT NULL
-, csum          TEXT         NOT NULL
-, name          TEXT         NOT NULL
-, ctype         TEXT         NOT NULL DEFAULT 'application/unknown'
-, link_cnt      INTEGER      NOT NULL DEFAULT 0
-, created_by    INTEGER      NOT NULL -- REFERENCES wsd.account
-, created_at    TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
+  id            INTEGER       PRIMARY KEY
+, path          TEXT          NOT NULL
+, name          TEXT          NOT NULL
+, size          INTEGER       NOT NULL
+, csum          TEXT          NOT NULL
+, format_code   TEXT          NOT NULL
+, ctype         TEXT          NOT NULL DEFAULT 'application/unknown'
+, link_cnt      INTEGER       NOT NULL DEFAULT 1
+, created_by    INTEGER       NOT NULL -- REFERENCES wsd.account
+, created_at    TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
 , anno          TEXT
 );
 
 SELECT pg_c('r', 'wsd.file', 'Внешний файл')
-, pg_c('c', 'wsd.file.file_id',    'ID файла')
-, pg_c('c', 'wsd.file.path',       'Ключ файл-сервера')
-, pg_c('c', 'wsd.file.size',       'Размер (байт)')
-, pg_c('c', 'wsd.file.csum',       'Контрольная сумма (sha1)')
-, pg_c('c', 'wsd.file.name',       'Внешнее имя файла')
-, pg_c('c', 'wsd.file.ctype',      'Content type')
-, pg_c('c', 'wsd.file.link_cnt',   'Количество связанных объектов')
-, pg_c('c', 'wsd.file.created_by', 'Автор загрузки/генерации')
-, pg_c('c', 'wsd.file.created_at', 'Момент загрузки/генерации')
-, pg_c('c', 'wsd.file.anno',       'Комментарий')
+, pg_c('c', 'wsd.file.id',          'ID файла')
+, pg_c('c', 'wsd.file.path',        'Ключ файл-сервера')
+, pg_c('c', 'wsd.file.name',        'Внешнее имя файла')
+, pg_c('c', 'wsd.file.size',        'Размер (байт)')
+, pg_c('c', 'wsd.file.csum',        'Контрольная сумма (sha1)')
+, pg_c('c', 'wsd.file.format_code', 'Код формата файла')
+, pg_c('c', 'wsd.file.ctype',       'Content type (для формата *)')
+, pg_c('c', 'wsd.file.link_cnt',    'Количество связанных объектов')
+, pg_c('c', 'wsd.file.created_by',  'Автор загрузки/генерации')
+, pg_c('c', 'wsd.file.created_at',  'Момент загрузки/генерации')
+, pg_c('c', 'wsd.file.anno',        'Комментарий')
 ;
 
 CREATE SEQUENCE wsd.file_id_seq;
-ALTER TABLE wsd.file ALTER COLUMN file_id SET DEFAULT NEXTVAL('wsd.file_id_seq');
+ALTER TABLE wsd.file ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.file_id_seq');
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.file_link (
-  file_id     INTEGER       REFERENCES wsd.file
-, class_id    INTEGER
-, obj_id      INTEGER
-, code        TEXT NOT NULL DEFAULT ''
-, created_by  INTEGER      NOT NULL -- REFERENCES wsd.account
-, created_at  TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
-, CONSTRAINT  file_link_pkey PRIMARY KEY (file_id, class_id, obj_id, code)
+  class_id    INTEGER       NOT NULL
+, obj_id      INTEGER       NOT NULL
+, folder_code TEXT          REFERENCES wsd.file_folder
+, format_code TEXT
+, file_code   TEXT          NOT NULL DEFAULT ''
+, ver         INTEGER       NOT NULL DEFAULT 1
+, id          INTEGER       REFERENCES wsd.file
+, up_id          INTEGER       REFERENCES wsd.file
+, is_ver_last BOOL          NOT NULL DEFAULT TRUE
+, created_by  INTEGER       NOT NULL -- REFERENCES wsd.account
+, created_at  TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
+, CONSTRAINT  file_link_pkey PRIMARY KEY (class_id, obj_id, folder_code, format_code, file_code, ver)
 );
 SELECT pg_c('r', 'wsd.file_link', 'Связи внешнего файла')
-, pg_c('c', 'wsd.file_link.file_id',    'ID файла')
-, pg_c('c', 'wsd.file_link.class_id',   'ID класса')
-, pg_c('c', 'wsd.file_link.obj_id',     'ID объекта')
-, pg_c('c', 'wsd.file_link.code',       'Код связи')
-, pg_c('c', 'wsd.file_link.created_by', 'Автор привязки')
-, pg_c('c', 'wsd.file_link.created_at', 'Момент привязки')
+, pg_c('c', 'wsd.file_link.class_id',     'ID класса')
+, pg_c('c', 'wsd.file_link.obj_id',       'ID объекта')
+, pg_c('c', 'wsd.file_link.folder_code',  'Код папки')
+, pg_c('c', 'wsd.file_link.format_code',  'Код формата')
+, pg_c('c', 'wsd.file_link.file_code',    'Код файла')
+, pg_c('c', 'wsd.file_link.ver',          'Версия файла')
+, pg_c('c', 'wsd.file_link.id',           'ID файла')
+, pg_c('c', 'wsd.file_link.up_id',        'ID файла, по которому сформирован текущий (TODO)')
+, pg_c('c', 'wsd.file_link.is_ver_last',  'Версия файла является последней')
+, pg_c('c', 'wsd.file_link.created_by',   'Автор привязки')
+, pg_c('c', 'wsd.file_link.created_at',   'Момент привязки')
 ;
-

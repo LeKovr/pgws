@@ -31,7 +31,7 @@ install: test data var pkg lib lib-pkg ctl setups tmpl masterconf installcomplet
 
 data:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; d=data/files/upload ; \
+	pushd .. > /dev/null ; d=data/file/upload ; \
 [ -d $$d ] || mkdir -p $$d; \
 for p in {0..9} ; do [ -d $$d/$$p ] || mkdir -m g+w $$d/$$p ; done ; \
 popd > /dev/null
@@ -97,14 +97,14 @@ PD=$$(ls pkg/) ; \
 for p in $$PD ; do if [ -d $$R/pkg/$$p ] && [ -d $$R/pkg/$$p/tmpl ] ; then \
 pushd $$R/pkg/$$p/tmpl ; \
 for d in * ; do if [[ "$$d" == "config.tt2" ]] ; then \
-  [ -e $$R/var/tmpl/$$p.tt2 ] || ln -s $$R/pkg/$$p/tmpl/$$d $$R/var/tmpl/$$p.tt2 ; \
+  [ -e $$R/var/tmpl/$$p.tt2 ] || ln -s ../../pkg/$$p/tmpl/$$d $$R/var/tmpl/$$p.tt2 ; \
   elif [[ "$$d" == "macro" ]] ; then \
   [ -d $$R/var/tmpl/$$d ] || mkdir -p $$R/var/tmpl/$$d ; \
 for n in $$d/*.tt2 ; do \
-  [ -e $$R/var/tmpl/$$n ] || ln -s $$R/pkg/$$p/tmpl/$$n $$R/var/tmpl/$$n ; \
+  [ -e $$R/var/tmpl/$$n ] || ln -s ../../../pkg/$$p/tmpl/$$n $$R/var/tmpl/$$n ; \
 done else \
   [ -d $$R/var/tmpl/$$d ] || mkdir -p $$R/var/tmpl/$$d ; \
-  [ -e $$R/var/tmpl/$$d/$$p ] || ln -s $$R/pkg/$$p/tmpl/$$d $$R/var/tmpl/$$d/$$p ; \
+  [ -e $$R/var/tmpl/$$d/$$p ] || ln -s ../../../pkg/$$p/tmpl/$$d $$R/var/tmpl/$$d/$$p ; \
 fi ; done ; \
 popd > /dev/null ; \
 fi ; \
@@ -113,9 +113,9 @@ pushd $$R/pkg/$$p/www ; \
 for d in $$(ls -A) ; do \
 if [ -d $$d ] ; then \
   [ -d $$R/var/www/$$d ] || mkdir -p $$R/var/www/$$d ; \
-  [ -e $$R/var/www/$$d/$$p ] || ln -s $$R/pkg/$$p/www/$$d $$R/var/www/$$d/$$p ; \
+  [ -e $$R/var/www/$$d/$$p ] || ln -s ../../../pkg/$$p/www/$$d $$R/var/www/$$d/$$p ; \
 else \
-  [ -e $$R/var/www/$$d ] || ln -s $$R/pkg/$$p/www/$$d $$R/var/www/$$d ; \
+  [ -e $$R/var/www/$$d ] || ln -s ../../pkg/$$p/www/$$d $$R/var/www/$$d ; \
 fi \
 done ; \
 popd > /dev/null ; \

@@ -10,11 +10,10 @@
     "PROCESS_PREFIX": "pgws-dev",
     "FE_DEBUG_IFACE": 1,
 
-    "FILE_STORE_PATH": "/home/data/sampleapp/data/files/",
-    "FILE_GENERATED_PREFIX": "generated",
-    "FILE_URI": "/files",
+    "FILE_STORE_PATH": "/home/data/sampleapp/data/file",
+    "FILE_URI": "/file",
 
-    "FE_REALM": "upload:880b2dbbd8ba1cc204406124f3195285",
+    "FE_REALM_UPLOAD": "upload:880b2dbbd8ba1cc204406124f3195285",
 
     "FE_COOKIE_MASK": "PGWS_SID=([\\w+/]+)==",
 

@@ -37,6 +37,7 @@ INSERT INTO dt (id, parent_id, code, anno) VALUES
 , (14,  14, 'double',     'Длинное вещественное число')
 , (15,  15, 'bigint',     'Длинное целое')
 , (16,  16, 'json',       'Данные в формате JSON')
+, (17,  17, 'uuid',       'Universally Unique IDentifier')
 ;
 -- parent для массива хэшей, но они пока не поддерживаются DBD::Pg
 -- INSERT INTO dt (id, parent_id, code, anno) VALUES (21, 21, 'composite', 'Структура');
@@ -96,6 +97,8 @@ INSERT INTO dt_facet (id, facet_id, value, anno) VALUES (dt_id('bigint'),  facet
 
 INSERT INTO dt_facet VALUES (dt_id('oid'), facet_id('pattern'), E'^\d+$');
 
+-- TODO: INSERT INTO dt_facet VALUES (dt_id('uuid'), facet_id('pattern'), E'????');
+
 INSERT INTO dt_facet (id, facet_id, value, anno) VALUES (dt_id('date'), facet_id('pattern'), E'^\\d{1,2}\\.\\d{2}\\.\\d{4}$', 'ДД.ММ.ГГГГ');
 
 -- INSERT INTO dt_facet VALUES (dt_id('integer'), facet_id('fractionDigits'), 0);
@@ -110,6 +113,8 @@ INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_id'), dt_id('integer'), 
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_id32'), dt_id('smallint'), 'Идентификатор справочника');
 
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_stamp'), dt_id('timestamp'), 'Момент времени с точностью до секунды');
+INSERT INTO dt_facet (id, facet_id, value, anno) VALUES (dt_id('d_stamp'), facet_id('pattern')
+, E'^\\d{1,2}\\.\\d{2}\\.\\d{4}(?: +| +/ +)\\d{2}:\\d{2}(:\\d{2})?$', 'ДД.ММ.ГГГГ ЧЧ:ММ[:СС]');
 
 INSERT INTO dt (code, parent_id, anno) VALUES (pg_cs('d_rating'), dt_id('numeric'), 'Рейтинг компании');
 INSERT INTO dt_facet VALUES (dt_id('d_rating'), facet_id('minInclusive'), -2);
@@ -219,13 +224,11 @@ INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_acl_ch
 INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_acl_check'), 6, 'id2', dt_id('text'), 'ID2 объекта');
 
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_store_get'), 'Аргументы функций store_get', true);
-INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_get'), 1, 'id',     dt_id('d_id'), 'id объекта');
-INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_get'), 2, 'tag',   dt_id('d_code'), 'тэг данных');
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_get'), 1, 'path',   dt_id('d_path'), 'ID данных');
 
-INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_store_set'), 'Аргументы функций store_get', true);
-INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_set'), 1, 'id',     dt_id('d_id'), 'id объекта');
-INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_set'), 2, 'tag',    dt_id('d_code'), 'тэг данных');
-INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_set'), 3, 'data',   dt_id('json'), 'ссылка на данные');
+INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_store_set'), 'Аргументы функций store_set', true);
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_set'), 1, 'path',   dt_id('d_path'), 'ID данных');
+INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES (dt_id('z_store_set'), 2, 'data',   dt_id('text'), 'данные');
 
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('t_page_info'), 'Параметры страницы', true);
 

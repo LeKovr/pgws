@@ -103,9 +103,9 @@
         </div>
         <br/><br/>
         <div class="buttons">
-	  <input type="button" class="view edit_on" value="[% l("Изменить") %]" />
-	  <input type="button" class="edit save hide" value="[% l("Сохранить") %]"/>
-	  <input type="button" class="edit reset hide" value="[% l("Отмена") %]"/>
+          <input type="button" class="view edit_on" value="[% l("Изменить") %]" />
+          <input type="button" class="edit save hide" value="[% l("Сохранить") %]"/>
+          <input type="button" class="edit reset hide" value="[% l("Отмена") %]"/>
         </div>
       </form>
       </div>
@@ -278,7 +278,7 @@ $(document).ready(function(){
   }
 });
 $(function() {
-	$("#date").datetimepicker({minDate: 0}); //дата-время не раньше текущего
+  $("#date").datetimepicker({minDate: 0}); //дата-время не раньше текущего
 });
 
 $(document).ready(function(){

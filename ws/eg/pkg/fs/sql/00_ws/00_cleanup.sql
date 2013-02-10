@@ -21,16 +21,12 @@
     Удаление данных из схемы ws
 */
 
-/* ------------------------------------------------------------------------- */
-DROP VIEW ws.file_info;
+-- ALTER TABLE wsd.file_folder ALTER COLUMN pkg DROP DEFAULT;
 
 /* ------------------------------------------------------------------------- */
-DROP FUNCTION ws.file_add (
-  INTEGER
-, TEXT
-, INTEGER
-, TEXT
-, TEXT
-, TEXT
-, TEXT
-);
+
+ALTER TABLE wsd.file_folder_format DROP CONSTRAINT fs_fk_format_code;
+ALTER TABLE wsd.file               DROP CONSTRAINT fs_fk_format_code;
+ALTER TABLE wsd.file_link          DROP CONSTRAINT fs_fk_format_code;
+
+DELETE FROM ws.method                WHERE pkg = :'PKG';

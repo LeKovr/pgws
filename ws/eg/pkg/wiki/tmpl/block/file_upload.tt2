@@ -29,8 +29,8 @@
 [%
   files = api('wiki.doc_file', id => doc_id);
   FOREACH f IN files;
-    file_uri = uri(code => page.up_code _ '.file', id => doc_path, id1 => f.file_id, id2 => f.name);
-    %]<div class='fileDiv'><a href="[% uri_mk(file_uri.req) %]">[% f.name %]</a> <a href='#' fileid='"[% f.file_id %]"' class='btnDelete'>[x]</a><div class='deleteStatusError'></div></div>[%
+    file_uri = uri(code => page.up_code _ '.file', id => doc_path, id1 => f.id, id2 => f.name);
+    %]<div class='fileDiv'><a href="[% uri_mk(file_uri.req) %]">[% f.name %]</a> <a href='#' fileid='"[% f.id %]"' class='btnDelete'>[x]</a><div class='deleteStatusError'></div></div>[%
   END
 %]
 </div>
@@ -55,7 +55,7 @@ var deleteFileOptions = {
 var onSuccess = function(container, response){
   if (response.success === "true") {
     var file = response.result.data;
-    $('.uploaded').append('<div class=\'fileDiv\'><a href="[% view_pathname %]/file/' + file.file_id + '/' + file.name + '">' + file.name + '</a> <a href="#" fileid="' + file.file_id + '" class="btnDelete">[x]</a><div class="deleteStatusError"></div></div>')
+    $('.uploaded').append('<div class=\'fileDiv\'><a href="[% view_pathname %]/file/' + file.id + '/' + file.name + '">' + file.name + '</a> <a href="#" fileid="' + file.id + '" class="btnDelete">[x]</a><div class="deleteStatusError"></div></div>')
     container.find('.status').text("[% l('Файл загружен') %]");
     $('.btnDelete').deleteFile(deleteFileOptions);
   } else {

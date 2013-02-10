@@ -29,13 +29,13 @@ $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION e_noaccess() RETURNS text IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT ws.e_code(ws.const_rpc_err_noaccess());
+  SELECT ws.sprintf('[{"code": "%s"}]', ws.const_rpc_err_noaccess());
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION e_nodata() RETURNS text IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT ws.e_code(ws.const_rpc_err_nodata());
+  SELECT ws.sprintf('[{"code": "%s"}]', ws.const_rpc_err_nodata());
 -- P0002  no_data_found
 $_$;
 
@@ -95,6 +95,18 @@ $_$;
 CREATE OR REPLACE FUNCTION ws.array_remove(a ANYARRAY, b ANYELEMENT) RETURNS ANYARRAY IMMUTABLE LANGUAGE 'sql' AS
 $_$
 SELECT array_agg(x) FROM unnest($1) x WHERE x <> $2;
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION ws.stamp2xml(a TIMESTAMP) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+SELECT to_char($1, E'YYYY-MM-DD"T"HH24:MI:SS+04:00');
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION ws.date2xml(a DATE) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+SELECT to_char($1, E'YYYY-MM-DD');
 $_$;
 
 /* ------------------------------------------------------------------------- */

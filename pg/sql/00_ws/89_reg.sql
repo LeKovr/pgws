@@ -76,8 +76,11 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real) VALU
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, name) VALUES
    ('info.acl_check',      2, 1, 4, 3, 'acl:check',     dt_id('z_acl_check'), dt_id('d_acls'), 'Получение acl на объект')
   ,('ws.uncache',          2, 1, 1, 2, 'cache:uncache', dt_id('z_uncache'),   dt_id('d_id'), 'Сброс кэша метода')
+/*
   ,('ws.store_get',        1, 3, 1, 2, 'store:get',     dt_id('z_store_get'), dt_id('d_id'), 'Получение данных из файлового хранилища')
-  ,('ws.store_set',        1, 5, 1, 2, 'store:set',     dt_id('z_store_set'), dt_id('d_id'), 'Сохранение данных в файловом хранилище')
+  ,('ws.store_path',        1, 3, 1, 2, 'store:path',     dt_id('z_store_get'), dt_id('d_id'), 'Получение пути из файлового хранилища')
+  ,('ws.store_set',        1, 5, 1, 3, 'store:set',     dt_id('z_store_set'), dt_id('d_id'), 'Сохранение данных в файловом хранилище')
+*/
 /*
   -- RESERVED
   ,('ws.cache_reset1',     2, 1, 1, 2, 'System::Cache::reset',      false, dt_id('z_cache_reset'), dt_id('d_id32'), 'Сброс кэша по 1 ключу')

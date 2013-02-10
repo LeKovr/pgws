@@ -16,8 +16,9 @@ IF meta.head.timepicker;
 END;
 IF meta.head.jquery;
   meta.top_headers.push(
-    "/js/external/core/jquery-1.7.2.js"
+    "/js/external/core/minified/jquery-1.7.2.min.js"
   );
   meta.head.delete('jquery');
 END;
+
 %]

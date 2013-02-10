@@ -1,9 +1,9 @@
 
 fetch() {
 cat <<-EOF
-LeKovr-jQuery-Form-3.14.zip https://nodeload.github.com/LeKovr/form/zipball/3.14
-LeKovr-formEV-v0.3.zip https://nodeload.github.com/LeKovr/formEV/zipball/v0.3
-trentrichardson-jQuery-Timepicker-Addon-v1.0.5-0.zip http://nodeload.github.com/trentrichardson/jQuery-Timepicker-Addon/zipball/v1.0.5
+LeKovr-jQuery-Form-3.14.zip https://nodeload.github.com/LeKovr/form/zip/3.14
+LeKovr-formEV-v0.3.zip https://nodeload.github.com/LeKovr/formEV/zip/v0.3
+trentrichardson-jQuery-Timepicker-Addon-v1.0.5-0.zip http://nodeload.github.com/trentrichardson/jQuery-Timepicker-Addon/zip/v1.0.5
 jquery-ui-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-1.8.22.zip
 jquery-ui-themes-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-themes-1.8.22.zip
 jquery-1.7.2.min.js http://code.jquery.com/jquery-1.7.2.min.js
@@ -22,8 +22,10 @@ WWW=www
 mk_ln() {
   local src=$1
   local dest=$2
+  local up="../../.."
+  [[ "${dest/\/*\/}" == "${dest/\/.}" ]] || up="../../../.."
   [ -d ../www/$dest ] || mkdir -p ../www/$dest
-  [ -e ../www/$dest/$src ] || ln -s $PWD/$src ../www/$dest/$src
+  [ -e ../www/$dest/$src ] || ln -s $up/src/$src ../www/$dest/$src
 }
 
 mk_lnd() {
@@ -32,8 +34,10 @@ mk_lnd() {
   local dir=$3
   local name=$4
   [[ "$name" ]] || name=$src
+  local up="../.."
+  [[ "$dest" == "${dest/\/}" ]] || up="../../.."
   [ -d ../www/$dest ] || mkdir -p ../www/$dest
-  [ -e ../www/$dest/$name ] || ln -s $PWD/$dir$src ../www/$dest/$name
+  [ -e ../www/$dest/$name ] || ln -s $up/src/$dir$src ../www/$dest/$name
 }
 
 for d in $DIR $SRC $WWW ; do
@@ -71,17 +75,18 @@ for s in * ; do
       echo "ui setup"
       mk_lnd ui js $s/
       ;;
-    trentrichardson-jQuery-Timepicker-Addon-*)
+    jQuery-Timepicker-Addon-*)
       echo "Timepicker setup"
       mk_lnd jquery-ui-timepicker-addon.js js/addon $s/
+      mk_lnd jquery-ui-sliderAccess.js js/addon $s/
       mk_lnd localization js/addon $s/ i18n
       mk_lnd jquery-ui-timepicker-addon.css css $s/
       ;;
-    LeKovr-form-*)
+    form-*)
       echo "jquery.form setup"
       mk_lnd jquery.form.js js/addon $s/
       ;;
-    LeKovr-formEV-*)
+    formEV-*)
       echo "jquery.formEV setup"
       mk_lnd jquery.formev.js js/addon $s/
       ;;

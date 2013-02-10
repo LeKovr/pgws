@@ -28,8 +28,11 @@ DELETE FROM ws.method                WHERE pkg = :'PKG';
 ALTER TABLE wsd.job DROP CONSTRAINT job_fk_status_id;
 ALTER TABLE wsd.job_todo DROP CONSTRAINT job_fk_status_id;
 
-DROP TRIGGER IF EXISTS notify_oninsert ON wsd.job;
-DROP TRIGGER IF EXISTS notify_onupdate ON wsd.job;
+DROP TRIGGER notify_oninsert ON wsd.job;
+DROP TRIGGER notify_onupdate ON wsd.job;
+
+DROP TRIGGER handler_id_update_forbidden  ON wsd.job;
+DROP TRIGGER handler_id_update_forbidden  ON wsd.job_todo;
 
 DELETE FROM ws.prop                 WHERE pkg = :'PKG';
 UPDATE ws.prop SET pogc_list = ws.array_remove(pogc_list::text[], 'job') WHERE 'job' = ANY(pogc_list);

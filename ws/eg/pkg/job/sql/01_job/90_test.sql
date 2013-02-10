@@ -29,7 +29,7 @@ SELECT
   job.create(job.handler_id('job.today'), NULL, -2, '2012-08-05') > 0 AS "today created"
   , job.create(job.handler_id('job.stop'), NULL, -2, '2012-08-14') > 0 AS "stop created"
 ;
-SELECT job.server(-1);
+SELECT job.server(-1) AS job_count;
 
 SELECT validfrom, handler_id, status_id, arg_id, arg_date, arg_num, arg_more, arg_id2, arg_date2, arg_id3
   FROM wsd.job_dust

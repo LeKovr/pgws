@@ -102,7 +102,16 @@ sub new {
   if ($self->{'method'} eq 'POST' and $self->type =~ /application\/json/) {
     $self->{'params'} = $self->{'_q'}->param('POSTDATA'); # TODO: POST_MAX
   } else { #if ($self->{'method'} eq 'GET') {
-    my %params = $self->{'_q'}->Vars;
+    my %params;
+    my @names = $self->{'_q'}->param();
+    foreach my $n (@names) {
+      my @values = $self->{'_q'}->param($n);
+      if (scalar(@values) > 1) {
+        $params{$n} = \@values;
+      } else {
+        $params{$n} = $values[0];
+      }
+    }
     $self->{'params'} = \%params;
   }
 
@@ -204,6 +213,7 @@ sub send_file {
   print $self->{'_q'}->header(
     -type => $file_def->{'ctype'},
     -attachment => $name,
+#    -Content_Disposition => $name,
     -X_Accel_Redirect => $file_def->{'path'}
   );
 }

@@ -21,30 +21,51 @@
 */
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW file_store AS SELECT
+  f.id
+, f.path
+, f.size
+, f.csum
+, f.name
+, f.created_at
+, f.ctype
+  FROM wsd.file f
+;
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW file_info AS SELECT
-  f.*
+  f.name
+, f.size
+, f.csum
+, f.format_code
+, f.created_by
+, f.created_at
+, f.anno
 , fl.class_id
 , fl.obj_id
-, fl.code AS link_code
+, fl.folder_code
+, fl.file_code
+, fl.ver
+, fl.id
+, fl.is_ver_last
 , fl.created_by AS link_created_by
 , fl.created_at AS link_created_at
   FROM wsd.file f
-    JOIN wsd.file_link fl USING (file_id)
+    JOIN wsd.file_link fl USING (id)
 ;
 SELECT pg_c('v', 'file_info', 'Атрибуты внешнего файла объекта')
-, pg_c('c', 'file_info.file_id',    'ID файла')
-, pg_c('c', 'file_info.path',       'Ключ файл-сервера')
+, pg_c('c', 'file_info.name',       'Внешнее имя файла')
 , pg_c('c', 'file_info.size',       'Размер (байт)')
 , pg_c('c', 'file_info.csum',       'Контрольная сумма (sha1)')
-, pg_c('c', 'file_info.name',       'Внешнее имя файла')
-, pg_c('c', 'file_info.ctype',      'Content type')
-, pg_c('c', 'file_info.link_cnt',   'Количество связанных объектов')
 , pg_c('c', 'file_info.created_by', 'Автор загрузки/генерации')
 , pg_c('c', 'file_info.created_at', 'Момент загрузки/генерации')
 , pg_c('c', 'file_info.anno',       'Комментарий')
 , pg_c('c', 'file_info.class_id',   'ID класса')
 , pg_c('c', 'file_info.obj_id',     'ID объекта')
-, pg_c('c', 'file_info.link_code',       'Код связи')
-, pg_c('c', 'file_info.link_created_by', 'Автор привязки')
-, pg_c('c', 'file_info.link_created_at', 'Момент привязки')
+, pg_c('c', 'file_info.folder_code',        'Код связи')
+, pg_c('c', 'file_info.ver',         'Версия внутри кода связи')
+, pg_c('c', 'file_info.id',         'ID файла')
+, pg_c('c', 'file_info.is_ver_last', 'Версия является последней')
+, pg_c('c', 'file_info.link_created_by',  'Автор привязки')
+, pg_c('c', 'file_info.link_created_at',  'Момент привязки')
 ;

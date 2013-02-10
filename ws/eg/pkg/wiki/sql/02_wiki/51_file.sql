@@ -24,29 +24,29 @@
 CREATE OR REPLACE FUNCTION doc_file (
   a_id        ws.d_id
 , a_file_id   ws.d_id DEFAULT 0
-) RETURNS SETOF ws.file_info LANGUAGE 'sql' AS
+) RETURNS SETOF fs.file_info LANGUAGE 'sql' AS
 $_$
-  SELECT * FROM ws.file_info WHERE class_id = wiki.const_doc_class_id() AND obj_id = $1 AND $2 IN (file_id, 0) ORDER BY created_at;
+  SELECT * FROM fs.file_info WHERE class_id = wiki.const_doc_class_id() AND obj_id = $1 AND $2 IN (id, 0) ORDER BY created_at;
 $_$;
 SELECT pg_c('f', 'doc_file', 'Атрибуты файлов статьи');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION doc_file_add (
   a__sid      text
+, a_id        ws.d_id
 , a__path     text
 , a__size     integer
 , a__csum     text
-, a_id        ws.d_id
 , a_name      text
 , a_ctype     text
 , a_anno      text DEFAULT NULL
-  ) RETURNS SETOF ws.file_info LANGUAGE 'plpgsql' AS
+  ) RETURNS SETOF fs.file_info LANGUAGE 'plpgsql' AS
 $_$
   -- a__sid:  ID сессии
+  -- a_id:    ID статьи
   -- a__path: Путь к файлу в хранилище nginx
   -- a__size: Размер (байт)
   -- a__csum: Контрольная сумма (sha1)
-  -- a_id:    ID статьи
   -- a_name:  Внешнее имя файла
   -- a_ctype: Content type
   -- a_anno:  Комментарий
@@ -57,16 +57,27 @@ $_$
   BEGIN
     -- TODO: content-type & extention control
     v_account_id := (acc.profile(a__sid)).id;
-    v_file_id := ws.file_add(v_account_id, a__path, a__size, a__csum, a_name, a_ctype, a_anno);
-    INSERT INTO wsd.file_link (file_id, obj_id, class_id, created_by)
-      VALUES (v_file_id, a_id, wiki.const_doc_class_id(), v_account_id)
-    ;
+    v_file_id := fs.file_add(v_account_id, 'wiki', a_id, a__path, a__size, a__csum, a_name, NULL, a_ctype, NULL, a_anno);
     RETURN QUERY SELECT * FROM wiki.doc_file(a_id, v_file_id);
     RETURN;
   END;
 $_$;
 SELECT pg_c('f', 'doc_file_add', 'Добавление в статью загруженного файла');
 
+/*
+CREATE OR REPLACE FUNCTION file_add (
+  -- a_account_id:  ID сессии
+  -- a_folder_code: Код папки
+  -- a_obj_id:      ID объекта
+  -- a__path:       Путь к файлу в хранилище nginx
+  -- a__size:       Размер (байт)
+  -- a__csum:       Контрольная сумма (sha1)
+  -- a_name:        Внешнее имя файла
+  -- a_id:          ID файла
+  -- a_ctype:       Content type
+  -- a_file_code:   Код файла
+  -- a_anno:        Комментарий
+*/
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION doc_file_del (
   a_id        ws.d_id
@@ -74,7 +85,7 @@ CREATE OR REPLACE FUNCTION doc_file_del (
 ) RETURNS BOOL LANGUAGE 'plpgsql' AS
 $_$
   BEGIN
-    DELETE FROM wsd.file_link WHERE class_id = wiki.const_doc_class_id() AND obj_id = a_id AND file_id = a_file_id;
+    DELETE FROM wsd.file_link WHERE class_id = wiki.const_doc_class_id() AND obj_id = a_id AND id = a_file_id;
     -- TODO: если файл уже нигде не используется - удалить его?
     RETURN TRUE;
   END;

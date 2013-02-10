@@ -229,13 +229,17 @@ $_$
         v_type := 'text'; -- TODO: allow length
       END IF;
       RAISE NOTICE '   column % %', rec.attname, v_type;
+      IF ws.dt_id(v_type) IS NULL THEN
+        RAISE EXCEPTION 'Unknown type (%)', v_type;
+      END IF;
       BEGIN
         INSERT INTO ws.dt_part (id, part_id, code, parent_id, anno, def_val, allow_null)
           VALUES (v_id, rec.attnum, rec.attname, ws.dt_id(v_type), COALESCE(rec.anno, rec.attname), rec.def_val, NOT rec.attnotnull)
         ;
         EXCEPTION
           WHEN CHECK_VIOLATION THEN
-          RAISE EXCEPTION 'Unregistered % part type (%)', v_code, v_type;
+            RAISE EXCEPTION 'Unregistered % part type (%)', v_code, v_type
+          ;
       END;
     END LOOP;
     RETURN v_id;

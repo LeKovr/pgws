@@ -48,7 +48,7 @@ FOR d IN data;
     IF loop.first;
       %]<ul>[%
     END;
-    %]<li><a href="#[% d.code %]-action-[% r.id %]">[% r.id _ '. ' _ r.name %]</a></li>[%
+    %]<li><a href="#[% d.code %]-action-[% r.id %]">[% d.id _ '.' _ r.id _ '. ' _ r.name %]</a></li>[%
     IF loop.last
       %]</ul>[%
     END;
@@ -64,7 +64,7 @@ FOR d IN data;
         table.${r1.acl_id}.${r1.status_id} = 1;
       END;
     END;
-    %]<h4><a name='[% d.code %]-action-[% ra.id %]' class="name">[% ra.id %]. [% ra.name %]</a></h4>[%
+    %]<h4><a name='[% d.code %]-action-[% ra.id %]' class="name">[% d.id _ '.' _ ra.id _ '. ' _ ra.name %]</a></h4>[%
     FOR r IN acl_rows;
       IF loop.first;
         %]<table class="baseTable"><tr><th class="short">[% l('Уровень доступа') _ ' \ ' _ l('Статус')%]</th>[%

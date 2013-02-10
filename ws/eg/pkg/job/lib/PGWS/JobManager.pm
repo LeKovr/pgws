@@ -39,7 +39,7 @@ use constant SQL_ERROR_LOAD => ($ENV{'PGWS_JOB_SQL_ERROR_LOAD'} or 'SELECT job.m
 
 use constant SQL_HANDLER    => ($ENV{'PGWS_JOB_SQL_HANDLER'}    or 'SELECT * FROM job.handler(?)');
 use constant SQL_NEXT       => ($ENV{'PGWS_JOB_SQL_NEXT'   }    or 'SELECT * FROM job.next(?, ?)');
-use constant SQL_CRON       => ($ENV{'PGWS_JOB_SQL_NEXT'   }    or 'SELECT job.cron()');
+use constant SQL_CRON       => ($ENV{'PGWS_JOB_SQL_CRON'   }    or 'SELECT job.cron()');
 use constant SQL_STOP       => ($ENV{'PGWS_JOB_SQL_STOP'   }    or 'SELECT job.finish(?, ?, ?)');
 use constant SQL_FINISHED   => ($ENV{'PGWS_JOB_SQL_FINISHED'}   or 'SELECT job.finished(?)');
 use constant SQL_CREATE     => ($ENV{'PGWS_JOB_SQL_CREATE' }    or 'SELECT job.create(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
@@ -183,8 +183,8 @@ print STDERR "SQL[$$] ",SQL_CRON,"\n";
         } elsif ($event->{'name'} eq 'system' and $event->{'id'} eq 'shadow') {
           $self->{'stat'}{'shadow_at'} = time();
           while ($cmd = $dbh->selectrow_hashref(SQL_NEXT, undef, $$, 0)) {
-print STDERR "SQL[$$] ",SQL_NEXT,': ',$$, ', 0',"\n";
-            my $ret = _process($self, %$cmd);
+print STDERR "SQL[$$] ",SQL_NEXT,': ',$$, ', 0',Dumper($cmd),"\n";
+            my $ret = _process($self, $proc_manager->{'_SID'}, %$cmd);
             # сохранить результат выполнения
           }
         } else {
@@ -226,7 +226,7 @@ print STDERR "[$$] EMPTY LOOP\n";
 
       # попробовать сохранить ошибку в БД
 print STDERR "SQL[$$] ",SQL_STOP,': ',$cmd->{'id'}, ', -1, ',$@,"\n";
-      $dbh->do(SQL_STOP, undef, $cmd->{'id'}, 10, $@) if ($cmd); # job.const_status_id_error()
+      $dbh->do(SQL_STOP, undef, $cmd->{'id'}, 12, $@) if ($cmd); # job.const_status_id_error()
       sleep 2; # give some rest to server
     }
     $proc_manager->pm_post_dispatch();
@@ -449,7 +449,7 @@ sub _api_process {
     'REQUEST_CODE'    => $handler->{'code'},
   };
   foreach my $k (keys %$cmd) {
-    $request->{$k} = $cmd->{$k} if (defined($cmd->{$k}) and ($k eq 'id' or $k =~ /^arg_/));
+    $request->{$k} = $cmd->{$k} if (defined($cmd->{$k}) and ($k eq 'id' or $k =~ /^arg_/ or $k eq 'created_by'));
   }
   my $resp = _api(undef, $request);
   return DB_STATUS_SUCCESS; # job.const_status_id_success()

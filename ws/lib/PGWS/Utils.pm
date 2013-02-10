@@ -25,7 +25,8 @@ use JSON;
 
 use File::Basename;
 use File::Path;
-
+use Digest::SHA1 qw(sha1_hex);
+use MIME::Base64 qw(encode_base64);
 use Data::Dumper;
 
 #----------------------------------------------------------------------
@@ -33,7 +34,7 @@ use Data::Dumper;
 # Загрузить данные из файла в perl-структуру
 # @return указатель на загруженную структуру данных
 # TODO: загружать форматы, отличные от JSON
-sub data_get {
+sub data_get0 {
   my $path = shift;
   my $out = ($path =~ /\.gz$/)?'| gzip >':'>';
   my $mode = '<';
@@ -44,10 +45,52 @@ sub data_get {
   open my $F, $mode, $path or PGWS::bye "File: $path error:".$!;
   my @cdata=<$F>;
   close $F;
-  my $json = new JSON;
-  $json->relaxed(1);
-  my $cfg = $json->decode(join '',@cdata);
-  return $cfg;
+  my $data = join '', @cdata;
+  if ($path =~ /\.json($|\.)/) {
+    my $json = new JSON;
+    $json->relaxed(1);
+    $data = $json->decode($data);
+  }
+  return $data;
+}
+
+sub data_get {
+  my $path = shift;
+  my ($opts) = @_;
+  my $b64 = defined($opts)?($opts->{'encode'} eq 'base64'):0;
+  my $binread = defined($opts)?($b64 or $opts->{'binary'}):0;
+
+  my $out = ($path =~ /\.gz$/)?'| gzip >':'>';
+  my $mode = '<';
+  if ($path =~ /\.gz$/) {
+    $mode = '-|';
+    $path = 'gunzip - < '.$path;
+  }
+  open my $F, $mode, $path or PGWS::bye "File: $path error:".$!;
+  binmode $F if $binread;
+  my (@cdata, $buf);
+
+  # If you want to encode a large file in base64,
+  # you should encode it in chunks that are a multiple of 57 bytes.
+  # This ensures that the base64 lines line up
+  # and that you do not end up with padding in the middle.
+  # 57 bytes of data fills one complete base64 line (76 == 57*4/3)
+  #
+  # Для функции encode_base64 указываем аргумент $eol = '',
+  # чтобы итоговый поток данных в base64 не разбивался на строки по 76 символов
+  # (возможно, из-за этого были проблемы с ООС)
+
+  while ( read( $F, $buf, 60 * 57 ) ) {
+    push @cdata, $b64 ? encode_base64($buf, '') : $buf;
+  }
+  close $F;
+  my $data = join '', @cdata;
+  if ($path =~ /\.json($|\.)/) {
+    my $json = new JSON;
+    $json->relaxed(1);
+    $data = $json->decode($data);
+  }
+  return $data;
 }
 
 #----------------------------------------------------------------------
@@ -56,7 +99,6 @@ sub json_out_utf8 {
   my $is_pretty = shift;
   my $json = new JSON;
   my $ret = to_json($data, {pretty => $is_pretty});
-#$is_pretty ? $json->pretty->encode($data) : $json->encode($data);
   utf8::decode($ret);
   return $ret;
 }
@@ -104,18 +146,24 @@ sub load_env {
 
 #----------------------------------------------------------------------
 sub data_set {
-  my ($data, $path, $do_gzip) = @_;
+  my ($data, $path) = @_;
   check_path($path);
   my $mode = '>';
   if ($path =~ /\.gz$/) {
     $mode = '|-';
     $path = 'gzip - > '.$path;
   }
+  if ($path =~ /\.json($|\.)/) {
+    $data = json_out_utf8($data, 1);
+  }
   open my $F, $mode, $path or PGWS::bye "File: $path error:".$!;
-  print $F json_out_utf8($data, 1);
+  print $F $data;
   close $F;
   my $mod = "0666";
   chmod oct($mod), $path;
+  if (wantarray) {
+    return (-s $path, sha1_hex($data)); # size & sha1
+  }
 }
 
 #----------------------------------------------------------------------

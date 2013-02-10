@@ -12,9 +12,10 @@
   files = api('wiki.doc_file', id => doc_id, file_id => file_id);
   file = files.0;
   IF file && file.name == file_name;
-    meta.redirect_file = file;
+    meta.redirect_file = sysapi('fe.file_attr', id => file.id);
+    STOP;
   ELSE;
-    meta.status = '404';
-    meta.status_note = 'Not Found';
+#    meta.status = '404';
+#    meta.status_note = 'Not Found';
   END;
 %]

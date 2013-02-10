@@ -135,7 +135,7 @@ sub run {
     $meta->dump({'call' => $data});
     return $self->_rpc_error($meta, 'bad_req');
   }
-  $meta->{'debug'}{$meta->{'source'}} = $call->{'debug'} if ($call->{'debug'});
+  $meta->{'debug'}{$meta->{'source'}} = $call->{'debug'} if ($meta->debug_iface_allowed and $call->{'debug'});
 
   $meta->dump({'call' => $call, 'meta' => $meta});
 
@@ -168,7 +168,7 @@ sub run {
   my $ret = $self->run_prepared($meta, $call->{'method'}, $call->{'params'});
   %$res = (%$res, %$ret);
   $meta->dump({'res' => $res});
-  $res->{'debug'} = $meta->data if ($call->{'debug'});
+  $res->{'debug'} = $meta->data if $meta->debug_iface_allowed;
   return $res;
 }
 
@@ -228,7 +228,7 @@ sub _process {
   # контроль области вызова
   if ($mtd_def->{'realm_code'}) {
     unless ($params->{'_realm'} and $params->{'_realm'} eq $mtd_def->{'realm_code'}) {
-      return $self->_rpc_error($meta, 'bad_realm');
+      return $self->_rpc_error($meta, 'bad_realm', {'got' => $params->{'_realm'}, 'need' => $mtd_def->{'realm_code'}});
     }
   }
   # системные аргументы

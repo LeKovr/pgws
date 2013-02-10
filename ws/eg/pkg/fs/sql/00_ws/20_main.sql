@@ -17,22 +17,23 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Внутренние константы пакета. Используются хранимым кодом.
+    Основные таблицы пакета
 */
 
 /* ------------------------------------------------------------------------- */
-SET LOCAL search_path = app, ws, i18n_def, public;
-
+CREATE TABLE file_format (
+  code        TEXT    PRIMARY KEY
+, sort        INTEGER NOT NULL DEFAULT 1
+, ctype       TEXT    NOT NULL
+, ext_mask    TEXT    NOT NULL
+-- ico_uri -- ссылка на иконку формата
+, name        TEXT    NOT NULL
+);
+SELECT pg_c('r', 'file_format', 'допустимые форматы файлов')
+, pg_c('c', 'file_format.code',         'Код формата')
+, pg_c('c', 'file_format.sort',         'Сортировка при выводе нескольких форматов одного файла')
+, pg_c('c', 'file_format.ctype',        'Content type')
+, pg_c('c', 'file_format.ext_mask',     'Маска допустимых расширений файла')
+, pg_c('c', 'file_format.name',         'Название формата')
+;
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION const_error_forbidden() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
-$_$
-  SELECT 'Y0021'::ws.d_errcode
-$_$;
-SELECT pg_c('f', 'const_error_forbidden', 'Константа: ошибка доступа уровня приложения');
-
-/* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION const_error_notfound() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
-$_$
-  SELECT 'Y0021'::ws.d_errcode
-$_$;
-SELECT pg_c('f', 'const_error_notfound', 'Константа: ошибка поиска уровня приложения');
