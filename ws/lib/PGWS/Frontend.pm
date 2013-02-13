@@ -27,7 +27,6 @@ use PGWS::Core;
 use PGWS::DBConfig;
 
 use Template;
-use Template::Plugins;
 
 use strict;
 
@@ -86,7 +85,6 @@ sub new {
     PRE_PROCESS   => $layout.$ext,
     %{$dbc->config('fe.tt2')}
   );
-  #$Template::Plugins::PLUGIN_BASE = '';
   $self->{'template'} = Template->new(%template_config);
   {
     no warnings 'once';

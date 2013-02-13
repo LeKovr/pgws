@@ -14,8 +14,7 @@
   IF file && file.name == file_name;
     meta.redirect_file = sysapi('fe.file_attr', id => file.id);
     STOP;
-  ELSE;
-#    meta.status = '404';
-#    meta.status_note = 'Not Found';
   END;
+  meta.status = '404';
+  meta.status_note = 'Not Found';
 %]

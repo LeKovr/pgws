@@ -64,20 +64,6 @@ $_$
 $_$;
 SELECT pg_c('f', 'doc_file_add', 'Добавление в статью загруженного файла');
 
-/*
-CREATE OR REPLACE FUNCTION file_add (
-  -- a_account_id:  ID сессии
-  -- a_folder_code: Код папки
-  -- a_obj_id:      ID объекта
-  -- a__path:       Путь к файлу в хранилище nginx
-  -- a__size:       Размер (байт)
-  -- a__csum:       Контрольная сумма (sha1)
-  -- a_name:        Внешнее имя файла
-  -- a_id:          ID файла
-  -- a_ctype:       Content type
-  -- a_file_code:   Код файла
-  -- a_anno:        Комментарий
-*/
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION doc_file_del (
   a_id        ws.d_id
