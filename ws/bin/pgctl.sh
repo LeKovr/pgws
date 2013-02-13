@@ -39,7 +39,7 @@ db_help() {
     erase - drop DB objects
 
     doc  - make docs for schema SRC (Default: ws)
-    dump - dump schema SRC (Default: i18n_def)
+    dump - dump schema SRC (Default: all)
 
     restore KEY - restore schema(s) from dbdump-KEY.tar.gz
 
@@ -311,11 +311,13 @@ EOF
 # ------------------------------------------------------------------------------
 db_dump() {
   local schema=$1
-  [[ "$schema" ]] || schema="i18n_def"
-  local file=$BLD/$schema.sql
+  [[ "$schema" ]] || schema="all"
+  local file=$BLD/dump-$schema.sql
   [ -f $file ] && rm -f $file
-  ${PG_BINDIR}pg_dump -F p -f $file -n $schema -O --inserts --no-tablespaces -E UTF-8 "$CONN";
-  echo "Dump of $schema saved to $file"
+  local schema_arg="-n $schema"
+  [[ "$schema" == "all" ]] && schema_arg=""
+  ${PG_BINDIR}pg_dump -F p -f $file $schema_arg -O --inserts --no-tablespaces -E UTF-8 "$CONN";
+  echo "Dump of $schema schema(s) saved to $file"
 }
 
 # ------------------------------------------------------------------------------
@@ -404,7 +406,13 @@ case "$cmd" in
   erase)
     echo "!!!WARNING!!! Erase will drop persistent data"
     read -t 5 -n 1 -p "Continue? [N]"
-    [[ "$REPLY" != ${REPLY%[yYнН]} ]] || { echo "No confirm" ; exit ; }
+    [[ "$REPLY" != ${REPLY%[yY]} ]] || { echo "No confirm" ; exit ; }
+    db_run erase "0?_*.sql" $src "$pkg"
+    ;;
+  erase_force)
+    echo "!!!WARNING!!! Erase will drop persistent data"
+    read -t 5 -n 1 -p "Continue? [Y]"
+    [[ "$REPLY" != ${REPLY%[nN]} ]] && { echo "No confirm" ; exit ; }
     db_run erase "0?_*.sql" $src "$pkg"
     ;;
   make)
