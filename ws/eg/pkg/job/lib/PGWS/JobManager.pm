@@ -178,24 +178,24 @@ sub proc_main {
         printf STDERR ("[%s] [%i]: RUN EVENT %s(%s)\n", $lt, $$, $event->{'name'}, $event->{'id'}) if DEBUG;
         if ($event->{'name'} eq 'system' and $event->{'id'} eq 'cron') {
           $self->{'stat'}{'cron_at'} = time();
-print STDERR "SQL[$$] ",SQL_CRON,"\n";
+print STDERR ("SQL[$$] ",SQL_CRON,"\n") if DEBUG;
           $dbh->do(SQL_CRON);
         } elsif ($event->{'name'} eq 'system' and $event->{'id'} eq 'shadow') {
           $self->{'stat'}{'shadow_at'} = time();
           while ($cmd = $dbh->selectrow_hashref(SQL_NEXT, undef, $$, 0)) {
-print STDERR "SQL[$$] ",SQL_NEXT,': ',$$, ', 0',Dumper($cmd),"\n";
+print STDERR ("SQL[$$] ",SQL_NEXT,': ',$$, ', 0',Dumper($cmd),"\n") if DEBUG;
             my $ret = _process($self, $proc_manager->{'_SID'}, %$cmd);
             # сохранить результат выполнения
           }
         } else {
           $self->{'stat'}{'event_at'} = time();
-print STDERR "SQL[$$] ",SQL_NEXT,': ',$$, ', ',$event->{'id'},"\n";
+print STDERR ("SQL[$$] ",SQL_NEXT,': ',$$, ', ',$event->{'id'},"\n") if DEBUG;
           $cmd = $dbh->selectrow_hashref(SQL_NEXT, undef, $$, $event->{'id'});
           if ($cmd) {
             # выполнить задачу
             my $ret = _process($self, $proc_manager->{'_SID'}, %$cmd);
           } else {
-print STDERR "[$$] EMPTY LOOP\n";
+print STDERR ("[$$] EMPTY LOOP\n") if DEBUG;
           }
         }
       }
@@ -378,7 +378,7 @@ sub _process {
   if ($handler->{'is_sql'}) {
 
     my $sql = sprintf SQL_RUN, $handler->{'pkg'}, $handler->{'code'};
-print STDERR "SQL[$$] ",$sql,': ',$cmd{'id'},"\n";
+print STDERR ("SQL[$$] ",$sql,': ',$cmd{'id'},"\n") if DEBUG;
     my $ret_arr = $dbh->selectrow_arrayref($sql, undef, $cmd{'id'});
     $ret = defined($ret_arr)?$ret_arr->[0]:DB_STATUS_ERROR;
   } else {
@@ -387,7 +387,7 @@ print STDERR "SQL[$$] ",$sql,': ',$cmd{'id'},"\n";
   }
   print STDERR 'Exit code:'.($ret || 0),"\n" if (DEBUG);
             # сохранить результат выполнения
-print STDERR "SQL[$$] ",SQL_STOP,': ',$cmd{'id'}, ', ',$ret,"\n";
+print STDERR ("SQL[$$] ",SQL_STOP,': ',$cmd{'id'}, ', ',$ret,"\n") if DEBUG;
   $dbh->do(SQL_STOP, undef, $cmd{'id'}, $ret, undef);
   $dbh->do(SQL_FINISHED, undef, $cmd{'id'});
   $self->{'stat'}{'event_count'}++;
