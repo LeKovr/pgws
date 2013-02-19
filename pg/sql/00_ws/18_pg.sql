@@ -28,16 +28,15 @@ CREATE DOMAIN d_pg_argnames AS text[];    -- pg_catalog.pg_proc.proargnames
 CREATE TYPE t_pg_object AS ENUM ('h', 'r', 'v', 'c', 't', 'd', 'f', 'a', 's'); -- see pg_comment
 
 /* ------------------------------------------------------------------------- */
-
 CREATE TYPE t_pg_proc_info AS (
   schema      text
-  , name      text
-  , anno      text
-  , rt_oid    oid
-  , rt_name   text
-  , is_set    bool
-  , args      text
-  , args_pub  text
+, name        text
+, anno        text
+, rt_oid      oid
+, rt_name     text
+, is_set      bool
+, args        text
+, args_pub    text
 );
 
 /* ------------------------------------------------------------------------- */
@@ -68,11 +67,13 @@ $_$
     RETURN v;
   END;
 $_$;
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_exec_func(a_schema TEXT, a_name TEXT) RETURNS TEXT STABLE LANGUAGE 'sql' AS
 $_$
   SELECT ws.pg_exec_func($1 || '.' || $2)
 $_$;
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_schema_by_oid(a_oid oid) RETURNS TEXT STABLE LANGUAGE 'sql' AS
 $_$
@@ -82,10 +83,10 @@ $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_type_name(a_oid oid) RETURNS text STABLE LANGUAGE 'sql' AS
 $_$
-SELECT CASE WHEN nspname = 'pg_catalog' THEN pg_catalog.format_type($1, NULL) ELSE  nspname || '.' || typname END
-  FROM (
-    SELECT (SELECT nspname FROM pg_namespace WHERE oid = typnamespace) as nspname, typname FROM pg_type WHERE oid = $1
-  ) AS pg_type_name_temp
+  SELECT CASE WHEN nspname = 'pg_catalog' THEN pg_catalog.format_type($1, NULL) ELSE  nspname || '.' || typname END
+    FROM (
+      SELECT (SELECT nspname FROM pg_namespace WHERE oid = typnamespace) as nspname, typname FROM pg_type WHERE oid = $1
+    ) AS pg_type_name_temp
 $_$;
 
 /* ------------------------------------------------------------------------- */
@@ -123,23 +124,23 @@ $_$
   END;
 $_$;
 
-
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_proc_info(a_ns text, a_name text) RETURNS SETOF t_pg_proc_info STABLE LANGUAGE 'sql' AS
 $_$
   SELECT $1
-    , $2
-    , obj_description(p.oid, 'pg_proc')
-    , p.prorettype
-    , ws.pg_type_name(p.prorettype)
-    , proretset
-    , ws.pg_proargs2str(p.proargnames, p.proargtypes, false) -- proargtypes - only IN arguments
-    , ws.pg_proargs2str(p.proargnames, p.proargtypes, true)
+  , $2
+  , obj_description(p.oid, 'pg_proc')
+  , p.prorettype
+  , ws.pg_type_name(p.prorettype)
+  , proretset
+  , ws.pg_proargs2str(p.proargnames, p.proargtypes, false) -- proargtypes - only IN arguments
+  , ws.pg_proargs2str(p.proargnames, p.proargtypes, true)
     FROM pg_catalog.pg_proc p
     WHERE p.pronamespace = ws.pg_schema_oid($1)
-    AND p.proname = $2
+      AND p.proname = $2
   ;
 $_$;
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_c(
   a_type ws.t_pg_object    -- тип объекта (из перечисления ws.t_pg_object)
@@ -192,9 +193,11 @@ $_$;
 SELECT pg_c('f', 'pg_c', 'Создать комментарий к объекту БД');
 
 /* ------------------------------------------------------------------------- */
-SELECT pg_c('f', 'sprintf', 'Порт функции sprintf');
-SELECT pg_c('f', 'pg_cs', 'Текущая (первая) схема БД в пути поиска');
-SELECT pg_c('f', 'reserved_args', 'Зарезервированные имена аргументов методов');
+SELECT 
+  pg_c('f', 'sprintf', 'Порт функции sprintf')
+, pg_c('f', 'pg_cs', 'Текущая (первая) схема БД в пути поиска', $_$если задан аргумент, он и '.' добавляются к имени схемы$_$)
+, pg_c('f', 'reserved_args', 'Зарезервированные имена аргументов методов')
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION notice (a_text TEXT) RETURNS VOID LANGUAGE 'plpgsql' AS

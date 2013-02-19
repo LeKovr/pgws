@@ -1696,7 +1696,7 @@ SET search_path = ws, pg_catalog;
 
 CREATE FUNCTION pg_cs(text DEFAULT ''::text) RETURNS name
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 45 */ 
+    AS $_$ /* ws:ws:18_pg.sql / 44 */ 
  SELECT (current_schema() || CASE WHEN COALESCE($1, '') = '' THEN '' ELSE '.' || $1 END)::name
 $_$;
 
@@ -7349,7 +7349,7 @@ COMMENT ON FUNCTION month_info(a_date date) IS 'Атрибуты месяца з
 
 CREATE FUNCTION notice(a_text text) RETURNS void
     LANGUAGE plpgsql
-    AS $$ /* ws:ws:18_pg.sql / 201 */ 
+    AS $$ /* ws:ws:18_pg.sql / 204 */ 
   -- вызов RAISE NOTICE из скриптов и sql
   BEGIN
     RAISE NOTICE '%', a_text;
@@ -7574,7 +7574,7 @@ $_$;
 
 CREATE FUNCTION pg_c(a_type t_pg_object, a_code name, a_text text, a_anno text DEFAULT NULL::text) RETURNS void
     LANGUAGE plpgsql
-    AS $$ /* ws:ws:18_pg.sql / 150 */ 
+    AS $$ /* ws:ws:18_pg.sql / 151 */ 
   DECLARE
     v_code TEXT;
     v_name TEXT;
@@ -7631,7 +7631,7 @@ COMMENT ON FUNCTION pg_c(a_type t_pg_object, a_code name, a_text text, a_anno te
 
 CREATE FUNCTION pg_exec_func(a_name text) RETURNS text
     LANGUAGE plpgsql STABLE
-    AS $$ /* ws:ws:18_pg.sql / 63 */ 
+    AS $$ /* ws:ws:18_pg.sql / 62 */ 
   DECLARE
     v TEXT;
   BEGIN
@@ -7669,7 +7669,7 @@ $_$;
 
 CREATE FUNCTION pg_proargs2str(a_names d_pg_argnames, a_types d_pg_argtypes, a_pub boolean) RETURNS text
     LANGUAGE plpgsql STABLE
-    AS $$ /* ws:ws:18_pg.sql / 99 */ 
+    AS $$ /* ws:ws:18_pg.sql / 100 */ 
   DECLARE
     v_reserved TEXT[];
     v_names TEXT[];
@@ -7705,16 +7705,16 @@ CREATE FUNCTION pg_proc_info(a_ns text, a_name text) RETURNS SETOF t_pg_proc_inf
     LANGUAGE sql STABLE
     AS $_$ /* ws:ws:18_pg.sql / 129 */ 
   SELECT $1
-    , $2
-    , obj_description(p.oid, 'pg_proc')
-    , p.prorettype
-    , ws.pg_type_name(p.prorettype)
-    , proretset
-    , ws.pg_proargs2str(p.proargnames, p.proargtypes, false) -- proargtypes - only IN arguments
-    , ws.pg_proargs2str(p.proargnames, p.proargtypes, true)
+  , $2
+  , obj_description(p.oid, 'pg_proc')
+  , p.prorettype
+  , ws.pg_type_name(p.prorettype)
+  , proretset
+  , ws.pg_proargs2str(p.proargnames, p.proargtypes, false) -- proargtypes - only IN arguments
+  , ws.pg_proargs2str(p.proargnames, p.proargtypes, true)
     FROM pg_catalog.pg_proc p
     WHERE p.pronamespace = ws.pg_schema_oid($1)
-    AND p.proname = $2
+      AND p.proname = $2
   ;
 $_$;
 
@@ -7930,7 +7930,7 @@ $$;
 
 CREATE FUNCTION pg_schema_by_oid(a_oid oid) RETURNS text
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 78 */ 
+    AS $_$ /* ws:ws:18_pg.sql / 79 */ 
   SELECT nspname::TEXT FROM pg_namespace WHERE oid = $1
 $_$;
 
@@ -7941,7 +7941,7 @@ $_$;
 
 CREATE FUNCTION pg_schema_oid(a_name text) RETURNS oid
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 57 */ 
+    AS $_$ /* ws:ws:18_pg.sql / 56 */ 
   SELECT oid FROM pg_namespace WHERE nspname = $1
 $_$;
 
@@ -7952,11 +7952,11 @@ $_$;
 
 CREATE FUNCTION pg_type_name(a_oid oid) RETURNS text
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 84 */ 
-SELECT CASE WHEN nspname = 'pg_catalog' THEN pg_catalog.format_type($1, NULL) ELSE  nspname || '.' || typname END
-  FROM (
-    SELECT (SELECT nspname FROM pg_namespace WHERE oid = typnamespace) as nspname, typname FROM pg_type WHERE oid = $1
-  ) AS pg_type_name_temp
+    AS $_$ /* ws:ws:18_pg.sql / 85 */ 
+  SELECT CASE WHEN nspname = 'pg_catalog' THEN pg_catalog.format_type($1, NULL) ELSE  nspname || '.' || typname END
+    FROM (
+      SELECT (SELECT nspname FROM pg_namespace WHERE oid = typnamespace) as nspname, typname FROM pg_type WHERE oid = $1
+    ) AS pg_type_name_temp
 $_$;
 
 
@@ -8840,7 +8840,7 @@ COMMENT ON FUNCTION ref_info(a_id d_id32) IS 'Атрибуты справочн�
 
 CREATE FUNCTION reserved_args() RETURNS text[]
     LANGUAGE sql IMMUTABLE
-    AS $$ /* ws:ws:18_pg.sql / 93 */ 
+    AS $$ /* ws:ws:18_pg.sql / 94 */ 
   SELECT ARRAY['a__acl', 'a__sid', 'a__ip', 'a__cook', 'a__lang'];
 $$;
 
@@ -8899,7 +8899,7 @@ $$;
 
 CREATE FUNCTION sprintf(text, text DEFAULT ''::text, text DEFAULT ''::text, text DEFAULT ''::text, text DEFAULT ''::text) RETURNS text
     LANGUAGE plperl IMMUTABLE
-    AS $_$ # /* ws:ws:18_pg.sql / 51 */ 
+    AS $_$ # /* ws:ws:18_pg.sql / 50 */ 
     my ($fmt, @args) = @_; my $str = sprintf($fmt, @args); return $str;
 $_$;
 
@@ -12599,15 +12599,15 @@ INSERT INTO page_data VALUES ('api.test', 'main', 2, 1, NULL, 7, 'docs/test$', '
 -- Data for Name: pkg; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:55:54.176628');
-INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
+INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:27.817413');
+INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
 
 
 --
@@ -12621,15 +12621,15 @@ SELECT pg_catalog.setval('pkg_id_seq', 9, true);
 -- Data for Name: pkg_log; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:55:54.176628');
-INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-13 13:56:00.916798');
+INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:27.817413');
+INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
 
 
 --
@@ -12745,8 +12745,8 @@ SET search_path = wsd, pg_catalog;
 -- Data for Name: account; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-13 13:56:01', '2013-02-13 13:56:01', '2013-02-13 13:56:01');
-INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-13 13:56:01', '2013-02-13 13:56:01', '2013-02-13 13:56:01');
+INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-19 17:32:34', '2013-02-19 17:32:34', '2013-02-19 17:32:34');
+INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-19 17:32:34', '2013-02-19 17:32:34', '2013-02-19 17:32:34');
 
 
 --
@@ -12887,14 +12887,14 @@ SELECT pg_catalog.setval('file_id_seq', 1, false);
 -- Data for Name: job; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job VALUES (1, '2013-02-13 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-13', NULL, NULL, NULL, NULL, NULL, '2013-02-13 13:56:00.916798', NULL, NULL, NULL, NULL);
+INSERT INTO job VALUES (1, '2013-02-19 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-19', NULL, NULL, NULL, NULL, NULL, '2013-02-19 17:32:34.26519', NULL, NULL, NULL, NULL);
 
 
 --
 -- Data for Name: job_cron; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job_cron VALUES (true, '2013-02-13 13:56:00.916798', NULL);
+INSERT INTO job_cron VALUES (true, '2013-02-19 17:32:34.26519', NULL);
 
 
 --
@@ -12926,20 +12926,20 @@ SELECT pg_catalog.setval('job_seq', 25, true);
 -- Data for Name: pkg_script_protected; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'wsd', '2013-02-13 13:55:54.176628');
-INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'wsd', '2013-02-13 13:55:54.176628');
-INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-13 13:55:54.176628');
-INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-13 13:55:54.176628');
-INSERT INTO pkg_script_protected VALUES ('fs', '11_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_script_protected VALUES ('ev', '11_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_script_protected VALUES ('job', '11_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_script_protected VALUES ('acc', '11_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_script_protected VALUES ('wiki', '11_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
-INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wsd', '2013-02-13 13:56:00.916798');
+INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:27.817413');
+INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'wsd', '2013-02-19 17:32:27.817413');
+INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-19 17:32:27.817413');
+INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-19 17:32:27.817413');
+INSERT INTO pkg_script_protected VALUES ('fs', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('ev', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('job', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('acc', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('wiki', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
 
 
 --
