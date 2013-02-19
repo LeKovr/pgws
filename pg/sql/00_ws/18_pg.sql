@@ -38,6 +38,16 @@ CREATE TYPE t_pg_proc_info AS (
 , args        text
 , args_pub    text
 );
+        
+/* ------------------------------------------------------------------------- */
+CREATE TYPE t_pg_view_info AS (
+  rel         text  -- имя view из аргументов ф-и (схема.объект)
+, code        text  -- имя столбца (без значения rel)
+, rel_src     text  -- имя (схема.объект) источника комментария без имени столбца)
+, rel_src_col text  -- имя столбца источника комментария
+, status_id   int   -- результат поиска (1 - найден коммент, 2 - у источника коммент не задан, 3 - расчетное поле, 4 - ошибка, 5 - неподдерживаемый формат поля в представлении) 
+, anno        text  -- зависит от status_d: 1 - комментарий, 2 - null, 3 - текст формулы, 4- описание "иного" 
+);
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_cs(TEXT DEFAULT '') RETURNS name STABLE LANGUAGE 'sql' AS
@@ -142,6 +152,245 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION ws.pg_view_comments_get_tbl(
+  a_code text             -- имя объекта
+) RETURNS name VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_ret text;
+    R record;
+    v_schema text[];
+    v_table text;
+    _i int;
+  BEGIN
+    IF a_code ~ E'\\.' THEN -- схема передана в вводном параметре
+      v_schema := ARRAY[split_part(a_code, '.', 1)];
+      v_table  := split_part(a_code, '.', 2);
+    ELSE -- схема выбирается из текущей, "i18n_def","public","pg_catalog" в том же порядке
+      v_schema := ARRAY[ws.pg_cs(), 'i18n_def', 'public', 'pg_catalog'];
+      v_table  := a_code;
+    END IF;
+    FOR _i IN array_lower(v_schema, 1)..array_upper(v_schema, 1) LOOP
+      FOR R IN
+        SELECT table_schema, table_name
+          FROM information_schema.tables
+          WHERE (table_schema = v_schema[_i] AND table_name = v_table)
+        LOOP
+        IF v_ret IS NOT NULL THEN
+          RETURN NULL;
+        END IF;
+        v_ret := R.table_schema || '.' || R.table_name;
+      END LOOP;
+      IF v_ret IS NOT NULL THEN
+        EXIT;
+      END IF;
+    END LOOP;
+    RETURN v_ret;
+  END;
+$_$;
+  
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION ws.pg_view_comments(
+  a_code text              -- имя объекта
+) RETURNS SETOF t_pg_view_info VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+  
+  DECLARE
+  
+    v_code text[];
+    v_def text;
+    R record;
+    v_list text;
+    _i int;
+    _j int;
+    v_field text;
+  
+    v_brac int;
+    v_temp text[];
+    v_viewname text;
+        
+  BEGIN
+    RAISE DEBUG 'PROCESSING: View %', a_code;
+  
+    v_code := string_to_array(a_code, '.');
+    FOR R IN
+      SELECT schemaname || '.' || viewname AS vname, lower(definition) AS _def 
+        FROM pg_views
+        WHERE (array_length(v_code, 1) = 2 AND schemaname = v_code[1] AND viewname = v_code[2])
+          OR (array_length(v_code, 1) = 1 AND viewname = v_code[1])
+      LOOP
+  
+      IF v_def IS NOT NULL THEN
+        RAISE DEBUG 'ERROR: Имя представления неоднозначно %', a_code;
+        RETURN;
+      END IF;
+      
+      v_def := R._def;
+      v_viewname := R.vname;
+  
+    END LOOP;
+  
+    IF v_def IS NULL THEN
+      RAISE DEBUG 'ERROR: Представление не найдено %', a_code;
+      RETURN;
+    END IF;
+  
+    -- v_list: список полей в тексте запроса между select/from
+    v_list := substring(v_def FROM position('select' IN v_def) + 7);
+    v_list := trim(substring(v_list FROM 1 FOR position(' from ' IN v_list) - 1));
+  
+    -- v_def: текст запроса после "from", содержащий таблицы
+    -- если есть "union" - выбрать только первую часть
+    IF position(' union ' IN v_def) > 0 THEN
+      v_def := trim(substring(v_def FROM 1 FOR position(' union ' IN v_def)));
+    END IF;
+    v_def := ' ' || trim(trim(substring(v_def FROM position(' from ' IN v_def) + 6)), ';') || ' ';
+  
+  
+    -- представить поля текста запроса в виде массива
+    -- необходимо разбить по "," принимая во внимание что некоторые поля имеют формулы с "," внутри "()"
+    _i := 1;
+    v_brac := 0;
+    v_temp := string_to_array(v_list, ',');
+    v_code := null;
+    FOR _j IN array_lower(v_temp, 1)..array_upper(v_temp, 1) LOOP
+  
+      v_temp[_j] := trim(v_temp[_j]);
+      v_code[_i] := coalesce(v_code[_i], '') || v_temp[_j];
+      v_brac := v_brac + length(replace(v_temp[_j], '(', '')) - length(replace(v_temp[_j], ')', ''));
+      IF v_brac = 0 THEN
+        _i := _i + 1;
+      END IF;
+      
+    END LOOP;
+  
+    -- бросить ошибку если длина массива отлична от макс номера поля в представлении
+    IF (
+         SELECT max(attnum)
+         FROM   pg_attribute 
+         WHERE  attrelid = v_viewname::regclass
+       ) <> array_length(v_code, 1) THEN
+       RAISE DEBUG 'FATAL ERROR: Ошибка подсчета количества полей "%"', a_code;
+       RETURN;
+    END IF;
+  
+    -- обработать поля по одному
+    FOR _i IN array_lower(v_code, 1)..array_upper(v_code, 1) LOOP
+  
+      DECLARE
+  
+        v_col text;
+        v_table text;
+        v_com text;
+  
+        _sub text;
+        _arr text[];
+        _pos int;
+        
+      BEGIN
+  
+        -- получить значения v_field и поле v_col из колонки ("A.B as C" - значение=A.B поле=C; "A.B" - значение=A.B поле=B)
+        v_field = trim(v_code[_i]);      
+        _arr = string_to_array(v_field, ' as ');  
+        v_col = case when array_length(_arr,1) = 2 THEN _arr[2] ELSE '' END;
+        _arr = string_to_array(_arr[1], '.');
+        IF v_col = '' THEN
+           v_col = _arr[array_length(_arr,1)];
+        END IF;
+  
+        -- значение является формулой
+        IF v_field ~ '^[''.0-9]|null*' OR v_field ~ E'\\(' THEN
+  
+          R = ROW(v_viewname, v_col,null::text,null::text,3::int,v_field::text);
+          RETURN NEXT R;
+        
+          RAISE DEBUG 'INFO: значение является формулой "%"', v_field;
+  
+        -- значение является колонкой таблицы
+        ELSE
+  
+          -- значение должно быть в форме таблица/псевдоимя.поле (иметь '.') как в выборке pg_views, иначе ошибка
+          IF array_length(_arr,1) = 2 THEN
+  
+            -- найти позицию таблица/псевдоимя в тексте запроса (окруженную ' ', ',' и тд)
+            _pos = position(' ' || trim(_arr[1]) || ' ' in v_def);
+            IF _pos = 0 THEN
+              _pos = position(' ' || trim(_arr[1]) || ',' in v_def);
+            END IF;
+            IF _pos = 0 THEN
+              _pos = position(trim(_arr[1]) || ' ' in v_def);
+            END IF;         
+            IF _pos = 0 THEN
+              _pos = position(trim(_arr[1]) in v_def);
+            END IF;
+  
+            -- _ref = строка запроса до позиции таблицы/псевдоимя
+            _sub = trim(trim(substring(v_def from 1 FOR _pos - 1)), '(');
+  
+            _arr[1] = trim(_arr[1]);
+  
+            -- если последний символ _ref = '.' - значит в тексте указана схема
+            IF substring(_sub from length(_sub) FOR 1) = '.' THEN 
+              -- "схема.таблица" из текста запроса
+              v_table = trim(trim(trim(split_part(trim(_sub), ' ', 1 + length(trim(_sub)) - length(replace(trim(_sub), ' ', ''))), '('), '.')) || '.' || _arr[1];
+  
+            ELSE
+              -- определить значение предшествующее позиции таблицы. оно будет либо схема, либо укажет что схема не указана
+              _sub = trim(trim(substring(v_def from 1 FOR _pos - 1)), '(');
+              _sub = trim(trim(trim(split_part(trim(_sub), ' ', 1 + length(trim(_sub)) - length(replace(trim(_sub), ' ', ''))), '('), '.'));
+  
+              -- если вверху нашелся 'join','from' или '' - значит в тексте запроса схема перед таблицей не указана
+              -- получить схема.таблица через ф-ю pg_view_comments_get_tbl
+              v_table = ws.pg_view_comments_get_tbl(case when _sub in ('join','from','') THEN _arr[1] ELSE _sub END);
+  
+            END IF;
+  
+            -- получить комментарий если схема.таблица успешно определены
+            IF v_table is not null THEN
+              
+              v_com = (SELECT col_description
+                (
+                  (SELECT (v_table)::regclass::oid)::int,
+                  (
+                    SELECT attnum FROM pg_attribute 
+                    WHERE  attrelid = (v_table)::regclass
+                    AND    attname  = _arr[2]
+                  )
+                )
+              );
+     
+              RAISE DEBUG 'COMMENT: % % = %', v_table, v_col, v_com;
+              R = ROW(
+                v_viewname, v_col,v_table,_arr[2]::text,
+                case when v_com is not null THEN 1 ELSE 2 END::int,
+                case when v_com is not null THEN v_com ELSE 'Комментарий отсутствует для: ' || v_code[_i] END::text
+              );
+  
+              RETURN NEXT R;
+              
+            -- таблица из текста запроса не определена. возможна проблема в данной ф-ции
+            ELSE
+  
+              R = ROW(v_viewname, v_col,null::text,null::text,4::int, 'Ошибка определения комментария для: ' || v_code[_i]);
+              RETURN NEXT R;
+              
+              RAISE DEBUG 'ERROR: Ошибка определения комментария для "%"', v_field;
+            END IF;
+          ELSE
+            -- неподдерживаемый формат. все определения полей хранятся как таблица/псевдоимя.поле данная ошибка может возникнуть при непредвиденном изменении в pg_views
+            R = ROW(v_viewname, null::text,null::text,null::text,5::int, 'Поле хранится в неподдерживающемся формате: ' || v_field);
+            RETURN NEXT R;
+            RAISE DEBUG 'ERROR: Поле хранится в неподдерживающемся формате: "%"', v_field;
+          END IF;
+    
+        END IF;
+      END;
+    END LOOP;
+    
+  END;
+$_$;  
+ 
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_c(
   a_type ws.t_pg_object    -- тип объекта (из перечисления ws.t_pg_object)
 , a_code name              -- имя объекта
@@ -153,13 +402,24 @@ $_$
     v_code TEXT;
     v_name TEXT;
     rec ws.t_pg_proc_info;
+    r_view RECORD;
+
   BEGIN
+    -- определить схему объекта, если не задана
     IF split_part(a_code, '.', 2) = '' AND a_type NOT IN ('h')
       OR a_type IN ('c','a') AND split_part(a_code, '.', 3) = '' THEN
       v_code := ws.pg_cs(a_code); -- добавить имя текущей схемы
     ELSE
       v_code := a_code;
     END IF;
+    IF a_type = 'v' THEN
+      FOR r_view in select * from ws.pg_view_comments(v_code) LOOP
+        IF r_view.status_id = 1 THEN
+          PERFORM pg_c('c', r_view.rel || '.' || r_view.code, r_view.anno);
+        END IF;
+      END LOOP;
+    END IF;
+   
     v_name := CASE
       WHEN a_type = 'h' THEN 'SCHEMA'
       WHEN a_type = 'r' THEN 'TABLE'
@@ -197,6 +457,7 @@ SELECT
   pg_c('f', 'sprintf', 'Порт функции sprintf')
 , pg_c('f', 'pg_cs', 'Текущая (первая) схема БД в пути поиска', $_$если задан аргумент, он и '.' добавляются к имени схемы$_$)
 , pg_c('f', 'reserved_args', 'Зарезервированные имена аргументов методов')
+, pg_c('f', 'pg_view_comments','получить комментарии полей view из таблиц запроса')
 ;
 
 /* ------------------------------------------------------------------------- */
