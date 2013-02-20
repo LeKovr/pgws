@@ -22,7 +22,7 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION current2past (DATE) RETURNS SETOF wsd.job LANGUAGE 'sql' AS
-$_$ -- current2past - Удаление и возврат из wsd.job завершенных задач для помещения в wsd.job_dust, валидных до наступления заданной даты
+$_$ -- current2past - Удаление и возврат из wsd.job завершенных задач для помещения в wsd.job_past, валидных до наступления заданной даты
 -- Вызов:
 --   INSERT INTO wsd.job_past SELECT * FROM job.current2past(r_t.arg_date);
   DELETE FROM wsd.job USING job.status s, job.handler c
