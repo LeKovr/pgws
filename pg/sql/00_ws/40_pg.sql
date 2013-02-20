@@ -21,31 +21,29 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE VIEW pg_sql AS
-  SELECT
-    datname
-    , NOW() - query_start AS duration
-    , application_name
-    , procpid
-    , current_query
-    FROM pg_stat_activity
-    WHERE current_query <> '<IDLE>'
-    ORDER BY duration DESC
+CREATE OR REPLACE VIEW pg_sql AS SELECT
+  datname
+, NOW() - query_start AS duration
+, application_name
+, procpid
+, current_query
+  FROM pg_stat_activity
+  WHERE current_query <> '<IDLE>'
+  ORDER BY duration DESC
 ;
 SELECT pg_c('v', 'pg_sql', 'Текущие запросы к БД')
 ;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE VIEW pg_const AS
-  SELECT
-    ws.pg_schema_by_oid(pronamespace) AS schema
-    , proname AS code
-    , pg_catalog.format_type(p.prorettype, NULL) AS type
-    , ws.pg_exec_func(ws.pg_schema_by_oid(pronamespace), proname) AS value
-    , obj_description(p.oid, 'pg_proc') AS anno
-    FROM pg_catalog.pg_proc p
-    WHERE p.proname LIKE 'const_%'
-    ORDER BY 1, 2
+CREATE OR REPLACE VIEW pg_const AS SELECT
+  ws.pg_schema_by_oid(pronamespace) AS schema
+, proname AS code
+, pg_catalog.format_type(p.prorettype, NULL) AS type
+, ws.pg_exec_func(ws.pg_schema_by_oid(pronamespace), proname) AS value
+, obj_description(p.oid, 'pg_proc') AS anno
+  FROM pg_catalog.pg_proc p
+  WHERE p.proname LIKE 'const_%'
+  ORDER BY 1, 2
 ;
 
 SELECT pg_c('v', 'pg_const', 'Справочник внутренних констант пакетов')

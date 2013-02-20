@@ -84,4 +84,20 @@ CREATE TABLE page_data (
 , pkg        TEXT     NOT NULL
 , CONSTRAINT page_fkey_class_action FOREIGN KEY (class_id, action_id) REFERENCES class_action
 );
-SELECT pg_c('r', 'page_data', 'Атрибуты страниц для i18n_def.page');
+SELECT pg_c('r', 'page_data', 'Атрибуты страниц для page_data')
+, pg_c('c', 'page_data.code'      , 'Идентификатор страницы')
+, pg_c('c', 'page_data.up_code'   , 'идентификатор страницы верхнего уровня')
+, pg_c('c', 'page_data.class_id'  , 'ID класса, к которому относится страница')
+, pg_c('c', 'page_data.action_id' , 'ID акции, к которой относится страница')
+, pg_c('c', 'page_data.group_id'  , 'ID группы страниц для меню')
+, pg_c('c', 'page_data.sort'      , 'порядок сортировки в меню страниц одного уровня (NULL - нет в меню)')
+, pg_c('c', 'page_data.uri'       , 'мета-маска с именами переменных, которой должен соответствовать URI запроса')
+, pg_c('c', 'page_data.tmpl'      , 'файл шаблона (NULL для внешних адресов)')
+, pg_c('c', 'page_data.id_fixed'  , 'ID объекта взять из этого поля')
+, pg_c('c', 'page_data.id_session', 'ID объекта взять из этого поля сессии')
+, pg_c('c', 'page_data.is_hidden' , 'Запрет включения внешних блоков в разметку страницы')
+, pg_c('c', 'page_data.target'    , 'значение атрибута target в формируемых ссылках')
+, pg_c('c', 'page_data.uri_re'    , 'regexp URI, вычисляется триггером при insert/update')
+, pg_c('c', 'page_data.uri_fmt'   , 'строка формата для генерации URI, вычисляется триггером при insert/update')
+, pg_c('c', 'page_data.pkg'       , 'пакет, в котором зарегистрирована страница')
+;

@@ -23,36 +23,36 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE ref (
-  id           ws.d_id32 PRIMARY KEY
-  , class_id   d_class  NOT NULL REFERENCES class
-  , name       TEXT NOT NULL
-  , code       ws.d_code
-  , updated_at ws.d_stamp NOT NULL DEFAULT '2010-01-01'
+  id         ws.d_id32 PRIMARY KEY
+, class_id   d_class  NOT NULL REFERENCES class
+, name       TEXT NOT NULL
+, code       ws.d_code
+, updated_at ws.d_stamp NOT NULL DEFAULT '2010-01-01'
 );
-
-COMMENT ON TABLE  ref IS 'Справочник';
-COMMENT ON COLUMN ref.id         IS 'ID';
-COMMENT ON COLUMN ref.name       IS 'Название';
-COMMENT ON COLUMN ref.code       IS 'Метод доступа';
-COMMENT ON COLUMN ref.updated_at IS 'Момент последнего изменения';
+SELECT pg_c('r', 'ref', 'Справочник')
+, pg_c('c', 'ref.id',         'ID')
+, pg_c('c', 'ref.name',       'Название')
+, pg_c('c', 'ref.code',       'Метод доступа')
+, pg_c('c', 'ref.updated_at', 'Момент последнего изменения')
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE ref_item (
-  ref_id       ws.d_id32 REFERENCES ref
-  , id         ws.d_id32 NOT NULL
-  , sort       ws.d_sort
-  , name       text NOT NULL
-  , group_id   ws.d_id32 NOT NULL DEFAULT 1
-  , deleted_at ws.d_stamp
-  , CONSTRAINT ref_item_pkey PRIMARY KEY (ref_id, id)
+  ref_id     ws.d_id32 REFERENCES ref
+, id         ws.d_id32 NOT NULL
+, sort       ws.d_sort
+, name       text NOT NULL
+, group_id   ws.d_id32 NOT NULL DEFAULT 1
+, deleted_at ws.d_stamp
+, CONSTRAINT ref_item_pkey PRIMARY KEY (ref_id, id)
 );
-
-COMMENT ON TABLE  ref_item IS 'Позиция справочника';
-COMMENT ON COLUMN ref_item.ref_id  IS 'ID справочника';
-COMMENT ON COLUMN ref_item.id         IS 'ID позиции';
-COMMENT ON COLUMN ref_item.sort       IS 'Порядок сортировки';
-COMMENT ON COLUMN ref_item.name       IS 'Название';
-COMMENT ON COLUMN ref_item.group_id   IS 'Внутренний ID группы';
-COMMENT ON COLUMN ref_item.deleted_at IS 'Момент удаления';
+SELECT pg_c('r', 'ref_item', 'Позиция справочника')
+, pg_c('c', 'ref_item.ref_id',     'ID справочника')
+, pg_c('c', 'ref_item.id',         'ID позиции')
+, pg_c('c', 'ref_item.sort',       'Порядок сортировки')
+, pg_c('c', 'ref_item.name',       'Название')
+, pg_c('c', 'ref_item.group_id',   'Внутренний ID группы')
+, pg_c('c', 'ref_item.deleted_at', 'Момент удаления')
+;
 
 /* ------------------------------------------------------------------------- */

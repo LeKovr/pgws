@@ -21,62 +21,50 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE VIEW prop_owner_attr AS
-  SELECT
-    po.*
-  , pog.is_id_required
-  , pog.sort AS pog_sort
-  , pog.name AS pog_name
-    FROM wsd.prop_owner po
-      JOIN wsd.prop_group AS pog USING (pogc)
-    ORDER BY pog_sort, sort
+CREATE OR REPLACE VIEW prop_owner_attr AS SELECT
+  po.*
+, pog.is_id_required
+, pog.sort AS pog_sort
+, pog.name AS pog_name
+  FROM wsd.prop_owner po
+    JOIN wsd.prop_group AS pog USING (pogc)
+  ORDER BY pog_sort, sort
 ;
-SELECT pg_c('v', 'prop_owner_attr',           'Владельцы свойств')
-, pg_c('c', 'prop_owner_attr.pogc',           'Код группы (Property Owner Group Code)')
-, pg_c('c', 'prop_owner_attr.poid',           'ID владельца (Property Owner ID)')
-, pg_c('c', 'prop_owner_attr.sort',           'Порядок сортировки')
-, pg_c('c', 'prop_owner_attr.name',           'Название')
-, pg_c('c', 'prop_owner_attr.anno',           'Аннотация')
-, pg_c('c', 'prop_owner_attr.is_id_required', 'Загрузка без указания poid не используется')
-, pg_c('c', 'prop_owner_attr.pog_sort',       'Порядок сортировки группы')
-, pg_c('c', 'prop_owner_attr.pog_name',       'Название группы')
-;
+SELECT pg_c('v', 'prop_owner_attr', 'Владельцы свойств');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE VIEW prop_attr AS
-  SELECT -- явно заданные значения с описаниями по маске
-    pv.code --    p.*
-  , p.pkg
-  , p.pogc_list
-  , p.is_mask
-  , p.def_value
-  , p.name
-  , p.value_fmt
-  , p.anno
-  , pv.pogc
-  , pv.poid
-  , pv.valid_from
-  , pv.pkg as value_pkg
-  , pv.value
-    FROM ws.prop p
-    , wsd.prop_value pv
-    WHERE pv.pogc = ANY (p.pogc_list)
-      AND p.is_mask
-      AND pv.code ~ ws.mask2regexp(p.code)
+CREATE OR REPLACE VIEW prop_attr AS SELECT -- явно заданные значения с описаниями по маске
+  pv.code --    p.*
+, p.pkg
+, p.pogc_list
+, p.is_mask
+, p.def_value
+, p.name
+, p.value_fmt
+, p.anno
+, pv.pogc
+, pv.poid
+, pv.valid_from
+, pv.pkg as value_pkg
+, pv.value
+  FROM ws.prop p
+  , wsd.prop_value pv
+  WHERE pv.pogc = ANY (p.pogc_list)
+    AND p.is_mask
+    AND pv.code ~ ws.mask2regexp(p.code)
   UNION SELECT
-    p.*
-  , po.pogc
-  , po.poid
-  , '2000-01-02'::DATE AS valid_from
-  , po.pkg as value_pkg
-  , (SELECT value FROM wsd.prop_value WHERE pogc = po.pogc AND poid = po.poid AND code = p.code) AS value
-    FROM ws.prop p
-    , wsd.prop_owner po
-    WHERE po.pogc = ANY (p.pogc_list)
-      AND NOT p.is_mask
+  p.*
+, po.pogc
+, po.poid
+, '2000-01-02'::DATE AS valid_from
+, po.pkg as value_pkg
+, (SELECT value FROM wsd.prop_value WHERE pogc = po.pogc AND poid = po.poid AND code = p.code) AS value
+  FROM ws.prop p
+  , wsd.prop_owner po
+  WHERE po.pogc = ANY (p.pogc_list)
+    AND NOT p.is_mask
   ORDER BY pogc, poid, code, valid_from
 ;
 SELECT ws.pg_c('v', 'prop_attr', 'Атрибуты свойств');
 /* ------------------------------------------------------------------------- */
 
-;

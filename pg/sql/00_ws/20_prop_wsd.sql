@@ -35,7 +35,9 @@ CREATE TABLE wsd.prop_group (
 
 SELECT pg_c('r', 'wsd.prop_group', 'Группа владельцев свойств')
 , pg_c('c', 'wsd.prop_group.pogc', 'Код группы (Property Owner Group Code)')
+, pg_c('c', 'wsd.prop_group.pkg',  'Пакет, в котором добавлена группа')
 , pg_c('c', 'wsd.prop_group.sort', 'Порядок сортировки')
+, pg_c('c', 'wsd.prop_group.is_id_required', 'Загрузка без указания poid не используется')
 , pg_c('c', 'wsd.prop_group.name', 'Название')
 , pg_c('c', 'wsd.prop_group.anno', 'Аннотация')
 ;
@@ -77,5 +79,6 @@ SELECT pg_c('r', 'wsd.prop_value',       'Значения свойств объ
 , pg_c('c', 'wsd.prop_value.poid',       'ID владельца (Property Owner ID)')
 , pg_c('c', 'wsd.prop_value.code',       'Код свойства')
 , pg_c('c', 'wsd.prop_value.valid_from', 'Дата начала действия')
+, pg_c('c', 'wsd.prop_value.pkg',        'Пакет, в котором задано значение')
 , pg_c('c', 'wsd.prop_value.value',      'Значение свойства')
 ;

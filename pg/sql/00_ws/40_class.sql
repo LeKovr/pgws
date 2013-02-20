@@ -21,68 +21,68 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE VIEW class_status_action_ext AS
-  SELECT
-    sa.*
-    , cl.name AS class
-    , s.name AS status
-    , a.name AS action
-    FROM class_status_action sa
-      JOIN class cl ON (sa.class_id = cl.id)
-      JOIN class_status s ON (sa.class_id = s.class_id AND sa.status_id = s.id)
-      JOIN class_action a ON (sa.class_id = a.class_id AND sa.action_id = a.id)
+CREATE OR REPLACE VIEW class_status_action_ext AS SELECT
+  sa.*
+, cl.name AS class
+, s.name AS status
+, a.name AS action
+  FROM class_status_action sa
+    JOIN class cl ON (sa.class_id = cl.id)
+    JOIN class_status s ON (sa.class_id = s.class_id AND sa.status_id = s.id)
+    JOIN class_action a ON (sa.class_id = a.class_id AND sa.action_id = a.id)
 ;
-COMMENT ON VIEW class_status_action_ext IS 'class_status_action с именами class, status, action';
-
+SELECT pg_c('v', 'class_status_action_ext', 'class_status_action с именами class, status, action');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW csa AS SELECT * FROM class_status_action_ext;
-COMMENT ON VIEW csa IS 'Синоним class_status_action_ext';
+SELECT pg_c('v', 'csa', 'Синоним class_status_action_ext');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW class_action_acl_ext AS SELECT
   aa.*
-  , cl.name  AS class
-  , a1.name AS action
-  , a2.name AS acl
+, cl.name  AS class
+, a1.name AS action
+, a2.name AS acl
   FROM class_action_acl aa
     JOIN class cl ON (aa.class_id = cl.id)
     JOIN class_action a1 ON (aa.class_id = a1.class_id AND aa.action_id = a1.id)
     JOIN class_acl a2 ON (aa.class_id = a2.class_id AND aa.acl_id = a2.id)
 ;
-COMMENT ON VIEW class_action_acl_ext IS 'class_action_acl с именами class, action, acl';
+SELECT pg_c('v', 'class_action_acl_ext', 'class_action_acl с именами class, action, acl');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW caa AS SELECT * FROM class_action_acl_ext;
-COMMENT ON VIEW caa IS 'Синоним class_action_acl_ext';
+SELECT pg_c('v', 'caa', 'Синоним class_action_acl_ext');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW class_status_action_acl AS SELECT
   sa.*
-  , aa.acl_id
-  , NULL::BOOL AS is_addon -- NULL для результата JOIN, TRUE для строки из class_status_action_acl_addon
+, aa.acl_id
+, NULL::BOOL AS is_addon -- NULL для результата JOIN, TRUE для строки из class_status_action_acl_addon
   FROM class_status_action sa
     JOIN class_action_acl aa USING (class_id, action_id)
   UNION SELECT * FROM class_status_action_acl_addon WHERE is_addon
   EXCEPT SELECT class_id, status_id, action_id, acl_id, NULL FROM class_status_action_acl_addon WHERE NOT is_addon
 ;
-COMMENT ON VIEW class_status_action_acl IS 'class_status_action_acl';
+SELECT pg_c('v', 'class_status_action_acl', 'class_status_action_acl')
+, pg_c('c', 'class_status_action_acl.is_addon',  'Строка является добавлением разрешения')
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW class_status_action_acl_ext AS SELECT
   csaa.*
-  , cl.name  AS class
-  , s.name AS status
-  , a1.name AS action
-  , a2.name AS acl
+, cl.name  AS class
+, s.name AS status
+, a1.name AS action
+, a2.name AS acl
   FROM class_status_action_acl csaa
     JOIN class cl ON (csaa.class_id = cl.id)
     JOIN class_status s ON (csaa.status_id = s.id AND csaa.class_id = s.class_id)
     JOIN class_action a1 ON (csaa.action_id = a1.id AND csaa.class_id = a1.class_id)
     JOIN class_acl a2 ON (csaa.acl_id = a2.id  AND csaa.class_id = a2.class_id)
 ;
-COMMENT ON VIEW class_status_action_acl_ext IS 'class_status_action_acl с именами class, status, action, acl';
+SELECT pg_c('v', 'class_status_action_acl_ext', 'class_status_action_acl с именами class, status, action, acl');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW csaa AS SELECT * FROM class_status_action_acl_ext;
-COMMENT ON VIEW csaa IS 'Синоним class_status_action_acl_ext';
+SELECT pg_c('v', 'csaa', 'Синоним class_status_action_acl_ext');
 

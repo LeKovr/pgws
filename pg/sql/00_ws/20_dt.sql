@@ -23,93 +23,99 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE dt (
-  id           d_id32 PRIMARY KEY
-  , code       d_code NOT NULL UNIQUE
-  , parent_id  d_id32 REFERENCES dt
-  , base_id    d_id32 REFERENCES dt
-  , allow_null bool   NOT NULL DEFAULT TRUE
-  , def_val    text   --
-  , anno       text   NOT NULL
-  , is_list    bool   NOT NULL DEFAULT FALSE -- для производных типов
-  , is_complex bool   NOT NULL DEFAULT FALSE -- для производных типов
-  , is_sql     bool   NOT NULL DEFAULT FALSE -- для производных типов
-  , CONSTRAINT dt_id_base_id_key UNIQUE (id, base_id) -- fk таблицы dt_facet
+  id         d_id32 PRIMARY KEY
+, code       d_code NOT NULL UNIQUE
+, parent_id  d_id32 REFERENCES dt
+, base_id    d_id32 REFERENCES dt
+, allow_null bool   NOT NULL DEFAULT TRUE
+, def_val    text   --
+, anno       text   NOT NULL
+, is_list    bool   NOT NULL DEFAULT FALSE -- для производных типов
+, is_complex bool   NOT NULL DEFAULT FALSE -- для производных типов
+, is_sql     bool   NOT NULL DEFAULT FALSE -- для производных типов
+, CONSTRAINT dt_id_base_id_key UNIQUE (id, base_id) -- fk таблицы dt_facet
 );
-COMMENT ON TABLE dt IS 'Описание типа';
-COMMENT ON COLUMN dt.id          IS 'ID типа';
-COMMENT ON COLUMN dt.code        IS 'Код типа';
-COMMENT ON COLUMN dt.parent_id   IS 'ID родительского типа';
-COMMENT ON COLUMN dt.base_id     IS 'ID базового типа';
-COMMENT ON COLUMN dt.allow_null  IS 'Разрешен NULL';
-COMMENT ON COLUMN dt.def_val     IS 'Значение по умолчанию';
-COMMENT ON COLUMN dt.anno        IS 'Аннотация';
-COMMENT ON COLUMN dt.is_list     IS 'Конструктор типа - массив';
-COMMENT ON COLUMN dt.is_complex  IS 'Конструктор типа - структура';
-COMMENT ON COLUMN dt.is_sql      IS 'Тип создан в БД';
+SELECT pg_c('r', 'dt', 'Описание типа')
+, pg_c('c', 'dt.id',         'ID типа')
+, pg_c('c', 'dt.code',       'Код типа')
+, pg_c('c', 'dt.parent_id',  'ID родительского типа')
+, pg_c('c', 'dt.base_id',    'ID базового типа')
+, pg_c('c', 'dt.allow_null', 'Разрешен NULL')
+, pg_c('c', 'dt.def_val',    'Значение по умолчанию')
+, pg_c('c', 'dt.anno',       'Аннотация')
+, pg_c('c', 'dt.is_list',    'Конструктор типа - массив')
+, pg_c('c', 'dt.is_complex', 'Конструктор типа - структура')
+, pg_c('c', 'dt.is_sql',     'Тип создан в БД')
+;
 
 CREATE SEQUENCE dt_id_seq START 100;
 ALTER TABLE dt ALTER COLUMN id SET DEFAULT NEXTVAL('dt_id_seq');
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE dt_part (
-  id           d_id32 NOT NULL REFERENCES dt
-  , part_id    d_cnt  DEFAULT 0 -- >0 для комплексных типов
-  , code       d_code_arg NOT NULL
-  , parent_id  d_id32 NOT NULL REFERENCES dt
-  , base_id    d_id32 NOT NULL REFERENCES dt
-  , allow_null bool   NOT NULL DEFAULT TRUE
-  , def_val    text   --
-  , anno       text   NOT NULL
-  , is_list    bool   NOT NULL DEFAULT FALSE -- для производных типов
-  , CONSTRAINT dt_part_pkey PRIMARY KEY (id, part_id)
-  , CONSTRAINT dt_part_id_code_key UNIQUE (id, code)
+  id         d_id32 NOT NULL REFERENCES dt
+, part_id    d_cnt  DEFAULT 0 -- >0 для комплексных типов
+, code       d_code_arg NOT NULL
+, parent_id  d_id32 NOT NULL REFERENCES dt
+, base_id    d_id32 NOT NULL REFERENCES dt
+, allow_null bool   NOT NULL DEFAULT TRUE
+, def_val    text   --
+, anno       text   NOT NULL
+, is_list    bool   NOT NULL DEFAULT FALSE -- для производных типов
+, CONSTRAINT dt_part_pkey PRIMARY KEY (id, part_id)
+, CONSTRAINT dt_part_id_code_key UNIQUE (id, code)
 );
-COMMENT ON TABLE dt_part IS 'Поля комплексного типа';
-COMMENT ON COLUMN dt_part.id          IS 'ID комплексного типа';
-COMMENT ON COLUMN dt_part.part_id     IS 'ID поля';
-COMMENT ON COLUMN dt_part.code        IS 'Код поля';
-COMMENT ON COLUMN dt_part.parent_id   IS 'ID родительского типа';
-COMMENT ON COLUMN dt_part.base_id     IS 'ID базового типа';
-COMMENT ON COLUMN dt_part.allow_null  IS 'Разрешен NULL';
-COMMENT ON COLUMN dt_part.def_val     IS 'Значение по умолчанию';
-COMMENT ON COLUMN dt_part.anno        IS 'Аннотация';
-COMMENT ON COLUMN dt_part.is_list     IS 'Конструктор поля - массив';
+SELECT pg_c('r', 'dt_part', 'Поля композитного типа')
+, pg_c('c', 'dt_part.id',         'ID комплексного типа')
+, pg_c('c', 'dt_part.part_id',    'ID поля')
+, pg_c('c', 'dt_part.code',       'Код поля')
+, pg_c('c', 'dt_part.parent_id',  'ID родительского типа')
+, pg_c('c', 'dt_part.base_id',    'ID базового типа')
+, pg_c('c', 'dt_part.allow_null', 'Разрешен NULL')
+, pg_c('c', 'dt_part.def_val',    'Значение по умолчанию')
+, pg_c('c', 'dt_part.anno',       'Аннотация')
+, pg_c('c', 'dt_part.is_list',    'Конструктор поля - массив')
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE facet (
-  id           d_id32  PRIMARY KEY
-  , code       d_codei NOT NULL
-  , anno       text    NOT NULL
+  id         d_id32  PRIMARY KEY
+, code       d_codei NOT NULL
+, anno       text    NOT NULL
 );
-COMMENT ON TABLE facet IS 'Ограничение';
-COMMENT ON COLUMN facet.id            IS 'ID ограничения';
-COMMENT ON COLUMN facet.code          IS 'Код ограничения';
-COMMENT ON COLUMN facet.anno          IS 'Аннотация';
+SELECT pg_c('r', 'facet', 'Вид ограничений типов')
+, pg_c('c', 'facet.id',   'ID ограничения')
+, pg_c('c', 'facet.code', 'Код ограничения')
+, pg_c('c', 'facet.anno', 'Аннотация')
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE facet_dt_base (
-  id           d_id32 REFERENCES facet
-  , base_id    d_id32 REFERENCES dt
-  , CONSTRAINT facet_dt_base_pkey PRIMARY KEY (id, base_id)
+  id         d_id32 REFERENCES facet
+, base_id    d_id32 REFERENCES dt
+, CONSTRAINT facet_dt_base_pkey PRIMARY KEY (id, base_id)
 );
-COMMENT ON TABLE facet_dt_base IS 'Допустимое ограничение для типа';
+SELECT pg_c('r', 'facet_dt_base', 'Для какого базового типа применимо ограничение')
+, pg_c('c', 'facet_dt_base.id',      'ID ограничения')
+, pg_c('c', 'facet_dt_base.base_id', 'ID базового типа')
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE dt_facet (
-  id           d_id32
-  , facet_id   d_id32
-  , value      text   NOT NULL -- несколько pattern сводятся в один через OR
-  , base_id    d_id32 NOT NULL
-  , anno       text
-  , CONSTRAINT dt_facet_pkey PRIMARY KEY (id, facet_id)
-  , CONSTRAINT dt_facet_fkey_dt FOREIGN KEY (id, base_id) REFERENCES dt(id, base_id)
-  , CONSTRAINT dt_facet_fkey_facet_dt_base FOREIGN KEY (facet_id, base_id) REFERENCES facet_dt_base
+  id         d_id32
+, facet_id   d_id32
+, value      text   NOT NULL -- несколько pattern сводятся в один через OR
+, base_id    d_id32 NOT NULL
+, anno       text
+, CONSTRAINT dt_facet_pkey PRIMARY KEY (id, facet_id)
+, CONSTRAINT dt_facet_fkey_dt FOREIGN KEY (id, base_id) REFERENCES dt(id, base_id)
+, CONSTRAINT dt_facet_fkey_facet_dt_base FOREIGN KEY (facet_id, base_id) REFERENCES facet_dt_base
 );
-COMMENT ON TABLE dt_facet IS 'Ограничение для типа';
-COMMENT ON COLUMN dt_facet.id         IS 'ID типа';
-COMMENT ON COLUMN dt_facet.facet_id   IS 'ID ограничения';
-COMMENT ON COLUMN dt_facet.value      IS 'Значение ограничения';
-COMMENT ON COLUMN dt_facet.base_id    IS 'ID базового типа';
-COMMENT ON COLUMN dt_facet.anno       IS 'Аннотация ограничения';
-
+SELECT pg_c('r', 'dt_facet', 'Значение ограничения типа')
+, pg_c('c', 'dt_facet.id',       'ID типа')
+, pg_c('c', 'dt_facet.facet_id', 'ID ограничения')
+, pg_c('c', 'dt_facet.value',    'Значение ограничения')
+, pg_c('c', 'dt_facet.base_id',  'ID базового типа')
+, pg_c('c', 'dt_facet.anno',     'Аннотация ограничения')
+;
 /* ------------------------------------------------------------------------- */
