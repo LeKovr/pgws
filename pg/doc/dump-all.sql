@@ -810,6 +810,20 @@ CREATE TYPE t_pg_proc_info AS (
 );
 
 
+--
+-- Name: t_pg_view_info; Type: TYPE; Schema: ws; Owner: -
+--
+
+CREATE TYPE t_pg_view_info AS (
+	rel text,
+	code text,
+	rel_src text,
+	rel_src_col text,
+	status_id integer,
+	anno text
+);
+
+
 SET search_path = acc, pg_catalog;
 
 --
@@ -862,7 +876,28 @@ CREATE TABLE server (
 -- Name: TABLE server; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON TABLE server IS 'Сервер горизонтального масштабирования';
+COMMENT ON TABLE server IS 'Сервер горизонтального масштабирования (reserved)';
+
+
+--
+-- Name: COLUMN server.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN server.id IS 'ID сервера';
+
+
+--
+-- Name: COLUMN server.uri; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN server.uri IS 'Адрес сервера';
+
+
+--
+-- Name: COLUMN server.name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN server.name IS 'Название сервера';
 
 
 SET search_path = acc, pg_catalog;
@@ -1696,7 +1731,7 @@ SET search_path = ws, pg_catalog;
 
 CREATE FUNCTION pg_cs(text DEFAULT ''::text) RETURNS name
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 44 */ 
+    AS $_$ /* ws:ws:18_pg.sql / 54 */ 
  SELECT (current_schema() || CASE WHEN COALESCE($1, '') = '' THEN '' ELSE '.' || $1 END)::name
 $_$;
 
@@ -3436,7 +3471,7 @@ $_$;
 
 CREATE FUNCTION current2past(date) RETURNS SETOF wsd.job
     LANGUAGE sql
-    AS $_$  /* job:job:51_main.sql / 25 */ -- current2past - Удаление и возврат из wsd.job завершенных задач для помещения в wsd.job_dust, валидных до наступления заданной даты
+    AS $_$  /* job:job:51_main.sql / 25 */ -- current2past - Удаление и возврат из wsd.job завершенных задач для помещения в wsd.job_past, валидных до наступления заданной даты
 -- Вызов:
 --   INSERT INTO wsd.job_past SELECT * FROM job.current2past(r_t.arg_date);
   DELETE FROM wsd.job USING job.status s, job.handler c
@@ -4712,6 +4747,13 @@ COMMENT ON COLUMN file_info.csum IS 'Контрольная сумма (sha1)';
 
 
 --
+-- Name: COLUMN file_info.format_code; Type: COMMENT; Schema: fs; Owner: -
+--
+
+COMMENT ON COLUMN file_info.format_code IS 'Код формата файла';
+
+
+--
 -- Name: COLUMN file_info.created_by; Type: COMMENT; Schema: fs; Owner: -
 --
 
@@ -4751,6 +4793,13 @@ COMMENT ON COLUMN file_info.obj_id IS 'ID объекта';
 --
 
 COMMENT ON COLUMN file_info.folder_code IS 'Код связи';
+
+
+--
+-- Name: COLUMN file_info.file_code; Type: COMMENT; Schema: fs; Owner: -
+--
+
+COMMENT ON COLUMN file_info.file_code IS 'Код файла';
 
 
 --
@@ -5495,6 +5544,55 @@ COMMENT ON TABLE class IS 'Класс объекта';
 
 
 --
+-- Name: COLUMN class.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class.id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class.up_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class.up_id IS 'ID класса-предка';
+
+
+--
+-- Name: COLUMN class.id_count; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class.id_count IS 'Количество идентификаторов экземпляра класса';
+
+
+--
+-- Name: COLUMN class.is_ext; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class.is_ext IS 'ID экземпляра предка входит в ID экземпляра';
+
+
+--
+-- Name: COLUMN class.sort; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class.sort IS 'Сортировка в списке классов';
+
+
+--
+-- Name: COLUMN class.code; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class.code IS 'Код класса';
+
+
+--
+-- Name: COLUMN class.name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class.name IS 'Название класса';
+
+
+--
 -- Name: class(d_class); Type: FUNCTION; Schema: ws; Owner: -
 --
 
@@ -5533,6 +5631,41 @@ COMMENT ON TABLE class_acl IS 'Уровень доступа к объекту';
 
 
 --
+-- Name: COLUMN class_acl.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_acl.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_acl.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_acl.id IS 'ID уровня доступа';
+
+
+--
+-- Name: COLUMN class_acl.is_sys; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_acl.is_sys IS 'Не воказывать в интерфейсе';
+
+
+--
+-- Name: COLUMN class_acl.sort; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_acl.sort IS 'Сортировка в списке уровней доступа';
+
+
+--
+-- Name: COLUMN class_acl.name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_acl.name IS 'Название уровня доступа';
+
+
+--
 -- Name: class_acl(d_class, d_id32); Type: FUNCTION; Schema: ws; Owner: -
 --
 
@@ -5567,6 +5700,34 @@ CREATE TABLE class_action (
 --
 
 COMMENT ON TABLE class_action IS 'Акция объекта';
+
+
+--
+-- Name: COLUMN class_action.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_action.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action.id IS 'ID акции';
+
+
+--
+-- Name: COLUMN class_action.sort; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action.sort IS 'Сортировка в списке акций';
+
+
+--
+-- Name: COLUMN class_action.name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action.name IS 'Название акции';
 
 
 --
@@ -5661,6 +5822,34 @@ COMMENT ON TABLE class_status IS 'Статус объекта';
 
 
 --
+-- Name: COLUMN class_status.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_status.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status.id IS 'ID статуса';
+
+
+--
+-- Name: COLUMN class_status.sort; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status.sort IS 'Сортировка в списке статусов';
+
+
+--
+-- Name: COLUMN class_status.name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status.name IS 'Название статуса';
+
+
+--
 -- Name: class_status(d_class, d_id32); Type: FUNCTION; Schema: ws; Owner: -
 --
 
@@ -5697,6 +5886,27 @@ COMMENT ON TABLE class_action_acl IS 'Уровень доступа для ак�
 
 
 --
+-- Name: COLUMN class_action_acl.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action_acl.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_action_acl.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action_acl.action_id IS 'ID акции';
+
+
+--
+-- Name: COLUMN class_action_acl.acl_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action_acl.acl_id IS 'ID уровня доступа';
+
+
+--
 -- Name: class_status_action; Type: TABLE; Schema: ws; Owner: -
 --
 
@@ -5712,6 +5922,27 @@ CREATE TABLE class_status_action (
 --
 
 COMMENT ON TABLE class_status_action IS 'Акция по статусу объекта';
+
+
+--
+-- Name: COLUMN class_status_action.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_status_action.status_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action.status_id IS 'ID статуса';
+
+
+--
+-- Name: COLUMN class_status_action.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action.action_id IS 'ID акции';
 
 
 --
@@ -5735,6 +5966,41 @@ COMMENT ON TABLE class_status_action_acl_addon IS 'Дополнения (+/-) к
 
 
 --
+-- Name: COLUMN class_status_action_acl_addon.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_addon.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_status_action_acl_addon.status_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_addon.status_id IS 'ID статуса';
+
+
+--
+-- Name: COLUMN class_status_action_acl_addon.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_addon.action_id IS 'ID акции';
+
+
+--
+-- Name: COLUMN class_status_action_acl_addon.acl_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_addon.acl_id IS 'ID уровня доступа';
+
+
+--
+-- Name: COLUMN class_status_action_acl_addon.is_addon; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_addon.is_addon IS 'Строка является добавлением разрешения';
+
+
+--
 -- Name: class_status_action_acl; Type: VIEW; Schema: ws; Owner: -
 --
 
@@ -5747,6 +6013,41 @@ CREATE VIEW class_status_action_acl AS
 --
 
 COMMENT ON VIEW class_status_action_acl IS 'class_status_action_acl';
+
+
+--
+-- Name: COLUMN class_status_action_acl.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_status_action_acl.status_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl.status_id IS 'ID статуса';
+
+
+--
+-- Name: COLUMN class_status_action_acl.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl.action_id IS 'ID акции';
+
+
+--
+-- Name: COLUMN class_status_action_acl.acl_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl.acl_id IS 'ID уровня доступа';
+
+
+--
+-- Name: COLUMN class_status_action_acl.is_addon; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl.is_addon IS 'Строка является добавлением разрешения';
 
 
 --
@@ -5765,6 +6066,69 @@ COMMENT ON VIEW class_status_action_acl_ext IS 'class_status_action_acl с им�
 
 
 --
+-- Name: COLUMN class_status_action_acl_ext.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_ext.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_status_action_acl_ext.status_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_ext.status_id IS 'ID статуса';
+
+
+--
+-- Name: COLUMN class_status_action_acl_ext.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_ext.action_id IS 'ID акции';
+
+
+--
+-- Name: COLUMN class_status_action_acl_ext.acl_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_ext.acl_id IS 'ID уровня доступа';
+
+
+--
+-- Name: COLUMN class_status_action_acl_ext.is_addon; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_ext.is_addon IS 'Строка является добавлением разрешения';
+
+
+--
+-- Name: COLUMN class_status_action_acl_ext.class; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_ext.class IS 'Название класса';
+
+
+--
+-- Name: COLUMN class_status_action_acl_ext.status; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_ext.status IS 'Название статуса';
+
+
+--
+-- Name: COLUMN class_status_action_acl_ext.action; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_ext.action IS 'Название акции';
+
+
+--
+-- Name: COLUMN class_status_action_acl_ext.acl; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_acl_ext.acl IS 'Название уровня доступа';
+
+
+--
 -- Name: csaa; Type: VIEW; Schema: ws; Owner: -
 --
 
@@ -5777,6 +6141,69 @@ CREATE VIEW csaa AS
 --
 
 COMMENT ON VIEW csaa IS 'Синоним class_status_action_acl_ext';
+
+
+--
+-- Name: COLUMN csaa.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csaa.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN csaa.status_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csaa.status_id IS 'ID статуса';
+
+
+--
+-- Name: COLUMN csaa.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csaa.action_id IS 'ID акции';
+
+
+--
+-- Name: COLUMN csaa.acl_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csaa.acl_id IS 'ID уровня доступа';
+
+
+--
+-- Name: COLUMN csaa.is_addon; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csaa.is_addon IS 'Строка является добавлением разрешения';
+
+
+--
+-- Name: COLUMN csaa.class; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csaa.class IS 'Название класса';
+
+
+--
+-- Name: COLUMN csaa.status; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csaa.status IS 'Название статуса';
+
+
+--
+-- Name: COLUMN csaa.action; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csaa.action IS 'Название акции';
+
+
+--
+-- Name: COLUMN csaa.acl; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csaa.acl IS 'Название уровня доступа';
 
 
 --
@@ -6255,7 +6682,7 @@ CREATE TABLE dt_facet (
 -- Name: TABLE dt_facet; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON TABLE dt_facet IS 'Ограничение для типа';
+COMMENT ON TABLE dt_facet IS 'Значение ограничения типа';
 
 
 --
@@ -6446,7 +6873,7 @@ CREATE TABLE dt_part (
 -- Name: TABLE dt_part; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON TABLE dt_part IS 'Поля комплексного типа';
+COMMENT ON TABLE dt_part IS 'Поля композитного типа';
 
 
 --
@@ -6707,6 +7134,34 @@ CREATE TABLE error_message (
 
 
 --
+-- Name: TABLE error_message; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON TABLE error_message IS 'Сообщение об ошибке в локали схемы БД';
+
+
+--
+-- Name: COLUMN error_message.code; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON COLUMN error_message.code IS 'Код ошибки';
+
+
+--
+-- Name: COLUMN error_message.id_count; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON COLUMN error_message.id_count IS 'Количество аргументов в строке сообщения';
+
+
+--
+-- Name: COLUMN error_message.message; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON COLUMN error_message.message IS 'Форматированная строка сообщения об ошибке';
+
+
+--
 -- Name: error; Type: VIEW; Schema: i18n_def; Owner: -
 --
 
@@ -6719,6 +7174,27 @@ CREATE VIEW error AS
 --
 
 COMMENT ON VIEW error IS 'Описание ошибки';
+
+
+--
+-- Name: COLUMN error.code; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON COLUMN error.code IS 'Код ошибки';
+
+
+--
+-- Name: COLUMN error.id_count; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON COLUMN error.id_count IS 'Количество аргументов в строке сообщения';
+
+
+--
+-- Name: COLUMN error.message; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON COLUMN error.message IS 'Форматированная строка сообщения об ошибке';
 
 
 SET search_path = ws, pg_catalog;
@@ -6767,7 +7243,7 @@ CREATE TABLE facet (
 -- Name: TABLE facet; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON TABLE facet IS 'Ограничение';
+COMMENT ON TABLE facet IS 'Вид ограничений типов';
 
 
 --
@@ -7286,6 +7762,20 @@ COMMENT ON TABLE method_rv_format IS 'Формат результатов мет
 
 
 --
+-- Name: COLUMN method_rv_format.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN method_rv_format.id IS 'ID формата';
+
+
+--
+-- Name: COLUMN method_rv_format.name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN method_rv_format.name IS 'Название формата';
+
+
+--
 -- Name: method_rvf(d_id32); Type: FUNCTION; Schema: ws; Owner: -
 --
 
@@ -7349,7 +7839,7 @@ COMMENT ON FUNCTION month_info(a_date date) IS 'Атрибуты месяца з
 
 CREATE FUNCTION notice(a_text text) RETURNS void
     LANGUAGE plpgsql
-    AS $$ /* ws:ws:18_pg.sql / 204 */ 
+    AS $$ /* ws:ws:18_pg.sql / 465 */ 
   -- вызов RAISE NOTICE из скриптов и sql
   BEGIN
     RAISE NOTICE '%', a_text;
@@ -7574,18 +8064,29 @@ $_$;
 
 CREATE FUNCTION pg_c(a_type t_pg_object, a_code name, a_text text, a_anno text DEFAULT NULL::text) RETURNS void
     LANGUAGE plpgsql
-    AS $$ /* ws:ws:18_pg.sql / 151 */ 
+    AS $$ /* ws:ws:18_pg.sql / 400 */ 
   DECLARE
     v_code TEXT;
     v_name TEXT;
     rec ws.t_pg_proc_info;
+    r_view RECORD;
+
   BEGIN
+    -- определить схему объекта, если не задана
     IF split_part(a_code, '.', 2) = '' AND a_type NOT IN ('h')
       OR a_type IN ('c','a') AND split_part(a_code, '.', 3) = '' THEN
       v_code := ws.pg_cs(a_code); -- добавить имя текущей схемы
     ELSE
       v_code := a_code;
     END IF;
+    IF a_type = 'v' THEN
+      FOR r_view in select * from ws.pg_view_comments(v_code) LOOP
+        IF r_view.status_id = 1 THEN
+          PERFORM pg_c('c', r_view.rel || '.' || r_view.code, r_view.anno);
+        END IF;
+      END LOOP;
+    END IF;
+   
     v_name := CASE
       WHEN a_type = 'h' THEN 'SCHEMA'
       WHEN a_type = 'r' THEN 'TABLE'
@@ -7631,7 +8132,7 @@ COMMENT ON FUNCTION pg_c(a_type t_pg_object, a_code name, a_text text, a_anno te
 
 CREATE FUNCTION pg_exec_func(a_name text) RETURNS text
     LANGUAGE plpgsql STABLE
-    AS $$ /* ws:ws:18_pg.sql / 62 */ 
+    AS $$ /* ws:ws:18_pg.sql / 72 */ 
   DECLARE
     v TEXT;
   BEGIN
@@ -7647,7 +8148,7 @@ $$;
 
 CREATE FUNCTION pg_exec_func(a_schema text, a_name text) RETURNS text
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 73 */ 
+    AS $_$ /* ws:ws:18_pg.sql / 83 */ 
   SELECT ws.pg_exec_func($1 || '.' || $2)
 $_$;
 
@@ -7669,7 +8170,7 @@ $_$;
 
 CREATE FUNCTION pg_proargs2str(a_names d_pg_argnames, a_types d_pg_argtypes, a_pub boolean) RETURNS text
     LANGUAGE plpgsql STABLE
-    AS $$ /* ws:ws:18_pg.sql / 100 */ 
+    AS $$ /* ws:ws:18_pg.sql / 110 */ 
   DECLARE
     v_reserved TEXT[];
     v_names TEXT[];
@@ -7703,7 +8204,7 @@ $$;
 
 CREATE FUNCTION pg_proc_info(a_ns text, a_name text) RETURNS SETOF t_pg_proc_info
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 129 */ 
+    AS $_$ /* ws:ws:18_pg.sql / 139 */ 
   SELECT $1
   , $2
   , obj_description(p.oid, 'pg_proc')
@@ -7930,7 +8431,7 @@ $$;
 
 CREATE FUNCTION pg_schema_by_oid(a_oid oid) RETURNS text
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 79 */ 
+    AS $_$ /* ws:ws:18_pg.sql / 89 */ 
   SELECT nspname::TEXT FROM pg_namespace WHERE oid = $1
 $_$;
 
@@ -7941,7 +8442,7 @@ $_$;
 
 CREATE FUNCTION pg_schema_oid(a_name text) RETURNS oid
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 56 */ 
+    AS $_$ /* ws:ws:18_pg.sql / 66 */ 
   SELECT oid FROM pg_namespace WHERE nspname = $1
 $_$;
 
@@ -7952,12 +8453,264 @@ $_$;
 
 CREATE FUNCTION pg_type_name(a_oid oid) RETURNS text
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 85 */ 
+    AS $_$ /* ws:ws:18_pg.sql / 95 */ 
   SELECT CASE WHEN nspname = 'pg_catalog' THEN pg_catalog.format_type($1, NULL) ELSE  nspname || '.' || typname END
     FROM (
       SELECT (SELECT nspname FROM pg_namespace WHERE oid = typnamespace) as nspname, typname FROM pg_type WHERE oid = $1
     ) AS pg_type_name_temp
 $_$;
+
+
+--
+-- Name: pg_view_comments(text); Type: FUNCTION; Schema: ws; Owner: -
+--
+
+CREATE FUNCTION pg_view_comments(a_code text) RETURNS SETOF t_pg_view_info
+    LANGUAGE plpgsql
+    AS $$ /* ws:ws:18_pg.sql / 196 */ 
+  
+  DECLARE
+  
+    v_code text[];
+    v_def text;
+    R record;
+    v_list text;
+    _i int;
+    _j int;
+    v_field text;
+  
+    v_brac int;
+    v_temp text[];
+    v_viewname text;
+        
+  BEGIN
+    RAISE DEBUG 'PROCESSING: View %', a_code;
+  
+    v_code := string_to_array(a_code, '.');
+    FOR R IN
+      SELECT schemaname || '.' || viewname AS vname, lower(definition) AS _def 
+        FROM pg_views
+        WHERE (array_length(v_code, 1) = 2 AND schemaname = v_code[1] AND viewname = v_code[2])
+          OR (array_length(v_code, 1) = 1 AND viewname = v_code[1])
+      LOOP
+  
+      IF v_def IS NOT NULL THEN
+        RAISE DEBUG 'ERROR: Имя представления неоднозначно %', a_code;
+        RETURN;
+      END IF;
+      
+      v_def := R._def;
+      v_viewname := R.vname;
+  
+    END LOOP;
+  
+    IF v_def IS NULL THEN
+      RAISE DEBUG 'ERROR: Представление не найдено %', a_code;
+      RETURN;
+    END IF;
+  
+    -- v_list: список полей в тексте запроса между select/from
+    v_list := substring(v_def FROM position('select' IN v_def) + 7);
+    v_list := trim(substring(v_list FROM 1 FOR position(' from ' IN v_list) - 1));
+  
+    -- v_def: текст запроса после "from", содержащий таблицы
+    -- если есть "union" - выбрать только первую часть
+    IF position(' union ' IN v_def) > 0 THEN
+      v_def := trim(substring(v_def FROM 1 FOR position(' union ' IN v_def)));
+    END IF;
+    v_def := ' ' || trim(trim(substring(v_def FROM position(' from ' IN v_def) + 6)), ';') || ' ';
+  
+  
+    -- представить поля текста запроса в виде массива
+    -- необходимо разбить по "," принимая во внимание что некоторые поля имеют формулы с "," внутри "()"
+    _i := 1;
+    v_brac := 0;
+    v_temp := string_to_array(v_list, ',');
+    v_code := null;
+    FOR _j IN array_lower(v_temp, 1)..array_upper(v_temp, 1) LOOP
+  
+      v_temp[_j] := trim(v_temp[_j]);
+      v_code[_i] := coalesce(v_code[_i], '') || v_temp[_j];
+      v_brac := v_brac + length(replace(v_temp[_j], '(', '')) - length(replace(v_temp[_j], ')', ''));
+      IF v_brac = 0 THEN
+        _i := _i + 1;
+      END IF;
+      
+    END LOOP;
+  
+    -- бросить ошибку если длина массива отлична от макс номера поля в представлении
+    IF (
+         SELECT max(attnum)
+         FROM   pg_attribute 
+         WHERE  attrelid = v_viewname::regclass
+       ) <> array_length(v_code, 1) THEN
+       RAISE DEBUG 'FATAL ERROR: Ошибка подсчета количества полей "%"', a_code;
+       RETURN;
+    END IF;
+  
+    -- обработать поля по одному
+    FOR _i IN array_lower(v_code, 1)..array_upper(v_code, 1) LOOP
+  
+      DECLARE
+  
+        v_col text;
+        v_table text;
+        v_com text;
+  
+        _sub text;
+        _arr text[];
+        _pos int;
+        
+      BEGIN
+  
+        -- получить значения v_field и поле v_col из колонки ("A.B as C" - значение=A.B поле=C; "A.B" - значение=A.B поле=B)
+        v_field = trim(v_code[_i]);      
+        _arr = string_to_array(v_field, ' as ');  
+        v_col = case when array_length(_arr,1) = 2 THEN _arr[2] ELSE '' END;
+        _arr = string_to_array(_arr[1], '.');
+        IF v_col = '' THEN
+           v_col = _arr[array_length(_arr,1)];
+        END IF;
+  
+        -- значение является формулой
+        IF v_field ~ '^[''.0-9]|null*' OR v_field ~ E'\\(' THEN
+  
+          R = ROW(v_viewname, v_col,null::text,null::text,3::int,v_field::text);
+          RETURN NEXT R;
+        
+          RAISE DEBUG 'INFO: значение является формулой "%"', v_field;
+  
+        -- значение является колонкой таблицы
+        ELSE
+  
+          -- значение должно быть в форме таблица/псевдоимя.поле (иметь '.') как в выборке pg_views, иначе ошибка
+          IF array_length(_arr,1) = 2 THEN
+  
+            -- найти позицию таблица/псевдоимя в тексте запроса (окруженную ' ', ',' и тд)
+            _pos = position(' ' || trim(_arr[1]) || ' ' in v_def);
+            IF _pos = 0 THEN
+              _pos = position(' ' || trim(_arr[1]) || ',' in v_def);
+            END IF;
+            IF _pos = 0 THEN
+              _pos = position(trim(_arr[1]) || ' ' in v_def);
+            END IF;         
+            IF _pos = 0 THEN
+              _pos = position(trim(_arr[1]) in v_def);
+            END IF;
+  
+            -- _ref = строка запроса до позиции таблицы/псевдоимя
+            _sub = trim(trim(substring(v_def from 1 FOR _pos - 1)), '(');
+  
+            _arr[1] = trim(_arr[1]);
+  
+            -- если последний символ _ref = '.' - значит в тексте указана схема
+            IF substring(_sub from length(_sub) FOR 1) = '.' THEN 
+              -- "схема.таблица" из текста запроса
+              v_table = trim(trim(trim(split_part(trim(_sub), ' ', 1 + length(trim(_sub)) - length(replace(trim(_sub), ' ', ''))), '('), '.')) || '.' || _arr[1];
+  
+            ELSE
+              -- определить значение предшествующее позиции таблицы. оно будет либо схема, либо укажет что схема не указана
+              _sub = trim(trim(substring(v_def from 1 FOR _pos - 1)), '(');
+              _sub = trim(trim(trim(split_part(trim(_sub), ' ', 1 + length(trim(_sub)) - length(replace(trim(_sub), ' ', ''))), '('), '.'));
+  
+              -- если вверху нашелся 'join','from' или '' - значит в тексте запроса схема перед таблицей не указана
+              -- получить схема.таблица через ф-ю pg_view_comments_get_tbl
+              v_table = ws.pg_view_comments_get_tbl(case when _sub in ('join','from','') THEN _arr[1] ELSE _sub END);
+  
+            END IF;
+  
+            -- получить комментарий если схема.таблица успешно определены
+            IF v_table is not null THEN
+              
+              v_com = (SELECT col_description
+                (
+                  (SELECT (v_table)::regclass::oid)::int,
+                  (
+                    SELECT attnum FROM pg_attribute 
+                    WHERE  attrelid = (v_table)::regclass
+                    AND    attname  = _arr[2]
+                  )
+                )
+              );
+     
+              RAISE DEBUG 'COMMENT: % % = %', v_table, v_col, v_com;
+              R = ROW(
+                v_viewname, v_col,v_table,_arr[2]::text,
+                case when v_com is not null THEN 1 ELSE 2 END::int,
+                case when v_com is not null THEN v_com ELSE 'Комментарий отсутствует для: ' || v_code[_i] END::text
+              );
+  
+              RETURN NEXT R;
+              
+            -- таблица из текста запроса не определена. возможна проблема в данной ф-ции
+            ELSE
+  
+              R = ROW(v_viewname, v_col,null::text,null::text,4::int, 'Ошибка определения комментария для: ' || v_code[_i]);
+              RETURN NEXT R;
+              
+              RAISE DEBUG 'ERROR: Ошибка определения комментария для "%"', v_field;
+            END IF;
+          ELSE
+            -- неподдерживаемый формат. все определения полей хранятся как таблица/псевдоимя.поле данная ошибка может возникнуть при непредвиденном изменении в pg_views
+            R = ROW(v_viewname, null::text,null::text,null::text,5::int, 'Поле хранится в неподдерживающемся формате: ' || v_field);
+            RETURN NEXT R;
+            RAISE DEBUG 'ERROR: Поле хранится в неподдерживающемся формате: "%"', v_field;
+          END IF;
+    
+        END IF;
+      END;
+    END LOOP;
+    
+  END;
+$$;
+
+
+--
+-- Name: FUNCTION pg_view_comments(a_code text); Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON FUNCTION pg_view_comments(a_code text) IS 'получить комментарии полей view из таблиц запроса';
+
+
+--
+-- Name: pg_view_comments_get_tbl(text); Type: FUNCTION; Schema: ws; Owner: -
+--
+
+CREATE FUNCTION pg_view_comments_get_tbl(a_code text) RETURNS name
+    LANGUAGE plpgsql
+    AS $$ /* ws:ws:18_pg.sql / 158 */ 
+  DECLARE
+    v_ret text;
+    R record;
+    v_schema text[];
+    v_table text;
+    _i int;
+  BEGIN
+    IF a_code ~ E'\\.' THEN -- схема передана в вводном параметре
+      v_schema := ARRAY[split_part(a_code, '.', 1)];
+      v_table  := split_part(a_code, '.', 2);
+    ELSE -- схема выбирается из текущей, "i18n_def","public","pg_catalog" в том же порядке
+      v_schema := ARRAY[ws.pg_cs(), 'i18n_def', 'public', 'pg_catalog'];
+      v_table  := a_code;
+    END IF;
+    FOR _i IN array_lower(v_schema, 1)..array_upper(v_schema, 1) LOOP
+      FOR R IN
+        SELECT table_schema, table_name
+          FROM information_schema.tables
+          WHERE (table_schema = v_schema[_i] AND table_name = v_table)
+        LOOP
+        IF v_ret IS NOT NULL THEN
+          RETURN NULL;
+        END IF;
+        v_ret := R.table_schema || '.' || R.table_name;
+      END LOOP;
+      IF v_ret IS NOT NULL THEN
+        EXIT;
+      END IF;
+    END LOOP;
+    RETURN v_ret;
+  END;
+$$;
 
 
 --
@@ -7982,7 +8735,77 @@ CREATE TABLE pkg (
 -- Name: TABLE pkg; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON TABLE pkg IS 'Актуальные пакеты PGWS';
+COMMENT ON TABLE pkg IS 'Актуальные (последние) изменения пакетов PGWS';
+
+
+--
+-- Name: COLUMN pkg.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.id IS 'ID изменения';
+
+
+--
+-- Name: COLUMN pkg.code; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.code IS 'Код пакета';
+
+
+--
+-- Name: COLUMN pkg.ver; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.ver IS 'Версия пакета (reserved)';
+
+
+--
+-- Name: COLUMN pkg.op; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.op IS 'Код операции (+ init, - drop, = make)';
+
+
+--
+-- Name: COLUMN pkg.log_name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.log_name IS '$LOGNAME из сессии пользователя в ОС';
+
+
+--
+-- Name: COLUMN pkg.user_name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.user_name IS '$USERNAME из сессии пользователя в ОС';
+
+
+--
+-- Name: COLUMN pkg.ssh_client; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.ssh_client IS '$SSH_CLIENT из сессии пользователя в ОС';
+
+
+--
+-- Name: COLUMN pkg.usr; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.usr IS 'Имя пользователя соединения с БД';
+
+
+--
+-- Name: COLUMN pkg.ip; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.ip IS 'IP пользователя соединения с БД';
+
+
+--
+-- Name: COLUMN pkg.stamp; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg.stamp IS 'Момент выполнения изменения';
 
 
 --
@@ -8341,6 +9164,13 @@ COMMENT ON COLUMN prop_value.valid_from IS 'Дата начала действи
 
 
 --
+-- Name: COLUMN prop_value.pkg; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_value.pkg IS 'Пакет, в котором задано значение';
+
+
+--
 -- Name: COLUMN prop_value.value; Type: COMMENT; Schema: wsd; Owner: -
 --
 
@@ -8362,6 +9192,97 @@ CREATE VIEW prop_attr AS
 --
 
 COMMENT ON VIEW prop_attr IS 'Атрибуты свойств';
+
+
+--
+-- Name: COLUMN prop_attr.code; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.code IS 'Код свойства';
+
+
+--
+-- Name: COLUMN prop_attr.pkg; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.pkg IS 'Пакет, в котором добавлено свойство';
+
+
+--
+-- Name: COLUMN prop_attr.pogc_list; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.pogc_list IS 'Массив кодов разрешенных групп (prop_group)';
+
+
+--
+-- Name: COLUMN prop_attr.is_mask; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.is_mask IS 'Свойство не атомарно';
+
+
+--
+-- Name: COLUMN prop_attr.def_value; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.def_value IS 'Значение по умолчанию';
+
+
+--
+-- Name: COLUMN prop_attr.name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.name IS 'Название';
+
+
+--
+-- Name: COLUMN prop_attr.value_fmt; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.value_fmt IS 'Строка формата для вывода значения';
+
+
+--
+-- Name: COLUMN prop_attr.anno; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.anno IS 'Аннотация';
+
+
+--
+-- Name: COLUMN prop_attr.pogc; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.pogc IS 'Код группы (Property Owner Group Code)';
+
+
+--
+-- Name: COLUMN prop_attr.poid; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.poid IS 'ID владельца (Property Owner ID)';
+
+
+--
+-- Name: COLUMN prop_attr.valid_from; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.valid_from IS 'Дата начала действия';
+
+
+--
+-- Name: COLUMN prop_attr.value_pkg; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.value_pkg IS 'Пакет, в котором задано значение';
+
+
+--
+-- Name: COLUMN prop_attr.value; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.value IS 'Значение свойства';
 
 
 --
@@ -8485,10 +9406,24 @@ COMMENT ON COLUMN prop_group.pogc IS 'Код группы (Property Owner Group 
 
 
 --
+-- Name: COLUMN prop_group.pkg; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_group.pkg IS 'Пакет, в котором добавлена группа';
+
+
+--
 -- Name: COLUMN prop_group.sort; Type: COMMENT; Schema: wsd; Owner: -
 --
 
 COMMENT ON COLUMN prop_group.sort IS 'Порядок сортировки';
+
+
+--
+-- Name: COLUMN prop_group.is_id_required; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_group.is_id_required IS 'Загрузка без указания poid не используется';
 
 
 --
@@ -8537,6 +9472,13 @@ COMMENT ON COLUMN prop_owner_attr.poid IS 'ID владельца (Property Owner
 
 
 --
+-- Name: COLUMN prop_owner_attr.pkg; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.pkg IS 'Пакет, в котором добавлена группа';
+
+
+--
 -- Name: COLUMN prop_owner_attr.sort; Type: COMMENT; Schema: ws; Owner: -
 --
 
@@ -8568,14 +9510,14 @@ COMMENT ON COLUMN prop_owner_attr.is_id_required IS 'Загрузка без у�
 -- Name: COLUMN prop_owner_attr.pog_sort; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON COLUMN prop_owner_attr.pog_sort IS 'Порядок сортировки группы';
+COMMENT ON COLUMN prop_owner_attr.pog_sort IS 'Порядок сортировки';
 
 
 --
 -- Name: COLUMN prop_owner_attr.pog_name; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON COLUMN prop_owner_attr.pog_name IS 'Название группы';
+COMMENT ON COLUMN prop_owner_attr.pog_name IS 'Название';
 
 
 --
@@ -8840,7 +9782,7 @@ COMMENT ON FUNCTION ref_info(a_id d_id32) IS 'Атрибуты справочн�
 
 CREATE FUNCTION reserved_args() RETURNS text[]
     LANGUAGE sql IMMUTABLE
-    AS $$ /* ws:ws:18_pg.sql / 94 */ 
+    AS $$ /* ws:ws:18_pg.sql / 104 */ 
   SELECT ARRAY['a__acl', 'a__sid', 'a__ip', 'a__cook', 'a__lang'];
 $$;
 
@@ -8899,7 +9841,7 @@ $$;
 
 CREATE FUNCTION sprintf(text, text DEFAULT ''::text, text DEFAULT ''::text, text DEFAULT ''::text, text DEFAULT ''::text) RETURNS text
     LANGUAGE plperl IMMUTABLE
-    AS $_$ # /* ws:ws:18_pg.sql / 50 */ 
+    AS $_$ # /* ws:ws:18_pg.sql / 60 */ 
     my ($fmt, @args) = @_; my $str = sprintf($fmt, @args); return $str;
 $_$;
 
@@ -9421,6 +10363,27 @@ CREATE TABLE page_name (
 );
 
 
+--
+-- Name: TABLE page_name; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON TABLE page_name IS 'Заголовок страницы сайта в локали схемы БД';
+
+
+--
+-- Name: COLUMN page_name.code; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON COLUMN page_name.code IS 'Код страницы';
+
+
+--
+-- Name: COLUMN page_name.name; Type: COMMENT; Schema: i18n_def; Owner: -
+--
+
+COMMENT ON COLUMN page_name.name IS 'Заголовок страницы в карте сайта';
+
+
 SET search_path = ws, pg_catalog;
 
 --
@@ -9450,7 +10413,112 @@ CREATE TABLE page_data (
 -- Name: TABLE page_data; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON TABLE page_data IS 'Атрибуты страниц для i18n_def.page';
+COMMENT ON TABLE page_data IS 'Атрибуты страниц для page_data';
+
+
+--
+-- Name: COLUMN page_data.code; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.code IS 'Идентификатор страницы';
+
+
+--
+-- Name: COLUMN page_data.up_code; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.up_code IS 'идентификатор страницы верхнего уровня';
+
+
+--
+-- Name: COLUMN page_data.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.class_id IS 'ID класса, к которому относится страница';
+
+
+--
+-- Name: COLUMN page_data.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.action_id IS 'ID акции, к которой относится страница';
+
+
+--
+-- Name: COLUMN page_data.group_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.group_id IS 'ID группы страниц для меню';
+
+
+--
+-- Name: COLUMN page_data.sort; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.sort IS 'порядок сортировки в меню страниц одного уровня (NULL - нет в меню)';
+
+
+--
+-- Name: COLUMN page_data.uri; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.uri IS 'мета-маска с именами переменных, которой должен соответствовать URI запроса';
+
+
+--
+-- Name: COLUMN page_data.tmpl; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.tmpl IS 'файл шаблона (NULL для внешних адресов)';
+
+
+--
+-- Name: COLUMN page_data.id_fixed; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.id_fixed IS 'ID объекта взять из этого поля';
+
+
+--
+-- Name: COLUMN page_data.id_session; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.id_session IS 'ID объекта взять из этого поля сессии';
+
+
+--
+-- Name: COLUMN page_data.is_hidden; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.is_hidden IS 'Запрет включения внешних блоков в разметку страницы';
+
+
+--
+-- Name: COLUMN page_data.target; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.target IS 'значение атрибута target в формируемых ссылках';
+
+
+--
+-- Name: COLUMN page_data.uri_re; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.uri_re IS 'regexp URI, вычисляется триггером при insert/update';
+
+
+--
+-- Name: COLUMN page_data.uri_fmt; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.uri_fmt IS 'строка формата для генерации URI, вычисляется триггером при insert/update';
+
+
+--
+-- Name: COLUMN page_data.pkg; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN page_data.pkg IS 'пакет, в котором зарегистрирована страница';
 
 
 SET search_path = i18n_def, pg_catalog;
@@ -10389,6 +11457,139 @@ COMMENT ON VIEW stored IS 'Все хранилища job';
 COMMENT ON COLUMN stored.storage_code IS 'Код хранилища';
 
 
+--
+-- Name: COLUMN stored.id; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.id IS 'ID задачи';
+
+
+--
+-- Name: COLUMN stored.validfrom; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.validfrom IS 'дата активации';
+
+
+--
+-- Name: COLUMN stored.prio; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.prio IS 'фактический приоритет';
+
+
+--
+-- Name: COLUMN stored.handler_id; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.handler_id IS 'ID обработчика';
+
+
+--
+-- Name: COLUMN stored.status_id; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.status_id IS 'текущий статус';
+
+
+--
+-- Name: COLUMN stored.created_by; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.created_by IS 'id задачи/сессии, создавшей';
+
+
+--
+-- Name: COLUMN stored.waiting_for; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.waiting_for IS 'id задачи, которую ждем';
+
+
+--
+-- Name: COLUMN stored.arg_id; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.arg_id IS 'аргумент id';
+
+
+--
+-- Name: COLUMN stored.arg_date; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.arg_date IS 'аргумент date';
+
+
+--
+-- Name: COLUMN stored.arg_num; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.arg_num IS 'аргумент num';
+
+
+--
+-- Name: COLUMN stored.arg_more; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.arg_more IS 'аргумент more';
+
+
+--
+-- Name: COLUMN stored.arg_id2; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.arg_id2 IS 'аргумент id2';
+
+
+--
+-- Name: COLUMN stored.arg_date2; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.arg_date2 IS 'аргумент date2';
+
+
+--
+-- Name: COLUMN stored.arg_id3; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.arg_id3 IS 'аргумент id3';
+
+
+--
+-- Name: COLUMN stored.created_at; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.created_at IS 'время создания';
+
+
+--
+-- Name: COLUMN stored.run_pid; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.run_pid IS 'pid выполняющего процесса';
+
+
+--
+-- Name: COLUMN stored.run_ip; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.run_ip IS 'ip хоста выполняющего процесса';
+
+
+--
+-- Name: COLUMN stored.run_at; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.run_at IS 'время начала выполнения';
+
+
+--
+-- Name: COLUMN stored.exit_at; Type: COMMENT; Schema: job; Owner: -
+--
+
+COMMENT ON COLUMN stored.exit_at IS 'время завершения выполнения';
+
+
 SET search_path = wsd, pg_catalog;
 
 --
@@ -10450,6 +11651,48 @@ COMMENT ON VIEW class_action_acl_ext IS 'class_action_acl с именами clas
 
 
 --
+-- Name: COLUMN class_action_acl_ext.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action_acl_ext.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_action_acl_ext.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action_acl_ext.action_id IS 'ID акции';
+
+
+--
+-- Name: COLUMN class_action_acl_ext.acl_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action_acl_ext.acl_id IS 'ID уровня доступа';
+
+
+--
+-- Name: COLUMN class_action_acl_ext.class; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action_acl_ext.class IS 'Название класса';
+
+
+--
+-- Name: COLUMN class_action_acl_ext.action; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action_acl_ext.action IS 'Название акции';
+
+
+--
+-- Name: COLUMN class_action_acl_ext.acl; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_action_acl_ext.acl IS 'Название уровня доступа';
+
+
+--
 -- Name: caa; Type: VIEW; Schema: ws; Owner: -
 --
 
@@ -10462,6 +11705,48 @@ CREATE VIEW caa AS
 --
 
 COMMENT ON VIEW caa IS 'Синоним class_action_acl_ext';
+
+
+--
+-- Name: COLUMN caa.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN caa.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN caa.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN caa.action_id IS 'ID акции';
+
+
+--
+-- Name: COLUMN caa.acl_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN caa.acl_id IS 'ID уровня доступа';
+
+
+--
+-- Name: COLUMN caa.class; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN caa.class IS 'Название класса';
+
+
+--
+-- Name: COLUMN caa.action; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN caa.action IS 'Название акции';
+
+
+--
+-- Name: COLUMN caa.acl; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN caa.acl IS 'Название уровня доступа';
 
 
 --
@@ -10480,6 +11765,48 @@ COMMENT ON VIEW class_status_action_ext IS 'class_status_action с именам�
 
 
 --
+-- Name: COLUMN class_status_action_ext.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_ext.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN class_status_action_ext.status_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_ext.status_id IS 'ID статуса';
+
+
+--
+-- Name: COLUMN class_status_action_ext.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_ext.action_id IS 'ID акции';
+
+
+--
+-- Name: COLUMN class_status_action_ext.class; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_ext.class IS 'Название класса';
+
+
+--
+-- Name: COLUMN class_status_action_ext.status; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_ext.status IS 'Название статуса';
+
+
+--
+-- Name: COLUMN class_status_action_ext.action; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN class_status_action_ext.action IS 'Название акции';
+
+
+--
 -- Name: compile_errors; Type: TABLE; Schema: ws; Owner: -
 --
 
@@ -10495,7 +11822,35 @@ CREATE TABLE compile_errors (
 -- Name: TABLE compile_errors; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON TABLE compile_errors IS 'Ошибки компиляции';
+COMMENT ON TABLE compile_errors IS 'Буфер хранения ошибок на этапе компиляции';
+
+
+--
+-- Name: COLUMN compile_errors.data; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN compile_errors.data IS 'текст';
+
+
+--
+-- Name: COLUMN compile_errors.stamp; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN compile_errors.stamp IS 'Момент компиляции';
+
+
+--
+-- Name: COLUMN compile_errors.usr; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN compile_errors.usr IS 'Имя пользователя соединения с БД';
+
+
+--
+-- Name: COLUMN compile_errors.ip; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN compile_errors.ip IS 'IP пользователя соединения с БД';
 
 
 --
@@ -10514,12 +11869,68 @@ COMMENT ON VIEW csa IS 'Синоним class_status_action_ext';
 
 
 --
+-- Name: COLUMN csa.class_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csa.class_id IS 'ID класса';
+
+
+--
+-- Name: COLUMN csa.status_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csa.status_id IS 'ID статуса';
+
+
+--
+-- Name: COLUMN csa.action_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csa.action_id IS 'ID акции';
+
+
+--
+-- Name: COLUMN csa.class; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csa.class IS 'Название класса';
+
+
+--
+-- Name: COLUMN csa.status; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csa.status IS 'Название статуса';
+
+
+--
+-- Name: COLUMN csa.action; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN csa.action IS 'Название акции';
+
+
+--
 -- Name: error_data; Type: TABLE; Schema: ws; Owner: -
 --
 
 CREATE TABLE error_data (
     code d_errcode NOT NULL
 );
+
+
+--
+-- Name: TABLE error_data; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON TABLE error_data IS 'Коды ошибок (без строк локализации)';
+
+
+--
+-- Name: COLUMN error_data.code; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN error_data.code IS 'Код ошибки';
 
 
 --
@@ -10536,7 +11947,21 @@ CREATE TABLE facet_dt_base (
 -- Name: TABLE facet_dt_base; Type: COMMENT; Schema: ws; Owner: -
 --
 
-COMMENT ON TABLE facet_dt_base IS 'Допустимое ограничение для типа';
+COMMENT ON TABLE facet_dt_base IS 'Для какого базового типа применимо ограничение';
+
+
+--
+-- Name: COLUMN facet_dt_base.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN facet_dt_base.id IS 'ID ограничения';
+
+
+--
+-- Name: COLUMN facet_dt_base.base_id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN facet_dt_base.base_id IS 'ID базового типа';
 
 
 --
@@ -10604,6 +12029,76 @@ CREATE TABLE pkg_log (
 --
 
 COMMENT ON TABLE pkg_log IS 'Журнал изменений пакетов PGWS';
+
+
+--
+-- Name: COLUMN pkg_log.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.id IS 'ID изменения';
+
+
+--
+-- Name: COLUMN pkg_log.code; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.code IS 'Код пакета';
+
+
+--
+-- Name: COLUMN pkg_log.ver; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.ver IS 'Версия пакета (reserved)';
+
+
+--
+-- Name: COLUMN pkg_log.op; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.op IS 'Код операции (+ init, - drop, = make)';
+
+
+--
+-- Name: COLUMN pkg_log.log_name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.log_name IS '$LOGNAME из сессии пользователя в ОС';
+
+
+--
+-- Name: COLUMN pkg_log.user_name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.user_name IS '$USERNAME из сессии пользователя в ОС';
+
+
+--
+-- Name: COLUMN pkg_log.ssh_client; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.ssh_client IS '$SSH_CLIENT из сессии пользователя в ОС';
+
+
+--
+-- Name: COLUMN pkg_log.usr; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.usr IS 'Имя пользователя соединения с БД';
+
+
+--
+-- Name: COLUMN pkg_log.ip; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.ip IS 'IP пользователя соединения с БД';
+
+
+--
+-- Name: COLUMN pkg_log.stamp; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN pkg_log.stamp IS 'Момент выполнения изменения';
 
 
 SET search_path = wsd, pg_catalog;
@@ -11894,11 +13389,11 @@ INSERT INTO dt VALUES (169, 'ws.method_rv_format', NULL, NULL, true, NULL, 'Фо
 INSERT INTO dt VALUES (170, 'ws.z_method_rvf', NULL, NULL, true, NULL, 'Aргументы метода ws.method_rvf', false, true, false);
 INSERT INTO dt VALUES (171, 'ws.z_method_by_code', NULL, NULL, true, NULL, 'Aргументы метода ws.method_by_code', false, true, false);
 INSERT INTO dt VALUES (172, 'ws.z_method_by_action', NULL, NULL, true, NULL, 'Aргументы метода ws.method_by_action', false, true, false);
-INSERT INTO dt VALUES (173, 'ws.facet', NULL, NULL, true, NULL, 'Ограничение', false, true, false);
+INSERT INTO dt VALUES (173, 'ws.facet', NULL, NULL, true, NULL, 'Вид ограничений типов', false, true, false);
 INSERT INTO dt VALUES (174, 'ws.z_facet', NULL, NULL, true, NULL, 'Aргументы метода ws.facet', false, true, false);
-INSERT INTO dt VALUES (175, 'ws.dt_facet', NULL, NULL, true, NULL, 'Ограничение для типа', false, true, false);
+INSERT INTO dt VALUES (175, 'ws.dt_facet', NULL, NULL, true, NULL, 'Значение ограничения типа', false, true, false);
 INSERT INTO dt VALUES (176, 'ws.z_dt_facet', NULL, NULL, true, NULL, 'Aргументы метода ws.dt_facet', false, true, false);
-INSERT INTO dt VALUES (177, 'ws.dt_part', NULL, NULL, true, NULL, 'Поля комплексного типа', false, true, false);
+INSERT INTO dt VALUES (177, 'ws.dt_part', NULL, NULL, true, NULL, 'Поля композитного типа', false, true, false);
 INSERT INTO dt VALUES (178, 'ws.z_dt_part', NULL, NULL, true, NULL, 'Aргументы метода ws.dt_part', false, true, false);
 INSERT INTO dt VALUES (179, 'ws.csaa', NULL, NULL, true, NULL, 'Синоним class_status_action_acl_ext', false, true, false);
 INSERT INTO dt VALUES (180, 'ws.z_class_status_action_acl', NULL, NULL, true, NULL, 'Aргументы метода ws.class_status_action_acl', false, true, false);
@@ -12106,13 +13601,13 @@ INSERT INTO dt_part VALUES (159, 3, 'id', 1, 1, true, NULL, '', false);
 INSERT INTO dt_part VALUES (159, 4, 'id1', 1, 1, true, NULL, '', false);
 INSERT INTO dt_part VALUES (159, 5, 'id2', 1, 1, true, NULL, '', false);
 INSERT INTO dt_part VALUES (160, 1, 'code', 1, 1, true, NULL, '', false);
-INSERT INTO dt_part VALUES (161, 1, 'id', 117, 12, false, NULL, 'id', false);
-INSERT INTO dt_part VALUES (161, 2, 'up_id', 117, 12, true, NULL, 'up_id', false);
-INSERT INTO dt_part VALUES (161, 3, 'id_count', 119, 11, false, '0', 'id_count', false);
-INSERT INTO dt_part VALUES (161, 4, 'is_ext', 2, 2, false, NULL, 'is_ext', false);
-INSERT INTO dt_part VALUES (161, 5, 'sort', 104, 12, true, NULL, 'sort', false);
-INSERT INTO dt_part VALUES (161, 6, 'code', 122, 1, false, NULL, 'code', false);
-INSERT INTO dt_part VALUES (161, 7, 'name', 1, 1, false, NULL, 'name', false);
+INSERT INTO dt_part VALUES (161, 1, 'id', 117, 12, false, NULL, 'ID класса', false);
+INSERT INTO dt_part VALUES (161, 2, 'up_id', 117, 12, true, NULL, 'ID класса-предка', false);
+INSERT INTO dt_part VALUES (161, 3, 'id_count', 119, 11, false, '0', 'Количество идентификаторов экземпляра класса', false);
+INSERT INTO dt_part VALUES (161, 4, 'is_ext', 2, 2, false, NULL, 'ID экземпляра предка входит в ID экземпляра', false);
+INSERT INTO dt_part VALUES (161, 5, 'sort', 104, 12, true, NULL, 'Сортировка в списке классов', false);
+INSERT INTO dt_part VALUES (161, 6, 'code', 122, 1, false, NULL, 'Код класса', false);
+INSERT INTO dt_part VALUES (161, 7, 'name', 1, 1, false, NULL, 'Название класса', false);
 INSERT INTO dt_part VALUES (162, 1, 'id', 117, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (163, 1, 'code', 122, 1, false, NULL, 'внешнее имя метода', false);
 INSERT INTO dt_part VALUES (163, 2, 'class_id', 117, 12, false, NULL, 'ID класса, к которому относится метод', false);
@@ -12136,12 +13631,12 @@ INSERT INTO dt_part VALUES (164, 2, 'page', 119, 11, false, '0', '', false);
 INSERT INTO dt_part VALUES (164, 3, 'by', 119, 11, false, '0', '', false);
 INSERT INTO dt_part VALUES (165, 1, 'code', 122, 1, false, NULL, '', false);
 INSERT INTO dt_part VALUES (166, 1, 'uri', 1, 1, false, '', '', false);
-INSERT INTO dt_part VALUES (167, 1, 'code', 128, 1, true, NULL, 'code', false);
-INSERT INTO dt_part VALUES (167, 2, 'id_count', 119, 11, true, '0', 'id_count', false);
-INSERT INTO dt_part VALUES (167, 3, 'message', 121, 1, true, NULL, 'message', false);
+INSERT INTO dt_part VALUES (167, 1, 'code', 128, 1, true, NULL, 'Код ошибки', false);
+INSERT INTO dt_part VALUES (167, 2, 'id_count', 119, 11, true, '0', 'Количество аргументов в строке сообщения', false);
+INSERT INTO dt_part VALUES (167, 3, 'message', 121, 1, true, NULL, 'Форматированная строка сообщения об ошибке', false);
 INSERT INTO dt_part VALUES (168, 1, 'code', 128, 1, false, NULL, '', false);
-INSERT INTO dt_part VALUES (169, 1, 'id', 101, 12, false, NULL, 'id', false);
-INSERT INTO dt_part VALUES (169, 2, 'name', 1, 1, false, NULL, 'name', false);
+INSERT INTO dt_part VALUES (169, 1, 'id', 101, 12, false, NULL, 'ID формата', false);
+INSERT INTO dt_part VALUES (169, 2, 'name', 1, 1, false, NULL, 'Название формата', false);
 INSERT INTO dt_part VALUES (170, 1, 'id', 101, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (171, 1, 'code', 122, 1, false, NULL, '', false);
 INSERT INTO dt_part VALUES (172, 1, 'class_id', 117, 12, false, '0', '', false);
@@ -12167,37 +13662,37 @@ INSERT INTO dt_part VALUES (177, 8, 'anno', 1, 1, false, NULL, 'Аннотаци
 INSERT INTO dt_part VALUES (177, 9, 'is_list', 2, 2, false, 'false', 'Конструктор поля - массив', false);
 INSERT INTO dt_part VALUES (178, 1, 'id', 101, 12, false, NULL, '', false);
 INSERT INTO dt_part VALUES (178, 2, 'part_id', 101, 12, false, '0', '', false);
-INSERT INTO dt_part VALUES (179, 1, 'class_id', 117, 12, true, NULL, 'class_id', false);
-INSERT INTO dt_part VALUES (179, 2, 'status_id', 101, 12, true, NULL, 'status_id', false);
-INSERT INTO dt_part VALUES (179, 3, 'action_id', 101, 12, true, NULL, 'action_id', false);
-INSERT INTO dt_part VALUES (179, 4, 'acl_id', 131, 12, true, NULL, 'acl_id', false);
-INSERT INTO dt_part VALUES (179, 5, 'is_addon', 2, 2, true, NULL, 'is_addon', false);
-INSERT INTO dt_part VALUES (179, 6, 'class', 1, 1, true, NULL, 'class', false);
-INSERT INTO dt_part VALUES (179, 7, 'status', 1, 1, true, NULL, 'status', false);
-INSERT INTO dt_part VALUES (179, 8, 'action', 1, 1, true, NULL, 'action', false);
-INSERT INTO dt_part VALUES (179, 9, 'acl', 1, 1, true, NULL, 'acl', false);
+INSERT INTO dt_part VALUES (179, 1, 'class_id', 117, 12, true, NULL, 'ID класса', false);
+INSERT INTO dt_part VALUES (179, 2, 'status_id', 101, 12, true, NULL, 'ID статуса', false);
+INSERT INTO dt_part VALUES (179, 3, 'action_id', 101, 12, true, NULL, 'ID акции', false);
+INSERT INTO dt_part VALUES (179, 4, 'acl_id', 131, 12, true, NULL, 'ID уровня доступа', false);
+INSERT INTO dt_part VALUES (179, 5, 'is_addon', 2, 2, true, NULL, 'Строка является добавлением разрешения', false);
+INSERT INTO dt_part VALUES (179, 6, 'class', 1, 1, true, NULL, 'Название класса', false);
+INSERT INTO dt_part VALUES (179, 7, 'status', 1, 1, true, NULL, 'Название статуса', false);
+INSERT INTO dt_part VALUES (179, 8, 'action', 1, 1, true, NULL, 'Название акции', false);
+INSERT INTO dt_part VALUES (179, 9, 'acl', 1, 1, true, NULL, 'Название уровня доступа', false);
 INSERT INTO dt_part VALUES (180, 1, 'class_id', 117, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (180, 2, 'status_id', 101, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (180, 3, 'action_id', 101, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (180, 4, 'acl_id', 101, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (181, 1, 'id', 101, 12, false, '0', '', false);
-INSERT INTO dt_part VALUES (182, 1, 'class_id', 117, 12, false, NULL, 'class_id', false);
-INSERT INTO dt_part VALUES (182, 2, 'id', 101, 12, false, NULL, 'id', false);
-INSERT INTO dt_part VALUES (182, 3, 'sort', 104, 12, true, NULL, 'sort', false);
-INSERT INTO dt_part VALUES (182, 4, 'name', 1, 1, false, NULL, 'name', false);
+INSERT INTO dt_part VALUES (182, 1, 'class_id', 117, 12, false, NULL, 'ID класса', false);
+INSERT INTO dt_part VALUES (182, 2, 'id', 101, 12, false, NULL, 'ID акции', false);
+INSERT INTO dt_part VALUES (182, 3, 'sort', 104, 12, true, NULL, 'Сортировка в списке акций', false);
+INSERT INTO dt_part VALUES (182, 4, 'name', 1, 1, false, NULL, 'Название акции', false);
 INSERT INTO dt_part VALUES (183, 1, 'class_id', 117, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (183, 2, 'id', 101, 12, false, '0', '', false);
-INSERT INTO dt_part VALUES (184, 1, 'class_id', 117, 12, false, NULL, 'class_id', false);
-INSERT INTO dt_part VALUES (184, 2, 'id', 101, 12, false, NULL, 'id', false);
-INSERT INTO dt_part VALUES (184, 3, 'sort', 104, 12, true, NULL, 'sort', false);
-INSERT INTO dt_part VALUES (184, 4, 'name', 1, 1, false, NULL, 'name', false);
+INSERT INTO dt_part VALUES (184, 1, 'class_id', 117, 12, false, NULL, 'ID класса', false);
+INSERT INTO dt_part VALUES (184, 2, 'id', 101, 12, false, NULL, 'ID статуса', false);
+INSERT INTO dt_part VALUES (184, 3, 'sort', 104, 12, true, NULL, 'Сортировка в списке статусов', false);
+INSERT INTO dt_part VALUES (184, 4, 'name', 1, 1, false, NULL, 'Название статуса', false);
 INSERT INTO dt_part VALUES (185, 1, 'class_id', 117, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (185, 2, 'id', 101, 12, false, '0', '', false);
-INSERT INTO dt_part VALUES (186, 1, 'class_id', 117, 12, false, NULL, 'class_id', false);
-INSERT INTO dt_part VALUES (186, 2, 'id', 131, 12, false, NULL, 'id', false);
-INSERT INTO dt_part VALUES (186, 3, 'is_sys', 2, 2, false, NULL, 'is_sys', false);
-INSERT INTO dt_part VALUES (186, 4, 'sort', 104, 12, true, NULL, 'sort', false);
-INSERT INTO dt_part VALUES (186, 5, 'name', 1, 1, false, NULL, 'name', false);
+INSERT INTO dt_part VALUES (186, 1, 'class_id', 117, 12, false, NULL, 'ID класса', false);
+INSERT INTO dt_part VALUES (186, 2, 'id', 131, 12, false, NULL, 'ID уровня доступа', false);
+INSERT INTO dt_part VALUES (186, 3, 'is_sys', 2, 2, false, NULL, 'Не воказывать в интерфейсе', false);
+INSERT INTO dt_part VALUES (186, 4, 'sort', 104, 12, true, NULL, 'Сортировка в списке уровней доступа', false);
+INSERT INTO dt_part VALUES (186, 5, 'name', 1, 1, false, NULL, 'Название уровня доступа', false);
 INSERT INTO dt_part VALUES (187, 1, 'class_id', 117, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (187, 2, 'id', 101, 12, false, '0', '', false);
 INSERT INTO dt_part VALUES (188, 1, 'id', 101, 12, false, 'nextval(''dt_id_seq''::regclass)', 'ID типа', false);
@@ -12335,14 +13830,14 @@ INSERT INTO dt_part VALUES (222, 1, 'id', 100, 11, false, NULL, 'ID статьи
 INSERT INTO dt_part VALUES (223, 1, 'name', 1, 1, true, NULL, 'Внешнее имя файла', false);
 INSERT INTO dt_part VALUES (223, 2, 'size', 11, 11, true, NULL, 'Размер (байт)', false);
 INSERT INTO dt_part VALUES (223, 3, 'csum', 1, 1, true, NULL, 'Контрольная сумма (sha1)', false);
-INSERT INTO dt_part VALUES (223, 4, 'format_code', 1, 1, true, NULL, 'format_code', false);
+INSERT INTO dt_part VALUES (223, 4, 'format_code', 1, 1, true, NULL, 'Код формата файла', false);
 INSERT INTO dt_part VALUES (223, 5, 'created_by', 11, 11, true, NULL, 'Автор загрузки/генерации', false);
 INSERT INTO dt_part VALUES (223, 6, 'created_at', 5, 5, true, NULL, 'Момент загрузки/генерации', false);
 INSERT INTO dt_part VALUES (223, 7, 'anno', 1, 1, true, NULL, 'Комментарий', false);
 INSERT INTO dt_part VALUES (223, 8, 'class_id', 11, 11, true, NULL, 'ID класса', false);
 INSERT INTO dt_part VALUES (223, 9, 'obj_id', 11, 11, true, NULL, 'ID объекта', false);
 INSERT INTO dt_part VALUES (223, 10, 'folder_code', 1, 1, true, NULL, 'Код связи', false);
-INSERT INTO dt_part VALUES (223, 11, 'file_code', 1, 1, true, NULL, 'file_code', false);
+INSERT INTO dt_part VALUES (223, 11, 'file_code', 1, 1, true, NULL, 'Код файла', false);
 INSERT INTO dt_part VALUES (223, 12, 'ver', 11, 11, true, NULL, 'Версия внутри кода связи', false);
 INSERT INTO dt_part VALUES (223, 13, 'id', 11, 11, true, NULL, 'ID файла', false);
 INSERT INTO dt_part VALUES (223, 14, 'is_ver_last', 2, 2, true, NULL, 'Версия является последней', false);
@@ -12599,15 +14094,15 @@ INSERT INTO page_data VALUES ('api.test', 'main', 2, 1, NULL, 7, 'docs/test$', '
 -- Data for Name: pkg; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:27.817413');
-INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:35.262106');
+INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
 
 
 --
@@ -12621,15 +14116,15 @@ SELECT pg_catalog.setval('pkg_id_seq', 9, true);
 -- Data for Name: pkg_log; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:27.817413');
-INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:35.262106');
+INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-20 21:39:41.978257');
 
 
 --
@@ -12745,8 +14240,8 @@ SET search_path = wsd, pg_catalog;
 -- Data for Name: account; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-19 17:32:34', '2013-02-19 17:32:34', '2013-02-19 17:32:34');
-INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-19 17:32:34', '2013-02-19 17:32:34', '2013-02-19 17:32:34');
+INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-20 21:39:42', '2013-02-20 21:39:42', '2013-02-20 21:39:42');
+INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-20 21:39:42', '2013-02-20 21:39:42', '2013-02-20 21:39:42');
 
 
 --
@@ -12887,14 +14382,14 @@ SELECT pg_catalog.setval('file_id_seq', 1, false);
 -- Data for Name: job; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job VALUES (1, '2013-02-19 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-19', NULL, NULL, NULL, NULL, NULL, '2013-02-19 17:32:34.26519', NULL, NULL, NULL, NULL);
+INSERT INTO job VALUES (1, '2013-02-20 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-20', NULL, NULL, NULL, NULL, NULL, '2013-02-20 21:39:41.978257', NULL, NULL, NULL, NULL);
 
 
 --
 -- Data for Name: job_cron; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job_cron VALUES (true, '2013-02-19 17:32:34.26519', NULL);
+INSERT INTO job_cron VALUES (true, '2013-02-20 21:39:41.978257', NULL);
 
 
 --
@@ -12926,20 +14421,20 @@ SELECT pg_catalog.setval('job_seq', 25, true);
 -- Data for Name: pkg_script_protected; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:27.817413');
-INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'wsd', '2013-02-19 17:32:27.817413');
-INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-19 17:32:27.817413');
-INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-19 17:32:27.817413');
-INSERT INTO pkg_script_protected VALUES ('fs', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_script_protected VALUES ('ev', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_script_protected VALUES ('job', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_script_protected VALUES ('acc', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_script_protected VALUES ('wiki', '11_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
-INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wsd', '2013-02-19 17:32:34.26519');
+INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'wsd', '2013-02-20 21:39:35.262106');
+INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'wsd', '2013-02-20 21:39:35.262106');
+INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-20 21:39:35.262106');
+INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-20 21:39:35.262106');
+INSERT INTO pkg_script_protected VALUES ('fs', '11_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_script_protected VALUES ('ev', '11_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_script_protected VALUES ('job', '11_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_script_protected VALUES ('acc', '11_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_script_protected VALUES ('wiki', '11_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
+INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wsd', '2013-02-20 21:39:41.978257');
 
 
 --
