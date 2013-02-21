@@ -25,7 +25,7 @@ help:
 all: help
 usage: help
 
-install: test data var pkg lib lib-pkg ctl setups tmpl masterconf installcomplete
+install: test data var pkg lib lib-pkg ctl setups tmpl nginxconf masterconf installcomplete
 
 # ------------------------------------------------------------------------------
 
@@ -153,6 +153,19 @@ for p in $$PD ; do if [ -e $$R/pkg/$$p/setup.sh ] ; then \
 pushd $$R/pkg/$$p ; $$SHELL setup.sh ; popd > /dev/null ; \
 fi ; done ; \
 popd > /dev/null
+
+# ------------------------------------------------------------------------------
+
+nginxconf:
+	@echo "*** $@ ***"
+	pushd .. > /dev/null ; d=nginx ; R=$$PWD ; \
+    [ -d $$d ] || mkdir -p $$d; \
+    for f in $$R/pgws/ws/eg/conf/*.conf; \
+        do if [ ! -e $$d/$$(basename $$f) ] ; then \
+            if [[ "$$R" == "/home/data/sampleapp" ]] ; then ln -s $$f -t $$d ; \
+            else cp $$f $$d/ ; sed -i "s|/home/data/sampleapp|$$PWD|g" $$d/*.conf ; fi ;\
+        fi ; done ; \
+	popd > /dev/null
 
 # ------------------------------------------------------------------------------
 
