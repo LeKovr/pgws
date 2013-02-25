@@ -150,7 +150,6 @@ $_$
       AND p.proname = $2
   ;
 $_$;
-
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_view_comments_get_tbl(
   a_code text             -- имя объекта
@@ -171,11 +170,11 @@ $_$
       v_table  := a_code;
     END IF;
     FOR _i IN array_lower(v_schema, 1)..array_upper(v_schema, 1) LOOP
-      FOR R IN
+      FOR R IN 
         SELECT table_schema, table_name
           FROM information_schema.tables
           WHERE (table_schema = v_schema[_i] AND table_name = v_table)
-        LOOP
+        LOOP       
         IF v_ret IS NOT NULL THEN
           RETURN NULL;
         END IF;
@@ -188,7 +187,6 @@ $_$
     RETURN v_ret;
   END;
 $_$;
-
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_view_comments(
   a_code text              -- имя объекта
@@ -210,7 +208,7 @@ $_$
     v_ret_5 int[];
     v_ret_6 text[];
   BEGIN
-    RAISE INFO 'PROCESSING: View %', a_code;
+    RAISE DEBUG 'PROCESSING: View %', a_code;
     v_code := string_to_array(a_code, '.');
     FOR r_ in
      (SELECT schemaname || '.' || viewname as vname, lower(definition) as _def from pg_views
@@ -218,7 +216,7 @@ $_$
       or (array_length(v_code, 1) = 1 and viewname = v_code[1]))
     LOOP
       IF v_def is not null THEN
-        RAISE INFO 'ERROR: Имя представления неоднозначно %', a_code;
+        RAISE WARNING 'ERROR: Имя представления неоднозначно %', a_code;
         RETURN;
       END IF;
       v_def := r_._def;
@@ -232,17 +230,28 @@ $_$
     FOR v_j in array_lower(v_def_arr, 1)..array_upper(v_def_arr, 1) LOOP
        DECLARE
           v_list text;
+          v_list_check text;
           v_field text;
-          v_brac int;
+          v_brac int;  -- индекс подсчета скобок
           v_temp text[];
         BEGIN
           v_def := ' ' ||  trim(trim(v_def_arr[v_j]), ';') || ' ';
           IF position(' except ' in v_def) > 0 THEN
             v_def := trim(substring(v_def from 1 FOR position(' except ' in v_def)));
           END IF;
-          -- v_list: список полей в тексте запроса между select/from
+          -- v_list: список полей в тексте запроса между select/from избегая вложенные выборки
           v_list := substring(v_def from position('select' in v_def) + 7);
-          v_list := trim(substring(v_list from 1 FOR position(' from ' in v_list) - 1));
+          v_temp := string_to_array(v_list, ' from ');
+          v_brac := 1;
+          v_list := v_temp[v_brac];
+          LOOP
+            v_brac = v_brac + 1;
+            IF length(replace(v_list, '(', '')) = length(replace(v_list, ')', '')) or v_brac > array_length(v_temp, 1) THEN
+              EXIT;
+            ELSE
+              v_list := v_list || v_temp[v_brac];
+            END IF;
+          END LOOP;
           -- представить поля текста запроса в виде массива
           -- необходимо разбить по "," принимая во внимание что некоторые поля имеют формулы с "," внутри "()"
           v_i := 1;
@@ -267,13 +276,11 @@ $_$
             DECLARE
               v_const_1 text := ' as ';         
               v_const_2 text := '.';
-              v_const_3 text[][] = ARRAY[[' ',' '],[' ',','],['.',''],['','']];
               v_fld text; -- поле "A.B" или "A.B as C"
               v_exp text; -- A.B A.B
               v_tbl text; -- A   A
               v_col text; -- B   B
               v_als text; -- B   C
-              v_src text; -- таб. источник
               v_res_1 text;
               v_res_2 text;
               v_res_3 text;
@@ -296,14 +303,16 @@ $_$
                 v_res_6 = v_exp;      
               ELSE
                 DECLARE
-                  v_pos int;
-                  v_l text;
-                  v_r text;
+                  v_src text; -- таб. источник
                 BEGIN
                   -- v_pos: позиция v_tbl в строке выборки v_def в порядке определенном v_const_3
                   DECLARE
+                    v_const_3 text[][] = ARRAY[[' ',' '],[' ',','],['.',''],['','']];
                     v_srh text;
                     v_x int;
+                    v_pos int;
+                    v_l text;
+                    v_r text;
                   BEGIN
                     FOR v_x in array_lower(v_const_3,1)..array_upper(v_const_3,1) LOOP
                       v_srh := v_const_3[v_x][1] || v_tbl || v_const_3[v_x][2];
@@ -312,42 +321,46 @@ $_$
                         EXIT;
                       END IF;
                     END LOOP;
+                    IF v_pos > 0 THEN
+                      -- v_l = одно слово слева от v_pos (с убранными 'join|from|select')
+                      -- v_r = одно слово справа от v_pos
+                      -- строка выборки слева/справа
+                      v_l = trim(substring(v_def from 1 for v_pos));
+                      v_r = trim(substring(v_def from v_pos));
+                      -- последнее/пеорвое слово
+                      v_l := split_part(v_l, ' ', 1 + length(trim(v_l)) - length(replace(trim(v_l), ' ', '')));
+                      v_r := split_part(v_r, ' ', 1);
+                      -- убрать join,from,select если они оказались слева
+                      v_l := case when v_l ~ 'join|from|select' then split_part(v_l, '.', 2) else v_l END;
+                      -- убрать символы ().
+                      v_l := btrim(v_l, '(.');
+                      v_r := btrim(v_r, ').');
+                      IF v_l = '' THEN
+                        v_src := v_r;
+                      ELSIF v_r = '' or (length(v_l) - length(replace(v_l, v_const_2, '')) = length(v_const_2) or 
+                        (v_r = v_tbl and v_l ~ '^pg_*')) THEN
+                        v_src := v_l;
+                      ELSIF v_r <>  v_tbl or substring(v_def from v_pos for 1) = '.' THEN 
+                        v_src := v_l || '.' || v_r;
+                      END IF;
+                      -- v_src не содержит точку, значит нет схемы. получить схема.таблица из pg_view_comments_get_tbl
+                      IF length(v_src) - length(replace(v_src, v_const_2, '')) <> length(v_const_2) THEN
+                        v_src := ws.pg_view_comments_get_tbl(v_src);
+                      END IF;
+                    END IF;
                   END;
-                  IF v_pos > 0 THEN
-                    -- v_l = одно слово слева от v_pos (с убранными 'join|from|select')
-                    -- v_r = одно слово справа от v_pos
-                    -- строка выборки слева/справа
-                    v_l = trim(substring(v_def from 1 for v_pos));
-                    v_r = trim(substring(v_def from v_pos));
-                    -- последнее/пеорвое слово
-                    v_l := split_part(v_l, ' ', 1 + length(trim(v_l)) - length(replace(trim(v_l), ' ', '')));
-                    v_r := split_part(v_r, ' ', 1);
-                    -- убрать join,from,select если они оказались слева
-                    v_l := case when v_l ~ 'join|from|select' then split_part(v_l, '.', 2) else v_l END;
-                    -- убрать символы ().
-                    v_l := trim(trim(v_l, '('), '.');
-                    v_r := trim(trim(v_r, ')'), '.');
-                    IF v_l = '' THEN
-                      v_src := v_r;
-                    ELSIF v_r = '' or (length(v_l) - length(replace(v_l, v_const_2, '')) = length(v_const_2) or 
-                      (v_r = v_tbl and v_l ~ '^pg_*')) THEN
-                      v_src := v_l;
-                    ELSIF v_r <>  v_tbl or substring(v_def from v_pos for 1) = '.' THEN 
-                      v_src := v_l || '.' || v_r;
+                  IF v_src is not null and length(v_src) - length(replace(v_src, v_const_2, '')) = length(v_const_2) THEN
+                    -- дополнительная проверка: если v_src определена неправильно не будет ошибки выполнения запроса (превентивная, частных случаев нет)
+                    PERFORM 1 FROM information_schema.tables WHERE table_schema = split_part(v_src, '.', 1) AND table_name = split_part(v_src, '.', 2);
+                    IF FOUND THEN
+                      v_res_6 := 
+                        (SELECT col_description
+                        ((SELECT (v_src)::regclass::oid)::int,
+                        (SELECT attnum FROM pg_attribute WHERE attrelid = (v_src)::regclass AND attname = v_col)));
+                      v_res_3 := v_src;
+                      v_res_4 := v_col;
+                      v_res_5 := case when v_res_6 is not null THEN 1 ELSE 2 END;
                     END IF;
-                    -- v_src не содержит точку, значит нет схемы. получить схема.таблица из pg_view_comments_get_tbl
-                    IF length(v_src) - length(replace(v_src, v_const_2, '')) <> length(v_const_2) THEN
-                      v_src := ws.pg_view_comments_get_tbl(v_src);
-                    END IF;
-                  END IF;
-                  IF length(v_src) - length(replace(v_src, v_const_2, '')) = length(v_const_2) THEN
-                    v_res_6 := 
-                      (SELECT col_description
-                      ((SELECT (v_src)::regclass::oid)::int,
-                      (SELECT attnum FROM pg_attribute WHERE attrelid = (v_src)::regclass AND attname = v_col)));
-                    v_res_3 := v_src;
-                    v_res_4 := v_col;
-                    v_res_5 := case when v_res_6 is not null THEN 1 ELSE 2 END;
                   END IF;
                 END;
                 IF v_res_5 is null then
@@ -379,7 +392,6 @@ $_$
     END LOOP;
   END;
 $_$;
-
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_c(
   a_type ws.t_pg_object    -- тип объекта (из перечисления ws.t_pg_object)
@@ -402,15 +414,15 @@ $_$
     ELSE
       v_code := a_code;
     END IF;
-/*
+
     IF a_type = 'v' THEN
       FOR r_view in select * from ws.pg_view_comments(v_code) LOOP
         IF r_view.status_id = 1 THEN
-          PERFORM pg_c('c', r_view.rel || '.' || r_view.code, r_view.anno);
+          PERFORM ws.pg_c('c', r_view.rel || '.' || r_view.code, r_view.anno);
         END IF;
       END LOOP;
     END IF;
-*/
+
     v_name := CASE
       WHEN a_type = 'h' THEN 'SCHEMA'
       WHEN a_type = 'r' THEN 'TABLE'

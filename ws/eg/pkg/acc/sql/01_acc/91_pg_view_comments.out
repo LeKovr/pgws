@@ -1,0 +1,36 @@
+               test                
+-----------------------------------
+  ***** acc.pg_view_comments *****
+
+         rel          |      code      |     rel_src      |  rel_src_col   | status_id |                                    anno                                    
+----------------------+----------------+------------------+----------------+-----------+----------------------------------------------------------------------------
+ acc.account_attr     | psw            | wsd.account      | psw            |         2 | 
+ acc.account_attr     | name           | wsd.account      | name           |         2 | 
+ acc.account_attr     | is_psw_plain   | wsd.account      | is_psw_plain   |         1 | Пароль хранить незашифрованным
+ acc.account_attr     | is_ip_checked  | wsd.account      | is_ip_checked  |         1 | IP проверять при валидации сессии
+ acc.session_info     | status_id      | wsd.account      | status_id      |         2 | 
+ acc.session_info     | is_ip_checked  | wsd.session      | is_ip_checked  |         2 | 
+ acc.account_attr_pub | created_at     | acc.account_attr | created_at     |         2 | 
+ acc.session_info     | created_at     | wsd.session      | created_at     |         2 | 
+ acc.account_attr     | status_id      | wsd.account      | status_id      |         2 | 
+ acc.account_attr     | id             | wsd.account      | id             |         2 | 
+ acc.session_info     | ip             | wsd.session      | ip             |         2 | 
+ acc.session_info     | updated_at     | wsd.session      | updated_at     |         2 | 
+ acc.account_attr     | login          | wsd.account      | login          |         2 | 
+ acc.account_attr     | psw_updated_at | wsd.account      | psw_updated_at |         1 | Момент изменения пароля
+ acc.session_info     | role_name      | wsd.role         | name           |         2 | 
+ acc.session_info     | deleted_at     | wsd.session      | deleted_at     |         1 | Признак и время завершения сессии
+ acc.account_attr_pub | name           | acc.account_attr | name           |         2 | 
+ acc.session_info     | account_name   | wsd.account      | name           |         2 | 
+ acc.session_info     | account_id     | wsd.session      | account_id     |         2 | 
+ acc.session_info     | role_id        | wsd.session      | role_id        |         2 | 
+ acc.account_attr     | status_name    |                  |                |         3 | ws.class_status_name(('account'::text)::ws.d_code(a.status_id)::ws.d_id32)
+ acc.account_attr     | created_at     | wsd.account      | created_at     |         2 | 
+ acc.session_info     | id             | wsd.session      | id             |         2 | 
+ acc.account_attr_pub | id             | acc.account_attr | id             |         2 | 
+ acc.account_attr_pub | status_id      | acc.account_attr | status_id      |         2 | 
+ acc.account_attr     | def_role_id    | wsd.account      | def_role_id    |         1 | ID роли по умолчанию
+ acc.account_attr     | updated_at     | wsd.account      | updated_at     |         2 | 
+ acc.account_attr_pub | status_name    | acc.account_attr | status_name    |         2 | 
+ acc.session_info     | sid            | wsd.session      | sid            |         2 | 
+

@@ -1,0 +1,105 @@
+             test              
+-------------------------------
+  ***** pg_view_comments *****
+
+              rel               |       code       |             rel_src              |   rel_src_col    | status_id |                                    anno                                     
+--------------------------------+------------------+----------------------------------+------------------+-----------+-----------------------------------------------------------------------------
+ i18n_def.error                 | code             | i18n_def.error_message           | code             |         1 | Код ошибки
+ i18n_def.error                 | id_count         | i18n_def.error_message           | id_count         |         1 | Количество аргументов в строке сообщения
+ i18n_def.error                 | message          | i18n_def.error_message           | message          |         1 | Форматированная строка сообщения об ошибке
+ i18n_def.page                  | action_id        | ws.page_data                     | action_id        |         1 | ID акции, к которой относится страница
+ i18n_def.page                  | class_id         | ws.page_data                     | class_id         |         1 | ID класса, к которому относится страница
+ i18n_def.page                  | code             | ws.page_data                     | code             |         1 | Идентификатор страницы
+ i18n_def.page                  | group_id         | ws.page_data                     | group_id         |         1 | ID группы страниц для меню
+ i18n_def.page                  | id_fixed         | ws.page_data                     | id_fixed         |         1 | ID объекта взять из этого поля
+ i18n_def.page                  | id_session       | ws.page_data                     | id_session       |         1 | ID объекта взять из этого поля сессии
+ i18n_def.page                  | is_hidden        | ws.page_data                     | is_hidden        |         1 | Запрет включения внешних блоков в разметку страницы
+ i18n_def.page                  | name             |                                  |                  |         4 | Ошибка определения комментария для: n.name
+ i18n_def.page                  | pkg              | ws.page_data                     | pkg              |         1 | пакет, в котором зарегистрирована страница
+ i18n_def.page                  | sort             | ws.page_data                     | sort             |         1 | порядок сортировки в меню страниц одного уровня (NULL - нет в меню)
+ i18n_def.page                  | target           | ws.page_data                     | target           |         1 | значение атрибута target в формируемых ссылках
+ i18n_def.page                  | tmpl             | ws.page_data                     | tmpl             |         1 | файл шаблона (NULL для внешних адресов)
+ i18n_def.page                  | up_code          | ws.page_data                     | up_code          |         1 | идентификатор страницы верхнего уровня
+ i18n_def.page                  | uri              | ws.page_data                     | uri              |         1 | мета-маска с именами переменных, которой должен соответствовать URI запроса
+ i18n_def.page                  | uri_fmt          | ws.page_data                     | uri_fmt          |         1 | строка формата для генерации URI, вычисляется триггером при insert/update
+ i18n_def.page                  | uri_re           | ws.page_data                     | uri_re           |         1 | regexp URI, вычисляется триггером при insert/update
+ ws.caa                         | acl              | ws.class_action_acl_ext          | acl              |         2 | 
+ ws.caa                         | acl_id           | ws.class_action_acl_ext          | acl_id           |         2 | 
+ ws.caa                         | action           | ws.class_action_acl_ext          | action           |         2 | 
+ ws.caa                         | action_id        | ws.class_action_acl_ext          | action_id        |         2 | 
+ ws.caa                         | class            | ws.class_action_acl_ext          | class            |         2 | 
+ ws.caa                         | class_id         | ws.class_action_acl_ext          | class_id         |         2 | 
+ ws.class_action_acl_ext        | acl              | ws.class_acl                     | name             |         1 | Название уровня доступа
+ ws.class_action_acl_ext        | acl_id           | ws.class_action_acl              | acl_id           |         1 | ID уровня доступа
+ ws.class_action_acl_ext        | action           | ws.class_action                  | name             |         1 | Название акции
+ ws.class_action_acl_ext        | action_id        | ws.class_action_acl              | action_id        |         1 | ID акции
+ ws.class_action_acl_ext        | class            | ws.class                         | name             |         1 | Название класса
+ ws.class_action_acl_ext        | class_id         | ws.class_action_acl              | class_id         |         1 | ID класса
+ ws.class_status_action_acl     | acl_id           | ws.class_action_acl              | acl_id           |         1 | ID уровня доступа
+ ws.class_status_action_acl     | action_id        | ws.class_status_action           | action_id        |         1 | ID акции
+ ws.class_status_action_acl     | class_id         | ws.class_status_action           | class_id         |         1 | ID класса
+ ws.class_status_action_acl     | is_addon         | ws.class_status_action_acl_addon | is_addon         |         1 | Строка является добавлением разрешения
+ ws.class_status_action_acl     | status_id        | ws.class_status_action           | status_id        |         1 | ID статуса
+ ws.class_status_action_acl_ext | acl              | ws.class_acl                     | name             |         1 | Название уровня доступа
+ ws.class_status_action_acl_ext | acl_id           | ws.class_status_action_acl       | acl_id           |         1 | ID уровня доступа
+ ws.class_status_action_acl_ext | action           | ws.class_action                  | name             |         1 | Название акции
+ ws.class_status_action_acl_ext | action_id        | ws.class_status_action_acl       | action_id        |         1 | ID акции
+ ws.class_status_action_acl_ext | class            | ws.class                         | name             |         1 | Название класса
+ ws.class_status_action_acl_ext | class_id         | ws.class_status_action_acl       | class_id         |         1 | ID класса
+ ws.class_status_action_acl_ext | is_addon         | ws.class_status_action_acl       | is_addon         |         1 | Строка является добавлением разрешения
+ ws.class_status_action_acl_ext | status           | ws.class_status                  | name             |         1 | Название статуса
+ ws.class_status_action_acl_ext | status_id        | ws.class_status_action_acl       | status_id        |         1 | ID статуса
+ ws.class_status_action_ext     | action           | ws.class_action                  | name             |         1 | Название акции
+ ws.class_status_action_ext     | action_id        | ws.class_status_action           | action_id        |         1 | ID акции
+ ws.class_status_action_ext     | class            | ws.class                         | name             |         1 | Название класса
+ ws.class_status_action_ext     | class_id         | ws.class_status_action           | class_id         |         1 | ID класса
+ ws.class_status_action_ext     | status           | ws.class_status                  | name             |         1 | Название статуса
+ ws.class_status_action_ext     | status_id        | ws.class_status_action           | status_id        |         1 | ID статуса
+ ws.csa                         | action           | ws.class_status_action_ext       | action           |         2 | 
+ ws.csa                         | action_id        | ws.class_status_action_ext       | action_id        |         2 | 
+ ws.csa                         | class            | ws.class_status_action_ext       | class            |         2 | 
+ ws.csa                         | class_id         | ws.class_status_action_ext       | class_id         |         2 | 
+ ws.csa                         | status           | ws.class_status_action_ext       | status           |         2 | 
+ ws.csa                         | status_id        | ws.class_status_action_ext       | status_id        |         2 | 
+ ws.csaa                        | acl              | ws.class_status_action_acl_ext   | acl              |         2 | 
+ ws.csaa                        | acl_id           | ws.class_status_action_acl_ext   | acl_id           |         2 | 
+ ws.csaa                        | action           | ws.class_status_action_acl_ext   | action           |         2 | 
+ ws.csaa                        | action_id        | ws.class_status_action_acl_ext   | action_id        |         2 | 
+ ws.csaa                        | class            | ws.class_status_action_acl_ext   | class            |         2 | 
+ ws.csaa                        | class_id         | ws.class_status_action_acl_ext   | class_id         |         2 | 
+ ws.csaa                        | is_addon         | ws.class_status_action_acl_ext   | is_addon         |         2 | 
+ ws.csaa                        | status           | ws.class_status_action_acl_ext   | status           |         2 | 
+ ws.csaa                        | status_id        | ws.class_status_action_acl_ext   | status_id        |         2 | 
+ ws.pg_const                    | anno             |                                  |                  |         3 | obj_description(p.oid'pg_proc'::name)
+ ws.pg_const                    | code             | pg_catalog.pg_proc               | proname          |         2 | 
+ ws.pg_const                    | schema           |                                  |                  |         3 | ws.pg_schema_by_oid(p.pronamespace)
+ ws.pg_const                    | type             |                                  |                  |         3 | format_type(p.prorettypenull::integer)
+ ws.pg_const                    | value            |                                  |                  |         3 | ws.pg_exec_func(ws.pg_schema_by_oid(p.pronamespace)(p.proname)::text)
+ ws.pg_sql                      | application_name | pg_catalog.pg_stat_activity      | application_name |         2 | 
+ ws.pg_sql                      | current_query    | pg_catalog.pg_stat_activity      | current_query    |         2 | 
+ ws.pg_sql                      | datname          | pg_catalog.pg_stat_activity      | datname          |         2 | 
+ ws.pg_sql                      | duration         |                                  |                  |         3 | (now() - pg_stat_activity.query_start)
+ ws.pg_sql                      | procpid          | pg_catalog.pg_stat_activity      | procpid          |         2 | 
+ ws.prop_attr                   | anno             | ws.prop                          | anno             |         1 | Аннотация
+ ws.prop_attr                   | code             | wsd.prop_value                   | code             |         1 | Код свойства
+ ws.prop_attr                   | def_value        | ws.prop                          | def_value        |         1 | Значение по умолчанию
+ ws.prop_attr                   | is_mask          | ws.prop                          | is_mask          |         1 | Свойство не атомарно
+ ws.prop_attr                   | name             | ws.prop                          | name             |         1 | Название
+ ws.prop_attr                   | pkg              | ws.prop                          | pkg              |         1 | Пакет, в котором добавлено свойство
+ ws.prop_attr                   | pogc             | wsd.prop_value                   | pogc             |         1 | Код группы (Property Owner Group Code)
+ ws.prop_attr                   | pogc_list        | ws.prop                          | pogc_list        |         1 | Массив кодов разрешенных групп (prop_group)
+ ws.prop_attr                   | poid             | wsd.prop_value                   | poid             |         1 | ID владельца (Property Owner ID)
+ ws.prop_attr                   | valid_from       | wsd.prop_value                   | valid_from       |         1 | Дата начала действия
+ ws.prop_attr                   | value            | wsd.prop_value                   | value            |         1 | Значение свойства
+ ws.prop_attr                   | value_fmt        | ws.prop                          | value_fmt        |         1 | Строка формата для вывода значения
+ ws.prop_attr                   | value_pkg        | wsd.prop_value                   | pkg              |         1 | Пакет, в котором задано значение
+ ws.prop_owner_attr             | anno             | wsd.prop_owner                   | anno             |         1 | Аннотация
+ ws.prop_owner_attr             | is_id_required   | wsd.prop_group                   | is_id_required   |         1 | Загрузка без указания poid не используется
+ ws.prop_owner_attr             | name             | wsd.prop_owner                   | name             |         1 | Название
+ ws.prop_owner_attr             | pkg              | wsd.prop_owner                   | pkg              |         1 | Пакет, в котором добавлена группа
+ ws.prop_owner_attr             | pogc             | wsd.prop_owner                   | pogc             |         1 | Код группы (Property Owner Group Code)
+ ws.prop_owner_attr             | pog_name         | wsd.prop_group                   | name             |         1 | Название
+ ws.prop_owner_attr             | pog_sort         | wsd.prop_group                   | sort             |         1 | Порядок сортировки
+ ws.prop_owner_attr             | poid             | wsd.prop_owner                   | poid             |         1 | ID владельца (Property Owner ID)
+ ws.prop_owner_attr             | sort             | wsd.prop_owner                   | sort             |         1 | Порядок сортировки
+

@@ -1,0 +1,30 @@
+               test               
+----------------------------------
+  ***** fs.pg_view_comments *****
+
+      rel      |      code       |    rel_src    | rel_src_col | status_id |              anno               
+---------------+-----------------+---------------+-------------+-----------+---------------------------------
+ fs.file_store | size            | wsd.file      | size        |         1 | Размер (байт)
+ fs.file_info  | link_created_by | wsd.file_link | created_by  |         1 | Автор привязки
+ fs.file_info  | anno            | wsd.file      | anno        |         1 | Комментарий
+ fs.file_store | csum            | wsd.file      | csum        |         1 | Контрольная сумма (sha1)
+ fs.file_store | id              | wsd.file      | id          |         1 | ID файла
+ fs.file_info  | name            | wsd.file      | name        |         1 | Внешнее имя файла
+ fs.file_info  | format_code     | wsd.file      | format_code |         1 | Код формата файла
+ fs.file_info  | folder_code     | wsd.file_link | folder_code |         1 | Код папки
+ fs.file_store | created_at      | wsd.file      | created_at  |         1 | Момент загрузки/генерации
+ fs.file_info  | ver             | wsd.file_link | ver         |         1 | Версия файла
+ fs.file_store | path            | wsd.file      | path        |         1 | Ключ файл-сервера
+ fs.file_info  | class_id        | wsd.file_link | class_id    |         1 | ID класса
+ fs.file_info  | obj_id          | wsd.file_link | obj_id      |         1 | ID объекта
+ fs.file_info  | created_at      | wsd.file      | created_at  |         1 | Момент загрузки/генерации
+ fs.file_info  | id              | wsd.file_link | id          |         1 | ID файла
+ fs.file_info  | created_by      | wsd.file      | created_by  |         1 | Автор загрузки/генерации
+ fs.file_info  | link_created_at | wsd.file_link | created_at  |         1 | Момент привязки
+ fs.file_store | name            | wsd.file      | name        |         1 | Внешнее имя файла
+ fs.file_info  | is_ver_last     | wsd.file_link | is_ver_last |         1 | Версия файла является последней
+ fs.file_store | ctype           | wsd.file      | ctype       |         1 | Content type (для формата *)
+ fs.file_info  | csum            | wsd.file      | csum        |         1 | Контрольная сумма (sha1)
+ fs.file_info  | size            | wsd.file      | size        |         1 | Размер (байт)
+ fs.file_info  | file_code       | wsd.file_link | file_code   |         1 | Код файла
+

@@ -1,0 +1,20 @@
+               test               
+----------------------------------
+  ***** ev.pg_view_comments *****
+
+      rel      |    code    |  rel_src  | rel_src_col | status_id |               anno               
+---------------+------------+-----------+-------------+-----------+----------------------------------
+ ev.event_info | id         | wsd.event | id          |         1 | ID события
+ ev.event_info | status_id  | wsd.event | status_id   |         1 | ID статуса
+ ev.event_info | created_at | wsd.event | created_at  |         1 | отметка времени возникновения
+ ev.event_info | kind_id    | wsd.event | kind_id     |         1 | ID категории
+ ev.event_info | created_by | wsd.event | created_by  |         1 | Идентификатор автора
+ ev.event_info | class_id   | wsd.event | class_id    |         1 | ID класса объектов
+ ev.event_info | arg_id     | wsd.event | arg_id      |         1 | ID объекта
+ ev.event_info | arg_id2    | wsd.event | arg_id2     |         1 | ID объекта2
+ ev.event_info | arg_name   | wsd.event | arg_name    |         1 | Параметр названия события
+ ev.event_info | arg_name2  | wsd.event | arg_name2   |         1 | Параметр2 названия события
+ ev.event_info | name_count | ev.kind   | name_count  |         1 | Кол-во аргументов строки формата
+ ev.event_info | name_fmt   | ev.kind   | name_fmt    |         1 | Строка формата названия
+ ev.event_info | name       | ev.kind   | name        |         1 | Название
+

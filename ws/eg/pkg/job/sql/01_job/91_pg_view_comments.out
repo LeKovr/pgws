@@ -1,0 +1,50 @@
+               test                
+-----------------------------------
+  ***** job.pg_view_comments *****
+
+     rel      |     code     | rel_src | rel_src_col | status_id |                       anno                       
+--------------+--------------+---------+-------------+-----------+--------------------------------------------------
+ job.arg_attr | id           | wsd.job | id          |         1 | ID задачи
+ job.stored   | storage_code |         |             |         3 | 'past'::text
+ job.srv_attr | prio         | wsd.job | prio        |         1 | фактический приоритет
+ job.stored   | arg_id2      | wsd.job | arg_id2     |         1 | аргумент id2
+ job.stored   | waiting_for  | wsd.job | waiting_for |         1 | id задачи, которую ждем
+ job.srv_attr | exit_at      |         |             |         3 | (job.exit_at)::timestamp(0) without time zone
+ job.srv_attr | code         |         |             |         3 | job.handler_pkg_code(job.handler_id)
+ job.stored   | handler_id   | wsd.job | handler_id  |         1 | ID обработчика
+ job.srv_attr | validfrom    | wsd.job | validfrom   |         1 | дата активации
+ job.srv_attr | created_by   | wsd.job | created_by  |         1 | id задачи/сессии, создавшей
+ job.arg_attr | arg_date2    | wsd.job | arg_date2   |         1 | аргумент date2
+ job.stored   | arg_id3      | wsd.job | arg_id3     |         1 | аргумент id3
+ job.srv_attr | s_id         | wsd.job | status_id   |         1 | текущий статус
+ job.stored   | arg_date     | wsd.job | arg_date    |         1 | аргумент date
+ job.srv_attr | h_id         | wsd.job | handler_id  |         1 | ID обработчика
+ job.srv_attr | id           | wsd.job | id          |         1 | ID задачи
+ job.stored   | status_id    | wsd.job | status_id   |         1 | текущий статус
+ job.arg_attr | arg_id       | wsd.job | arg_id      |         1 | аргумент id
+ job.stored   | arg_num      | wsd.job | arg_num     |         1 | аргумент num
+ job.stored   | run_ip       | wsd.job | run_ip      |         1 | ip хоста выполняющего процесса
+ job.srv_attr | wait4        | wsd.job | waiting_for |         1 | id задачи, которую ждем
+ job.srv_attr | run_at       |         |             |         3 | (job.run_at)::timestamp(0) without time zone
+ job.srv_attr | status_name  |         |             |         3 | job.status_name(job.status_id)
+ job.stored   | run_at       | wsd.job | run_at      |         1 | время начала выполнения
+ job.arg_attr | validfrom    | wsd.job | validfrom   |         1 | дата активации
+ job.arg_attr | arg_more     | wsd.job | arg_more    |         1 | аргумент more
+ job.arg_attr | arg_date     | wsd.job | arg_date    |         1 | аргумент date
+ job.arg_attr | arg_id3      | wsd.job | arg_id3     |         1 | аргумент id3
+ job.stored   | arg_id       | wsd.job | arg_id      |         1 | аргумент id
+ job.stored   | prio         | wsd.job | prio        |         1 | фактический приоритет
+ job.arg_attr | status_id    | wsd.job | status_id   |         1 | текущий статус
+ job.stored   | created_by   | wsd.job | created_by  |         1 | id задачи/сессии, создавшей
+ job.arg_attr | arg_num      | wsd.job | arg_num     |         1 | аргумент num
+ job.stored   | exit_at      | wsd.job | exit_at     |         1 | время завершения выполнения
+ job.stored   | validfrom    | wsd.job | validfrom   |         1 | дата активации
+ job.stored   | arg_more     | wsd.job | arg_more    |         1 | аргумент more
+ job.stored   | id           | wsd.job | id          |         1 | ID задачи
+ job.srv_attr | created_at   |         |             |         3 | (job.created_at)::timestamp(0) without time zone
+ job.arg_attr | arg_id2      | wsd.job | arg_id2     |         1 | аргумент id2
+ job.stored   | created_at   | wsd.job | created_at  |         1 | время создания
+ job.arg_attr | handler_id   | wsd.job | handler_id  |         1 | ID обработчика
+ job.stored   | arg_date2    | wsd.job | arg_date2   |         1 | аргумент date2
+ job.stored   | run_pid      | wsd.job | run_pid     |         1 | pid выполняющего процесса
+

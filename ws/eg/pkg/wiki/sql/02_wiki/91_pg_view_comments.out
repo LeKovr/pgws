@@ -1,0 +1,27 @@
+                test                
+------------------------------------
+  ***** wiki.pg_view_comments *****
+
+          rel          |      code       |     rel_src     |  rel_src_col   | status_id |               anno               
+-----------------------+-----------------+-----------------+----------------+-----------+----------------------------------
+ wiki.doc_info         | revision        | wsd.doc         | revision       |         2 | 
+ wiki.doc_info         | updated_by      | wsd.doc         | updated_by     |         2 | 
+ wiki.doc_info         | status_next_id  | wsd.doc         | status_next_id |         2 | 
+ wiki.doc_info         | updated_at      | wsd.doc         | updated_at     |         1 | Момент последнего редактирования
+ wiki.doc_keyword_info | name            | wsd.doc_keyword | name           |         1 | Слово
+ wiki.doc_info         | created_by      | wsd.doc         | created_by     |         2 | 
+ wiki.doc_info         | pub_date        | wsd.doc         | pub_date       |         2 | 
+ wiki.doc_info         | updated_by_name | wsd.account     | name           |         2 | 
+ wiki.doc_info         | up_id           | wsd.doc         | up_id          |         2 | 
+ wiki.doc_info         | group_id        | wsd.doc         | group_id       |         2 | 
+ wiki.doc_info         | created_at      | wsd.doc         | created_at     |         2 | 
+ wiki.doc_info         | status_id       | wsd.doc         | status_id      |         2 | 
+ wiki.doc_info         | id              | wsd.doc         | id             |         2 | 
+ wiki.doc_info         | group_status_id | wsd.doc_group   | status_id      |         2 | 
+ wiki.doc_info         | group_name      | wsd.doc_group   | name           |         2 | 
+ wiki.doc_info         | name            | wsd.doc         | name           |         2 | 
+ wiki.doc_keyword_info | group_id        | wsd.doc         | group_id       |         2 | 
+ wiki.doc_info         | code            | wsd.doc         | code           |         1 | Код статьи (URI)
+ wiki.doc_info         | status_next_at  | wsd.doc         | status_next_at |         2 | 
+ wiki.doc_keyword_info | id              | wsd.doc         | id             |         2 | 
+
