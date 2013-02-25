@@ -25,7 +25,7 @@ DELETE FROM ws.method                WHERE pkg = :'PKG';
 DELETE FROM ws.page_data             WHERE pkg = :'PKG';
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM ws.dt_part          WHERE id IN (SELECT id FROM ws.dt WHERE code LIKE 'app.%');
+DELETE FROM ws.dt_part          WHERE dt_code IN (SELECT code FROM ws.dt WHERE code LIKE 'app.%');
 DELETE from ws.dt               WHERE code LIKE 'app.%';
 
 DELETE FROM ws.error_data WHERE code ~ E'^Y002';

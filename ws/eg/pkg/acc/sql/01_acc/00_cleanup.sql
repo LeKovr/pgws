@@ -27,7 +27,7 @@ DELETE FROM ws.page_data             WHERE pkg = :'PKG';
 DELETE FROM ws.method                WHERE pkg = :'PKG';
 DELETE FROM job.handler             WHERE pkg = :'PKG';
 
-DELETE FROM ws.dt_part          WHERE id IN (SELECT id FROM ws.dt WHERE code LIKE 'acc.%');
+DELETE FROM ws.dt_part          WHERE dt_code IN (SELECT code FROM ws.dt WHERE code LIKE 'acc.%');
 DELETE from ws.dt               WHERE code LIKE 'acc.%';
 
 DELETE FROM ws.class_action_acl WHERE class_id IN (3, 4);

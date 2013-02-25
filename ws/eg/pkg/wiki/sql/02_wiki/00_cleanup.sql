@@ -38,7 +38,7 @@ DELETE FROM ws.class_status WHERE class_id IN (:WID, :DID);
 DELETE FROM ws.class_acl WHERE class_id IN (:WID, :DID);
 DELETE FROM ws.class WHERE id IN (:WID, :DID);
 
-DELETE FROM ws.dt_part          WHERE id IN (SELECT id FROM ws.dt WHERE code LIKE 'wiki.%');
+DELETE FROM ws.dt_part          WHERE dt_code IN (SELECT code FROM ws.dt WHERE code LIKE 'wiki.%');
 DELETE from ws.dt               WHERE code LIKE 'wiki.%';
 
 DELETE FROM ws.error_data WHERE code ~ E'^Y99';
