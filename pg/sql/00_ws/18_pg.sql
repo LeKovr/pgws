@@ -154,7 +154,7 @@ $_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_view_comments_get_tbl(
   a_code text             -- имя объекта
-) RETURNS name VOLATILE LANGUAGE 'plpgsql' AS
+) RETURNS text VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     v_ret text;
@@ -188,208 +188,198 @@ $_$
     RETURN v_ret;
   END;
 $_$;
-  
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_view_comments(
   a_code text              -- имя объекта
-) RETURNS SETOF t_pg_view_info VOLATILE LANGUAGE 'plpgsql' AS
+) RETURNS SETOF ws.t_pg_view_info VOLATILE LANGUAGE 'plpgsql' AS
 $_$
-  
   DECLARE
-  
     v_code text[];
     v_def text;
-    R record;
-    v_list text;
-    _i int;
-    _j int;
-    v_field text;
-  
-    v_brac int;
-    v_temp text[];
-    v_viewname text;
-        
+    v_def_arr text[];
+    r_ record;
+    v_i int;
+    v_j int;
+    v_k int;
+    v_viewname text;    
+    v_ret_1 text[];
+    v_ret_2 text[];
+    v_ret_3 text[];
+    v_ret_4 text[];
+    v_ret_5 int[];
+    v_ret_6 text[];
   BEGIN
-    RAISE DEBUG 'PROCESSING: View %', a_code;
-  
+    RAISE INFO 'PROCESSING: View %', a_code;
     v_code := string_to_array(a_code, '.');
-    FOR R IN
-      SELECT schemaname || '.' || viewname AS vname, lower(definition) AS _def 
-        FROM pg_views
-        WHERE (array_length(v_code, 1) = 2 AND schemaname = v_code[1] AND viewname = v_code[2])
-          OR (array_length(v_code, 1) = 1 AND viewname = v_code[1])
-      LOOP
-  
-      IF v_def IS NOT NULL THEN
-        RAISE DEBUG 'ERROR: Имя представления неоднозначно %', a_code;
+    FOR r_ in
+     (SELECT schemaname || '.' || viewname as vname, lower(definition) as _def from pg_views
+      WHERE (array_length(v_code, 1) = 2 and schemaname = v_code[1] and viewname = v_code[2])
+      or (array_length(v_code, 1) = 1 and viewname = v_code[1]))
+    LOOP
+      IF v_def is not null THEN
+        RAISE INFO 'ERROR: Имя представления неоднозначно %', a_code;
         RETURN;
       END IF;
-      
-      v_def := R._def;
-      v_viewname := R.vname;
-  
+      v_def := r_._def;
+      v_viewname := r_.vname;
     END LOOP;
-  
-    IF v_def IS NULL THEN
-      RAISE DEBUG 'ERROR: Представление не найдено %', a_code;
+    IF v_def is null THEN
+      RAISE WARNING 'ERROR: Представление не найдено %', a_code;
       RETURN;
     END IF;
-  
-    -- v_list: список полей в тексте запроса между select/from
-    v_list := substring(v_def FROM position('select' IN v_def) + 7);
-    v_list := trim(substring(v_list FROM 1 FOR position(' from ' IN v_list) - 1));
-  
-    -- v_def: текст запроса после "from", содержащий таблицы
-    -- если есть "union" - выбрать только первую часть
-    IF position(' union ' IN v_def) > 0 THEN
-      v_def := trim(substring(v_def FROM 1 FOR position(' union ' IN v_def)));
-    END IF;
-    v_def := ' ' || trim(trim(substring(v_def FROM position(' from ' IN v_def) + 6)), ';') || ' ';
-  
-  
-    -- представить поля текста запроса в виде массива
-    -- необходимо разбить по "," принимая во внимание что некоторые поля имеют формулы с "," внутри "()"
-    _i := 1;
-    v_brac := 0;
-    v_temp := string_to_array(v_list, ',');
-    v_code := null;
-    FOR _j IN array_lower(v_temp, 1)..array_upper(v_temp, 1) LOOP
-  
-      v_temp[_j] := trim(v_temp[_j]);
-      v_code[_i] := coalesce(v_code[_i], '') || v_temp[_j];
-      v_brac := v_brac + length(replace(v_temp[_j], '(', '')) - length(replace(v_temp[_j], ')', ''));
-      IF v_brac = 0 THEN
-        _i := _i + 1;
-      END IF;
-      
-    END LOOP;
-  
-    -- бросить ошибку если длина массива отлична от макс номера поля в представлении
-    IF (
-         SELECT max(attnum)
-         FROM   pg_attribute 
-         WHERE  attrelid = v_viewname::regclass
-       ) <> array_length(v_code, 1) THEN
-       RAISE DEBUG 'FATAL ERROR: Ошибка подсчета количества полей "%"', a_code;
-       RETURN;
-    END IF;
-  
-    -- обработать поля по одному
-    FOR _i IN array_lower(v_code, 1)..array_upper(v_code, 1) LOOP
-  
-      DECLARE
-  
-        v_col text;
-        v_table text;
-        v_com text;
-  
-        _sub text;
-        _arr text[];
-        _pos int;
-        
-      BEGIN
-  
-        -- получить значения v_field и поле v_col из колонки ("A.B as C" - значение=A.B поле=C; "A.B" - значение=A.B поле=B)
-        v_field = trim(v_code[_i]);      
-        _arr = string_to_array(v_field, ' as ');  
-        v_col = case when array_length(_arr,1) = 2 THEN _arr[2] ELSE '' END;
-        _arr = string_to_array(_arr[1], '.');
-        IF v_col = '' THEN
-           v_col = _arr[array_length(_arr,1)];
-        END IF;
-  
-        -- значение является формулой
-        IF v_field ~ '^[''.0-9]|null*' OR v_field ~ E'\\(' THEN
-  
-          R = ROW(v_viewname, v_col,null::text,null::text,3::int,v_field::text);
-          RETURN NEXT R;
-        
-          RAISE DEBUG 'INFO: значение является формулой "%"', v_field;
-  
-        -- значение является колонкой таблицы
-        ELSE
-  
-          -- значение должно быть в форме таблица/псевдоимя.поле (иметь '.') как в выборке pg_views, иначе ошибка
-          IF array_length(_arr,1) = 2 THEN
-  
-            -- найти позицию таблица/псевдоимя в тексте запроса (окруженную ' ', ',' и тд)
-            _pos = position(' ' || trim(_arr[1]) || ' ' in v_def);
-            IF _pos = 0 THEN
-              _pos = position(' ' || trim(_arr[1]) || ',' in v_def);
-            END IF;
-            IF _pos = 0 THEN
-              _pos = position(trim(_arr[1]) || ' ' in v_def);
-            END IF;         
-            IF _pos = 0 THEN
-              _pos = position(trim(_arr[1]) in v_def);
-            END IF;
-  
-            -- _ref = строка запроса до позиции таблицы/псевдоимя
-            _sub = trim(trim(substring(v_def from 1 FOR _pos - 1)), '(');
-  
-            _arr[1] = trim(_arr[1]);
-  
-            -- если последний символ _ref = '.' - значит в тексте указана схема
-            IF substring(_sub from length(_sub) FOR 1) = '.' THEN 
-              -- "схема.таблица" из текста запроса
-              v_table = trim(trim(trim(split_part(trim(_sub), ' ', 1 + length(trim(_sub)) - length(replace(trim(_sub), ' ', ''))), '('), '.')) || '.' || _arr[1];
-  
-            ELSE
-              -- определить значение предшествующее позиции таблицы. оно будет либо схема, либо укажет что схема не указана
-              _sub = trim(trim(substring(v_def from 1 FOR _pos - 1)), '(');
-              _sub = trim(trim(trim(split_part(trim(_sub), ' ', 1 + length(trim(_sub)) - length(replace(trim(_sub), ' ', ''))), '('), '.'));
-  
-              -- если вверху нашелся 'join','from' или '' - значит в тексте запроса схема перед таблицей не указана
-              -- получить схема.таблица через ф-ю pg_view_comments_get_tbl
-              v_table = ws.pg_view_comments_get_tbl(case when _sub in ('join','from','') THEN _arr[1] ELSE _sub END);
-  
-            END IF;
-  
-            -- получить комментарий если схема.таблица успешно определены
-            IF v_table is not null THEN
-              
-              v_com = (SELECT col_description
-                (
-                  (SELECT (v_table)::regclass::oid)::int,
-                  (
-                    SELECT attnum FROM pg_attribute 
-                    WHERE  attrelid = (v_table)::regclass
-                    AND    attname  = _arr[2]
-                  )
-                )
-              );
-     
-              RAISE DEBUG 'COMMENT: % % = %', v_table, v_col, v_com;
-              R = ROW(
-                v_viewname, v_col,v_table,_arr[2]::text,
-                case when v_com is not null THEN 1 ELSE 2 END::int,
-                case when v_com is not null THEN v_com ELSE 'Комментарий отсутствует для: ' || v_code[_i] END::text
-              );
-  
-              RETURN NEXT R;
-              
-            -- таблица из текста запроса не определена. возможна проблема в данной ф-ции
-            ELSE
-  
-              R = ROW(v_viewname, v_col,null::text,null::text,4::int, 'Ошибка определения комментария для: ' || v_code[_i]);
-              RETURN NEXT R;
-              
-              RAISE DEBUG 'ERROR: Ошибка определения комментария для "%"', v_field;
-            END IF;
-          ELSE
-            -- неподдерживаемый формат. все определения полей хранятся как таблица/псевдоимя.поле данная ошибка может возникнуть при непредвиденном изменении в pg_views
-            R = ROW(v_viewname, null::text,null::text,null::text,5::int, 'Поле хранится в неподдерживающемся формате: ' || v_field);
-            RETURN NEXT R;
-            RAISE DEBUG 'ERROR: Поле хранится в неподдерживающемся формате: "%"', v_field;
+    v_def_arr := string_to_array(v_def, ' union ');
+    FOR v_j in array_lower(v_def_arr, 1)..array_upper(v_def_arr, 1) LOOP
+       DECLARE
+          v_list text;
+          v_field text;
+          v_brac int;
+          v_temp text[];
+        BEGIN
+          v_def := ' ' ||  trim(trim(v_def_arr[v_j]), ';') || ' ';
+          IF position(' except ' in v_def) > 0 THEN
+            v_def := trim(substring(v_def from 1 FOR position(' except ' in v_def)));
           END IF;
-    
-        END IF;
-      END;
+          -- v_list: список полей в тексте запроса между select/from
+          v_list := substring(v_def from position('select' in v_def) + 7);
+          v_list := trim(substring(v_list from 1 FOR position(' from ' in v_list) - 1));
+          -- представить поля текста запроса в виде массива
+          -- необходимо разбить по "," принимая во внимание что некоторые поля имеют формулы с "," внутри "()"
+          v_i := 1;
+          v_brac := 0;
+          v_temp := string_to_array(v_list, ',');
+          v_code := null;
+          FOR v_k in array_lower(v_temp, 1)..array_upper(v_temp, 1) LOOP
+            v_temp[v_k] := trim(v_temp[v_k]);
+            v_code[v_i] := coalesce(v_code[v_i], '') || v_temp[v_k];
+            v_brac := v_brac + length(replace(v_temp[v_k], '(', '')) - length(replace(v_temp[v_k], ')', ''));
+            IF v_brac = 0 THEN
+              v_i := v_i + 1;
+            END IF;
+          END LOOP;
+          -- ошибка данной ф-ции если длина массива отлична от макс номера поля в представлении
+          IF (select max(attnum) FROM pg_attribute WHERE attrelid = v_viewname::regclass) <> array_length(v_code, 1) THEN
+            RAISE WARNING 'FATAL ERROR: Ошибка подсчета количества полей "%"', a_code;
+            RETURN;
+          END IF;
+          -- обработать поля
+          FOR v_i in array_lower(v_code, 1)..array_upper(v_code, 1) LOOP
+            DECLARE
+              v_const_1 text := ' as ';         
+              v_const_2 text := '.';
+              v_const_3 text[][] = ARRAY[[' ',' '],[' ',','],['.',''],['','']];
+              v_fld text; -- поле "A.B" или "A.B as C"
+              v_exp text; -- A.B A.B
+              v_tbl text; -- A   A
+              v_col text; -- B   B
+              v_als text; -- B   C
+              v_src text; -- таб. источник
+              v_res_1 text;
+              v_res_2 text;
+              v_res_3 text;
+              v_res_4 text;
+              v_res_5 int;
+              v_res_6 text;
+            BEGIN
+              v_fld := trim(v_code[v_i]);
+              v_exp := split_part(v_fld, v_const_1, 1);
+              v_tbl := split_part(v_exp, v_const_2, 1);
+              -- v_exp - должно быть вида таблица.колонка иначе комментарий не будет вычеслен. проверка введена для отслеживания
+              IF length(v_exp) - length(replace(v_exp, v_const_2, '')) = length(v_const_2) THEN
+                v_col := split_part(v_exp, v_const_2, 2);
+              END IF;
+              v_als := case when length(v_fld) - length(replace(v_fld, v_const_1, '')) <> length(v_const_1) then v_col else split_part(v_fld,v_const_1, 2) end;
+              v_res_1 = v_viewname;
+              v_res_2 = v_als;
+              IF v_exp ~ '^[''.0-9]|null*' or v_exp ~ E'\\(' THEN
+                v_res_5 = 3;
+                v_res_6 = v_exp;      
+              ELSE
+                DECLARE
+                  v_pos int;
+                  v_l text;
+                  v_r text;
+                BEGIN
+                  -- v_pos: позиция v_tbl в строке выборки v_def в порядке определенном v_const_3
+                  DECLARE
+                    v_srh text;
+                    v_x int;
+                  BEGIN
+                    FOR v_x in array_lower(v_const_3,1)..array_upper(v_const_3,1) LOOP
+                      v_srh := v_const_3[v_x][1] || v_tbl || v_const_3[v_x][2];
+                      v_pos := position(v_srh in v_def);
+                      IF v_pos > 0 THEN 
+                        EXIT;
+                      END IF;
+                    END LOOP;
+                  END;
+                  IF v_pos > 0 THEN
+                    -- v_l = одно слово слева от v_pos (с убранными 'join|from|select')
+                    -- v_r = одно слово справа от v_pos
+                    -- строка выборки слева/справа
+                    v_l = trim(substring(v_def from 1 for v_pos));
+                    v_r = trim(substring(v_def from v_pos));
+                    -- последнее/пеорвое слово
+                    v_l := split_part(v_l, ' ', 1 + length(trim(v_l)) - length(replace(trim(v_l), ' ', '')));
+                    v_r := split_part(v_r, ' ', 1);
+                    -- убрать join,from,select если они оказались слева
+                    v_l := case when v_l ~ 'join|from|select' then split_part(v_l, '.', 2) else v_l END;
+                    -- убрать символы ().
+                    v_l := trim(trim(v_l, '('), '.');
+                    v_r := trim(trim(v_r, ')'), '.');
+                    IF v_l = '' THEN
+                      v_src := v_r;
+                    ELSIF v_r = '' or (length(v_l) - length(replace(v_l, v_const_2, '')) = length(v_const_2) or 
+                      (v_r = v_tbl and v_l ~ '^pg_*')) THEN
+                      v_src := v_l;
+                    ELSIF v_r <>  v_tbl or substring(v_def from v_pos for 1) = '.' THEN 
+                      v_src := v_l || '.' || v_r;
+                    END IF;
+                    -- v_src не содержит точку, значит нет схемы. получить схема.таблица из pg_view_comments_get_tbl
+                    IF length(v_src) - length(replace(v_src, v_const_2, '')) <> length(v_const_2) THEN
+                      v_src := ws.pg_view_comments_get_tbl(v_src);
+                    END IF;
+                  END IF;
+                  IF length(v_src) - length(replace(v_src, v_const_2, '')) = length(v_const_2) THEN
+                    v_res_6 := 
+                      (SELECT col_description
+                      ((SELECT (v_src)::regclass::oid)::int,
+                      (SELECT attnum FROM pg_attribute WHERE attrelid = (v_src)::regclass AND attname = v_col)));
+                    v_res_3 := v_src;
+                    v_res_4 := v_col;
+                    v_res_5 := case when v_res_6 is not null THEN 1 ELSE 2 END;
+                  END IF;
+                END;
+                IF v_res_5 is null then
+                  v_res_5 := 4;
+                  v_res_6 := 'Ошибка определения комментария для: ' || v_code[v_i];
+                END IF;
+              END IF;
+              IF coalesce(v_ret_5[v_i],0) <> 1 THEN
+                v_ret_1[v_i] := v_res_1;
+                v_ret_2[v_i] := v_res_2;
+                v_ret_3[v_i] := v_res_3;
+                v_ret_4[v_i] := v_res_4;
+                v_ret_5[v_i] := v_res_5;
+                v_ret_6[v_i] := v_res_6;
+              END IF;
+            END;
+          END LOOP;
+        END;
+      END LOOP;
+      FOR v_i in array_lower(v_ret_1,1)..array_upper(v_ret_1,1) loop
+      r_ := ROW(
+        coalesce(v_ret_1[v_i], ''),
+        coalesce(v_ret_2[v_i], ''),
+        coalesce(v_ret_3[v_i], ''),
+        coalesce(v_ret_4[v_i], ''),
+        coalesce(v_ret_5[v_i], 0),
+        coalesce(v_ret_6[v_i], ''));
+      RETURN NEXT r_;
     END LOOP;
-    
   END;
-$_$;  
- 
+$_$;
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_c(
   a_type ws.t_pg_object    -- тип объекта (из перечисления ws.t_pg_object)
@@ -412,6 +402,7 @@ $_$
     ELSE
       v_code := a_code;
     END IF;
+/*
     IF a_type = 'v' THEN
       FOR r_view in select * from ws.pg_view_comments(v_code) LOOP
         IF r_view.status_id = 1 THEN
@@ -419,7 +410,7 @@ $_$
         END IF;
       END LOOP;
     END IF;
-   
+*/
     v_name := CASE
       WHEN a_type = 'h' THEN 'SCHEMA'
       WHEN a_type = 'r' THEN 'TABLE'
