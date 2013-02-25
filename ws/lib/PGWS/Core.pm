@@ -90,7 +90,7 @@ sub init {
   foreach my $p (keys %$plugins) {
     my $plugin = $plugins->{$p};
     $self->{'_plugins'}{$p} = PGWS::DBConfig::_plugin_load($plugin, PROP_PREFIX.'.'.$p);
-    $meta->debug('Loaded plugin % from lib %s', $p, $plugin->{'lib'});
+    $meta->debug('Loaded plugin %s from lib %s', $p, $plugin->{'lib'});
   }
 
   my $def = $self->_call_cached($dbc->config('be.def_method'), $meta, [$dbc->config('be.def_method.code')]);
@@ -536,7 +536,7 @@ sub _validate_field {
   my ($self, $meta, $method, $arg_def, $errors, $value, $code, $anno, $facets) = @_;
 
   my $is_top = $code?0:1;
-  my $is_base = ($arg_def->{'parent_id'} == $arg_def->{'id'});
+  my $is_base = ($arg_def->{'parent_code'} == $arg_def->{'code'});
 
   $code ||= $arg_def->{'code'};
   $anno ||= $arg_def->{'anno'};
@@ -569,7 +569,7 @@ sub _validate_field {
     }
   } elsif (!$is_top) {
     # сохранить ограничения
-    my $f = $self->_call_meta($self->def_dt_facet, $meta, $arg_def->{'id'});
+    my $f = $self->_call_meta($self->def_dt_facet, $meta, $arg_def->{'code'});
     unshift (@$facets, @$f) if (scalar(@$f)); # чем выше уровень, тем раньше будет проверка
   }
 
@@ -583,7 +583,7 @@ sub _validate_field {
       $val = $value;
     }
     my $ret = [];
-    my $adef = $self->_call_meta($self->def_dt, $meta, $arg_def->{'parent_id'});
+    my $adef = $self->_call_meta($self->def_dt, $meta, $arg_def->{'parent_code'});
 
     foreach my $v (@$val) {
       my $x = $self->_validate_field($meta, $method, $adef->[0], $errors, $v, $code, $anno, $facets);
@@ -632,8 +632,8 @@ sub _validate_field {
       }
     }
   } else {
-    # провести валидацию по $arg_def->{'parent_id'}
-    my $adef = $self->_call_meta($self->def_dt, $meta, $arg_def->{'parent_id'});
+    # провести валидацию по $arg_def->{'parent_code'}
+    my $adef = $self->_call_meta($self->def_dt, $meta, $arg_def->{'parent_code'});
     return $self->_validate_field($meta, $method, $adef->[0], $errors, $value, $code, $anno, $facets);
   }
   return $value;
@@ -646,8 +646,8 @@ sub _validate {
   $meta->stage_in('validate');
   my (@errors, @args, %args);
   $mtd_def = $self->_explain_def($mtd_def, $meta);
-  if ($mtd_def->{'arg_dt_id'}) {
-    my $arg_def = $self->_call_meta($self->def_dt_part, $meta, $mtd_def->{'arg_dt_id'}, 0);
+  if ($mtd_def->{'arg_dt_code'}) {
+    my $arg_def = $self->_call_meta($self->def_dt_part, $meta, $mtd_def->{'arg_dt_code'}, 0);
     foreach my $a (@$arg_def) {
       my $value = $self->_validate_field($meta, $mtd_def->{'code'}, $a, \@errors, $params->{$a->{'code'}});
       push @args, $value;

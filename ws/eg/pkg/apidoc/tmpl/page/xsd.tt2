@@ -26,13 +26,13 @@ FOR d IN data;
   tableform_row(name = l('Описание'), value = d.anno);
   IF d.is_list; cname = l('Массив'); ELSIF d.is_complex; cname = l('Структура'); ELSE; cname = l('Скаляр'); END;
   tableform_row(name = l('Конструктор'), value = cname);
-  tableform_row(name = l('Тип'), value = (d.id == d.parent_id ? l('Базовый') : l('Производный')));
-  IF d.id != d.parent_id;
-    IF d.parent_id;
-      tableform_row(name = l('Предок'), value = dts.${d.parent_id}.code, href = '#' _ dts.${d.parent_id}.code, anno = (d.is_list ? '[]' : '') );
+  tableform_row(name = l('Тип'), value = (d.code == d.parent_code ? l('Базовый') : l('Производный')));
+  IF d.code != d.parent_code;
+    IF d.parent_code;
+      tableform_row(name = l('Предок'), value = dts.${d.parent_code}.code, href = '#' _ dts.${d.parent_code}.code, anno = (d.is_list ? '[]' : '') );
     END;
-    IF d.base_id;
-      tableform_row(name = l('Базовый тип'), value = dts.${d.base_id}.code, href = '#' _ dts.${d.base_id}.code );
+    IF d.base_code;
+      tableform_row(name = l('Базовый тип'), value = dts.${d.base_code}.code, href = '#' _ dts.${d.base_code}.code );
     END;
   END;
   IF d.def_val;
@@ -44,9 +44,9 @@ FOR d IN data;
   tableform_row(name = l('SQL'), value = (d.is_sql ? l('Да'):l('Нет')));
   IF d.is_complex
     %]<tr><th valign="top">[% l('Поля') %]: </th><td><table>[%
-    parts = api('ws.dt_part', 'id' => d.id);
+    parts = api('ws.dt_part', 'dt_code' => d.code);
     FOR p IN parts;
-      %]<tr><th>[% p.code %]</th><td><a href='#[% dts.${p.parent_id}.code %]'>[% dts.${p.parent_id}.code %]</a>[%
+      %]<tr><th>[% p.code %]</th><td><a href='#[% dts.${p.parent_code}.code %]'>[% dts.${p.parent_code}.code %]</a>[%
       IF p.is_list; '[]';  END;
       IF ! p.allow_null && !p.def_val.defined;
         ', ' _ l('обязателен');
@@ -58,7 +58,7 @@ FOR d IN data;
     END;
     %]</table></td></tr>[%
   ELSE;
-    facet = api('ws.dt_facet', 'id' => d.id);
+    facet = api('ws.dt_facet', 'code' => d.code);
     IF facet.size;
       %]<tr><th valign="top">[% l('Ограничения') %]: </th><td><table>[%
       FOR f IN facet;

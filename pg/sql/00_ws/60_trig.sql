@@ -24,24 +24,24 @@
 CREATE OR REPLACE FUNCTION dt_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
-    v_id ws.d_id32;
+    v_code ws.d_code;
   BEGIN
 
-    IF NEW.id = NEW.parent_id AND (NEW.is_complex OR NEW.is_list) THEN
+    IF NEW.code = NEW.parent_code AND (NEW.is_complex OR NEW.is_list) THEN
       -- базовый тип - только скаляр
-      RAISE EXCEPTION 'Unsupported value set: % % % %', NEW.id, NEW.parent_id, NEW.is_complex, NEW.is_list;
+      RAISE EXCEPTION 'Unsupported value set: % % % %', NEW.code, NEW.parent_code, NEW.is_complex, NEW.is_list;
     END IF;
 
-    IF NEW.parent_id IS NOT NULL THEN
-      -- определить base_id если задан parent_id
-      IF NEW.id = NEW.parent_id THEN
-        NEW.base_id := NEW.id;
+    IF NEW.parent_code IS NOT NULL THEN
+      -- определить base_id если задан parent_code
+      IF NEW.code = NEW.parent_code THEN
+        NEW.base_code := NEW.code;
       ELSE
-        v_id := ws.dt_parent_base_id(NEW.parent_id);
-        IF v_id IS NULL THEN
-          RAISE EXCEPTION 'Incorrect parent_id: %', NEW.parent_id;
+        v_code := ws.dt_parent_base_code(NEW.parent_code);
+        IF v_code IS NULL THEN
+          RAISE EXCEPTION 'Incorrect parent_code: %', NEW.parent_code;
         END IF;
-        NEW.base_id := v_id;
+        NEW.base_code := v_code;
       END IF;
     END IF;
 
@@ -57,17 +57,17 @@ $_$;
 CREATE OR REPLACE FUNCTION dt_part_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
-    v_id ws.d_id32;
+    v_code ws.d_code;
   BEGIN
       -- проверить что в описании parent типа стоит is_complex
 
-    IF NEW.parent_id IS NOT NULL THEN
-      -- определить base_id если задан parent_id
-      v_id := ws.dt_part_parent_base_id(NEW.parent_id);
-      IF v_id IS NULL THEN
-        RAISE EXCEPTION 'Incorrect part parent_id: %', NEW.parent_id;
+    IF NEW.parent_code IS NOT NULL THEN
+      -- определить base_id если задан parent_code
+      v_code := ws.dt_part_parent_base_code(NEW.parent_code);
+      IF v_code IS NULL THEN
+        RAISE EXCEPTION 'Incorrect part parent_code: %', NEW.parent_code;
       END IF;
-      NEW.base_id := v_id;
+      NEW.base_code := v_code;
     END IF;
     -- NEW.anno := COALESCE(NEW.anno, NEW.code);
 
@@ -79,13 +79,13 @@ $_$;
 CREATE OR REPLACE FUNCTION dt_facet_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
-    v_id ws.d_id32;
+    v_code ws.d_code;
   BEGIN
-    v_id := ws.dt_parent_base_id(NEW.id);
-    IF v_id IS NULL THEN
-      RAISE EXCEPTION 'Incorrect dt id: %', NEW.id;
+    v_code := ws.dt_parent_base_code(NEW.code);
+    IF v_code IS NULL THEN
+      RAISE EXCEPTION 'Incorrect dt id: %', NEW.code;
     END IF;
-    NEW.base_id := v_id;
+    NEW.base_code := v_code;
     RETURN NEW;
   END;
 $_$;
@@ -111,11 +111,11 @@ $_$
   DECLARE
     r_proc ws.t_pg_proc_info;
     v_code text;
-    v_dt_id ws.d_id32;
+    v_dt_code ws.d_code;
   BEGIN
     IF NEW.code_real ~ ':' THEN
       NEW.is_sql := FALSE;
-      NEW.args := COALESCE(ws.dt_parts(NEW.arg_dt_id), '');
+      NEW.args := COALESCE(ws.dt_parts(NEW.arg_dt_code), '');
       -- TODO: check cache
       -- TODO: check plugin config
     ELSE
@@ -133,34 +133,34 @@ $_$
          -- в этом случае схемы в имени не будет
          v_code := r_proc.schema || '.'|| v_code;
       END IF;
-    */  v_dt_id := ws.dt_id(v_code);
-      IF v_dt_id IS NOT NULL THEN
-        NEW.rv_dt_id := v_dt_id;
+    */  
+      IF dt_code(v_code) IS NOT NULL THEN
+        NEW.rv_dt_code := dt_code(v_code);
       ELSE
         -- если это - таблицы, можем сделать авторегистрацию
         RAISE NOTICE 'Unknown rv_type: %', v_code;
-        NEW.rv_dt_id := ws.pg_register_class(r_proc.rt_oid);
+        NEW.rv_dt_code := ws.pg_register_class(r_proc.rt_oid);
       END IF;
 
-      IF NEW.arg_dt_id IS NULL THEN
-        v_dt_id := ws.dt_id(split_part(NEW.code_real, '.', 1) ||'.z_'|| split_part(NEW.code_real, '.', 2)); -- NEW.code_real);
-        IF v_dt_id IS NULL THEN
+      IF NEW.arg_dt_code IS NULL THEN
+        v_dt_code := ws.dt_code(split_part(NEW.code_real, '.', 1) ||'.z_'|| split_part(NEW.code_real, '.', 2)); -- NEW.code_real);
+        IF v_dt_code IS NULL THEN
           -- авторегистрация типа аргументов
-          v_dt_id := ws.pg_register_proarg(NEW.code_real);
+          v_dt_code := ws.pg_register_proarg(NEW.code_real);
         END IF;
-        NEW.arg_dt_id    := v_dt_id;
+        NEW.arg_dt_code    := v_dt_code;
       END IF;
 
       NEW.name := COALESCE(NEW.name, r_proc.anno);
-      NEW.args := COALESCE(ws.dt_parts(v_dt_id), '');
+      NEW.args := COALESCE(ws.dt_parts(v_dt_code), '');
       -- TODO: сравнить args с r_proc.args
     END IF;
 
-    IF NEW.arg_dt_id IS NOT NULL AND NOT COALESCE(ws.dt_is_complex(NEW.arg_dt_id), false) THEN
-        RAISE EXCEPTION 'Method arg type (%) must be complex', NEW.arg_dt_id;
+    IF NEW.arg_dt_code IS NOT NULL AND NOT COALESCE(ws.dt_is_complex(NEW.arg_dt_code), false) THEN
+        RAISE EXCEPTION 'Method arg type (%) must be complex', NEW.arg_dt_code;
     END IF;
 
-    RAISE NOTICE 'New method: %(%) -> %.', NEW.code_real, NEW.arg_dt_id, NEW.rv_dt_id;
+    RAISE NOTICE 'New method: %(%) -> %.', NEW.code_real, NEW.arg_dt_code, NEW.rv_dt_code;
     RETURN NEW;
   END;
 $_$;

@@ -47,8 +47,8 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, 
 , ('fe.file_attr',  2, 1, 1,  3, pg_cs('file_store'),   false,  'fe_only')
 ;
 
-INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, is_write, realm_code, name) VALUES
-  ('fe.file_get',             2, 1, 1, 2, 'store:get',     dt_id('z_store_get'), dt_id('d_id'), FALSE, 'fe_only', 'Получение данных из файлового хранилища')
-, ('fe.file_get64',           2, 1, 1, 2, 'store:get64',   dt_id('z_store_get'), dt_id('d_id'), FALSE, 'fe_only', 'Получение данных  из файлового хранилища и конвертация в base64')
-, ('fe.file_set',              2, 1, 1, 3, 'store:set',     dt_id('z_store_set'), dt_id('d_id'), TRUE, 'fe_only', 'Сохранение данных в файловом хранилище')
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, arg_dt_code, rv_dt_code, is_write, realm_code, name) VALUES
+  ('fe.file_get',             2, 1, 1, 2, 'store:get',     dt_code('z_store_get'), dt_code('d_id'), FALSE, 'fe_only', 'Получение данных из файлового хранилища')
+, ('fe.file_get64',           2, 1, 1, 2, 'store:get64',   dt_code('z_store_get'), dt_code('d_id'), FALSE, 'fe_only', 'Получение данных  из файлового хранилища и конвертация в base64')
+, ('fe.file_set',              2, 1, 1, 3, 'store:set',     dt_code('z_store_set'), dt_code('d_id'), TRUE, 'fe_only', 'Сохранение данных в файловом хранилище')
 ;

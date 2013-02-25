@@ -5,10 +5,10 @@
 
   tableform_row(name = l('Описание'), value = m.name);
   tableform_row(name = l('Сервис'), value = m.code_real _ '(' _  m.args _ ')');
-  IF m.arg_dt_id;
-    tableform_row(name = l('Тип аргументов'), value = dts.${m.arg_dt_id}.code, href = uri_mk(u_xsd.req, undef, dts.${m.arg_dt_id}.code));
+  IF m.arg_dt_code;
+    tableform_row(name = l('Тип аргументов'), value = dts.${m.arg_dt_code}.code, href = uri_mk(u_xsd.req, undef, dts.${m.arg_dt_code}.code));
   END;
-  tableform_row(name = l('Тип результата'), value = dts.${m.rv_dt_id}.code, href = uri_mk(u_xsd.req, undef, dts.${m.rv_dt_id}.code));
+  tableform_row(name = l('Тип результата'), value = dts.${m.rv_dt_code}.code, href = uri_mk(u_xsd.req, undef, dts.${m.rv_dt_code}.code));
   tableform_row(name = l('Класс'), value = classes.${m.class_id}.name, href = uri_mk(u_cla.req, undef, classes.${m.class_id}.code));
   tableform_row(name = l('Акция'), value = m.action_id _ '. ' _ ac.name, href = uri_mk(u_cla.req, undef, classes.${m.class_id}.code) _ '-action-' _ m.action_id);
   tableform_row(name = l('Формат результата'), value = m.rvf_id _ '. ' _ rvf.${m.rvf_id});

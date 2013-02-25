@@ -435,7 +435,7 @@ RAISE NOTICE 'COMMENT FOR % %: % (%)', v_name, v_code, a_text, a_anno;
     IF v_name IS NULL THEN
       -- a(rgument)
       UPDATE ws.dt_part SET anno = a_text
-        WHERE id = dt_id(split_part(v_code, '.', 1)||'.'||split_part(v_code, '.', 2))
+        WHERE dt_code = split_part(v_code, '.', 1)||'.'||split_part(v_code, '.', 2)
           AND code = split_part(v_code, '.', 3)
       ;
     ELSIF a_type = 'f' THEN

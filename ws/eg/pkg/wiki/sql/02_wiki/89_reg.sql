@@ -62,13 +62,13 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, r
   ('wiki.doc_file_add',     :DID, 3, 1, 3, true, ws.const_realm_upload())
 ;
 
-INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, name, args_exam) VALUES
-  ('doc.format', :DID, 1, 3, 2, 'wiki:format', dt_id('z_format'), dt_id('text'), 'Форматирование wiki в html','a_text="*Hello* _world_"')
+INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_code, rv_dt_code, name, args_exam) VALUES
+  ('doc.format', :DID, 1, 3, 2, 'wiki:format', dt_code('z_format'), dt_code('text'), 'Форматирование wiki в html','a_text="*Hello* _world_"')
 ;
 
-INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_id, rv_dt_id, is_write, name) VALUES
-  ('wiki.add',  :WID, 3, 3, 2, 'wiki:add',    dt_id('z_add'), dt_id('text'), true, 'Создание статьи wiki')
-, ('doc.save',  :DID, 3, 3, 2, 'wiki:save',   dt_id('z_save'), dt_id('text'), true, 'Сохранение статьи wiki')
+INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_code, rv_dt_code, is_write, name) VALUES
+  ('wiki.add',  :WID, 3, 3, 2, 'wiki:add',    dt_code('z_add'), dt_code('text'), true, 'Создание статьи wiki')
+, ('doc.save',  :DID, 3, 3, 2, 'wiki:save',   dt_code('z_save'), dt_code('text'), true, 'Сохранение статьи wiki')
 ;
 
 /* ------------------------------------------------------------------------- */

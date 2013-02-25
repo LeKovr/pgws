@@ -8,6 +8,7 @@
 
 %]
 <link href="/img/[% TMPL_LAYOUT %]/favicon.ico?19721023"     rel="shortcut icon" />
+
 [%
   FOREACH i IN meta.head;
     INCLUDE "block/$TMPL_LAYOUT/head/${i.key}.tt2";

@@ -52,7 +52,7 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.pg_register_proarg_old(a_code ws.d_code) RETURNS ws.d_id32 VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION ws.pg_register_proarg_old(a_code ws.d_code) RETURNS ws.d_code VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     v_names text[];
@@ -60,7 +60,7 @@ $_$
     v_i INTEGER;
     v_name TEXT;
     v_type TEXT;
-    v_id ws.d_id32;
+    v_code d_code;
   BEGIN
     SELECT INTO v_names, v_types, v_i
       p.proargnames, p.proargtypes, p.pronargs
@@ -79,9 +79,10 @@ $_$
       RAISE EXCEPTION 'No required arg names for %', a_code;
     END IF;
 
+    v_code := split_part(a_code, '.', 1) || '.z_' || split_part(a_code, '.', 2);
+
     INSERT INTO ws.dt (code, anno, is_complex)
-      VALUES (split_part(a_code, '.', 1) || '.z_' || split_part(a_code, '.', 2), 'Aргументы метода ' || a_code, true)
-      RETURNING id INTO v_id
+      VALUES (v_code, 'Aргументы метода ' || a_code, true)
     ;
 
     FOR v_i IN 0 .. pg_catalog.array_upper(v_types, 1) LOOP
@@ -92,11 +93,11 @@ $_$
       END IF;
       v_name := regexp_replace(v_names[v_i + 1], '^a_', '');
       RAISE NOTICE '   column % %', v_name, v_type;
-      INSERT INTO ws.dt_part (id, part_id, code, parent_id, anno, def_val, allow_null)
-        VALUES (v_id, v_i + 1, v_name, ws.dt_id(v_type), v_name, null, false)
+      INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null)
+        VALUES (v_code, v_i + 1, v_name, v_type, v_name, null, false)
       ;
     END LOOP;
-    RETURN v_id;
+    RETURN v_code;
   END;
 $_$;
 
@@ -106,11 +107,11 @@ $_$
   SELECT (regexp_matches($1, E'--\\s+' || $2 || E':\\s+(.*)$', 'gm'))[1];
 $_$;
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.pg_register_proarg(a_code ws.d_code) RETURNS ws.d_id32 VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION ws.pg_register_proarg(a_code ws.d_code) RETURNS ws.d_code VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     v_i INTEGER;
-    v_id ws.d_id32;
+    v_code d_code;
 
     v_args TEXT;
     v_src  TEXT;
@@ -136,9 +137,10 @@ $_$
     RAISE NOTICE 'New datatype: %', a_code;
     RAISE DEBUG 'args: %',v_args;
 
+    v_code := split_part(a_code, '.', 1) || '.z_' || split_part(a_code, '.', 2);
+
     INSERT INTO ws.dt (code, anno, is_complex)
-      VALUES (split_part(a_code, '.', 1) || '.z_' || split_part(a_code, '.', 2), 'Aргументы метода ' || a_code, true)
-      RETURNING id INTO v_id
+      VALUES (v_code, 'Aргументы метода ' || a_code, true)
     ;
 
     v_defs := regexp_split_to_array(v_args, E',\\s+');
@@ -172,24 +174,22 @@ $_$
       v_type := split_part(v_def, ' ', 3);
       v_arg_anno := COALESCE(ws.pg_proarg_arg_anno(v_src, split_part(v_def, ' ', 2)), '');
       RAISE NOTICE '   column name=%, type=%, def=%, null=%, anno=%', v_name, v_type, v_default, v_allow_null, v_arg_anno;
-      INSERT INTO ws.dt_part (id, part_id, code, parent_id, anno, def_val, allow_null)
-        VALUES (v_id, v_i, v_name, ws.dt_id(v_type), v_arg_anno, v_default, v_allow_null)
+      INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null)
+        VALUES (v_code, v_i, v_name, dt_code(v_type), v_arg_anno, v_default, v_allow_null)
       ;
     END LOOP;
-    RETURN v_id;
+    RETURN v_code;
   END;
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pg_register_class(a_oid oid) RETURNS ws.d_id32 VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pg_register_class(a_oid oid) RETURNS ws.d_code VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     r_pg_type pg_catalog.pg_type;
     v_code TEXT;
     v_type TEXT;
     rec RECORD;
-
-    v_id ws.d_id32;
   BEGIN
     SELECT INTO r_pg_type * FROM pg_catalog.pg_type WHERE oid = a_oid;
     v_code := ws.pg_type_name(a_oid);
@@ -201,8 +201,9 @@ $_$
 */
     RAISE NOTICE 'Registering datatype: % (%)', v_code, a_oid;
     INSERT INTO ws.dt (code, anno, is_complex)
-      VALUES (v_code, COALESCE(obj_description(r_pg_type.typrelid, 'pg_class'), obj_description(a_oid, 'pg_type'), v_code), true);
-    v_id := ws.dt_id(v_code);
+      VALUES (v_code, COALESCE(obj_description(r_pg_type.typrelid, 'pg_class'), obj_description(a_oid, 'pg_type'), v_code), true)
+    ;
+
     FOR rec IN
       SELECT a.attname
         , pg_catalog.format_type(a.atttypid, a.atttypmod)
@@ -229,12 +230,12 @@ $_$
         v_type := 'text'; -- TODO: allow length
       END IF;
       RAISE NOTICE '   column % %', rec.attname, v_type;
-      IF ws.dt_id(v_type) IS NULL THEN
+      IF ws.dt_code(v_type) IS NULL THEN
         RAISE EXCEPTION 'Unknown type (%)', v_type;
       END IF;
       BEGIN
-        INSERT INTO ws.dt_part (id, part_id, code, parent_id, anno, def_val, allow_null)
-          VALUES (v_id, rec.attnum, rec.attname, ws.dt_id(v_type), COALESCE(rec.anno, rec.attname), rec.def_val, NOT rec.attnotnull)
+        INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null)
+          VALUES (v_code, rec.attnum, rec.attname, ws.dt_code(v_type), COALESCE(rec.anno, rec.attname), rec.def_val, NOT rec.attnotnull)
         ;
         EXCEPTION
           WHEN CHECK_VIOLATION THEN
@@ -242,7 +243,7 @@ $_$
           ;
       END;
     END LOOP;
-    RETURN v_id;
+    RETURN v_code;
   END;
 $_$;
 

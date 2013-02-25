@@ -21,32 +21,32 @@
 */
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO dt (code, parent_id, anno, is_list) VALUES (pg_cs('d_links'), dt_id('d_path'), 'Массив ссылок wiki', true);
+INSERT INTO dt (code, parent_code, anno, is_list) VALUES (pg_cs('d_links'), dt_code('d_path'), 'Массив ссылок wiki', true);
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_format'), 'Аргументы метода format', true);
-INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES
-  (dt_id('z_format'), 1, '_sid',      dt_id('text'), 'ID сессии')
-, (dt_id('z_format'), 2, 'uri',       dt_id('text'), 'Префикс адреса')
-, (dt_id('z_format'), 3, 'src',       dt_id('text'), 'Текст в разметке wiki')
-, (dt_id('z_format'), 4, 'extended',  dt_id('boolean'), 'Расширенный формат')
-, (dt_id('z_format'), 5, 'id',        dt_id('d_id'), 'ID оригинала для diff')
+INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES
+  (dt_code('z_format'), 1, '_sid',      dt_code('text'), 'ID сессии')
+, (dt_code('z_format'), 2, 'uri',       dt_code('text'), 'Префикс адреса')
+, (dt_code('z_format'), 3, 'src',       dt_code('text'), 'Текст в разметке wiki')
+, (dt_code('z_format'), 4, 'extended',  dt_code('boolean'), 'Расширенный формат')
+, (dt_code('z_format'), 5, 'id',        dt_code('d_id'), 'ID оригинала для diff')
 ;
 
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_add'), 'Аргументы метода add', true);
-INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES
-  (dt_id('z_add'), 1, '_sid',      dt_id('text'), 'ID сессии')
-, (dt_id('z_add'), 2, 'uri',       dt_id('text'), 'Префикс адреса')
-, (dt_id('z_add'), 3, 'id',        dt_id('d_id'), 'ID wiki')
-, (dt_id('z_add'), 4, 'code',      dt_id('text'), 'Адрес страницы')
-, (dt_id('z_add'), 5, 'src',       dt_id('text'), 'Текст в разметке wiki')
+INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES
+  (dt_code('z_add'), 1, '_sid',      dt_code('text'), 'ID сессии')
+, (dt_code('z_add'), 2, 'uri',       dt_code('text'), 'Префикс адреса')
+, (dt_code('z_add'), 3, 'id',        dt_code('d_id'), 'ID wiki')
+, (dt_code('z_add'), 4, 'code',      dt_code('text'), 'Адрес страницы')
+, (dt_code('z_add'), 5, 'src',       dt_code('text'), 'Текст в разметке wiki')
 ;
 
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_save'), 'Аргументы метода save', true);
-INSERT INTO dt_part (id, part_id, code, parent_id, anno) VALUES
-  (dt_id('z_save'), 1, '_sid',      dt_id('text'), 'ID сессии')
-, (dt_id('z_save'), 2, 'uri',       dt_id('text'), 'Префикс адреса')
-, (dt_id('z_save'), 3, 'id',        dt_id('d_id'), 'ID статьи')
-, (dt_id('z_save'), 4, 'revision',  dt_id('d_id'), 'Номер ревизии')
-, (dt_id('z_save'), 5, 'src',       dt_id('text'), 'Текст в разметке wiki')
+INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES
+  (dt_code('z_save'), 1, '_sid',      dt_code('text'), 'ID сессии')
+, (dt_code('z_save'), 2, 'uri',       dt_code('text'), 'Префикс адреса')
+, (dt_code('z_save'), 3, 'id',        dt_code('d_id'), 'ID статьи')
+, (dt_code('z_save'), 4, 'revision',  dt_code('d_id'), 'Номер ревизии')
+, (dt_code('z_save'), 5, 'src',       dt_code('text'), 'Текст в разметке wiki')
 ;
