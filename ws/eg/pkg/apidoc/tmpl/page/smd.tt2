@@ -8,7 +8,7 @@
   classes = api('ws.class');
   caches = api('ws.cache');
   rvf = api('ws.method_rvf');
-  dts = api('ws.dt_by_code:5', 'code' => '%');
+  dts = api('ws.dt:5');
   u_xsd = uri(code => 'api.xsd');
   u_cla = uri(code => 'api.class');
   cli = 0;

@@ -51,7 +51,7 @@ $_$;
 SELECT pg_c('f', 'dt_by_code', 'Атрибуты типа по маске кода');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt(a_code d_code) RETURNS SETOF dt STABLE STRICT LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION dt(a_code d_code DEFAULT NULL) RETURNS SETOF dt STABLE LANGUAGE 'sql' AS
 $_$
   SELECT * FROM ws.dt WHERE code LIKE COALESCE($1, '%') ORDER BY 1;
 $_$;

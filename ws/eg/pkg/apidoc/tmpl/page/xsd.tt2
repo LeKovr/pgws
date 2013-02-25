@@ -4,8 +4,8 @@
   description = 'Описание типов';
 
   PROCESS 'macro/tableform.tt2';
-  data = api('ws.dt_by_code');
-  dts = api('ws.dt_by_code:5');
+  data = api('ws.dt');
+  dts = api('ws.dt:5');
   facets = api('ws.facet', 'id' => 0);
 %]
 
@@ -44,7 +44,7 @@ FOR d IN data;
   tableform_row(name = l('SQL'), value = (d.is_sql ? l('Да'):l('Нет')));
   IF d.is_complex
     %]<tr><th valign="top">[% l('Поля') %]: </th><td><table>[%
-    parts = api('ws.dt_part', 'dt_code' => d.code);
+    parts = api('ws.dt_part', 'code' => d.code);
     FOR p IN parts;
       %]<tr><th>[% p.code %]</th><td><a href='#[% dts.${p.parent_code}.code %]'>[% dts.${p.parent_code}.code %]</a>[%
       IF p.is_list; '[]';  END;
