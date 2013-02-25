@@ -60,7 +60,7 @@ SELECT pg_c('f', 'dt', 'Атрибуты типа по маске кода');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_part(a_code d_code, a_part_id d_id32 DEFAULT 0) RETURNS SETOF dt_part STABLE LANGUAGE 'sql' AS
 $_$
-  SELECT * FROM ws.dt_part WHERE code = $1 AND $2 IN (part_id, 0) ORDER BY 2;
+  SELECT * FROM ws.dt_part WHERE dt_code = $1 AND $2 IN (part_id, 0) ORDER BY 2;
 $_$;
 SELECT pg_c('f', 'dt_part', 'Атрибуты полей комплексного типа');
 
