@@ -4,11 +4,11 @@
     "/js/external/ui/jquery.ui.widget.js"
     "/js/external/ui/jquery.ui.position.js"
     "/js/external/ui/jquery.ui.autocomplete.js"
-    "/js/$TMPL_LAYOUT/jquery-ui.autocomplete.pgws.js"
+    "/js/$BASE_LAYOUT/jquery-ui.autocomplete.pgws.js"
     "/css/$TMPL_UI_THEME/jquery.ui.core.css"
     "/css/$TMPL_UI_THEME/jquery.ui.theme.css"
     "/css/$TMPL_UI_THEME/jquery.ui.autocomplete.css"
-    "/css/$TMPL_LAYOUT/jquery-ui.theme.pgws.css"
-    "/css/$TMPL_LAYOUT/jquery-ui.autocomplete.pgws.css"
+    "/css/$BASE_LAYOUT/jquery-ui.theme.pgws.css"
+    "/css/$BASE_LAYOUT/jquery-ui.autocomplete.pgws.css"
   );
 %]

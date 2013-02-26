@@ -1,8 +1,7 @@
 [% META
   description = 'Просмотр статей wiki';
   meta.html_headers.push(
-    '/css/wiki/common.css'
-    '/css/wiki/edit.css'
+     '/css/wiki/edit.css'
   );
   meta.head.timepicker = 1;
   meta.head.autocomplete = 1;
@@ -93,11 +92,11 @@
           <font style="float:left;"><label>[% l("Ключевые слова") %]:</label></font>
           <div id="keyword" style="float:left;">
             [%  FOREACH this = wiki_word_str; %]
-              <div style='float:left;margin-left:5px;margin-right:5px;'>[% this %]<input type='hidden' name='keywords' value='[% this %]'/><a href='#' onClick='delThis(this)' class="edit hide">[x]</a></div>
+              <div style='float:left;margin-left:5px;margin-right:5px;'>[% this %]<input type='hidden' name='keywords' value='[% this %]'/>&nbsp;<a href='#' onClick='delThis(this)' class="edit hide close" title="Удалить">&times;</a></div>
             [%  END; %]
           </div>
           <div class="div_button">
-            <input type="text" id="inputnewkey" style="float:left;" autocomplete="off" class="edit hide"/>
+            <span class="editable"><input type="text" id="inputnewkey" style="float:left;" autocomplete="off" class="edit hide"/></span>
             <button onclick="addWord()" class="edit hide">[% l("Добавить новое ключевое слово") %]</button>
           </div>
         </div>
@@ -139,10 +138,10 @@
 [% END %]
         <button id="btnFormat1" onClick="return formSend('main', 'doc.format')">[% l("Предварительный просмотр") %]</button>
         <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view1" checked onClick="return toggleChk(this,0)"></label>
-        <div id="errors" class="error"></div>
+        <div id="errors" class="error alert alert-error"></div>
         <div id="main-form__err" class="error"></div>
         <div id="main-form_src_err" class="error"></div>
-        <div id="status"></div>
+        <div id="status" class='alert alert-info'></div>
       </form>
     </div>
   </div>
@@ -196,7 +195,7 @@ function addWord(){       //добавляем новое слово в ключ
 };
 
 function constructorDivKeyWord(param){
-  return "<div style='float:left;margin-left:5px;margin-right:5px;'>"+param+"<input type=\"hidden\" name=\"keywords\" value=\""+param+"\"/><a href='#' onClick='delThis(this)'>[x]</a></div>";
+  return "<div style='float:left;margin-left:5px;margin-right:5px;'>"+param+"<input type=\"hidden\" name=\"keywords\" value=\""+param+"\"/>&nbsp;<a href='#' onClick='delThis(this)' class='edit hide close' title='Удалить' style='display:inline;'>&times;</a></div>";
 };
 var formOK = function(formid, res) {
   if (typeof res == 'number') {

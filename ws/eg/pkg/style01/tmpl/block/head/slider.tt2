@@ -7,6 +7,6 @@
     "/css/$TMPL_UI_THEME/jquery.ui.core.css"
     "/css/$TMPL_UI_THEME/jquery.ui.theme.css"
     "/css/$TMPL_UI_THEME/jquery.ui.slider.css"
-    "/css/$TMPL_LAYOUT/jquery-ui.theme.pgws.css"
+    "/css/$BASE_LAYOUT/jquery-ui.theme.pgws.css"
   );
 %]

@@ -2,7 +2,7 @@
   description = 'Глобальные настройки'
 %][%
   our_title         = l("PGWS");
-  TMPL_LAYOUT       = 'style01';
+  TMPL_LAYOUT       = 'style02';
   TMPL_UI_THEME     = 'external/ui/smoothness';
   BASE_LAYOUT       = 'style01';
   # IF session.sid

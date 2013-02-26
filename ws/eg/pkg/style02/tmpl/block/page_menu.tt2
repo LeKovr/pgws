@@ -1,0 +1,55 @@
+[%
+  IF meta.nosiblings;
+    target = page;
+  ELSIF page.up_code;
+    target = api('ws.page_by_code', code => page.up_code, id => page.args.0, id1 => page.args.1, id2 => page.args.2);
+    IF target.id_fixed;
+      target.args.unshift(target.id_fixed);
+    ELSIF target.id_session;
+      target.args.unshift(session.${target.id_session});
+    END;
+  END;
+  uris = api('ws.page_childs', code => target.code, id => target.args.0, id1 => target.args.1, id2 => target.args.2);
+  FOR u IN uris;
+    NEXT IF !uri_allowed(u);
+    IF !meta.page_menu_used AND (u.code != page.code OR !meta.nochilds);
+      meta.page_menu_used = 1;
+      gid = 0;
+      %]<ul id="page-menu" class="nav">[%
+    END;
+
+    IF u.group_id != gid;
+      IF gid;
+        %]</ul>[%
+      END;
+      gid = u.group_id;
+      IF gid;
+        %]<li class="list"><a href="#">[% u.group_name %]</a><ul class="child">[%
+      END;
+    END;
+
+    IF u.code != page.code;
+      %]<li class="list">[%
+    ELSE;
+      %]<li class="list active">[%
+    END;
+    %]
+    <a href="[% uri_mk(u.req) %]" class="link [% IF !target.code; %]dropdown-toggle" data-toggle="dropdown[% END; %]">[% u.name %]
+    [% IF !target.code; %]<b class="caret"></b>[% END; %]
+    </a>[%
+    IF u.code == page.code AND !meta.nochilds AND !meta.nosiblings; INCLUDE "block/$BASE_LAYOUT/page_childs.tt2" target = u; END;
+    %]</li>
+    [%
+  END;
+  IF meta.page_menu_used;
+    IF gid;
+      %]</ul></li>
+      [%
+    END;
+    %]
+      </ul>
+[% END
+%]
+
+
+

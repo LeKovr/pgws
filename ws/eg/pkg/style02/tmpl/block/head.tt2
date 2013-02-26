@@ -1,0 +1,28 @@
+[%
+  meta.top_headers = [];
+  meta.top_headers.push(
+    "/css/$TMPL_LAYOUT/bootstrap.pgws.css"
+    "/js/external/core/jquery-1.7.2.js"
+    "/js/external/core/bootstrap.js"
+   );
+
+  INCLUDE "block/$BASE_LAYOUT/head_deps.tt2";
+
+%]
+<link href="/img/[% BASE_LAYOUT %]/favicon.ico?19721023"     rel="shortcut icon" />
+[%
+  FOREACH i IN meta.head;
+    INCLUDE "block/$BASE_LAYOUT/head/${i.key}.tt2";
+  END;
+  x=meta.top_headers.import(meta.html_headers);
+  FOREACH h IN meta.top_headers;
+    v = h.split(' ');
+    href = v.0;
+    NEXT IF temp.exists(href);
+    temp.$href = 1;
+    lng = v.1 ? " charset=\"$v.1\"" : '';
+    f=(h.search('\.css') ? '<link  href=%-60s type="text/css" rel="stylesheet" />' : '<script src=%-60s type="text/javascript"'_ lng _'></script>') _ "\n";
+    FILTER format(f); '"' _ href _ '"'; END;
+  END;
+
+%]

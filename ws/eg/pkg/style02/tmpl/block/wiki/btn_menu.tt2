@@ -1,0 +1,14 @@
+<div class="navbar">
+  <div class="navbar-inner">
+    <ui class="nav pull-right">
+      <a href="#" class="brand">
+	  [% l('Версия документа: [_1] от [_2]', info.revision, info.updated_at) %]
+	</a>
+	<li class="divider-vertical"></li>
+	<a href="#" class="brand">
+	  [% l('Автор') _ ': ' _ info.updated_by_name %]
+	 </a>
+	  [%  IF session.sid; '<li class="divider-vertical"></li><li><a href="' _ uri_mk(edit_uri.req) _ '">' _ l('Редактировать') _ '</a></li>'; END %]
+    </ui>
+  </div>
+</div>

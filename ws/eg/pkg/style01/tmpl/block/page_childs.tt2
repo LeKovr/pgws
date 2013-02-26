@@ -4,7 +4,7 @@
   FOR u IN uris;
     NEXT IF !uri_allowed(u);
     IF !list;
-      %]<ul class="child">[%
+      %]<ul class="child dropdown-menu">[%
       list = 1;
     END;
     %]<li><a href="[% uri_mk(u.req) %]"[% IF u.target %] target="[% u.target %]"[% END %]>[% u.name %]</a></li>[%

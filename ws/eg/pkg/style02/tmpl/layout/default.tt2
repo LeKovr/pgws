@@ -1,0 +1,61 @@
+[% META
+  description = 'Стандартный шаблон страницы';
+  IF layout_head;
+    # заголовок страницы -------------------------------------------------------------------
+    IF !resp.title; resp.title = page.name; END;
+
+%]<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="[% session.lang %]" xmlns="http://www.w3.org/1999/xhtml" lang="[% session.lang %]">
+<head>
+<title>[% resp.prefix; IF resp.prefix; ' - '; END; resp.title _ ' - ' _ our_title %]</title>
+<meta http-equiv="Content-Type" content="[% resp.ctype %]; [% resp.enc %]" />
+[%
+  INCLUDE "block/$TMPL_LAYOUT/head.tt2";
+%]
+</head>
+<body>
+[% IF page.code != 'main'; root_page = uri(code => 'main'); root_href = uri_mk(root_page.req); END; %]
+<div class="page-header">
+  <h1 class="title"><a name="top"[% IF root_href; ' href="' _ root_href _ '"'; END; %]><img src="/img/[% BASE_LAYOUT %]/pgws-logo.png" alt="PGWS. Postgresql WebServices" /></a>[% resp.title %]</h1>
+</div>
+<div id="top" class="navbar">
+  <div class="navbar-inner">
+[% SET meta.page_menu_used = 0; INCLUDE "block/$TMPL_LAYOUT/page_menu.tt2" %]
+      <ui class="nav pull-right">
+[%
+  # <!-- menu point -->
+  IF session.sid;
+   %] <a href="#" class="brand"> [% l('Пользователь авторизован') _ ': ' _ session.created_at;
+    u = uri(code => 'logout');
+    %]</a>
+    <li class="divider-vertical"></li>
+    <li><a href="[% uri_mk(u.req) %]">[% u.name %]</a></li>[%
+  ELSE;
+    u = uri(code => 'login');
+    IF u;
+      %]
+      <li class="divider-vertical"></li>
+      <li><a href="[% uri_mk(u.req) %]">[% u.name %]</a></li>[%
+    END;
+  END;
+  IF root_href;
+    %]<li class="divider-vertical"></li>
+    <li><a href="[% root_href %]">[% root_page.name %]</a></li>[%
+  END; %]
+  <li class="divider-vertical"></li>
+  <li><a href="/">[% l('Главная') %]</a></li>
+    </ui>
+  </div>
+</div>
+[%
+  INCLUDE "block/$TMPL_LAYOUT/page_path.tt2";
+%]
+
+<div id="content">
+[% ELSE %][%
+  # подвал страницы -------------------------------------------------------------------
+%]
+</div>
+[% IF debug; INCLUDE "block/$BASE_LAYOUT/debug.tt2"; END %]
+</body></html>
+[% END %]

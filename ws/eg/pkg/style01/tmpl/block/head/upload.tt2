@@ -6,10 +6,10 @@
 
     "/css/$TMPL_UI_THEME/jquery.ui.core.css"
     "/css/$TMPL_UI_THEME/jquery.ui.theme.css"
-    "/css/$TMPL_LAYOUT/jquery-ui.theme.pgws.css"
+    "/css/$BASE_LAYOUT/jquery-ui.theme.pgws.css"
     "/js/external/addon/jquery.form.js"
-    "/css/$TMPL_LAYOUT/jquery-ui.upload.pgws.css"
-    "/js/$TMPL_LAYOUT/pgws-upload.jquery.js"
+    "/css/$BASE_LAYOUT/jquery-ui.upload.pgws.css"
+    "/js/$BASE_LAYOUT/pgws-upload.jquery.js"
 
   );
 

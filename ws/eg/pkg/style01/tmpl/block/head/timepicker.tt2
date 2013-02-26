@@ -3,6 +3,6 @@
     "/js/external/addon/jquery-ui-timepicker-addon.js"
     "/js/external/addon/i18n/jquery-ui-timepicker-ru.js"
     "/css/external/jquery-ui-timepicker-addon.css"
-    "/css/$TMPL_LAYOUT/jquery-ui.datepicker.pgws.css"
+    "/css/$BASE_LAYOUT/jquery-ui.datepicker.pgws.css"
   );
 %]

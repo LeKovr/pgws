@@ -1,7 +1,7 @@
 [% META
   description = 'Таблица имя-значение';
 
-mc = 'layout/' _ resp.layout _ '/widget';
+mc = 'layout/' _ BASE_LAYOUT _ '/widget';
 
 meta.head.tabs = 1;
 MACRO tabs_begin INCLUDE "$mc/tabs_begin.tt2";

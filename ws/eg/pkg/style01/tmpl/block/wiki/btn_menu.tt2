@@ -1,0 +1,5 @@
+<div class="bar">
+[% l('Версия документа: [_1] от [_2]', info.revision, info.updated_at) %]
+&nbsp;|&nbsp;[% l('Автор') _ ': ' _ info.updated_by_name %]
+[%  IF session.sid; '&nbsp;|&nbsp;<a href="' _ uri_mk(edit_uri.req) _ '">' _ l('Редактировать') _ '</a>'; END %]
+</div>

@@ -10,6 +10,7 @@ jquery-1.7.2.min.js http://code.jquery.com/jquery-1.7.2.min.js
 jquery-1.7.2.js http://code.jquery.com/jquery-1.7.2.js 
 jquery.json-2.3.min.js http://jquery-json.googlecode.com/files/jquery.json-2.3.min.js
 jquery.json-2.3.js http://jquery-json.googlecode.com/files/jquery.json-2.3.js
+bootstrap-2.3.0.zip https://github.com/twitter/bootstrap/archive/v2.3.0.zip
 EOF
 }
 
@@ -36,6 +37,9 @@ mk_lnd() {
   [[ "$name" ]] || name=$src
   local up="../.."
   [[ "$dest" == "${dest/\/}" ]] || up="../../.."
+  # js/core/minified
+  [[ "$dest" != "${dest/\/*\/}" ]] && up="../../../.."
+
   [ -d ../www/$dest ] || mkdir -p ../www/$dest
   [ -e ../www/$dest/$name ] || ln -s $up/src/$dir$src ../www/$dest/$name
 }
@@ -48,7 +52,7 @@ pushd $DIR > /dev/null
 
 echo "Fetch..."
 fetch | while read dest src ; do
- [ -e $dest ] || curl -k -R -o $dest $src
+ [ -e $dest ] || curl -L -k -R -o $dest $src
 done
 
 echo "Make src..."
@@ -89,6 +93,12 @@ for s in * ; do
     formEV-*)
       echo "jquery.formEV setup"
       mk_lnd jquery.formev.js js/addon $s/
+      ;;
+    bootstrap-*)
+      echo "bootstrap setup"
+      mk_lnd bootstrap.js js/core $s/docs/assets/js/
+      mk_lnd bootstrap.min.js js/core/minified $s/docs/assets/js/
+      mk_lnd bootstrap.css css $s/docs/assets/css/
       ;;
     *)
       echo "js setup ($s)"

@@ -1,0 +1,45 @@
+@import "/css/external/bootstrap.css";
+
+html, body, input, select {
+  font-size: 0.9em;
+  font-family: Tahoma, Helvetica;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: Georgia, "Bitstream Vera Serif", "New York", Palatino, serif;
+}
+
+h1 {
+  font-size: 120%;
+  border-bottom: 1px solid grey;
+}
+
+h1.title {
+  color: #234764;
+  text-decoration: none;
+  margin:3px;
+  border-bottom: none;
+}
+
+h1 img {
+  vertical-align: middle;/*was -8px;*/
+  margin-right: 5px;
+}
+
+h1 a {
+  margin-right: 100px;
+}
+
+h2 {
+  font-size: 110%;
+  margin-bottom:2px;
+  border-bottom: 1px solid grey;
+}
+
+h3 {
+  font-size: 100%;
+  margin-bottom:2px;
+}
+.navbar .brand {
+  font-size: 0.9em;
+}

@@ -1,7 +1,7 @@
 [%
 meta.top_headers.push(
   "/js/external/core/jquery.json-2.3.js"
-  "/js/$TMPL_LAYOUT/pgws-api.jquery.js"
+  "/js/$BASE_LAYOUT/pgws-api.jquery.js"
 );
 %]<script type="text/javascript">
   //<![CDATA[

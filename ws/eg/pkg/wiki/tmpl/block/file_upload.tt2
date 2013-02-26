@@ -7,7 +7,7 @@
 
 %]
 
-<div id='upload_form_template' class='hide'>
+<div id='upload_form_template' class='hide span12'>
   <div class='prepare'>
     <form method='POST'>
       <input type='hidden' name='id' value='[% doc_id; %]'>
@@ -15,26 +15,29 @@
       <input type='submit' class='hide' value='[% l('Отправить') %]'>
     </form>
   </div>
-  <span class='label'></span>
-  <div class='process hide'>
+  <span class='label span3'></span>
+  <div class='process hide span12'>
       <div class='progressbarDiv'>
-        <div class='ui-progressbar-label'><span class='pb-percent'></span>%. [% l('Осталось') %]: <span class='pb-sec'></span> [% l('сек')%]</div>
+        <div class='ui-progressbar-label'><span class='pb-percent offset1'></span><span>%. [% l('Осталось') %]: </span><span class='pb-sec'></span><span> [% l('сек')%]</span></div>
       </div>
       <input type='button' class='btnReset' value='[% l('Отменить') %]'>
   </div>
-  <span class='status'></span>
+  <span class='status alert alert-info span2 hide'>
+  </span>
 </div>
 
-<div class="uploaded">
+<div class="span12">
+  <div class="uploaded span4">
 [%
   files = api('wiki.doc_file', id => doc_id);
   FOREACH f IN files;
     file_uri = uri(code => page.up_code _ '.file', id => doc_path, id1 => f.id, id2 => f.name);
-    %]<div class='fileDiv'><a href="[% uri_mk(file_uri.req) %]">[% f.name %]</a> <a href='#' fileid='"[% f.id %]"' class='btnDelete'>[x]</a><div class='deleteStatusError'></div></div>[%
+    %]<div class='fileDiv  span3'><a href="[% uri_mk(file_uri.req) %]" >[% f.name %]</a> <a href='#' fileid='"[% f.id %]"' class='btnDelete close'>&times;</a><div class='deleteStatusError hide alert alert-error' ></div></div>[%
   END
 %]
+  </div>
 </div>
-<div class="upload">
+<div class="upload span12">
   <input type='button' class='add' value='[% l('Загрузить файл') %]'>
 </div>
 <script type="text/javascript">
@@ -48,6 +51,7 @@ var deleteFileOptions = {
     $(obj).addClass('hide');
   },
   onError:    function(self, obj, mess){
+    $(obj).find(self.options.classErrorMessage).show();
     $(obj).find(self.options.classErrorMessage).text(mess);
   }
 };
@@ -55,17 +59,20 @@ var deleteFileOptions = {
 var onSuccess = function(container, response){
   if (response.success === "true") {
     var file = response.result.data;
-    $('.uploaded').append('<div class=\'fileDiv\'><a href="[% view_pathname %]/file/' + file.id + '/' + file.name + '">' + file.name + '</a> <a href="#" fileid="' + file.id + '" class="btnDelete">[x]</a><div class="deleteStatusError"></div></div>')
+    $('.uploaded').append('<div class=\'fileDiv span3\'><a href="[% view_pathname %]/file/' + file.id + '/' + file.name + '">' + file.name + '</a> <a href="#" fileid="' + file.id + '" class="btnDelete close">&times;</a><div class="deleteStatusError alert alert-error hide" ></div></div>')
+    container.find('.status').show();
     container.find('.status').text("[% l('Файл загружен') %]");
     $('.btnDelete').deleteFile(deleteFileOptions);
   } else {
     var error = response.result.error[0].message;
+    container.find('.status').show();
     container.find('.status').text(error);
   }
 };
 
 var onError = function(container, jqXHR, textStatus, errorThrown){
   if (jqXHR.status === 413){
+    $(container).find('.status').show();
     $(container).find('.status').text("[% l('Размер файла больше допустимого') %]");
   }
 };

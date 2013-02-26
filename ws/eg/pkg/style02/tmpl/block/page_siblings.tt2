@@ -1,0 +1,14 @@
+[%
+uris = api('ws.page_childs', code => page.up_code, id => page.args.0, id1 => page.args.1, id2 => page.args.2);
+IF uris.size > 1;
+  FOR u IN uris;
+    %]<li>[%
+    IF u.code != page.code
+      %]<a href="[% uri_mk(u.req) %]">[% u.name %]</a>[%
+    ELSE
+      %][% u.name %][%
+    END
+    %]</li>[%
+  END;
+END;
+%]
