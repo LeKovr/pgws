@@ -536,7 +536,7 @@ sub _validate_field {
   my ($self, $meta, $method, $arg_def, $errors, $value, $code, $anno, $facets) = @_;
 
   my $is_top = $code?0:1;
-  my $is_base = ($arg_def->{'parent_code'} == $arg_def->{'code'});
+  my $is_base = ($arg_def->{'parent_code'} eq $arg_def->{'code'});
 
   $code ||= $arg_def->{'code'};
   $anno ||= $arg_def->{'anno'};
