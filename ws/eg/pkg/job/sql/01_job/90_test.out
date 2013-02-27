@@ -2,6 +2,7 @@
 --------------------------------
   ***** job_single_server *****
 
+TRUNCATE TABLE
  today created | stop created 
 ---------------+--------------
  t             | t

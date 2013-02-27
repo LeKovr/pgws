@@ -25,6 +25,9 @@
 
 SELECT ws.test('job_single_server');
 
+-- запуск тестов завершается ROLLBACK
+TRUNCATE wsd.job, wsd.job_dust, wsd.job_past, wsd.job_todo;
+
 SELECT
   job.create(job.handler_id('job.today'), NULL, -2, '2012-08-05') > 0 AS "today created"
   , job.create(job.handler_id('job.stop'), NULL, -2, '2012-08-14') > 0 AS "stop created"
