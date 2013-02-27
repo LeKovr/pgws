@@ -43,6 +43,9 @@ $_$
     -- Перенести из wsd.job_todo задачи завтрашнего дня
     INSERT INTO wsd.job SELECT * FROM job.todo2current(r.arg_date + 1);
 
+    -- TODO: для массовых расчетов может портебоваться ассинхронно получать статус
+    -- PERFORM pg_notify('job_new_day', (r.arg_date + 1)::TEXT);
+
     RETURN job.const_status_id_success();
   END
 $_$;
@@ -75,6 +78,11 @@ $_$
   -- handler_core_stop - Запрет выполнения всех классов задач.
   -- Применяется в тестах внутри транзакций, завершающихся ROLLBACK
   -- После остановки будут выполнены только ранее созданные задачи
+  -- Новые задачи будут при создании получать статус 8
+  -- Отмена действий обработчика производится вручную командой
+  -- UPDATE job.handler SET is_run_allowed = TRUE WHERE NOT is_run_allowed;
+  -- ВАЖНО: поле is_run_allowed предназначено только для обработчика job.stop
+  -- перед созданием задачи надо убедиться, что оно везде = FALSE
   -- a_id: ID задачи
   DECLARE
     r           wsd.job%ROWTYPE;
