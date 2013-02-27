@@ -14,7 +14,7 @@
  i18n_def.page                  | id_fixed         | ws.page_data                     | id_fixed         |         1 | ID объекта взять из этого поля
  i18n_def.page                  | id_session       | ws.page_data                     | id_session       |         1 | ID объекта взять из этого поля сессии
  i18n_def.page                  | is_hidden        | ws.page_data                     | is_hidden        |         1 | Запрет включения внешних блоков в разметку страницы
- i18n_def.page                  | name             |                                  |                  |         4 | Ошибка определения комментария для: n.name
+ i18n_def.page                  | name             | i18n_def.page_name               | name             |         1 | Заголовок страницы в карте сайта
  i18n_def.page                  | pkg              | ws.page_data                     | pkg              |         1 | пакет, в котором зарегистрирована страница
  i18n_def.page                  | sort             | ws.page_data                     | sort             |         1 | порядок сортировки в меню страниц одного уровня (NULL - нет в меню)
  i18n_def.page                  | target           | ws.page_data                     | target           |         1 | значение атрибута target в формируемых ссылках
@@ -23,12 +23,12 @@
  i18n_def.page                  | uri              | ws.page_data                     | uri              |         1 | мета-маска с именами переменных, которой должен соответствовать URI запроса
  i18n_def.page                  | uri_fmt          | ws.page_data                     | uri_fmt          |         1 | строка формата для генерации URI, вычисляется триггером при insert/update
  i18n_def.page                  | uri_re           | ws.page_data                     | uri_re           |         1 | regexp URI, вычисляется триггером при insert/update
- ws.caa                         | acl              | ws.class_action_acl_ext          | acl              |         2 | 
- ws.caa                         | acl_id           | ws.class_action_acl_ext          | acl_id           |         2 | 
- ws.caa                         | action           | ws.class_action_acl_ext          | action           |         2 | 
- ws.caa                         | action_id        | ws.class_action_acl_ext          | action_id        |         2 | 
- ws.caa                         | class            | ws.class_action_acl_ext          | class            |         2 | 
- ws.caa                         | class_id         | ws.class_action_acl_ext          | class_id         |         2 | 
+ ws.caa                         | acl              | ws.class_action_acl_ext          | acl              |         1 | Название уровня доступа
+ ws.caa                         | acl_id           | ws.class_action_acl_ext          | acl_id           |         1 | ID уровня доступа
+ ws.caa                         | action           | ws.class_action_acl_ext          | action           |         1 | Название акции
+ ws.caa                         | action_id        | ws.class_action_acl_ext          | action_id        |         1 | ID акции
+ ws.caa                         | class            | ws.class_action_acl_ext          | class            |         1 | Название класса
+ ws.caa                         | class_id         | ws.class_action_acl_ext          | class_id         |         1 | ID класса
  ws.class_action_acl_ext        | acl              | ws.class_acl                     | name             |         1 | Название уровня доступа
  ws.class_action_acl_ext        | acl_id           | ws.class_action_acl              | acl_id           |         1 | ID уровня доступа
  ws.class_action_acl_ext        | action           | ws.class_action                  | name             |         1 | Название акции
@@ -55,21 +55,21 @@
  ws.class_status_action_ext     | class_id         | ws.class_status_action           | class_id         |         1 | ID класса
  ws.class_status_action_ext     | status           | ws.class_status                  | name             |         1 | Название статуса
  ws.class_status_action_ext     | status_id        | ws.class_status_action           | status_id        |         1 | ID статуса
- ws.csa                         | action           | ws.class_status_action_ext       | action           |         2 | 
- ws.csa                         | action_id        | ws.class_status_action_ext       | action_id        |         2 | 
- ws.csa                         | class            | ws.class_status_action_ext       | class            |         2 | 
- ws.csa                         | class_id         | ws.class_status_action_ext       | class_id         |         2 | 
- ws.csa                         | status           | ws.class_status_action_ext       | status           |         2 | 
- ws.csa                         | status_id        | ws.class_status_action_ext       | status_id        |         2 | 
- ws.csaa                        | acl              | ws.class_status_action_acl_ext   | acl              |         2 | 
- ws.csaa                        | acl_id           | ws.class_status_action_acl_ext   | acl_id           |         2 | 
- ws.csaa                        | action           | ws.class_status_action_acl_ext   | action           |         2 | 
- ws.csaa                        | action_id        | ws.class_status_action_acl_ext   | action_id        |         2 | 
- ws.csaa                        | class            | ws.class_status_action_acl_ext   | class            |         2 | 
- ws.csaa                        | class_id         | ws.class_status_action_acl_ext   | class_id         |         2 | 
- ws.csaa                        | is_addon         | ws.class_status_action_acl_ext   | is_addon         |         2 | 
- ws.csaa                        | status           | ws.class_status_action_acl_ext   | status           |         2 | 
- ws.csaa                        | status_id        | ws.class_status_action_acl_ext   | status_id        |         2 | 
+ ws.csa                         | action           | ws.class_status_action_ext       | action           |         1 | Название акции
+ ws.csa                         | action_id        | ws.class_status_action_ext       | action_id        |         1 | ID акции
+ ws.csa                         | class            | ws.class_status_action_ext       | class            |         1 | Название класса
+ ws.csa                         | class_id         | ws.class_status_action_ext       | class_id         |         1 | ID класса
+ ws.csa                         | status           | ws.class_status_action_ext       | status           |         1 | Название статуса
+ ws.csa                         | status_id        | ws.class_status_action_ext       | status_id        |         1 | ID статуса
+ ws.csaa                        | acl              | ws.class_status_action_acl_ext   | acl              |         1 | Название уровня доступа
+ ws.csaa                        | acl_id           | ws.class_status_action_acl_ext   | acl_id           |         1 | ID уровня доступа
+ ws.csaa                        | action           | ws.class_status_action_acl_ext   | action           |         1 | Название акции
+ ws.csaa                        | action_id        | ws.class_status_action_acl_ext   | action_id        |         1 | ID акции
+ ws.csaa                        | class            | ws.class_status_action_acl_ext   | class            |         1 | Название класса
+ ws.csaa                        | class_id         | ws.class_status_action_acl_ext   | class_id         |         1 | ID класса
+ ws.csaa                        | is_addon         | ws.class_status_action_acl_ext   | is_addon         |         1 | Строка является добавлением разрешения
+ ws.csaa                        | status           | ws.class_status_action_acl_ext   | status           |         1 | Название статуса
+ ws.csaa                        | status_id        | ws.class_status_action_acl_ext   | status_id        |         1 | ID статуса
  ws.pg_const                    | anno             |                                  |                  |         3 | obj_description(p.oid'pg_proc'::name)
  ws.pg_const                    | code             | pg_catalog.pg_proc               | proname          |         2 | 
  ws.pg_const                    | schema           |                                  |                  |         3 | ws.pg_schema_by_oid(p.pronamespace)
