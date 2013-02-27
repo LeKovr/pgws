@@ -124,14 +124,20 @@ sub start {
 
   reopen_std($dbc->config('startup.log_file'));
 
-  &{$self->{'proc_init'}}($self, $proc_manager);
+  eval {
+    &{$self->{'proc_init'}}($self, $proc_manager);
 
-  unless ($self->{'proc_main'}) {
-    # FCGI loop used
-    proc_main($self, $proc_manager, $request, $req_env);
-    FCGI::CloseSocket($socket);
-  } else {
-    &{$self->{'proc_main'}}($self, $proc_manager);
+    unless ($self->{'proc_main'}) {
+      # FCGI loop used
+      proc_main($self, $proc_manager, $request, $req_env);
+      FCGI::CloseSocket($socket);
+    } else {
+      &{$self->{'proc_main'}}($self, $proc_manager);
+    }
+  };
+  if ($@) {
+    sleep 2;
+    die $@;
   }
 }
 
