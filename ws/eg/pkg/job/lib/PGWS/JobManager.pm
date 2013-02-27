@@ -225,8 +225,9 @@ print STDERR ("[$$] EMPTY LOOP\n") if DEBUG;
       $self->{'stat'}{'error_count'} += 1;
 
       # попробовать сохранить ошибку в БД
-print STDERR "SQL[$$] ",SQL_STOP,': ',$cmd->{'id'}, ', -1, ',$@,"\n";
-      $dbh->do(SQL_STOP, undef, $cmd->{'id'}, 12, $@) if ($cmd); # job.const_status_id_error()
+      my $job_id = $cmd->{'id'} || -1;
+print STDERR ("SQL[$$] ",SQL_STOP,': ', $job_id, ', -1, ',$@,"\n") if DEBUG;
+      $dbh->do(SQL_STOP, undef, $job_id, 12, $@) if ($cmd); # job.const_status_id_error()
       sleep 2; # give some rest to server
     }
     $proc_manager->pm_post_dispatch();
@@ -296,7 +297,7 @@ sub _accept {
         $deleted++;
       }
     }
-    $notify->{'_allowed'} = 1 if ($deleted);
+    $notify->{'_allowed'} ||= 1; # if ($deleted);
     (tied %$notify)->shunlock;
     # run shadow
     return $event;
