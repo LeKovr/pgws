@@ -374,7 +374,7 @@ $_$
     -- Сохраним новый статус
     UPDATE wsd.job SET
       status_id = a_status_id,
-      exit_at = CURRENT_TIMESTAMP
+      exit_at = clock_timestamp()
       WHERE id = a_id
         AND status_id = job.const_status_id_process() -- статус меняем только у выполняющихся задач
     ;
@@ -439,6 +439,7 @@ $_$
         v_ret := job.const_status_id_idle();
       END IF;
       PERFORM job.finish(r_job.id, v_ret, v_err);
+      PERFORM job.finished(r_job.id);
       IF v_err IS NULL THEN
         v_job_count := v_job_count + 1;
       END IF;
