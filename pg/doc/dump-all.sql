@@ -2880,7 +2880,7 @@ SET search_path = job, pg_catalog;
 
 CREATE FUNCTION clean(a_id integer) RETURNS integer
     LANGUAGE plpgsql
-    AS $$ /* job:job:52_handlers.sql / 52 */ 
+    AS $$ /* job:job:52_handlers.sql / 55 */ 
   -- handler_core_clean - Очистка wsd.job от выполненных задач
   -- a_id: ID задачи
   DECLARE
@@ -3246,7 +3246,7 @@ $$;
 
 CREATE FUNCTION cron() RETURNS void
     LANGUAGE sql
-    AS $$ /* job:job:51_main.sql / 452 */ 
+    AS $$ /* job:job:51_main.sql / 453 */ 
   UPDATE wsd.job_cron SET
     prev_at = run_at
   , run_at = CURRENT_TIMESTAMP
@@ -3528,7 +3528,7 @@ CREATE FUNCTION finish(a_id integer, a_status_id integer, a_exit_text text) RETU
     -- Сохраним новый статус
     UPDATE wsd.job SET
       status_id = a_status_id,
-      exit_at = CURRENT_TIMESTAMP
+      exit_at = clock_timestamp()
       WHERE id = a_id
         AND status_id = job.const_status_id_process() -- статус меняем только у выполняющихся задач
     ;
@@ -4047,6 +4047,7 @@ CREATE FUNCTION server(a_pid integer, a_id integer DEFAULT 0) RETURNS integer
         v_ret := job.const_status_id_idle();
       END IF;
       PERFORM job.finish(r_job.id, v_ret, v_err);
+      PERFORM job.finished(r_job.id);
       IF v_err IS NULL THEN
         v_job_count := v_job_count + 1;
       END IF;
@@ -4106,10 +4107,15 @@ $_$;
 
 CREATE FUNCTION stop(a_id integer) RETURNS integer
     LANGUAGE plpgsql
-    AS $$ /* job:job:52_handlers.sql / 74 */ 
+    AS $$ /* job:job:52_handlers.sql / 77 */ 
   -- handler_core_stop - Запрет выполнения всех классов задач.
   -- Применяется в тестах внутри транзакций, завершающихся ROLLBACK
   -- После остановки будут выполнены только ранее созданные задачи
+  -- Новые задачи будут при создании получать статус 8
+  -- Отмена действий обработчика производится вручную командой
+  -- UPDATE job.handler SET is_run_allowed = TRUE WHERE NOT is_run_allowed;
+  -- ВАЖНО: поле is_run_allowed предназначено только для обработчика job.stop
+  -- перед созданием задачи надо убедиться, что оно везде = FALSE
   -- a_id: ID задачи
   DECLARE
     r           wsd.job%ROWTYPE;
@@ -4128,6 +4134,80 @@ CREATE FUNCTION stop(a_id integer) RETURNS integer
     ELSE
       RETURN job.const_status_id_idle();
     END IF;
+  END
+$$;
+
+
+--
+-- Name: test_mgr(integer); Type: FUNCTION; Schema: job; Owner: -
+--
+
+CREATE FUNCTION test_mgr(a_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$ /* job:job:52_handlers_hl_test.sql / 55 */ 
+  -- test_mgr - генератор тестовых задач
+  -- Применяется в нагрузочных тестах
+  -- a_id: ID задачи
+
+  -- Аргументы:
+  -- arg_id --  значение arg_id создаваемых задач
+  -- arg_id2 -- кол-во создаваемых задач 
+  -- arg_id3 -- (если > 0) - значение pg_sleep после выполнения задачи
+
+  DECLARE
+    r           wsd.job%ROWTYPE;
+    v_cnt INTEGER;
+  BEGIN
+    r := job.current(a_id);
+
+    IF job.wait_prio(a_id, r.handler_id, r.prio, r.arg_date) IS NOT NULL THEN
+      RETURN job.const_status_id_waiting();
+    END IF;
+
+    -- создать подзадачи количеством arg_id2
+    -- передав каждой в arg_id значение arg_id3 (сколько раз выполниться)
+    PERFORM job.create(job.handler_id('job.test_run'), null, a_id, r.arg_date, r.arg_id) FROM generate_series(1, r.arg_id2); 
+
+    -- создать свою задачу следующей датой
+    PERFORM job.create(r.handler_id, null, a_id, r.arg_date + 1, a_id := r.arg_id, a_id2 := r.arg_id2, a_id3 := r.arg_id3); 
+
+    IF COALESCE(r.arg_id3, 0) > 0 THEN
+      -- дадим диспетчеру время разгрузить очередь
+      PERFORM pg_sleep(r.arg_id3);
+    END IF;
+
+    RETURN job.const_status_id_success();
+  END
+$$;
+
+
+--
+-- Name: test_run(integer); Type: FUNCTION; Schema: job; Owner: -
+--
+
+CREATE FUNCTION test_run(a_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$ /* job:job:52_handlers_hl_test.sql / 93 */ 
+  -- test_run - обработчик тестовой задачи
+  -- Применяется в нагрузочных тестах
+  -- a_id: ID задачи
+
+  -- Аргументы:
+  -- arg_id --  кол-во итераций "выполнился - создал новую"
+  DECLARE
+    r           wsd.job%ROWTYPE;
+  BEGIN
+    r := job.current(a_id);
+
+    -- некоторая операция по изменению БД
+    UPDATE wsd.job SET arg_num = COALESCE (arg_num, 0) + 1 WHERE id = r.created_by;
+
+    IF r.arg_id > 1 THEN
+      -- повторяем выполнение в новой задаче
+      PERFORM job.create(r.handler_id, null, a_id, r.arg_date, r.arg_id - 1); 
+    END IF;
+
+    RETURN job.const_status_id_success();
   END
 $$;
 
@@ -4158,6 +4238,9 @@ CREATE FUNCTION today(a_id integer) RETURNS integer
 
     -- Перенести из wsd.job_todo задачи завтрашнего дня
     INSERT INTO wsd.job SELECT * FROM job.todo2current(r.arg_date + 1);
+
+    -- TODO: для массовых расчетов может портебоваться ассинхронно получать статус
+    -- PERFORM pg_notify('job_new_day', (r.arg_date + 1)::TEXT);
 
     RETURN job.const_status_id_success();
   END
@@ -12986,6 +13069,8 @@ INSERT INTO arg_type VALUES (4, 'ID группы');
 
 INSERT INTO handler VALUES (1, 'job', 'stop', 86390, 2, 0, true, NULL, 1, 1, 1, 1, 1, 1, 1, 0, true, true, 'Остановка диспетчера');
 INSERT INTO handler VALUES (2, 'job', 'clean', 1, 2, 0, true, NULL, 2, 1, 1, 1, 1, 1, 1, 7, true, true, 'Очистка списка текущих задач');
+INSERT INTO handler VALUES (7, 'job', 'test_mgr', 3, 2, 0, true, NULL, 1, 1, 1, 1, 1, 1, 1, 100, true, true, 'Генерация тестовых задач');
+INSERT INTO handler VALUES (8, 'job', 'test_run', 2, 2, 0, true, NULL, 1, 1, 1, 1, 1, 1, 1, 100, true, true, 'Обработка тестовой задачи');
 INSERT INTO handler VALUES (9, 'job', 'today', 85800, 2, 0, true, NULL, 2, 1, 1, 1, 1, 1, 1, 7, true, true, 'Завершение дня');
 INSERT INTO handler VALUES (4, 'acc', 'mailtest', 20, 2, 0, false, NULL, 2, 1, 1, 1, 1, 1, 1, 31, true, true, 'Тест API');
 
@@ -14001,15 +14086,15 @@ INSERT INTO page_data VALUES ('api.test', 'main', 2, 1, NULL, 7, 'docs/test$', '
 -- Data for Name: pkg; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:15.683209');
-INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
+INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:23.304633');
+INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
 
 
 --
@@ -14023,15 +14108,15 @@ SELECT pg_catalog.setval('pkg_id_seq', 9, true);
 -- Data for Name: pkg_log; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:15.683209');
-INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-27 12:05:22.659571');
+INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:23.304633');
+INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
 
 
 --
@@ -14147,8 +14232,8 @@ SET search_path = wsd, pg_catalog;
 -- Data for Name: account; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-27 12:05:23', '2013-02-27 12:05:23', '2013-02-27 12:05:23');
-INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-27 12:05:23', '2013-02-27 12:05:23', '2013-02-27 12:05:23');
+INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-28 00:09:30', '2013-02-28 00:09:30', '2013-02-28 00:09:30');
+INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-28 00:09:30', '2013-02-28 00:09:30', '2013-02-28 00:09:30');
 
 
 --
@@ -14289,14 +14374,14 @@ SELECT pg_catalog.setval('file_id_seq', 1, false);
 -- Data for Name: job; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job VALUES (1, '2013-02-27 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-27', NULL, NULL, NULL, NULL, NULL, '2013-02-27 12:05:22.659571', NULL, NULL, NULL, NULL);
+INSERT INTO job VALUES (1, '2013-02-28 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-28', NULL, NULL, NULL, NULL, NULL, '2013-02-28 00:09:30.255794', NULL, NULL, NULL, NULL);
 
 
 --
 -- Data for Name: job_cron; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job_cron VALUES (true, '2013-02-27 12:05:22.659571', NULL);
+INSERT INTO job_cron VALUES (true, '2013-02-28 00:09:30.255794', NULL);
 
 
 --
@@ -14328,20 +14413,20 @@ SELECT pg_catalog.setval('job_seq', 25, true);
 -- Data for Name: pkg_script_protected; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'wsd', '2013-02-27 12:05:15.683209');
-INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'wsd', '2013-02-27 12:05:15.683209');
-INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-27 12:05:15.683209');
-INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-27 12:05:15.683209');
-INSERT INTO pkg_script_protected VALUES ('fs', '11_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_script_protected VALUES ('ev', '11_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_script_protected VALUES ('job', '11_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_script_protected VALUES ('acc', '11_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_script_protected VALUES ('wiki', '11_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
-INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wsd', '2013-02-27 12:05:22.659571');
+INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:23.304633');
+INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'wsd', '2013-02-28 00:09:23.304633');
+INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-28 00:09:23.304633');
+INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-28 00:09:23.304633');
+INSERT INTO pkg_script_protected VALUES ('fs', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('ev', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('job', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('acc', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('wiki', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
 
 
 --
