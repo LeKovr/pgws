@@ -8,7 +8,7 @@
   END;
   IF page.code != 'main'; root_page = uri(code => 'main'); root_href = uri_mk(root_page.req); END;
   IF root_href;
-    %]<div class="center">
+    %]<div class="pagination-centered">
 <a href="[% root_href %]">[% root_page.name %]</a>
 <hr style="margin:15px 0px;" />
 </div>

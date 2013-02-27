@@ -50,7 +50,7 @@
 [% IF doc_id %]
   <div class="acc-panel">
     <p class="acc-nav acc-attr">[% l('Атрибуты').replace('(.)','$1 ') %]</p>
-    <div class="acc-body" id="p-attr">
+    <div class="acc-body container" id="p-attr">
     <div class="attrClass">
       <h2>[% l('Атрибуты') %]</h2>
       <form id="attr-form" action="js_required_but_not_available" onsubmit="return false;">

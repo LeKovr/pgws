@@ -1,7 +1,7 @@
 <ul class="breadcrumb">
 [% 
   IF !session.sid 
-    %]<li><a href="/" title="[% l('Главная') %]">Tender.Pro</a> <span class="divider">/ </span></li>[%
+    %]<li><a href="/" title="[% l('Главная') %]">[% our_title %]</a> <span class="divider">/ </span></li>[%
   END;
   IF !meta.nopath;
   uris = api('ws.page_path', code => page.up_code, id => page.args.0, id1 => page.args.1, id2 => page.args.2);
