@@ -46,7 +46,7 @@ SELECT pg_c('f', 'dt_is_complex', 'Значение is_complex для задан
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_code(a_code d_code) RETURNS d_code STABLE LANGUAGE 'sql' AS
 $_$
-  SELECT code FROM ws.dt WHERE code IN ($1, pg_cs($1), 'ws.'||$1) ORDER BY 1;
+  SELECT code FROM ws.dt WHERE code IN ($1, ws.pg_cs($1), 'ws.'||$1) ORDER BY 1;
 $_$;
 SELECT pg_c('f', 'dt_by_code', 'Атрибуты типа по маске кода');
 
@@ -108,21 +108,21 @@ $_$;
 SELECT pg_c('f', 'dt_parts', 'Список полей комплексного типа по коду как строка');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_tree(a_code d_code) RETURNS SETOF d_code STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION dt_tree(a_code d_code) RETURNS SETOF d_code STABLE LANGUAGE 'sql' AS
 $_$
-  DECLARE
-    v_code d_code;
-    rec ws.dt;
-  BEGIN
-    v_code := a_code;
-    LOOP
-      EXIT WHEN v_code IS NULL;
-      SELECT INTO rec * FROM ws.dt WHERE code = v_code;
-      RETURN NEXT rec.code;
-      v_code := rec.parent_code;
-    END LOOP;
-    RETURN;
-  END;
+  WITH RECURSIVE dtree AS (
+    SELECT d.*, ARRAY[code::text] as branches
+      FROM ws.dt d
+      WHERE code = 'ws.d_code'
+    UNION
+    SELECT d.*, dtree.branches || d.code::text
+      FROM ws.dt d
+        JOIN dtree ON d.code = dtree.parent_code 
+      WHERE NOT d.code = ANY(dtree.branches)
+  )
+  SELECT code 
+    FROM dtree
+    ORDER BY array_length(branches, 1);
 $_$;
 
 /* ------------------------------------------------------------------------- */

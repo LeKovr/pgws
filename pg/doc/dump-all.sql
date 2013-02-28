@@ -7481,7 +7481,7 @@ COMMENT ON FUNCTION dt(a_code d_code) IS 'Атрибуты типа по мас�
 CREATE FUNCTION dt_code(a_code d_code) RETURNS d_code
     LANGUAGE sql STABLE
     AS $_$ /* ws:ws:52_dt.sql / 48 */ 
-  SELECT code FROM ws.dt WHERE code IN ($1, pg_cs($1), 'ws.'||$1) ORDER BY 1;
+  SELECT code FROM ws.dt WHERE code IN ($1, ws.pg_cs($1), 'ws.'||$1) ORDER BY 1;
 $_$;
 
 
@@ -7842,21 +7842,21 @@ COMMENT ON FUNCTION dt_parts(a_code d_code) IS 'Список полей комп
 --
 
 CREATE FUNCTION dt_tree(a_code d_code) RETURNS SETOF d_code
-    LANGUAGE plpgsql STABLE
+    LANGUAGE sql STABLE
     AS $$ /* ws:ws:52_dt.sql / 112 */ 
-  DECLARE
-    v_code d_code;
-    rec ws.dt;
-  BEGIN
-    v_code := a_code;
-    LOOP
-      EXIT WHEN v_code IS NULL;
-      SELECT INTO rec * FROM ws.dt WHERE code = v_code;
-      RETURN NEXT rec.code;
-      v_code := rec.parent_code;
-    END LOOP;
-    RETURN;
-  END;
+  WITH RECURSIVE dtree AS (
+    SELECT d.*, ARRAY[code::text] as branches
+      FROM ws.dt d
+      WHERE code = 'ws.d_code'
+    UNION
+    SELECT d.*, dtree.branches || d.code::text
+      FROM ws.dt d
+        JOIN dtree ON d.code = dtree.parent_code 
+      WHERE NOT d.code = ANY(dtree.branches)
+  )
+  SELECT code 
+    FROM dtree
+    ORDER BY array_length(branches, 1);
 $$;
 
 
@@ -14295,15 +14295,15 @@ INSERT INTO page_data VALUES ('api.test', 'main', 2, 1, NULL, 7, 'docs/test$', '
 -- Data for Name: pkg; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:05.172865');
-INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:23.619761');
+INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
 
 
 --
@@ -14317,15 +14317,15 @@ SELECT pg_catalog.setval('pkg_id_seq', 9, true);
 -- Data for Name: pkg_log; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:05.172865');
-INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:23.619761');
+INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
 
 
 --
@@ -14353,8 +14353,8 @@ SET search_path = wsd, pg_catalog;
 -- Data for Name: account; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-28 19:28:12', '2013-02-28 19:28:12', '2013-02-28 19:28:12');
-INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-28 19:28:12', '2013-02-28 19:28:12', '2013-02-28 19:28:12');
+INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-28 20:07:31', '2013-02-28 20:07:31', '2013-02-28 20:07:31');
+INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-28 20:07:31', '2013-02-28 20:07:31', '2013-02-28 20:07:31');
 
 
 --
@@ -14495,14 +14495,14 @@ SELECT pg_catalog.setval('file_id_seq', 1, false);
 -- Data for Name: job; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job VALUES (1, '2013-02-28 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-28', NULL, NULL, NULL, NULL, NULL, '2013-02-28 19:28:12.293868', NULL, NULL, NULL, NULL);
+INSERT INTO job VALUES (1, '2013-02-28 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-28', NULL, NULL, NULL, NULL, NULL, '2013-02-28 20:07:30.814544', NULL, NULL, NULL, NULL);
 
 
 --
 -- Data for Name: job_cron; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job_cron VALUES (true, '2013-02-28 19:28:12.293868', NULL);
+INSERT INTO job_cron VALUES (true, '2013-02-28 20:07:30.814544', NULL);
 
 
 --
@@ -14534,21 +14534,21 @@ SELECT pg_catalog.setval('job_seq', 25, true);
 -- Data for Name: pkg_script_protected; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'ws', '2013-02-28 19:28:05.172865');
-INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'cfg', '2013-02-28 19:28:05.172865');
-INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'cfg', '2013-02-28 19:28:05.172865');
-INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'cfg', '2013-02-28 19:28:05.172865');
-INSERT INTO pkg_script_protected VALUES ('fs', '20_wsd.sql', '000', 'fs', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('ev', '20_wsd.sql', '000', 'ev', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'ev', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('job', '20_wsd.sql', '000', 'job', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'job', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'job', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('acc', '20_wsd.sql', '000', 'acc', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'acc', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('wiki', '20_wsd.sql', '000', 'wiki', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wiki', '2013-02-28 19:28:12.293868');
-INSERT INTO pkg_script_protected VALUES ('wiki', '82_prop_wsd.sql', '000', 'wiki', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'ws', '2013-02-28 20:07:23.619761');
+INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'cfg', '2013-02-28 20:07:23.619761');
+INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'cfg', '2013-02-28 20:07:23.619761');
+INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'cfg', '2013-02-28 20:07:23.619761');
+INSERT INTO pkg_script_protected VALUES ('fs', '20_wsd.sql', '000', 'fs', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('ev', '20_wsd.sql', '000', 'ev', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'ev', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('job', '20_wsd.sql', '000', 'job', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'job', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'job', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('acc', '20_wsd.sql', '000', 'acc', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'acc', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('wiki', '20_wsd.sql', '000', 'wiki', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wiki', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('wiki', '82_prop_wsd.sql', '000', 'wiki', '2013-02-28 20:07:30.814544');
 
 
 --
