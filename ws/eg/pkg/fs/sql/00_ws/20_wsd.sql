@@ -21,10 +21,7 @@
 */
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.pkg_script_protected (code, pkg, ver) VALUES (:'FILE', :'PKG', :'VER');
-
-SET LOCAL search_path = ws, i18n_def, public;
-
+INSERT INTO wsd.pkg_script_protected (pkg, code, ver) VALUES (:'PKG', :'FILE', :'VER');
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.file_folder (

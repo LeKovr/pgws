@@ -22,8 +22,4 @@ union
 select * from ws.pg_view_comments('ws.pg_sql')
 union
 select * from ws.pg_view_comments('ws.pg_const')
-union
-select * from ws.pg_view_comments('ws.prop_owner_attr')
-union
-select * from ws.pg_view_comments('ws.prop_attr')
 ;

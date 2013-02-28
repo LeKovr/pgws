@@ -17,26 +17,34 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Методы доступа к свойствам
+    Реестр свойств.
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION prop_owner_attr(a_pogc TEXT DEFAULT NULL, a_poid INTEGER DEFAULT 0) RETURNS SETOF prop_owner_attr STABLE LANGUAGE 'sql' AS
-$_$
-  SELECT * FROM ws.prop_owner_attr
-  WHERE COALESCE($1, pogc) = pogc
-    AND $2 IN (0, poid)
-$_$;
-SELECT pg_c('f', 'prop_owner_attr', 'Атрибуты POID');
+INSERT INTO wsd.pkg_script_protected (pkg, code, ver) VALUES (:'PKG', :'FILE', :'VER');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION prop_attr(a_pogc TEXT DEFAULT NULL, a_poid INTEGER DEFAULT 0, a_code TEXT DEFAULT NULL) RETURNS SETOF prop_attr STABLE LANGUAGE 'sql' AS
-$_$
-  SELECT * FROM ws.prop_attr
-  WHERE COALESCE($1, pogc) = pogc
-    AND $2 IN (0, poid)
-    AND COALESCE($3, code) = code
-$_$;
-SELECT pg_c('f', 'prop_attr', 'Атрибуты Свойства');
+INSERT INTO wsd.prop_group (pogc, sort, name) VALUES
+  ('fcgi',  3, 'Демон FastCGI')
+, ('tm',    4, 'Демон TM')
+, ('be',    2, 'Бэкенд')
+, ('fe',    1, 'Фронтенд')
+, ('db',    5, 'БД')
+;
+INSERT INTO wsd.prop_group (pogc, sort, is_id_required, name) VALUES
+  ('cache', 6, FALSE, 'Кэш')
+;
 
 /* ------------------------------------------------------------------------- */
+INSERT INTO wsd.prop_owner (pogc, poid, sort, name) VALUES
+  ('fcgi',  1,  1,  'Первичный Демон FastCGI')
+, ('tm',    1,  1,  'Первичный Демон TM')
+, ('be',    1,  1,  'Первичный Бэкенд')
+, ('fe',    1,  1,  'Первичный Фронтенд')
+, ('db',    1,  1,  'БД')
+, ('cache', 1,  1,  'нет')
+, ('cache', 2,  2,  'метаданные системы')
+, ('cache', 3,  3,  'Анти-DoS')
+, ('cache', 4,  4,  'Данные сессий')
+, ('cache', 5,  5,  'Большие объекты')
+;

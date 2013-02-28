@@ -47,7 +47,7 @@ CREATE OR REPLACE VIEW prop_attr AS SELECT -- явно заданные знач
 , pv.valid_from
 , pv.pkg as value_pkg
 , pv.value
-  FROM ws.prop p
+  FROM cfg.prop p
   , wsd.prop_value pv
   WHERE pv.pogc = ANY (p.pogc_list)
     AND p.is_mask
@@ -59,12 +59,10 @@ CREATE OR REPLACE VIEW prop_attr AS SELECT -- явно заданные знач
 , '2000-01-02'::DATE AS valid_from
 , po.pkg as value_pkg
 , (SELECT value FROM wsd.prop_value WHERE pogc = po.pogc AND poid = po.poid AND code = p.code) AS value
-  FROM ws.prop p
+  FROM cfg.prop p
   , wsd.prop_owner po
   WHERE po.pogc = ANY (p.pogc_list)
     AND NOT p.is_mask
   ORDER BY pogc, poid, code, valid_from
 ;
-SELECT ws.pg_c('v', 'prop_attr', 'Атрибуты свойств');
-/* ------------------------------------------------------------------------- */
-
+SELECT pg_c('v', 'prop_attr', 'Атрибуты свойств');

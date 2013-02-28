@@ -23,6 +23,20 @@ CREATE SCHEMA app;
 
 
 --
+-- Name: cfg; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA cfg;
+
+
+--
+-- Name: SCHEMA cfg; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON SCHEMA cfg IS 'Конфигурация объектов';
+
+
+--
 -- Name: ev; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -146,6 +160,23 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = cfg, pg_catalog;
+
+--
+-- Name: d_prop_code; Type: DOMAIN; Schema: cfg; Owner: -
+--
+
+CREATE DOMAIN d_prop_code AS text
+	CONSTRAINT d_prop_code_check CHECK ((VALUE ~ '^([a-z\d_]+)(\.((:?[a-z\d_]+)|(\([a-z\d_]+(,[a-z\d_]+)+\))))*$'::text));
+
+
+--
+-- Name: DOMAIN d_prop_code; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON DOMAIN d_prop_code IS 'Код свойства';
 
 
 SET search_path = job, pg_catalog;
@@ -480,21 +511,6 @@ CREATE DOMAIN d_pg_argnames AS text[];
 --
 
 CREATE DOMAIN d_pg_argtypes AS oidvector;
-
-
---
--- Name: d_prop_code; Type: DOMAIN; Schema: ws; Owner: -
---
-
-CREATE DOMAIN d_prop_code AS text
-	CONSTRAINT d_prop_code_check CHECK ((VALUE ~ '^([a-z\d_]+)(\.((:?[a-z\d_]+)|(\([a-z\d_]+(,[a-z\d_]+)+\))))*$'::text));
-
-
---
--- Name: DOMAIN d_prop_code; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON DOMAIN d_prop_code IS 'Код свойства';
 
 
 --
@@ -1568,6 +1584,794 @@ $$;
 COMMENT ON FUNCTION const_error_notfound() IS 'Константа: ошибка поиска уровня приложения';
 
 
+SET search_path = cfg, pg_catalog;
+
+--
+-- Name: cache(ws.d_id32); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION cache(a_id ws.d_id32 DEFAULT 0) RETURNS SETOF ws.t_hashtable
+    LANGUAGE sql STABLE STRICT
+    AS $_$ /* ws:cfg:51_cache.sql / 25 */ 
+  SELECT poid::text, name FROM wsd.prop_owner WHERE pogc = 'cache' AND $1 IN (poid, 0) ORDER BY name;
+$_$;
+
+
+--
+-- Name: FUNCTION cache(a_id ws.d_id32); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION cache(a_id ws.d_id32) IS 'Атрибуты кэша по id';
+
+
+SET search_path = ws, pg_catalog;
+
+--
+-- Name: mask2regexp(text); Type: FUNCTION; Schema: ws; Owner: -
+--
+
+CREATE FUNCTION mask2regexp(a_mask text) RETURNS text
+    LANGUAGE plpgsql IMMUTABLE
+    AS $$ /* ws:ws:19_utils.sql / 114 */ 
+  DECLARE
+    v TEXT;
+  BEGIN
+    v := a_mask;
+    v := regexp_replace(v, ':i',    E'(\\d+)',        'g');
+    v := regexp_replace(v, E'\\?',  E'\\?',           'g');
+    v := regexp_replace(v, E'\\.',  E'\\.',           'g');
+    v := regexp_replace(v, ':s',    '([^/:]+)',       'g');
+    v := regexp_replace(v, ':u',    '((?:/[^/]+)*)',  'g');
+    v := regexp_replace(v, ',',     '|',              'g');  -- allow mask with comma fro props
+    RETURN v;
+  END;
+$$;
+
+
+--
+-- Name: FUNCTION mask2regexp(a_mask text); Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON FUNCTION mask2regexp(a_mask text) IS 'Сформировать строку поиска по шаблону';
+
+
+--
+-- Name: pg_cs(text); Type: FUNCTION; Schema: ws; Owner: -
+--
+
+CREATE FUNCTION pg_cs(text DEFAULT ''::text) RETURNS name
+    LANGUAGE sql STABLE
+    AS $_$ /* ws:ws:18_pg.sql / 54 */ 
+ SELECT (current_schema() || CASE WHEN COALESCE($1, '') = '' THEN '' ELSE '.' || $1 END)::name
+$_$;
+
+
+--
+-- Name: FUNCTION pg_cs(text); Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON FUNCTION pg_cs(text) IS 'Текущая (первая) схема БД в пути поиска';
+
+
+SET search_path = cfg, pg_catalog;
+
+--
+-- Name: prop; Type: TABLE; Schema: cfg; Owner: -
+--
+
+CREATE TABLE prop (
+    code d_prop_code NOT NULL,
+    pkg text DEFAULT ws.pg_cs() NOT NULL,
+    pogc_list ws.d_texta NOT NULL,
+    is_mask boolean NOT NULL,
+    def_value text,
+    name text NOT NULL,
+    value_fmt text,
+    anno text
+);
+
+
+--
+-- Name: TABLE prop; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON TABLE prop IS 'Справочник свойств';
+
+
+--
+-- Name: COLUMN prop.code; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop.code IS 'Код свойства';
+
+
+--
+-- Name: COLUMN prop.pkg; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop.pkg IS 'Пакет, в котором добавлено свойство';
+
+
+--
+-- Name: COLUMN prop.pogc_list; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop.pogc_list IS 'Массив кодов разрешенных групп (prop_group)';
+
+
+--
+-- Name: COLUMN prop.is_mask; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop.is_mask IS 'Свойство не атомарно';
+
+
+--
+-- Name: COLUMN prop.def_value; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop.def_value IS 'Значение по умолчанию';
+
+
+--
+-- Name: COLUMN prop.name; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop.name IS 'Название';
+
+
+--
+-- Name: COLUMN prop.value_fmt; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop.value_fmt IS 'Строка формата для вывода значения';
+
+
+--
+-- Name: COLUMN prop.anno; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop.anno IS 'Аннотация';
+
+
+SET search_path = wsd, pg_catalog;
+
+--
+-- Name: prop_owner; Type: TABLE; Schema: wsd; Owner: -
+--
+
+CREATE TABLE prop_owner (
+    pogc text NOT NULL,
+    poid integer NOT NULL,
+    pkg text DEFAULT ws.pg_cs() NOT NULL,
+    sort integer NOT NULL,
+    name text NOT NULL,
+    anno text
+);
+
+
+--
+-- Name: TABLE prop_owner; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON TABLE prop_owner IS 'Владельцы свойств (Property Owner)';
+
+
+--
+-- Name: COLUMN prop_owner.pogc; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner.pogc IS 'Код группы (Property Owner Group Code)';
+
+
+--
+-- Name: COLUMN prop_owner.poid; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner.poid IS 'ID владельца (Property Owner ID)';
+
+
+--
+-- Name: COLUMN prop_owner.pkg; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner.pkg IS 'Пакет, в котором добавлена группа';
+
+
+--
+-- Name: COLUMN prop_owner.sort; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner.sort IS 'Порядок сортировки';
+
+
+--
+-- Name: COLUMN prop_owner.name; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner.name IS 'Название';
+
+
+--
+-- Name: COLUMN prop_owner.anno; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner.anno IS 'Аннотация';
+
+
+--
+-- Name: prop_value; Type: TABLE; Schema: wsd; Owner: -
+--
+
+CREATE TABLE prop_value (
+    pogc text NOT NULL,
+    poid integer NOT NULL,
+    code text NOT NULL,
+    valid_from date DEFAULT '2000-01-01'::date NOT NULL,
+    pkg text DEFAULT ws.pg_cs() NOT NULL,
+    value text
+);
+
+
+--
+-- Name: TABLE prop_value; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON TABLE prop_value IS 'Значения свойств объектов';
+
+
+--
+-- Name: COLUMN prop_value.pogc; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_value.pogc IS 'Код группы (Property Owner Group Code)';
+
+
+--
+-- Name: COLUMN prop_value.poid; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_value.poid IS 'ID владельца (Property Owner ID)';
+
+
+--
+-- Name: COLUMN prop_value.code; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_value.code IS 'Код свойства';
+
+
+--
+-- Name: COLUMN prop_value.valid_from; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_value.valid_from IS 'Дата начала действия';
+
+
+--
+-- Name: COLUMN prop_value.pkg; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_value.pkg IS 'Пакет, в котором задано значение';
+
+
+--
+-- Name: COLUMN prop_value.value; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_value.value IS 'Значение свойства';
+
+
+SET search_path = cfg, pg_catalog;
+
+--
+-- Name: prop_attr; Type: VIEW; Schema: cfg; Owner: -
+--
+
+CREATE VIEW prop_attr AS
+    SELECT pv.code, p.pkg, p.pogc_list, p.is_mask, p.def_value, p.name, p.value_fmt, p.anno, pv.pogc, pv.poid, pv.valid_from, pv.pkg AS value_pkg, pv.value FROM prop p, wsd.prop_value pv WHERE (((pv.pogc = ANY ((p.pogc_list)::text[])) AND p.is_mask) AND (pv.code ~ ws.mask2regexp((p.code)::text))) UNION SELECT p.code, p.pkg, p.pogc_list, p.is_mask, p.def_value, p.name, p.value_fmt, p.anno, po.pogc, po.poid, '2000-01-02'::date AS valid_from, po.pkg AS value_pkg, (SELECT prop_value.value FROM wsd.prop_value WHERE (((prop_value.pogc = po.pogc) AND (prop_value.poid = po.poid)) AND (prop_value.code = (p.code)::text))) AS value FROM prop p, wsd.prop_owner po WHERE ((po.pogc = ANY ((p.pogc_list)::text[])) AND (NOT p.is_mask)) ORDER BY 9, 10, 1, 11;
+
+
+--
+-- Name: VIEW prop_attr; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON VIEW prop_attr IS 'Атрибуты свойств';
+
+
+--
+-- Name: COLUMN prop_attr.code; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.code IS 'Код свойства';
+
+
+--
+-- Name: COLUMN prop_attr.pogc; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.pogc IS 'Код группы (Property Owner Group Code)';
+
+
+--
+-- Name: COLUMN prop_attr.poid; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.poid IS 'ID владельца (Property Owner ID)';
+
+
+--
+-- Name: COLUMN prop_attr.valid_from; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.valid_from IS 'Дата начала действия';
+
+
+--
+-- Name: COLUMN prop_attr.value_pkg; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.value_pkg IS 'Пакет, в котором задано значение';
+
+
+--
+-- Name: COLUMN prop_attr.value; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_attr.value IS 'Значение свойства';
+
+
+--
+-- Name: prop_attr(text, integer, text); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_attr(a_pogc text DEFAULT NULL::text, a_poid integer DEFAULT 0, a_code text DEFAULT NULL::text) RETURNS SETOF prop_attr
+    LANGUAGE sql STABLE
+    AS $_$ /* ws:cfg:50_main.sql / 36 */ 
+-- a_pogc: код группы владельцев
+-- a_poid: код владельца свойств
+-- a_code: код свойства
+  SELECT * FROM cfg.prop_attr
+  WHERE COALESCE($1, pogc) = pogc
+    AND $2 IN (0, poid)
+    AND COALESCE($3, code) = code
+$_$;
+
+
+--
+-- Name: FUNCTION prop_attr(a_pogc text, a_poid integer, a_code text); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_attr(a_pogc text, a_poid integer, a_code text) IS 'Атрибуты Свойства';
+
+
+--
+-- Name: prop_calc_is_mask(); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_calc_is_mask() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$ /* ws:cfg:60_main.sql / 25 */ 
+  BEGIN
+    NEW.is_mask := ws.mask_is_multi(NEW.code);
+    RETURN NEW;
+  END;
+$$;
+
+
+--
+-- Name: FUNCTION prop_calc_is_mask(); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_calc_is_mask() IS 'Расчет значения поля is_mask';
+
+
+--
+-- Name: prop_clean_pkg(text, boolean); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_clean_pkg(a_pkg text, a_wsd_clean boolean) RETURNS void
+    LANGUAGE plpgsql
+    AS $_$ /* ws:cfg:52_misc.sql / 25 */ 
+-- a_pkg: пакет для которого производится чистка
+-- a_wsd_clean: признак удаления атрибутов свойств в схеме wsd
+  BEGIN
+
+    -- удаление списка свойств для пакета a_pkg
+    DELETE FROM cfg.prop WHERE pkg = $1;
+    UPDATE cfg.prop SET pogc_list = ws.array_remove(pogc_list::text[], $1) WHERE $1 = ANY(pogc_list);
+
+    -- удаление значений свойств и владельцев из схемы wsd
+    IF $2 THEN
+      DELETE FROM wsd.prop_value WHERE pkg = $1;
+      DELETE FROM wsd.prop_owner WHERE pkg = $1;
+      DELETE FROM wsd.prop_group WHERE pkg = $1;
+    END IF;
+
+  END
+$_$;
+
+
+--
+-- Name: FUNCTION prop_clean_pkg(a_pkg text, a_wsd_clean boolean); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_clean_pkg(a_pkg text, a_wsd_clean boolean) IS 'Удаление свойств для отдельного пакета';
+
+
+--
+-- Name: prop_clean_value(text); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_clean_value(a_prop_value text) RETURNS void
+    LANGUAGE plpgsql
+    AS $_$ /* ws:cfg:52_misc.sql / 47 */ 
+-- a_prop_value: значение свойства
+  BEGIN
+
+    DELETE FROM wsd.prop_value WHERE code = $1;
+
+  END
+$_$;
+
+
+--
+-- Name: FUNCTION prop_clean_value(a_prop_value text); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_clean_value(a_prop_value text) IS 'Удаление значения свойства';
+
+
+--
+-- Name: prop_group_value_list(text, ws.d_id, text, boolean, date, text, text); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_group_value_list(a_pogc text, a_poid ws.d_id DEFAULT 0, a_prefix text DEFAULT ''::text, a_prefix_keep boolean DEFAULT true, a_date date DEFAULT ('now'::text)::date, a_prefix_new text DEFAULT ''::text, a_mark_default text DEFAULT '%s'::text) RETURNS SETOF ws.t_hashtable
+    LANGUAGE plpgsql STABLE
+    AS $$ /* ws:cfg:30_main.sql / 125 */ 
+-- a_pogc: код группы владельцев
+-- a_poid: код владельца
+-- a_prefix: часть кода свойства до '.'
+-- a_prefix_keep:признак замены в результате a_prefix на a_prefix_new
+-- a_date: дата получения значения свойства
+-- a_prefix_new: добавочный префикс
+-- a_mark_default: метка для не атомарного свойства
+DECLARE
+  r wsd.prop_owner;
+  v_prefix_add TEXT;
+BEGIN
+  FOR r IN SELECT * FROM wsd.prop_owner WHERE pogc = a_pogc AND a_poid IN (poid, 0) ORDER BY sort
+  LOOP
+    v_prefix_add := CASE
+      WHEN a_poid = 0 THEN r.poid || '.'
+      ELSE ''
+    END;
+    RETURN QUERY SELECT * FROM cfg.prop_value_list(r.pogc, r.poid, a_prefix, a_prefix_keep, a_date, a_prefix_new || v_prefix_add, a_mark_default);
+  END LOOP;
+  RETURN;
+END;
+$$;
+
+
+--
+-- Name: FUNCTION prop_group_value_list(a_pogc text, a_poid ws.d_id, a_prefix text, a_prefix_keep boolean, a_date date, a_prefix_new text, a_mark_default text); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_group_value_list(a_pogc text, a_poid ws.d_id, a_prefix text, a_prefix_keep boolean, a_date date, a_prefix_new text, a_mark_default text) IS 'Значения свойств по части кода (до .), в разрезе владельцев свойств';
+
+
+--
+-- Name: prop_info(d_prop_code, boolean); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_info(a_code d_prop_code DEFAULT NULL::text, a_is_mask boolean DEFAULT false) RETURNS SETOF prop
+    LANGUAGE plpgsql STABLE
+    AS $$ /* ws:cfg:30_main.sql / 25 */ 
+-- a_code: код свойства
+-- a_is_mask: признак атомарности свойства
+  DECLARE
+    v_code TEXT;
+  BEGIN
+    IF a_is_mask THEN
+      v_code := COALESCE(a_code, ''); -- аргумент не может быть "''", только d_prop_code или NULL
+      v_code := v_code || '%';
+      RETURN QUERY SELECT * FROM cfg.prop WHERE lower(code) LIKE lower(v_code);
+    ELSE
+      -- TODO: RAISE IF a_code IS NULL
+      RETURN QUERY SELECT * FROM cfg.prop WHERE lower(code) = lower(a_code);
+    END IF;
+    RETURN;
+  END;
+$$;
+
+
+--
+-- Name: FUNCTION prop_info(a_code d_prop_code, a_is_mask boolean); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_info(a_code d_prop_code, a_is_mask boolean) IS 'Описание свойства или списка свойств';
+
+
+SET search_path = wsd, pg_catalog;
+
+--
+-- Name: prop_group; Type: TABLE; Schema: wsd; Owner: -
+--
+
+CREATE TABLE prop_group (
+    pogc text NOT NULL,
+    pkg text DEFAULT ws.pg_cs() NOT NULL,
+    sort integer NOT NULL,
+    is_id_required boolean DEFAULT true NOT NULL,
+    name text NOT NULL,
+    anno text
+);
+
+
+--
+-- Name: TABLE prop_group; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON TABLE prop_group IS 'Группа владельцев свойств';
+
+
+--
+-- Name: COLUMN prop_group.pogc; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_group.pogc IS 'Код группы (Property Owner Group Code)';
+
+
+--
+-- Name: COLUMN prop_group.pkg; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_group.pkg IS 'Пакет, в котором добавлена группа';
+
+
+--
+-- Name: COLUMN prop_group.sort; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_group.sort IS 'Порядок сортировки';
+
+
+--
+-- Name: COLUMN prop_group.is_id_required; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_group.is_id_required IS 'Загрузка без указания poid не используется';
+
+
+--
+-- Name: COLUMN prop_group.name; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_group.name IS 'Название';
+
+
+--
+-- Name: COLUMN prop_group.anno; Type: COMMENT; Schema: wsd; Owner: -
+--
+
+COMMENT ON COLUMN prop_group.anno IS 'Аннотация';
+
+
+SET search_path = cfg, pg_catalog;
+
+--
+-- Name: prop_owner_attr; Type: VIEW; Schema: cfg; Owner: -
+--
+
+CREATE VIEW prop_owner_attr AS
+    SELECT po.pogc, po.poid, po.pkg, po.sort, po.name, po.anno, pog.is_id_required, pog.sort AS pog_sort, pog.name AS pog_name FROM (wsd.prop_owner po JOIN wsd.prop_group pog USING (pogc)) ORDER BY pog.sort, po.sort;
+
+
+--
+-- Name: VIEW prop_owner_attr; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON VIEW prop_owner_attr IS 'Владельцы свойств';
+
+
+--
+-- Name: COLUMN prop_owner_attr.pogc; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.pogc IS 'Код группы (Property Owner Group Code)';
+
+
+--
+-- Name: COLUMN prop_owner_attr.poid; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.poid IS 'ID владельца (Property Owner ID)';
+
+
+--
+-- Name: COLUMN prop_owner_attr.pkg; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.pkg IS 'Пакет, в котором добавлена группа';
+
+
+--
+-- Name: COLUMN prop_owner_attr.sort; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.sort IS 'Порядок сортировки';
+
+
+--
+-- Name: COLUMN prop_owner_attr.name; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.name IS 'Название';
+
+
+--
+-- Name: COLUMN prop_owner_attr.anno; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.anno IS 'Аннотация';
+
+
+--
+-- Name: COLUMN prop_owner_attr.is_id_required; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.is_id_required IS 'Загрузка без указания poid не используется';
+
+
+--
+-- Name: COLUMN prop_owner_attr.pog_sort; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.pog_sort IS 'Порядок сортировки';
+
+
+--
+-- Name: COLUMN prop_owner_attr.pog_name; Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON COLUMN prop_owner_attr.pog_name IS 'Название';
+
+
+--
+-- Name: prop_owner_attr(text, integer); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_owner_attr(a_pogc text DEFAULT NULL::text, a_poid integer DEFAULT 0) RETURNS SETOF prop_owner_attr
+    LANGUAGE sql STABLE
+    AS $_$ /* ws:cfg:50_main.sql / 25 */ 
+-- a_pogc: код группы владельцев
+-- a_poid: код владельца свойства
+  SELECT * FROM cfg.prop_owner_attr
+  WHERE COALESCE($1, pogc) = pogc
+    AND $2 IN (0, poid)
+$_$;
+
+
+--
+-- Name: FUNCTION prop_owner_attr(a_pogc text, a_poid integer); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_owner_attr(a_pogc text, a_poid integer) IS 'Атрибуты POID';
+
+
+--
+-- Name: prop_value(text, ws.d_id, d_prop_code, date); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_value(a_pogc text, a_poid ws.d_id, a_code d_prop_code, a_date date DEFAULT ('now'::text)::date) RETURNS text
+    LANGUAGE sql STABLE
+    AS $_$ /* ws:cfg:30_main.sql / 51 */ 
+-- a_pogc: код группы владельцев
+-- a_poid: код владельца
+-- a_code: код свойства
+-- a_date: дата получения значения свойства
+  SELECT value
+    FROM wsd.prop_value
+    WHERE pogc = $1 /* a_pogc */
+      AND poid = $2 /* a_poid */
+      AND code = $3 /* a_code */
+      AND valid_from <= COALESCE($4, CURRENT_DATE) /* a_date */
+      ORDER BY valid_from DESC
+      LIMIT 1
+$_$;
+
+
+--
+-- Name: FUNCTION prop_value(a_pogc text, a_poid ws.d_id, a_code d_prop_code, a_date date); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_value(a_pogc text, a_poid ws.d_id, a_code d_prop_code, a_date date) IS 'Значение свойства';
+
+
+--
+-- Name: prop_value_insupd_trigger(); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_value_insupd_trigger() RETURNS trigger
+    LANGUAGE plpgsql IMMUTABLE
+    AS $$ /* ws:cfg:60_main.sql / 35 */ 
+  DECLARE
+    v_rows INTEGER;
+  BEGIN
+    SELECT INTO v_rows
+      count(1)
+      FROM cfg.prop
+      WHERE NEW.pogc = ANY(pogc_list)
+        AND NEW.code ~ ws.mask2regexp(code)
+    ;
+    IF v_rows = 0 THEN
+      RAISE EXCEPTION 'Unknown code % in group %', NEW.code, NEW.pogc;
+    ELSIF v_rows > 1 THEN
+      RAISE EXCEPTION 'code % related to % props, but need only 1', NEW.code, v_rows;
+    END IF;
+    RETURN NEW;
+  END;
+$$;
+
+
+--
+-- Name: FUNCTION prop_value_insupd_trigger(); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_value_insupd_trigger() IS 'Проверка наличия свойства в таблице prop';
+
+
+--
+-- Name: prop_value_list(text, ws.d_id, text, boolean, date, text, text); Type: FUNCTION; Schema: cfg; Owner: -
+--
+
+CREATE FUNCTION prop_value_list(a_pogc text, a_poid ws.d_id, a_prefix text DEFAULT ''::text, a_prefix_keep boolean DEFAULT true, a_date date DEFAULT ('now'::text)::date, a_prefix_new text DEFAULT ''::text, a_mark_default text DEFAULT '%s'::text) RETURNS SETOF ws.t_hashtable
+    LANGUAGE sql STABLE
+    AS $_$ /* ws:cfg:30_main.sql / 77 */ 
+-- a_pogc: код группы владельцев
+-- a_poid: код владельца
+-- a_prefix: часть кода свойства до '.'
+-- a_prefix_keep:признак замены в результате a_prefix на a_prefix_new
+-- a_date: дата получения значения свойства
+-- a_prefix_new: добавочный префикс
+-- a_mark_default: метка для не атомарного свойства
+  SELECT
+    $6 || CASE WHEN $3 /* a_prefix */ = '' OR $4 /* a_prefix_keep */
+      THEN code
+      ELSE regexp_replace (code, '^' || $3 || E'\\.', '')
+    END as code
+  , COALESCE(cfg.prop_value($1, $2, code, $5), ws.sprintf($7 /* a_mark_default */, def_value))
+    FROM cfg.prop
+    WHERE $1 = ANY(pogc_list)
+      AND NOT is_mask
+      AND ($3 = '' OR code LIKE $3 || '.%')
+  UNION SELECT
+    $6 || CASE WHEN $3 /* a_prefix */ = '' OR $4 /* a_prefix_keep */
+      THEN tmp.code
+      ELSE regexp_replace (tmp.code, '^' || $3 || E'\\.', '')
+    END as code
+  , COALESCE(tmp.value, ws.sprintf($7 /* a_mark_default */, p.def_value))
+    FROM (
+      SELECT code, value, row_number() over (partition by pogc, poid, code order by valid_from desc)
+        FROM wsd.prop_value v
+        WHERE pogc = $1 AND poid = $2 AND valid_from <= COALESCE($5, CURRENT_DATE)
+      ) tmp
+      , cfg.prop p
+      WHERE tmp.row_number = 1 /* самая свежая по началу действия строка */
+        AND ($3 = '' OR tmp.code ~ ws.mask2regexp(p.code))
+        AND p.is_mask
+        AND $1 = ANY(p.pogc_list)
+  ORDER BY code
+$_$;
+
+
+--
+-- Name: FUNCTION prop_value_list(a_pogc text, a_poid ws.d_id, a_prefix text, a_prefix_keep boolean, a_date date, a_prefix_new text, a_mark_default text); Type: COMMENT; Schema: cfg; Owner: -
+--
+
+COMMENT ON FUNCTION prop_value_list(a_pogc text, a_poid ws.d_id, a_prefix text, a_prefix_keep boolean, a_date date, a_prefix_new text, a_mark_default text) IS 'Значения свойств по части кода (до .)';
+
+
 SET search_path = ev, pg_catalog;
 
 --
@@ -1722,28 +2526,6 @@ $_$;
 
 COMMENT ON FUNCTION "create"(a_kind_id ws.d_id, a_status_id ws.d_id32, a_created_by ws.d_id, a_arg_id ws.d_id, a_arg_id2 ws.d_id, a_arg_name text, a_arg_name2 text) IS 'Создать событие';
 
-
-SET search_path = ws, pg_catalog;
-
---
--- Name: pg_cs(text); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION pg_cs(text DEFAULT ''::text) RETURNS name
-    LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:18_pg.sql / 54 */ 
- SELECT (current_schema() || CASE WHEN COALESCE($1, '') = '' THEN '' ELSE '.' || $1 END)::name
-$_$;
-
-
---
--- Name: FUNCTION pg_cs(text); Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON FUNCTION pg_cs(text) IS 'Текущая (первая) схема БД в пути поиска';
-
-
-SET search_path = ev, pg_catalog;
 
 --
 -- Name: kind; Type: TABLE; Schema: ev; Owner: -
@@ -3990,7 +4772,7 @@ CREATE FUNCTION next(a_pid integer, a_id integer DEFAULT 0) RETURNS SETOF wsd.jo
     UPDATE wsd.job SET
       run_pid = a_pid,
       run_ip = inet_client_addr(),
-      run_at = CURRENT_TIMESTAMP,
+      run_at = clock_timestamp(), --CURRENT_TIMESTAMP,
       status_id = job.const_status_id_process()
       WHERE
         id = r.id
@@ -5584,24 +6366,6 @@ CREATE FUNCTION array_remove(a anyarray, b anyelement) RETURNS anyarray
     AS $_$ /* ws:ws:19_utils.sql / 96 */ 
 SELECT array_agg(x) FROM unnest($1) x WHERE x <> $2;
 $_$;
-
-
---
--- Name: cache(d_id32); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION cache(a_id d_id32 DEFAULT 0) RETURNS SETOF t_hashtable
-    LANGUAGE sql STABLE STRICT
-    AS $_$ /* ws:ws:52_main.sql / 25 */ 
-  SELECT poid::text, name FROM wsd.prop_owner WHERE pogc = 'cache' AND $1 IN (poid, 0) ORDER BY name;
-$_$;
-
-
---
--- Name: FUNCTION cache(a_id d_id32); Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON FUNCTION cache(a_id d_id32) IS 'Атрибуты кэша по id';
 
 
 --
@@ -7243,7 +8007,7 @@ SET search_path = ws, pg_catalog;
 
 CREATE FUNCTION error_info(a_code d_errcode) RETURNS i18n_def.error
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 187 */ 
+    AS $_$ /* ws:ws:52_main.sql / 180 */ 
   SELECT * FROM error WHERE code = $1;
 $_$;
 
@@ -7394,7 +8158,7 @@ COMMENT ON FUNCTION info_status() IS 'Статус инфо';
 
 CREATE FUNCTION is_ids_enough(a_class_id d_class, a_id text DEFAULT NULL::text, a_id1 text DEFAULT NULL::text, a_id2 text DEFAULT NULL::text) RETURNS boolean
     LANGUAGE plpgsql STABLE
-    AS $$ /* ws:ws:52_main.sql / 96 */ 
+    AS $$ /* ws:ws:52_main.sql / 89 */ 
   DECLARE
     v_id_count ws.d_cnt;
   BEGIN
@@ -7444,35 +8208,6 @@ $_$;
 --
 
 COMMENT ON FUNCTION mask2format(a_mask text) IS 'Сформировать строку формата по шаблону';
-
-
---
--- Name: mask2regexp(text); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION mask2regexp(a_mask text) RETURNS text
-    LANGUAGE plpgsql IMMUTABLE
-    AS $$ /* ws:ws:19_utils.sql / 114 */ 
-  DECLARE
-    v TEXT;
-  BEGIN
-    v := a_mask;
-    v := regexp_replace(v, ':i',    E'(\\d+)',        'g');
-    v := regexp_replace(v, E'\\?',  E'\\?',           'g');
-    v := regexp_replace(v, E'\\.',  E'\\.',           'g');
-    v := regexp_replace(v, ':s',    '([^/:]+)',       'g');
-    v := regexp_replace(v, ':u',    '((?:/[^/]+)*)',  'g');
-    v := regexp_replace(v, ',',     '|',              'g');  -- allow mask with comma fro props
-    RETURN v;
-  END;
-$$;
-
-
---
--- Name: FUNCTION mask2regexp(a_mask text); Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON FUNCTION mask2regexp(a_mask text) IS 'Сформировать строку поиска по шаблону';
 
 
 --
@@ -7661,7 +8396,7 @@ COMMENT ON COLUMN method.realm_code IS 'код области вызова ме�
 
 CREATE FUNCTION method_by_action(a_class_id d_class DEFAULT 0, a_action_id d_id32 DEFAULT 0) RETURNS SETOF method
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 153 */ 
+    AS $_$ /* ws:ws:52_main.sql / 146 */ 
   SELECT *
     FROM ws.method WHERE $1 IN (class_id, 0) AND $2 IN (action_id, 0) ORDER BY 2,3,1;
 $_$;
@@ -7680,7 +8415,7 @@ COMMENT ON FUNCTION method_by_action(a_class_id d_class, a_action_id d_id32) IS 
 
 CREATE FUNCTION method_by_code(a_code d_code) RETURNS SETOF method
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 145 */ 
+    AS $_$ /* ws:ws:52_main.sql / 138 */ 
   SELECT * FROM ws.method WHERE code = $1 ORDER BY 2,3,1;
 --  SELECT * FROM ws.method WHERE code LIKE $1 ORDER BY 2,3,1;
 $_$;
@@ -7764,7 +8499,7 @@ $$;
 
 CREATE FUNCTION method_lookup(a_code d_code_like DEFAULT '%'::text, a_page d_cnt DEFAULT 0, a_by d_cnt DEFAULT 0) RETURNS SETOF method
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 166 */ 
+    AS $_$ /* ws:ws:52_main.sql / 159 */ 
   SELECT *
     FROM ws.method
     WHERE code ilike '%'||$1 -- ищем по всему имени
@@ -7819,7 +8554,7 @@ COMMENT ON COLUMN method_rv_format.name IS 'Название формата';
 
 CREATE FUNCTION method_rvf(a_id d_id32 DEFAULT 0) RETURNS SETOF method_rv_format
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 179 */ 
+    AS $_$ /* ws:ws:52_main.sql / 172 */ 
   SELECT * FROM ws.method_rv_format WHERE $1 IN (id, 0) ORDER BY 1;
 $_$;
 
@@ -7898,7 +8633,7 @@ COMMENT ON FUNCTION notice(a_text text) IS 'Вывод предупрежден�
 
 CREATE FUNCTION page_by_action(a_class_id d_class DEFAULT 0, a_action_id d_id32 DEFAULT 0, a_id text DEFAULT NULL::text, a_id1 text DEFAULT NULL::text, a_id2 text DEFAULT NULL::text) RETURNS SETOF t_page_info
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 61 */ 
+    AS $_$ /* ws:ws:52_main.sql / 54 */ 
   SELECT *
     , ws.sprintf(uri_fmt, $3, $4, $5)
     , ws.uri_args(ws.sprintf(uri_fmt, $3, $4, $5), uri_re)
@@ -7920,7 +8655,7 @@ COMMENT ON FUNCTION page_by_action(a_class_id d_class, a_action_id d_id32, a_id 
 
 CREATE FUNCTION page_by_code(a_code text, a_id text DEFAULT NULL::text, a_id1 text DEFAULT NULL::text, a_id2 text DEFAULT NULL::text) RETURNS SETOF t_page_info
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 50 */ 
+    AS $_$ /* ws:ws:52_main.sql / 43 */ 
   SELECT *
     , ws.sprintf(uri_fmt, $2, $3, $4)
     , ws.uri_args(ws.sprintf(uri_fmt, $2, $3, $4), uri_re)
@@ -7942,7 +8677,7 @@ COMMENT ON FUNCTION page_by_code(a_code text, a_id text, a_id1 text, a_id2 text)
 
 CREATE FUNCTION page_by_uri(a_uri text DEFAULT ''::text) RETURNS SETOF t_page_info
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 39 */ 
+    AS $_$ /* ws:ws:52_main.sql / 32 */ 
   SELECT *
     , $1
     , ws.uri_args($1, uri_re)
@@ -7964,7 +8699,7 @@ COMMENT ON FUNCTION page_by_uri(a_uri text) IS 'Атрибуты страниц�
 
 CREATE FUNCTION page_childs(a_code text DEFAULT NULL::text, a_id text DEFAULT NULL::text, a_id1 text DEFAULT NULL::text, a_id2 text DEFAULT NULL::text) RETURNS SETOF t_page_info
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 113 */ 
+    AS $_$ /* ws:ws:52_main.sql / 106 */ 
   SELECT *
     , ws.sprintf(uri_fmt, $2, $3, $4)
     , ws.uri_args(ws.sprintf(uri_fmt, $2, $3, $4), uri_re)
@@ -7986,7 +8721,7 @@ COMMENT ON FUNCTION page_childs(a_code text, a_id text, a_id1 text, a_id2 text) 
 
 CREATE FUNCTION page_group_name(a_id d_id32) RETURNS text
     LANGUAGE sql STABLE STRICT
-    AS $_$ /* ws:ws:52_main.sql / 32 */ 
+    AS $_$ /* ws:ws:52_main.sql / 25 */ 
   SELECT name FROM page_group WHERE id = $1;
 $_$;
 
@@ -8024,7 +8759,7 @@ $$;
 
 CREATE FUNCTION page_path(a_code text DEFAULT NULL::text, a_id text DEFAULT NULL::text, a_id1 text DEFAULT NULL::text, a_id2 text DEFAULT NULL::text) RETURNS SETOF t_page_info
     LANGUAGE plpgsql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 72 */ 
+    AS $_$ /* ws:ws:52_main.sql / 65 */ 
   DECLARE
     r ws.t_page_info;
   BEGIN
@@ -8059,7 +8794,7 @@ COMMENT ON FUNCTION page_path(a_code text, a_id text, a_id1 text, a_id2 text) IS
 
 CREATE FUNCTION page_tree(a_code text DEFAULT NULL::text) RETURNS SETOF t_hashtable
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 124 */ 
+    AS $_$ /* ws:ws:52_main.sql / 117 */ 
   -- http://explainextended.com/2009/07/17/postgresql-8-4-preserving-order-for-hierarchical-query/
   WITH RECURSIVE q AS (
     SELECT h, 1 AS level, ARRAY[sort::int] AS breadcrumb
@@ -9021,596 +9756,6 @@ $$;
 
 
 --
--- Name: prop; Type: TABLE; Schema: ws; Owner: -
---
-
-CREATE TABLE prop (
-    code d_prop_code NOT NULL,
-    pkg text DEFAULT pg_cs() NOT NULL,
-    pogc_list d_texta NOT NULL,
-    is_mask boolean NOT NULL,
-    def_value text,
-    name text NOT NULL,
-    value_fmt text,
-    anno text
-);
-
-
---
--- Name: TABLE prop; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON TABLE prop IS 'Справочник свойств';
-
-
---
--- Name: COLUMN prop.code; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop.code IS 'Код свойства';
-
-
---
--- Name: COLUMN prop.pkg; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop.pkg IS 'Пакет, в котором добавлено свойство';
-
-
---
--- Name: COLUMN prop.pogc_list; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop.pogc_list IS 'Массив кодов разрешенных групп (prop_group)';
-
-
---
--- Name: COLUMN prop.is_mask; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop.is_mask IS 'Свойство не атомарно';
-
-
---
--- Name: COLUMN prop.def_value; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop.def_value IS 'Значение по умолчанию';
-
-
---
--- Name: COLUMN prop.name; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop.name IS 'Название';
-
-
---
--- Name: COLUMN prop.value_fmt; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop.value_fmt IS 'Строка формата для вывода значения';
-
-
---
--- Name: COLUMN prop.anno; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop.anno IS 'Аннотация';
-
-
-SET search_path = wsd, pg_catalog;
-
---
--- Name: prop_owner; Type: TABLE; Schema: wsd; Owner: -
---
-
-CREATE TABLE prop_owner (
-    pogc text NOT NULL,
-    poid integer NOT NULL,
-    pkg text DEFAULT ws.pg_cs() NOT NULL,
-    sort integer NOT NULL,
-    name text NOT NULL,
-    anno text
-);
-
-
---
--- Name: TABLE prop_owner; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON TABLE prop_owner IS 'Владельцы свойств (Property Owner)';
-
-
---
--- Name: COLUMN prop_owner.pogc; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_owner.pogc IS 'Код группы (Property Owner Group Code)';
-
-
---
--- Name: COLUMN prop_owner.poid; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_owner.poid IS 'ID владельца (Property Owner ID)';
-
-
---
--- Name: COLUMN prop_owner.pkg; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_owner.pkg IS 'Пакет, в котором добавлена группа';
-
-
---
--- Name: COLUMN prop_owner.sort; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_owner.sort IS 'Порядок сортировки';
-
-
---
--- Name: COLUMN prop_owner.name; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_owner.name IS 'Название';
-
-
---
--- Name: COLUMN prop_owner.anno; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_owner.anno IS 'Аннотация';
-
-
---
--- Name: prop_value; Type: TABLE; Schema: wsd; Owner: -
---
-
-CREATE TABLE prop_value (
-    pogc text NOT NULL,
-    poid integer NOT NULL,
-    code text NOT NULL,
-    valid_from date DEFAULT '2000-01-01'::date NOT NULL,
-    pkg text DEFAULT ws.pg_cs() NOT NULL,
-    value text
-);
-
-
---
--- Name: TABLE prop_value; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON TABLE prop_value IS 'Значения свойств объектов';
-
-
---
--- Name: COLUMN prop_value.pogc; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_value.pogc IS 'Код группы (Property Owner Group Code)';
-
-
---
--- Name: COLUMN prop_value.poid; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_value.poid IS 'ID владельца (Property Owner ID)';
-
-
---
--- Name: COLUMN prop_value.code; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_value.code IS 'Код свойства';
-
-
---
--- Name: COLUMN prop_value.valid_from; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_value.valid_from IS 'Дата начала действия';
-
-
---
--- Name: COLUMN prop_value.pkg; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_value.pkg IS 'Пакет, в котором задано значение';
-
-
---
--- Name: COLUMN prop_value.value; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_value.value IS 'Значение свойства';
-
-
-SET search_path = ws, pg_catalog;
-
---
--- Name: prop_attr; Type: VIEW; Schema: ws; Owner: -
---
-
-CREATE VIEW prop_attr AS
-    SELECT pv.code, p.pkg, p.pogc_list, p.is_mask, p.def_value, p.name, p.value_fmt, p.anno, pv.pogc, pv.poid, pv.valid_from, pv.pkg AS value_pkg, pv.value FROM prop p, wsd.prop_value pv WHERE (((pv.pogc = ANY ((p.pogc_list)::text[])) AND p.is_mask) AND (pv.code ~ mask2regexp((p.code)::text))) UNION SELECT p.code, p.pkg, p.pogc_list, p.is_mask, p.def_value, p.name, p.value_fmt, p.anno, po.pogc, po.poid, '2000-01-02'::date AS valid_from, po.pkg AS value_pkg, (SELECT prop_value.value FROM wsd.prop_value WHERE (((prop_value.pogc = po.pogc) AND (prop_value.poid = po.poid)) AND (prop_value.code = (p.code)::text))) AS value FROM prop p, wsd.prop_owner po WHERE ((po.pogc = ANY ((p.pogc_list)::text[])) AND (NOT p.is_mask)) ORDER BY 9, 10, 1, 11;
-
-
---
--- Name: VIEW prop_attr; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON VIEW prop_attr IS 'Атрибуты свойств';
-
-
---
--- Name: COLUMN prop_attr.code; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_attr.code IS 'Код свойства';
-
-
---
--- Name: COLUMN prop_attr.pogc; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_attr.pogc IS 'Код группы (Property Owner Group Code)';
-
-
---
--- Name: COLUMN prop_attr.poid; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_attr.poid IS 'ID владельца (Property Owner ID)';
-
-
---
--- Name: COLUMN prop_attr.valid_from; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_attr.valid_from IS 'Дата начала действия';
-
-
---
--- Name: COLUMN prop_attr.value_pkg; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_attr.value_pkg IS 'Пакет, в котором задано значение';
-
-
---
--- Name: COLUMN prop_attr.value; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_attr.value IS 'Значение свойства';
-
-
---
--- Name: prop_attr(text, integer, text); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION prop_attr(a_pogc text DEFAULT NULL::text, a_poid integer DEFAULT 0, a_code text DEFAULT NULL::text) RETURNS SETOF prop_attr
-    LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:51_prop.sql / 34 */ 
-  SELECT * FROM ws.prop_attr
-  WHERE COALESCE($1, pogc) = pogc
-    AND $2 IN (0, poid)
-    AND COALESCE($3, code) = code
-$_$;
-
-
---
--- Name: FUNCTION prop_attr(a_pogc text, a_poid integer, a_code text); Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON FUNCTION prop_attr(a_pogc text, a_poid integer, a_code text) IS 'Атрибуты Свойства';
-
-
---
--- Name: prop_calc_is_mask(); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION prop_calc_is_mask() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$ /* ws:ws:60_trig.sql / 170 */ 
-  -- prop_calc_is_mask: Расчет значения поля is_mask
-  BEGIN
-    NEW.is_mask := ws.mask_is_multi(NEW.code);
-    RETURN NEW;
-  END;
-$$;
-
-
---
--- Name: prop_group_value_list(text, d_id, text, boolean, date, text, text); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION prop_group_value_list(a_pogc text, a_poid d_id DEFAULT 0, a_prefix text DEFAULT ''::text, a_prefix_keep boolean DEFAULT true, a_date date DEFAULT ('now'::text)::date, a_prefix_new text DEFAULT ''::text, a_mark_default text DEFAULT '%s'::text) RETURNS SETOF t_hashtable
-    LANGUAGE plpgsql STABLE
-    AS $$ /* ws:ws:31_prop.sql / 112 */ 
-DECLARE
-  r wsd.prop_owner;
-  v_prefix_add TEXT;
-BEGIN
-  FOR r IN SELECT * FROM wsd.prop_owner WHERE pogc = a_pogc AND a_poid IN (poid, 0) ORDER BY sort
-  LOOP
-    v_prefix_add := CASE
-      WHEN a_poid = 0 THEN r.poid || '.'
-      ELSE ''
-    END;
-    RETURN QUERY SELECT * FROM ws.prop_value_list(r.pogc, r.poid, a_prefix, a_prefix_keep, a_date, a_prefix_new || v_prefix_add, a_mark_default);
-  END LOOP;
-  RETURN;
-END;
-$$;
-
-
---
--- Name: prop_info(d_prop_code, boolean); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION prop_info(a_code d_prop_code DEFAULT NULL::text, a_is_mask boolean DEFAULT false) RETURNS SETOF prop
-    LANGUAGE plpgsql STABLE
-    AS $$ /* ws:ws:31_prop.sql / 25 */ 
-  DECLARE
-    v_code TEXT;
-  BEGIN
-    IF a_is_mask THEN
-      v_code := COALESCE(a_code, ''); -- аргумент не может быть "''", только d_prop_code или NULL
-      v_code := v_code || '%';
-      RETURN QUERY SELECT * FROM ws.prop WHERE lower(code) LIKE lower(v_code);
-    ELSE
-      -- TODO: RAISE IF a_code IS NULL
-      RETURN QUERY SELECT * FROM ws.prop WHERE lower(code) = lower(a_code);
-    END IF;
-    RETURN;
-  END;
-$$;
-
-
---
--- Name: FUNCTION prop_info(a_code d_prop_code, a_is_mask boolean); Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON FUNCTION prop_info(a_code d_prop_code, a_is_mask boolean) IS 'Описание свойства или списка свойств';
-
-
-SET search_path = wsd, pg_catalog;
-
---
--- Name: prop_group; Type: TABLE; Schema: wsd; Owner: -
---
-
-CREATE TABLE prop_group (
-    pogc text NOT NULL,
-    pkg text DEFAULT ws.pg_cs() NOT NULL,
-    sort integer NOT NULL,
-    is_id_required boolean DEFAULT true NOT NULL,
-    name text NOT NULL,
-    anno text
-);
-
-
---
--- Name: TABLE prop_group; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON TABLE prop_group IS 'Группа владельцев свойств';
-
-
---
--- Name: COLUMN prop_group.pogc; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_group.pogc IS 'Код группы (Property Owner Group Code)';
-
-
---
--- Name: COLUMN prop_group.pkg; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_group.pkg IS 'Пакет, в котором добавлена группа';
-
-
---
--- Name: COLUMN prop_group.sort; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_group.sort IS 'Порядок сортировки';
-
-
---
--- Name: COLUMN prop_group.is_id_required; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_group.is_id_required IS 'Загрузка без указания poid не используется';
-
-
---
--- Name: COLUMN prop_group.name; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_group.name IS 'Название';
-
-
---
--- Name: COLUMN prop_group.anno; Type: COMMENT; Schema: wsd; Owner: -
---
-
-COMMENT ON COLUMN prop_group.anno IS 'Аннотация';
-
-
-SET search_path = ws, pg_catalog;
-
---
--- Name: prop_owner_attr; Type: VIEW; Schema: ws; Owner: -
---
-
-CREATE VIEW prop_owner_attr AS
-    SELECT po.pogc, po.poid, po.pkg, po.sort, po.name, po.anno, pog.is_id_required, pog.sort AS pog_sort, pog.name AS pog_name FROM (wsd.prop_owner po JOIN wsd.prop_group pog USING (pogc)) ORDER BY pog.sort, po.sort;
-
-
---
--- Name: VIEW prop_owner_attr; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON VIEW prop_owner_attr IS 'Владельцы свойств';
-
-
---
--- Name: COLUMN prop_owner_attr.pogc; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_owner_attr.pogc IS 'Код группы (Property Owner Group Code)';
-
-
---
--- Name: COLUMN prop_owner_attr.poid; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_owner_attr.poid IS 'ID владельца (Property Owner ID)';
-
-
---
--- Name: COLUMN prop_owner_attr.pkg; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_owner_attr.pkg IS 'Пакет, в котором добавлена группа';
-
-
---
--- Name: COLUMN prop_owner_attr.sort; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_owner_attr.sort IS 'Порядок сортировки';
-
-
---
--- Name: COLUMN prop_owner_attr.name; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_owner_attr.name IS 'Название';
-
-
---
--- Name: COLUMN prop_owner_attr.anno; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_owner_attr.anno IS 'Аннотация';
-
-
---
--- Name: COLUMN prop_owner_attr.is_id_required; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_owner_attr.is_id_required IS 'Загрузка без указания poid не используется';
-
-
---
--- Name: COLUMN prop_owner_attr.pog_sort; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_owner_attr.pog_sort IS 'Порядок сортировки';
-
-
---
--- Name: COLUMN prop_owner_attr.pog_name; Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON COLUMN prop_owner_attr.pog_name IS 'Название';
-
-
---
--- Name: prop_owner_attr(text, integer); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION prop_owner_attr(a_pogc text DEFAULT NULL::text, a_poid integer DEFAULT 0) RETURNS SETOF prop_owner_attr
-    LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:51_prop.sql / 25 */ 
-  SELECT * FROM ws.prop_owner_attr
-  WHERE COALESCE($1, pogc) = pogc
-    AND $2 IN (0, poid)
-$_$;
-
-
---
--- Name: FUNCTION prop_owner_attr(a_pogc text, a_poid integer); Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON FUNCTION prop_owner_attr(a_pogc text, a_poid integer) IS 'Атрибуты POID';
-
-
---
--- Name: prop_value(text, d_id, d_prop_code, date); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION prop_value(a_pogc text, a_poid d_id, a_code d_prop_code, a_date date DEFAULT ('now'::text)::date) RETURNS text
-    LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:31_prop.sql / 49 */ 
-  SELECT value
-    FROM wsd.prop_value
-    WHERE pogc = $1 /* a_pogc */
-      AND poid = $2 /* a_poid */
-      AND code = $3 /* a_code */
-      AND valid_from <= COALESCE($4, CURRENT_DATE) /* a_date */
-      ORDER BY valid_from DESC
-      LIMIT 1
-$_$;
-
-
---
--- Name: FUNCTION prop_value(a_pogc text, a_poid d_id, a_code d_prop_code, a_date date); Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON FUNCTION prop_value(a_pogc text, a_poid d_id, a_code d_prop_code, a_date date) IS 'Значение свойства';
-
-
---
--- Name: prop_value_list(text, d_id, text, boolean, date, text, text); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION prop_value_list(a_pogc text, a_poid d_id, a_prefix text DEFAULT ''::text, a_prefix_keep boolean DEFAULT true, a_date date DEFAULT ('now'::text)::date, a_prefix_new text DEFAULT ''::text, a_mark_default text DEFAULT '%s'::text) RETURNS SETOF t_hashtable
-    LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:31_prop.sql / 71 */ 
-  SELECT
-    $6 || CASE WHEN $3 /* a_prefix */ = '' OR $4 /* a_prefix_keep */
-      THEN code
-      ELSE regexp_replace (code, '^' || $3 || E'\\.', '')
-    END as code
-  , COALESCE(ws.prop_value($1, $2, code, $5), ws.sprintf($7 /* a_mark_default */, def_value))
-    FROM ws.prop
-    WHERE $1 = ANY(pogc_list)
-      AND NOT is_mask
-      AND ($3 = '' OR code LIKE $3 || '.%')
-  UNION SELECT
-    $6 || CASE WHEN $3 /* a_prefix */ = '' OR $4 /* a_prefix_keep */
-      THEN tmp.code
-      ELSE regexp_replace (tmp.code, '^' || $3 || E'\\.', '')
-    END as code
-  , COALESCE(tmp.value, ws.sprintf($7 /* a_mark_default */, p.def_value))
-    FROM (
-      SELECT code, value, row_number() over (partition by pogc, poid, code order by valid_from desc)
-        FROM wsd.prop_value v
-        WHERE pogc = $1 AND poid = $2 AND valid_from <= COALESCE($5, CURRENT_DATE)
-      ) tmp
-      , ws.prop p
-      WHERE tmp.row_number = 1 /* самая свежая по началу действия строка */
-        AND ($3 = '' OR tmp.code ~ ws.mask2regexp(p.code))
-        AND p.is_mask
-        AND $1 = ANY(p.pogc_list)
-  ORDER BY code
-$_$;
-
-
---
--- Name: FUNCTION prop_value_list(a_pogc text, a_poid d_id, a_prefix text, a_prefix_keep boolean, a_date date, a_prefix_new text, a_mark_default text); Type: COMMENT; Schema: ws; Owner: -
---
-
-COMMENT ON FUNCTION prop_value_list(a_pogc text, a_poid d_id, a_prefix text, a_prefix_keep boolean, a_date date, a_prefix_new text, a_mark_default text) IS 'Значения свойств по части кода (до .)';
-
-
---
 -- Name: ref_item; Type: TABLE; Schema: ws; Owner: -
 --
 
@@ -9679,7 +9824,7 @@ COMMENT ON COLUMN ref_item.deleted_at IS 'Момент удаления';
 
 CREATE FUNCTION ref(a_id d_id32, a_item_id d_id32 DEFAULT 0, a_group_id d_id32 DEFAULT 0, a_active_only boolean DEFAULT true) RETURNS SETOF ref_item
     LANGUAGE plpgsql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 195 */ 
+    AS $_$ /* ws:ws:52_main.sql / 188 */ 
   DECLARE
     v_code TEXT;
   BEGIN
@@ -9765,7 +9910,7 @@ COMMENT ON COLUMN ref.updated_at IS 'Момент последнего изме�
 
 CREATE FUNCTION ref_info(a_id d_id32) RETURNS SETOF ref
     LANGUAGE sql STABLE
-    AS $_$ /* ws:ws:52_main.sql / 221 */ 
+    AS $_$ /* ws:ws:52_main.sql / 214 */ 
   SELECT * FROM ws.ref WHERE id = $1;
 $_$;
 
@@ -9986,32 +10131,6 @@ CREATE FUNCTION uri_args(a_uri text, a_mask text) RETURNS text[]
     AS $_$  # /* ws:ws:19_utils.sql / 60 */ 
     my ($uri, $mask) = @_; if ($uri =~ /$mask/) { return [$1, $2, $3, $4, $5]; } return undef;
 $_$;
-
-
---
--- Name: wsd_prop_value_insupd_trigger(); Type: FUNCTION; Schema: ws; Owner: -
---
-
-CREATE FUNCTION wsd_prop_value_insupd_trigger() RETURNS trigger
-    LANGUAGE plpgsql IMMUTABLE
-    AS $$ /* ws:ws:60_trig.sql / 180 */ 
-  DECLARE
-    v_rows INTEGER;
-  BEGIN
-    SELECT INTO v_rows
-      count(1)
-      FROM ws.prop
-      WHERE NEW.pogc = ANY(pogc_list)
-        AND NEW.code ~ ws.mask2regexp(code)
-    ;
-    IF v_rows = 0 THEN
-      RAISE EXCEPTION 'Unknown code % in group %', NEW.code, NEW.pogc;
-    ELSIF v_rows > 1 THEN
-      RAISE EXCEPTION 'code % related to % props, but need only 1', NEW.code, v_rows;
-    END IF;
-    RETURN NEW;
-  END;
-$$;
 
 
 --
@@ -12750,7 +12869,7 @@ CREATE TABLE pkg_script_protected (
     pkg text DEFAULT ws.pg_cs() NOT NULL,
     code text NOT NULL,
     ver text DEFAULT '000'::text NOT NULL,
-    schema text DEFAULT 'wsd'::text,
+    schema text DEFAULT ws.pg_cs(),
     created_at timestamp without time zone DEFAULT now() NOT NULL
 );
 
@@ -12879,6 +12998,96 @@ ALTER TABLE ONLY error ALTER COLUMN id_count SET DEFAULT 0;
 --
 
 ALTER TABLE ONLY page ALTER COLUMN target SET DEFAULT ''::text;
+
+
+SET search_path = cfg, pg_catalog;
+
+--
+-- Data for Name: prop; Type: TABLE DATA; Schema: cfg; Owner: -
+--
+
+INSERT INTO prop VALUES ('ws.daemon.db.sql.:i', 'cfg', '{db}', true, '', 'SQL настройки соединения с БД', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.startup.sock_wait', 'cfg', '{fcgi}', false, '10', 'Максимальная длина очереди ожидающих входящих запросов FCGI до обрыва новых соединений, шт', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fcgi.frontend_poid', 'cfg', '{fcgi}', false, '1', 'POID настроек фронтенда', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fcgi.core_poid', 'cfg', '{fcgi}', false, '1', 'POID настроек бэкенда', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.layout_default', 'cfg', '{fe}', false, 'style01', 'Название макета страниц', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.skin_default', 'cfg', '{fe}', false, 'default', 'Название скина страниц', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.lang.default', 'cfg', '{fe,be}', false, 'ru', 'Код язык сайта по умолчанию', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.lang.allowed.:i', 'cfg', '{fe,be}', true, '', 'Допустимые коды языка сайта', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.tt2.:s', 'cfg', '{fe}', true, '', 'Параметр конфигурации TemplateToolkit', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.sid_arg', 'cfg', '{fe}', false, '', 'Если задан - брать ID сессии из этого аргумента запроса, а не из cookie', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.error_500', 'cfg', '{fe}', false, '/error/', 'Адрес внешнего редиректа при фатальной ошибке PGWS', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.site_is_hidden', 'cfg', '{fe}', false, '1', 'Не выводить внешние счетчики на страницах', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.post.:u', 'cfg', '{fe}', true, '', 'Адрес, на который будут отправляться POST-запросы к PGWS', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.def.sid', 'cfg', '{fe}', false, 'acc.sid_info', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.def.login', 'cfg', '{fe}', false, 'acc.login', 'Метод авторизации', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.def.logout', 'cfg', '{fe}', false, 'acc.logout', 'Метод завершения сессии', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.def.acl', 'cfg', '{fe}', false, 'info.acl_check', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.def.uri', 'cfg', '{fe}', false, 'ws.page_by_uri', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.def.code', 'cfg', '{fe}', false, 'ws.page_by_code', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.ext', 'cfg', '{fe}', false, '.tt2', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.error', 'cfg', '{fe}', false, 'app/error', 'Каталог шаблонов страниц описаний ошибок', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.pages', 'cfg', '{fe}', false, 'page/', 'Каталог шаблонов, вызываемых по GET-запросу', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.jobs', 'cfg', '{fe}', false, 'job/', 'Каталог шаблонов, вызываемых из Job', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.check_prefix', 'cfg', '{be}', false, 'check:', 'Префикс запроса на валидацию аргументов ACL', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.acl_prefix', 'cfg', '{be}', false, 'acl:', 'Префикс запроса на проверку ACL', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.nocache_prefix', 'cfg', '{be}', false, 'nc:', 'Префикс запроса без проверки кэша', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.db_noacc_code', 'cfg', '{be}', false, '42501', 'Код ошибки БД при запрете доступа', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.acl_trigger', 'cfg', '{be}', false, 'acc.log(in|out)', 'Regexp кодов методов меняющих ACL', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.lang.sql.default', 'cfg', '{be}', false, 'SET search_path TO i18n_def, public', 'Выбор языка по умолчанию', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.lang.sql.other', 'cfg', '{be}', false, 'SET search_path TO i18n_%s, i18n_def, public', 'Выбор языка', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.lang.sql.encoding', 'cfg', '{be}', false, 'SET client_encoding TO ''%s''', 'Выбор кодировки', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def_method.code', 'cfg', '{be}', false, 'ws.method_by_code', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def_method.code_real', 'cfg', '{be}', false, 'ws.method_by_code', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def_method.is_sql', 'cfg', '{be}', false, '1', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def_method.rvf_id', 'cfg', '{be}', false, '3', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.class', 'cfg', '{be}', false, 'ws.class', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.sid', 'cfg', '{be}', false, 'acc.sid_info', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.err', 'cfg', '{be}', false, 'ws.error_info', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.acl', 'cfg', '{be}', false, 'info.acl_check', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.acl_eff', 'cfg', '{be}', false, 'ws.acls_eff', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.dt', 'cfg', '{be}', false, 'ws.dt', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.dt_part', 'cfg', '{be}', false, 'ws.dt_part', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.dt_facet', 'cfg', '{be}', false, 'ws.dt_facet', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.facet', 'cfg', '{be}', false, 'ws.facet', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def.uncache', 'cfg', '{be}', false, 'ws.uncache', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def_suffix.status', 'cfg', '{be}', false, '.status', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.def_suffix.acl', 'cfg', '{be}', false, '.acl', '', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.plugin.:s.lib', 'cfg', '{be}', true, '', 'Пакет плагина', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.plugin.:s.pogc', 'cfg', '{be}', true, '', 'POGC настроек плагина (если используется)', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.plugin.:s.poid', 'cfg', '{be}', true, '', 'POID настроек плагина', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.plugin.:s.data_set', 'cfg', '{be}', true, '', 'Сохранять дамп настроек плагина', NULL, NULL);
+INSERT INTO prop VALUES ('ws.plugin.cache.code', 'cfg', '{cache}', false, '', 'Код кэша', NULL, NULL);
+INSERT INTO prop VALUES ('ws.plugin.cache.is_active', 'cfg', '{cache}', false, '1', 'Кэш включен', NULL, NULL);
+INSERT INTO prop VALUES ('ws.plugin.cache.cache_size', 'cfg', '{cache}', false, '1024k', 'Размер кэша', NULL, NULL);
+INSERT INTO prop VALUES ('ws.plugin.cache.page_size', 'cfg', '{cache}', false, '64k', 'Максимальный размер элемента хранения', NULL, NULL);
+INSERT INTO prop VALUES ('ws.plugin.cache.expire_time', 'cfg', '{cache}', false, '10s', 'Максимальное время хранения элемента', NULL, NULL);
+INSERT INTO prop VALUES ('ws.plugin.cache.enable_stats', 'cfg', '{cache}', false, '1', 'Собирать статистику работы с кэшем', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.error.:s.code', 'cfg', '{be}', true, '', 'Код ошибки JSON-RPC 2.0', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.error.:s.message', 'cfg', '{be}', true, '', 'Название ошибки JSON-RPC 2.0', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.be.error.:s.data', 'cfg', '{be}', true, '', 'Аннотация ошибки JSON-RPC 2.0', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.encoding', 'cfg', '{be,fe}', false, 'UTF-8', 'Кодировка по умолчанию', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.default_level', 'cfg', '{be,fe}', false, '3', 'Уровень отладки по умолчанию', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.syslog.default.(default,init,cache)', 'cfg', '{be}', true, '3', 'Уровень отладки запросов инициализации ядра', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.syslog.default.(default,call,sid,acl,cache,validate)', 'cfg', '{fe}', true, '3', 'Уровень отладки запросов POST', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.syslog.post.(default,call,sid,acl,cache,validate)', 'cfg', '{fe}', true, '3', 'Уровень отладки запросов POST', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.syslog.get.(default,call,sid,acl,cache,validate)', 'cfg', '{fe}', true, '3', 'Уровень отладки запросов GET', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.syslog.tmpl.(default,call,sid,acl,cache,validate)', 'cfg', '{fe}', true, '3', 'Уровень отладки запросов из шаблонов', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.debug.default.(default,call,sid,acl,cache,validate)', 'cfg', '{fe}', true, '3', 'Уровень отладки запросов POST', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.debug.post.(default,call,sid,acl,cache,validate)', 'cfg', '{fe}', true, '3', 'Уровень отладки запросов POST', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.debug.get.(default,call,sid,acl,cache,validate)', 'cfg', '{fe}', true, '3', 'Уровень отладки запросов GET', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.debug.tmpl.(default,call,sid,acl,cache,validate)', 'cfg', '{fe}', true, '3', 'Уровень отладки запросов из шаблонов', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.startup.pm.n_processes', 'cfg', '{fcgi,tm,job}', false, '10', 'Количество запускаемых процессов, шт', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.startup.pm.die_timeout', 'cfg', '{fcgi,tm,job}', false, '4', 'Время ожидания корректного завершения процесса, сек', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.mgr.listen_wait', 'cfg', '{tm,job}', false, '60', 'Время ожидания уведомления внутри итерации, сек', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.mgr.listen.job', 'cfg', '{tm,job}', false, '', 'Канал уведомлений (NOTIFY) о добавлении задания', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.mgr.cron_every', 'job', '{job}', false, '60', 'Запуск cron, если номер секунды в сутках кратен заданной', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.mgr.cron_predict', 'job', '{job}', false, '50', 'За сколько секунд до запуска cron резервировать процесс', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.mgr.mem_size', 'job', '{job}', false, '131072', 'Объем разделяемой памяти для очереди выполненных задач, байт', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.mgr.reload_key', 'job', '{job}', false, '', 'Пароль рестарта демона', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.mgr.listen.stat', 'job', '{job}', false, '', 'Канал команд (NOTIFY) об обновлении статистики процессов', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.mgr.listen.reload', 'job', '{job}', false, '', 'Канал команд (NOTIFY) о рестарте процессов', NULL, NULL);
+INSERT INTO prop VALUES ('ws.daemon.log.syslog.job.(default,call,sid,acl,cache,validate)', 'job', '{fe}', true, '3', 'Уровень отладки запросов JOB', NULL, NULL);
 
 
 SET search_path = ev, pg_catalog;
@@ -13400,7 +13609,6 @@ INSERT INTO dt VALUES ('ws.dt_part', NULL, NULL, true, NULL, 'Поля комп�
 INSERT INTO dt VALUES ('ws.z_dt_part', NULL, NULL, true, NULL, 'Aргументы метода ws.dt_part', false, true, false);
 INSERT INTO dt VALUES ('ws.csaa', NULL, NULL, true, NULL, 'Синоним class_status_action_acl_ext', false, true, false);
 INSERT INTO dt VALUES ('ws.z_class_status_action_acl', NULL, NULL, true, NULL, 'Aргументы метода ws.class_status_action_acl', false, true, false);
-INSERT INTO dt VALUES ('ws.z_cache', NULL, NULL, true, NULL, 'Aргументы метода ws.cache', false, true, false);
 INSERT INTO dt VALUES ('ws.class_action', NULL, NULL, true, NULL, 'Акция объекта', false, true, false);
 INSERT INTO dt VALUES ('ws.z_class_action', NULL, NULL, true, NULL, 'Aргументы метода ws.class_action', false, true, false);
 INSERT INTO dt VALUES ('ws.class_status', NULL, NULL, true, NULL, 'Статус объекта', false, true, false);
@@ -13413,6 +13621,7 @@ INSERT INTO dt VALUES ('ws.z_acls_eff_ids', NULL, NULL, true, NULL, 'Aргуме
 INSERT INTO dt VALUES ('ws.z_acls_eff', NULL, NULL, true, NULL, 'Aргументы метода ws.acls_eff', false, true, false);
 INSERT INTO dt VALUES ('ws.z_system_acl', NULL, NULL, true, NULL, 'Aргументы метода ws.system_acl', false, true, false);
 INSERT INTO dt VALUES ('ws.z_info_acl', NULL, NULL, true, NULL, 'Aргументы метода ws.info_acl', false, true, false);
+INSERT INTO dt VALUES ('cfg.z_cache', NULL, NULL, true, NULL, 'Aргументы метода cfg.cache', false, true, false);
 INSERT INTO dt VALUES ('fs.z_file_new_path_mk', NULL, NULL, true, NULL, 'Aргументы метода fs.file_new_path_mk', false, true, false);
 INSERT INTO dt VALUES ('fs.file_store', NULL, NULL, true, NULL, 'fs.file_store', false, true, false);
 INSERT INTO dt VALUES ('fs.z_file_store', NULL, NULL, true, NULL, 'Aргументы метода fs.file_store', false, true, false);
@@ -13670,7 +13879,6 @@ INSERT INTO dt_part VALUES ('ws.z_class_status_action_acl', 1, 'class_id', 'ws.d
 INSERT INTO dt_part VALUES ('ws.z_class_status_action_acl', 2, 'status_id', 'ws.d_id32', 'smallint', false, '0', '', false);
 INSERT INTO dt_part VALUES ('ws.z_class_status_action_acl', 3, 'action_id', 'ws.d_id32', 'smallint', false, '0', '', false);
 INSERT INTO dt_part VALUES ('ws.z_class_status_action_acl', 4, 'acl_id', 'ws.d_id32', 'smallint', false, '0', '', false);
-INSERT INTO dt_part VALUES ('ws.z_cache', 1, 'id', 'ws.d_id32', 'smallint', false, '0', '', false);
 INSERT INTO dt_part VALUES ('ws.class_action', 1, 'class_id', 'ws.d_class', 'smallint', false, NULL, 'ID класса', false);
 INSERT INTO dt_part VALUES ('ws.class_action', 2, 'id', 'ws.d_id32', 'smallint', false, NULL, 'ID акции', false);
 INSERT INTO dt_part VALUES ('ws.class_action', 3, 'sort', 'ws.d_sort', 'smallint', true, NULL, 'Сортировка в списке акций', false);
@@ -13710,6 +13918,7 @@ INSERT INTO dt_part VALUES ('ws.z_acls_eff', 3, 'action_id', 'ws.d_id32', 'small
 INSERT INTO dt_part VALUES ('ws.z_acls_eff', 4, 'acl_ids', 'ws.d_acls', 'smallint', false, NULL, '', false);
 INSERT INTO dt_part VALUES ('ws.z_system_acl', 1, '_sid', 'ws.d_sid', 'text', true, NULL, '', false);
 INSERT INTO dt_part VALUES ('ws.z_info_acl', 1, '_sid', 'ws.d_sid', 'text', false, NULL, '', false);
+INSERT INTO dt_part VALUES ('cfg.z_cache', 1, 'id', 'ws.d_id32', 'smallint', false, '0', '', false);
 INSERT INTO dt_part VALUES ('fs.z_file_new_path_mk', 1, 'folder_code', 'text', 'text', false, NULL, '', false);
 INSERT INTO dt_part VALUES ('fs.z_file_new_path_mk', 2, 'obj_id', 'integer', 'integer', false, NULL, 'ID объекта', false);
 INSERT INTO dt_part VALUES ('fs.z_file_new_path_mk', 3, 'name', 'text', 'text', false, NULL, 'Внешнее имя файла', false);
@@ -13998,7 +14207,6 @@ INSERT INTO method VALUES ('ws.facet', 2, 1, 2, 5, false, false, true, false, 'w
 INSERT INTO method VALUES ('ws.dt_facet', 2, 1, 2, 7, false, false, true, false, 'ws.dt_facet', 'ws.z_dt_facet', 'ws.dt_facet', 'Атрибуты ограничения типа по коду типа', NULL, 'code ws.d_code', 'ws', NULL);
 INSERT INTO method VALUES ('ws.dt_part', 2, 1, 2, 7, false, false, true, false, 'ws.dt_part', 'ws.z_dt_part', 'ws.dt_part', 'Атрибуты полей комплексного типа', NULL, 'code ws.d_code, part_id ws.d_id32', 'ws', NULL);
 INSERT INTO method VALUES ('ws.class_status_action_acl', 2, 1, 2, 7, false, false, true, false, 'ws.class_status_action_acl', 'ws.z_class_status_action_acl', 'ws.csaa', 'Статусы и ACL для заданной акции', NULL, 'class_id ws.d_class, status_id ws.d_id32, action_id ws.d_id32, acl_id ws.d_id32', 'ws', NULL);
-INSERT INTO method VALUES ('ws.cache', 2, 1, 2, 5, false, false, true, false, 'ws.cache', 'ws.z_cache', 'ws.t_hashtable', 'Атрибуты кэша по id', NULL, 'id ws.d_id32', 'ws', NULL);
 INSERT INTO method VALUES ('ws.class_action', 2, 1, 2, 3, false, false, true, false, 'ws.class_action', 'ws.z_class_action', 'ws.class_action', 'Описание акции класса', NULL, 'class_id ws.d_class, id ws.d_id32', 'ws', NULL);
 INSERT INTO method VALUES ('ws.class_status', 2, 1, 2, 3, false, false, true, false, 'ws.class_status', 'ws.z_class_status', 'ws.class_status', 'Название статуса по ID и коду класса', NULL, 'class_id ws.d_class, id ws.d_id32', 'ws', NULL);
 INSERT INTO method VALUES ('ws.class_acl', 2, 1, 2, 3, false, false, true, false, 'ws.class_acl', 'ws.z_class_acl', 'ws.class_acl', 'Описание уровней доступа класса', NULL, 'class_id ws.d_class, id ws.d_id32', 'ws', NULL);
@@ -14011,6 +14219,7 @@ INSERT INTO method VALUES ('info.status', 2, 1, 2, 2, false, false, true, false,
 INSERT INTO method VALUES ('info.acl', 2, 1, 2, 6, false, false, true, false, 'ws.info_acl', 'ws.z_info_acl', 'ws.d_acl', 'ACL sid для инфо', NULL, '_sid ws.d_sid', 'ws', NULL);
 INSERT INTO method VALUES ('info.acl_check', 2, 1, 4, 3, false, false, false, false, 'acl:check', 'ws.z_acl_check', 'ws.d_acls', 'Получение acl на объект', NULL, '_sid text, class_id ws.d_class, action_id ws.d_id32, id ws.d_id, id1 ws.d_id, id2 text', 'ws', NULL);
 INSERT INTO method VALUES ('ws.uncache', 2, 1, 1, 2, false, false, false, false, 'cache:uncache', 'ws.z_uncache', 'ws.d_id', 'Сброс кэша метода', NULL, 'code text, key text', 'ws', NULL);
+INSERT INTO method VALUES ('cfg.cache', 2, 1, 2, 5, false, false, true, false, 'cfg.cache', 'cfg.z_cache', 'ws.t_hashtable', 'Атрибуты кэша по id', NULL, 'id ws.d_id32', 'cfg', NULL);
 INSERT INTO method VALUES ('fe.file_new', 2, 1, 1, 3, true, false, true, false, 'fs.file_new_path_mk', 'fs.z_file_new_path_mk', 'ws.t_hashtable', 'ID и путь хранения для формируемого файла', NULL, 'folder_code text, obj_id integer, name text, code text', 'fs', 'fe_only');
 INSERT INTO method VALUES ('fe.file_attr', 2, 1, 1, 3, false, false, true, false, 'fs.file_store', 'fs.z_file_store', 'fs.file_store', 'Атрибуты хранения файла', NULL, 'id integer', 'fs', 'fe_only');
 INSERT INTO method VALUES ('fe.file_get', 2, 1, 1, 2, false, false, false, false, 'store:get', 'ws.z_store_get', 'ws.d_id', 'Получение данных из файлового хранилища', NULL, 'path ws.d_path', 'fs', 'fe_only');
@@ -14086,15 +14295,15 @@ INSERT INTO page_data VALUES ('api.test', 'main', 2, 1, NULL, 7, 'docs/test$', '
 -- Data for Name: pkg; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:23.304633');
-INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
+INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:05.172865');
+INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
 
 
 --
@@ -14108,103 +14317,15 @@ SELECT pg_catalog.setval('pkg_id_seq', 9, true);
 -- Data for Name: pkg_log; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:23.304633');
-INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 00:09:30.255794');
-
-
---
--- Data for Name: prop; Type: TABLE DATA; Schema: ws; Owner: -
---
-
-INSERT INTO prop VALUES ('ws.daemon.db.sql.:i', 'ws', '{db}', true, '', 'SQL настройки соединения с БД', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.startup.sock_wait', 'ws', '{fcgi}', false, '10', 'Максимальная длина очереди ожидающих входящих запросов FCGI до обрыва новых соединений, шт', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fcgi.frontend_poid', 'ws', '{fcgi}', false, '1', 'POID настроек фронтенда', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fcgi.core_poid', 'ws', '{fcgi}', false, '1', 'POID настроек бэкенда', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.layout_default', 'ws', '{fe}', false, 'style01', 'Название макета страниц', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.skin_default', 'ws', '{fe}', false, 'default', 'Название скина страниц', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.lang.default', 'ws', '{fe,be}', false, 'ru', 'Код язык сайта по умолчанию', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.lang.allowed.:i', 'ws', '{fe,be}', true, '', 'Допустимые коды языка сайта', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.tt2.:s', 'ws', '{fe}', true, '', 'Параметр конфигурации TemplateToolkit', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.sid_arg', 'ws', '{fe}', false, '', 'Если задан - брать ID сессии из этого аргумента запроса, а не из cookie', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.error_500', 'ws', '{fe}', false, '/error/', 'Адрес внешнего редиректа при фатальной ошибке PGWS', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.site_is_hidden', 'ws', '{fe}', false, '1', 'Не выводить внешние счетчики на страницах', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.post.:u', 'ws', '{fe}', true, '', 'Адрес, на который будут отправляться POST-запросы к PGWS', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.def.sid', 'ws', '{fe}', false, 'acc.sid_info', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.def.login', 'ws', '{fe}', false, 'acc.login', 'Метод авторизации', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.def.logout', 'ws', '{fe}', false, 'acc.logout', 'Метод завершения сессии', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.def.acl', 'ws', '{fe}', false, 'info.acl_check', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.def.uri', 'ws', '{fe}', false, 'ws.page_by_uri', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.def.code', 'ws', '{fe}', false, 'ws.page_by_code', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.ext', 'ws', '{fe}', false, '.tt2', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.error', 'ws', '{fe}', false, 'app/error', 'Каталог шаблонов страниц описаний ошибок', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.pages', 'ws', '{fe}', false, 'page/', 'Каталог шаблонов, вызываемых по GET-запросу', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.fe.tmpl.jobs', 'ws', '{fe}', false, 'job/', 'Каталог шаблонов, вызываемых из Job', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.check_prefix', 'ws', '{be}', false, 'check:', 'Префикс запроса на валидацию аргументов ACL', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.acl_prefix', 'ws', '{be}', false, 'acl:', 'Префикс запроса на проверку ACL', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.nocache_prefix', 'ws', '{be}', false, 'nc:', 'Префикс запроса без проверки кэша', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.db_noacc_code', 'ws', '{be}', false, '42501', 'Код ошибки БД при запрете доступа', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.acl_trigger', 'ws', '{be}', false, 'acc.log(in|out)', 'Regexp кодов методов меняющих ACL', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.lang.sql.default', 'ws', '{be}', false, 'SET search_path TO i18n_def, public', 'Выбор языка по умолчанию', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.lang.sql.other', 'ws', '{be}', false, 'SET search_path TO i18n_%s, i18n_def, public', 'Выбор языка', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.lang.sql.encoding', 'ws', '{be}', false, 'SET client_encoding TO ''%s''', 'Выбор кодировки', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def_method.code', 'ws', '{be}', false, 'ws.method_by_code', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def_method.code_real', 'ws', '{be}', false, 'ws.method_by_code', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def_method.is_sql', 'ws', '{be}', false, '1', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def_method.rvf_id', 'ws', '{be}', false, '3', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.class', 'ws', '{be}', false, 'ws.class', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.sid', 'ws', '{be}', false, 'acc.sid_info', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.err', 'ws', '{be}', false, 'ws.error_info', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.acl', 'ws', '{be}', false, 'info.acl_check', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.acl_eff', 'ws', '{be}', false, 'ws.acls_eff', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.dt', 'ws', '{be}', false, 'ws.dt', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.dt_part', 'ws', '{be}', false, 'ws.dt_part', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.dt_facet', 'ws', '{be}', false, 'ws.dt_facet', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.facet', 'ws', '{be}', false, 'ws.facet', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def.uncache', 'ws', '{be}', false, 'ws.uncache', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def_suffix.status', 'ws', '{be}', false, '.status', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.def_suffix.acl', 'ws', '{be}', false, '.acl', '', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.plugin.:s.lib', 'ws', '{be}', true, '', 'Пакет плагина', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.plugin.:s.pogc', 'ws', '{be}', true, '', 'POGC настроек плагина (если используется)', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.plugin.:s.poid', 'ws', '{be}', true, '', 'POID настроек плагина', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.plugin.:s.data_set', 'ws', '{be}', true, '', 'Сохранять дамп настроек плагина', NULL, NULL);
-INSERT INTO prop VALUES ('ws.plugin.cache.code', 'ws', '{cache}', false, '', 'Код кэша', NULL, NULL);
-INSERT INTO prop VALUES ('ws.plugin.cache.is_active', 'ws', '{cache}', false, '1', 'Кэш включен', NULL, NULL);
-INSERT INTO prop VALUES ('ws.plugin.cache.cache_size', 'ws', '{cache}', false, '1024k', 'Размер кэша', NULL, NULL);
-INSERT INTO prop VALUES ('ws.plugin.cache.page_size', 'ws', '{cache}', false, '64k', 'Максимальный размер элемента хранения', NULL, NULL);
-INSERT INTO prop VALUES ('ws.plugin.cache.expire_time', 'ws', '{cache}', false, '10s', 'Максимальное время хранения элемента', NULL, NULL);
-INSERT INTO prop VALUES ('ws.plugin.cache.enable_stats', 'ws', '{cache}', false, '1', 'Собирать статистику работы с кэшем', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.error.:s.code', 'ws', '{be}', true, '', 'Код ошибки JSON-RPC 2.0', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.error.:s.message', 'ws', '{be}', true, '', 'Название ошибки JSON-RPC 2.0', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.be.error.:s.data', 'ws', '{be}', true, '', 'Аннотация ошибки JSON-RPC 2.0', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.encoding', 'ws', '{be,fe}', false, 'UTF-8', 'Кодировка по умолчанию', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.default_level', 'ws', '{be,fe}', false, '3', 'Уровень отладки по умолчанию', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.syslog.default.(default,init,cache)', 'ws', '{be}', true, '3', 'Уровень отладки запросов инициализации ядра', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.syslog.default.(default,call,sid,acl,cache,validate)', 'ws', '{fe}', true, '3', 'Уровень отладки запросов POST', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.syslog.post.(default,call,sid,acl,cache,validate)', 'ws', '{fe}', true, '3', 'Уровень отладки запросов POST', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.syslog.get.(default,call,sid,acl,cache,validate)', 'ws', '{fe}', true, '3', 'Уровень отладки запросов GET', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.syslog.tmpl.(default,call,sid,acl,cache,validate)', 'ws', '{fe}', true, '3', 'Уровень отладки запросов из шаблонов', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.debug.default.(default,call,sid,acl,cache,validate)', 'ws', '{fe}', true, '3', 'Уровень отладки запросов POST', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.debug.post.(default,call,sid,acl,cache,validate)', 'ws', '{fe}', true, '3', 'Уровень отладки запросов POST', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.debug.get.(default,call,sid,acl,cache,validate)', 'ws', '{fe}', true, '3', 'Уровень отладки запросов GET', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.debug.tmpl.(default,call,sid,acl,cache,validate)', 'ws', '{fe}', true, '3', 'Уровень отладки запросов из шаблонов', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.startup.pm.n_processes', 'ws', '{fcgi,tm,job}', false, '10', 'Количество запускаемых процессов, шт', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.startup.pm.die_timeout', 'ws', '{fcgi,tm,job}', false, '4', 'Время ожидания корректного завершения процесса, сек', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.mgr.listen_wait', 'ws', '{tm,job}', false, '60', 'Время ожидания уведомления внутри итерации, сек', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.mgr.listen.job', 'ws', '{tm,job}', false, '', 'Канал уведомлений (NOTIFY) о добавлении задания', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.mgr.cron_every', 'job', '{job}', false, '60', 'Запуск cron, если номер секунды в сутках кратен заданной', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.mgr.cron_predict', 'job', '{job}', false, '50', 'За сколько секунд до запуска cron резервировать процесс', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.mgr.mem_size', 'job', '{job}', false, '131072', 'Объем разделяемой памяти для очереди выполненных задач, байт', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.mgr.reload_key', 'job', '{job}', false, '', 'Пароль рестарта демона', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.mgr.listen.stat', 'job', '{job}', false, '', 'Канал команд (NOTIFY) об обновлении статистики процессов', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.mgr.listen.reload', 'job', '{job}', false, '', 'Канал команд (NOTIFY) о рестарте процессов', NULL, NULL);
-INSERT INTO prop VALUES ('ws.daemon.log.syslog.job.(default,call,sid,acl,cache,validate)', 'job', '{fe}', true, '3', 'Уровень отладки запросов JOB', NULL, NULL);
+INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:05.172865');
+INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 19:28:12.293868');
 
 
 --
@@ -14232,8 +14353,8 @@ SET search_path = wsd, pg_catalog;
 -- Data for Name: account; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-28 00:09:30', '2013-02-28 00:09:30', '2013-02-28 00:09:30');
-INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-28 00:09:30', '2013-02-28 00:09:30', '2013-02-28 00:09:30');
+INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-28 19:28:12', '2013-02-28 19:28:12', '2013-02-28 19:28:12');
+INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-28 19:28:12', '2013-02-28 19:28:12', '2013-02-28 19:28:12');
 
 
 --
@@ -14374,14 +14495,14 @@ SELECT pg_catalog.setval('file_id_seq', 1, false);
 -- Data for Name: job; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job VALUES (1, '2013-02-28 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-28', NULL, NULL, NULL, NULL, NULL, '2013-02-28 00:09:30.255794', NULL, NULL, NULL, NULL);
+INSERT INTO job VALUES (1, '2013-02-28 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-28', NULL, NULL, NULL, NULL, NULL, '2013-02-28 19:28:12.293868', NULL, NULL, NULL, NULL);
 
 
 --
 -- Data for Name: job_cron; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job_cron VALUES (true, '2013-02-28 00:09:30.255794', NULL);
+INSERT INTO job_cron VALUES (true, '2013-02-28 19:28:12.293868', NULL);
 
 
 --
@@ -14413,32 +14534,33 @@ SELECT pg_catalog.setval('job_seq', 25, true);
 -- Data for Name: pkg_script_protected; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:23.304633');
-INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'wsd', '2013-02-28 00:09:23.304633');
-INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-28 00:09:23.304633');
-INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-28 00:09:23.304633');
-INSERT INTO pkg_script_protected VALUES ('fs', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_script_protected VALUES ('ev', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_script_protected VALUES ('job', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_script_protected VALUES ('acc', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_script_protected VALUES ('wiki', '11_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
-INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wsd', '2013-02-28 00:09:30.255794');
+INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'ws', '2013-02-28 19:28:05.172865');
+INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'cfg', '2013-02-28 19:28:05.172865');
+INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'cfg', '2013-02-28 19:28:05.172865');
+INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'cfg', '2013-02-28 19:28:05.172865');
+INSERT INTO pkg_script_protected VALUES ('fs', '20_wsd.sql', '000', 'fs', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('ev', '20_wsd.sql', '000', 'ev', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'ev', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('job', '20_wsd.sql', '000', 'job', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'job', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'job', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('acc', '20_wsd.sql', '000', 'acc', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'acc', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('wiki', '20_wsd.sql', '000', 'wiki', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wiki', '2013-02-28 19:28:12.293868');
+INSERT INTO pkg_script_protected VALUES ('wiki', '82_prop_wsd.sql', '000', 'wiki', '2013-02-28 19:28:12.293868');
 
 
 --
 -- Data for Name: prop_group; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO prop_group VALUES ('fcgi', 'ws', 3, true, 'Демон FastCGI', NULL);
-INSERT INTO prop_group VALUES ('tm', 'ws', 4, true, 'Демон TM', NULL);
-INSERT INTO prop_group VALUES ('be', 'ws', 2, true, 'Бэкенд', NULL);
-INSERT INTO prop_group VALUES ('fe', 'ws', 1, true, 'Фронтенд', NULL);
-INSERT INTO prop_group VALUES ('db', 'ws', 5, true, 'БД', NULL);
-INSERT INTO prop_group VALUES ('cache', 'ws', 6, false, 'Кэш', NULL);
+INSERT INTO prop_group VALUES ('fcgi', 'cfg', 3, true, 'Демон FastCGI', NULL);
+INSERT INTO prop_group VALUES ('tm', 'cfg', 4, true, 'Демон TM', NULL);
+INSERT INTO prop_group VALUES ('be', 'cfg', 2, true, 'Бэкенд', NULL);
+INSERT INTO prop_group VALUES ('fe', 'cfg', 1, true, 'Фронтенд', NULL);
+INSERT INTO prop_group VALUES ('db', 'cfg', 5, true, 'БД', NULL);
+INSERT INTO prop_group VALUES ('cache', 'cfg', 6, false, 'Кэш', NULL);
 INSERT INTO prop_group VALUES ('job', 'job', 4, true, 'Демон Job', NULL);
 
 
@@ -14446,16 +14568,16 @@ INSERT INTO prop_group VALUES ('job', 'job', 4, true, 'Демон Job', NULL);
 -- Data for Name: prop_owner; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO prop_owner VALUES ('fcgi', 1, 'ws', 1, 'Первичный Демон FastCGI', NULL);
-INSERT INTO prop_owner VALUES ('tm', 1, 'ws', 1, 'Первичный Демон TM', NULL);
-INSERT INTO prop_owner VALUES ('be', 1, 'ws', 1, 'Первичный Бэкенд', NULL);
-INSERT INTO prop_owner VALUES ('fe', 1, 'ws', 1, 'Первичный Фронтенд', NULL);
-INSERT INTO prop_owner VALUES ('db', 1, 'ws', 1, 'БД', NULL);
-INSERT INTO prop_owner VALUES ('cache', 1, 'ws', 1, 'нет', NULL);
-INSERT INTO prop_owner VALUES ('cache', 2, 'ws', 2, 'метаданные системы', NULL);
-INSERT INTO prop_owner VALUES ('cache', 3, 'ws', 3, 'Анти-DoS', NULL);
-INSERT INTO prop_owner VALUES ('cache', 4, 'ws', 4, 'Данные сессий', NULL);
-INSERT INTO prop_owner VALUES ('cache', 5, 'ws', 5, 'Большие объекты', NULL);
+INSERT INTO prop_owner VALUES ('fcgi', 1, 'cfg', 1, 'Первичный Демон FastCGI', NULL);
+INSERT INTO prop_owner VALUES ('tm', 1, 'cfg', 1, 'Первичный Демон TM', NULL);
+INSERT INTO prop_owner VALUES ('be', 1, 'cfg', 1, 'Первичный Бэкенд', NULL);
+INSERT INTO prop_owner VALUES ('fe', 1, 'cfg', 1, 'Первичный Фронтенд', NULL);
+INSERT INTO prop_owner VALUES ('db', 1, 'cfg', 1, 'БД', NULL);
+INSERT INTO prop_owner VALUES ('cache', 1, 'cfg', 1, 'нет', NULL);
+INSERT INTO prop_owner VALUES ('cache', 2, 'cfg', 2, 'метаданные системы', NULL);
+INSERT INTO prop_owner VALUES ('cache', 3, 'cfg', 3, 'Анти-DoS', NULL);
+INSERT INTO prop_owner VALUES ('cache', 4, 'cfg', 4, 'Данные сессий', NULL);
+INSERT INTO prop_owner VALUES ('cache', 5, 'cfg', 5, 'Большие объекты', NULL);
 INSERT INTO prop_owner VALUES ('job', 1, 'job', 1, 'Первичный Демон Job', NULL);
 
 
@@ -14463,141 +14585,141 @@ INSERT INTO prop_owner VALUES ('job', 1, 'job', 1, 'Первичный Демо�
 -- Data for Name: prop_value; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO prop_value VALUES ('db', 1, 'ws.daemon.db.sql.0', '2000-01-01', 'ws', 'SET datestyle TO ''German''');
-INSERT INTO prop_value VALUES ('db', 1, 'ws.daemon.db.sql.1', '2000-01-01', 'ws', 'SET time zone local');
-INSERT INTO prop_value VALUES ('fcgi', 1, 'ws.daemon.startup.sock_wait', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.lang.allowed.0', '2000-01-01', 'ws', 'ru');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.lang.allowed.1', '2000-01-01', 'ws', 'en');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.lang.allowed.0', '2000-01-01', 'ws', 'ru');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.lang.allowed.1', '2000-01-01', 'ws', 'en');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.ENCODING', '2000-01-01', 'ws', 'utf-8');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.CACHE_SIZE', '2000-01-01', 'ws', '100');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.COMPILE_EXT', '2000-01-01', 'ws', '.pm');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.EVAL_PERL', '2000-01-01', 'ws', '0');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.PRE_CHOMP', '2000-01-01', 'ws', '1');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.POST_CHOMP', '2000-01-01', 'ws', '1');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.PLUGIN_BASE', '2000-01-01', 'ws', 'PGWS::TT2::Plugin');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.post./pwl', '2000-01-01', 'ws', '/pwl');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.post./api', '2000-01-01', 'ws', '/api');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.post./api_cgi', '2000-01-01', 'ws', '/cgi-bin/pwl.pl');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.log.syslog.default.default', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.log.syslog.default.init', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.log.syslog.default.cache', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.default', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.call', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.sid', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.acl', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.cache', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.validate', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.default', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.call', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.sid', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.acl', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.cache', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.validate', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.default', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.call', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.sid', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.acl', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.cache', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.validate', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.default', '2000-01-01', 'ws', '5');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.call', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.sid', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.acl', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.cache', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.validate', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.default', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.call', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.sid', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.acl', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.cache', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.validate', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.default', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.call', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.sid', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.acl', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.cache', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.validate', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.default', '2000-01-01', 'ws', '5');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.call', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.sid', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.acl', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.cache', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.validate', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.default', '2000-01-01', 'ws', '5');
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.call', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.sid', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.acl', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.cache', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.validate', '2000-01-01', 'ws', NULL);
-INSERT INTO prop_value VALUES ('tm', 1, 'ws.daemon.mgr.listen.job', '2000-01-01', 'ws', 'jq_event');
-INSERT INTO prop_value VALUES ('tm', 1, 'ws.daemon.mgr.listen_wait', '2000-01-01', 'ws', '300');
-INSERT INTO prop_value VALUES ('tm', 1, 'ws.daemon.startup.pm.n_processes', '2000-01-01', 'ws', '1');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_json.code', '2000-01-01', 'ws', '-32700');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_json.message', '2000-01-01', 'ws', 'Parse error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_json.data', '2000-01-01', 'ws', 'Invalid JSON was received by the server.');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_req.code', '2000-01-01', 'ws', '-32600');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_req.message', '2000-01-01', 'ws', 'Invalid Request');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_req.data', '2000-01-01', 'ws', 'The JSON sent is not a valid Request object.');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_mtd.code', '2000-01-01', 'ws', '-32601');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_mtd.message', '2000-01-01', 'ws', 'Method not found');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_mtd.data', '2000-01-01', 'ws', 'The method does not exist / is not available.');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_args.code', '2000-01-01', 'ws', '-32602');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_args.message', '2000-01-01', 'ws', 'Invalid params');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_args.data', '2000-01-01', 'ws', 'Invalid method parameter(s).');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.int_err.code', '2000-01-01', 'ws', '-32603');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.int_err.message', '2000-01-01', 'ws', 'Internal error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.int_err.data', '2000-01-01', 'ws', 'Internal JSON-RPC error.');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_data.code', '2000-01-01', 'ws', '-32001');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_data.message', '2000-01-01', 'ws', 'Empty request');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_data.data', '2000-01-01', 'ws', 'The request contains no data');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.srv_error.code', '2000-01-01', 'ws', '-32002');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.srv_error.message', '2000-01-01', 'ws', 'Server error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.srv_error.data', '2000-01-01', 'ws', 'Unhandled server error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_error.code', '2000-01-01', 'ws', '-32003');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_error.message', '2000-01-01', 'ws', 'DB error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_error.data', '2000-01-01', 'ws', 'Unhandled database error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.pl_error.code', '2000-01-01', 'ws', '-32004');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.pl_error.message', '2000-01-01', 'ws', 'Plugin error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.pl_error.data', '2000-01-01', 'ws', 'Unhandled plugin error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_sid.code', '2000-01-01', 'ws', '-32005');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_sid.message', '2000-01-01', 'ws', 'SID error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_sid.data', '2000-01-01', 'ws', 'Incorrect SID value');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_realm.code', '2000-01-01', 'ws', '-32006');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_realm.message', '2000-01-01', 'ws', 'Realm error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_realm.data', '2000-01-01', 'ws', 'Incorrect Realm code');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_bt.code', '2000-01-01', 'ws', '-32011');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_bt.message', '2000-01-01', 'ws', 'Base type error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_bt.data', '2000-01-01', 'ws', 'Error found in base type definition');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_mt.code', '2000-01-01', 'ws', '-32012');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_mt.message', '2000-01-01', 'ws', 'Argument type');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_mt.data', '2000-01-01', 'ws', 'Error found in argument type definition');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_no_acc.code', '2000-01-01', 'ws', '-32031');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_no_acc.message', '2000-01-01', 'ws', 'Access forbidden');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_no_acc.data', '2000-01-01', 'ws', 'Access to this method is forbidden');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_no_acc.code', '2000-01-01', 'ws', '-32032');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_no_acc.message', '2000-01-01', 'ws', 'Access forbidden');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_no_acc.data', '2000-01-01', 'ws', 'Access to this method is forbidden');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_error.code', '2000-01-01', 'ws', '-32099');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_error.message', '2000-01-01', 'ws', 'Last error');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_error.data', '2000-01-01', 'ws', 'Reserved as last error code');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.cache.lib', '2000-01-01', 'ws', 'PGWS::Plugin::System::Cache');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.cache.pogc', '2000-01-01', 'ws', 'cache');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.cache.poid', '2000-01-01', 'ws', '0');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.cache.data_set', '2000-01-01', 'ws', '1');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.acl.lib', '2000-01-01', 'ws', 'PGWS::Plugin::System::ACL');
-INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.store.lib', '2000-01-01', 'ws', 'PGWS::Plugin::System::Store');
-INSERT INTO prop_value VALUES ('cache', 1, 'ws.plugin.cache.code', '2000-01-01', 'ws', 'none');
-INSERT INTO prop_value VALUES ('cache', 1, 'ws.plugin.cache.is_active', '2000-01-01', 'ws', '0');
-INSERT INTO prop_value VALUES ('cache', 2, 'ws.plugin.cache.code', '2000-01-01', 'ws', 'meta');
-INSERT INTO prop_value VALUES ('cache', 2, 'ws.plugin.cache.expire_time', '2000-01-01', 'ws', '0');
-INSERT INTO prop_value VALUES ('cache', 3, 'ws.plugin.cache.code', '2000-01-01', 'ws', 'short');
-INSERT INTO prop_value VALUES ('cache', 3, 'ws.plugin.cache.expire_time', '2000-01-01', 'ws', '3');
-INSERT INTO prop_value VALUES ('cache', 4, 'ws.plugin.cache.code', '2000-01-01', 'ws', 'session');
-INSERT INTO prop_value VALUES ('cache', 5, 'ws.plugin.cache.code', '2000-01-01', 'ws', 'big');
-INSERT INTO prop_value VALUES ('cache', 5, 'ws.plugin.cache.cache_size', '2000-01-01', 'ws', '4096k');
-INSERT INTO prop_value VALUES ('cache', 5, 'ws.plugin.cache.expire_time', '2000-01-01', 'ws', '10m');
+INSERT INTO prop_value VALUES ('db', 1, 'ws.daemon.db.sql.0', '2000-01-01', 'cfg', 'SET datestyle TO ''German''');
+INSERT INTO prop_value VALUES ('db', 1, 'ws.daemon.db.sql.1', '2000-01-01', 'cfg', 'SET time zone local');
+INSERT INTO prop_value VALUES ('fcgi', 1, 'ws.daemon.startup.sock_wait', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.lang.allowed.0', '2000-01-01', 'cfg', 'ru');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.lang.allowed.1', '2000-01-01', 'cfg', 'en');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.lang.allowed.0', '2000-01-01', 'cfg', 'ru');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.lang.allowed.1', '2000-01-01', 'cfg', 'en');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.ENCODING', '2000-01-01', 'cfg', 'utf-8');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.CACHE_SIZE', '2000-01-01', 'cfg', '100');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.COMPILE_EXT', '2000-01-01', 'cfg', '.pm');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.EVAL_PERL', '2000-01-01', 'cfg', '0');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.PRE_CHOMP', '2000-01-01', 'cfg', '1');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.POST_CHOMP', '2000-01-01', 'cfg', '1');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.tt2.PLUGIN_BASE', '2000-01-01', 'cfg', 'PGWS::TT2::Plugin');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.post./pwl', '2000-01-01', 'cfg', '/pwl');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.post./api', '2000-01-01', 'cfg', '/api');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.fe.post./api_cgi', '2000-01-01', 'cfg', '/cgi-bin/pwl.pl');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.log.syslog.default.default', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.log.syslog.default.init', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.log.syslog.default.cache', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.default', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.call', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.sid', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.acl', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.cache', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.default.validate', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.default', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.call', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.sid', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.acl', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.cache', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.post.validate', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.default', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.call', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.sid', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.acl', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.cache', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.get.validate', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.default', '2000-01-01', 'cfg', '5');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.call', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.sid', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.acl', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.cache', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.debug.tmpl.validate', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.default', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.call', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.sid', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.acl', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.cache', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.default.validate', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.default', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.call', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.sid', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.acl', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.cache', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.post.validate', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.default', '2000-01-01', 'cfg', '5');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.call', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.sid', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.acl', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.cache', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.get.validate', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.default', '2000-01-01', 'cfg', '5');
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.call', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.sid', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.acl', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.cache', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('fe', 1, 'ws.daemon.log.syslog.tmpl.validate', '2000-01-01', 'cfg', NULL);
+INSERT INTO prop_value VALUES ('tm', 1, 'ws.daemon.mgr.listen.job', '2000-01-01', 'cfg', 'jq_event');
+INSERT INTO prop_value VALUES ('tm', 1, 'ws.daemon.mgr.listen_wait', '2000-01-01', 'cfg', '300');
+INSERT INTO prop_value VALUES ('tm', 1, 'ws.daemon.startup.pm.n_processes', '2000-01-01', 'cfg', '1');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_json.code', '2000-01-01', 'cfg', '-32700');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_json.message', '2000-01-01', 'cfg', 'Parse error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_json.data', '2000-01-01', 'cfg', 'Invalid JSON was received by the server.');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_req.code', '2000-01-01', 'cfg', '-32600');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_req.message', '2000-01-01', 'cfg', 'Invalid Request');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_req.data', '2000-01-01', 'cfg', 'The JSON sent is not a valid Request object.');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_mtd.code', '2000-01-01', 'cfg', '-32601');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_mtd.message', '2000-01-01', 'cfg', 'Method not found');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_mtd.data', '2000-01-01', 'cfg', 'The method does not exist / is not available.');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_args.code', '2000-01-01', 'cfg', '-32602');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_args.message', '2000-01-01', 'cfg', 'Invalid params');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_args.data', '2000-01-01', 'cfg', 'Invalid method parameter(s).');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.int_err.code', '2000-01-01', 'cfg', '-32603');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.int_err.message', '2000-01-01', 'cfg', 'Internal error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.int_err.data', '2000-01-01', 'cfg', 'Internal JSON-RPC error.');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_data.code', '2000-01-01', 'cfg', '-32001');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_data.message', '2000-01-01', 'cfg', 'Empty request');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_data.data', '2000-01-01', 'cfg', 'The request contains no data');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.srv_error.code', '2000-01-01', 'cfg', '-32002');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.srv_error.message', '2000-01-01', 'cfg', 'Server error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.srv_error.data', '2000-01-01', 'cfg', 'Unhandled server error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_error.code', '2000-01-01', 'cfg', '-32003');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_error.message', '2000-01-01', 'cfg', 'DB error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_error.data', '2000-01-01', 'cfg', 'Unhandled database error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.pl_error.code', '2000-01-01', 'cfg', '-32004');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.pl_error.message', '2000-01-01', 'cfg', 'Plugin error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.pl_error.data', '2000-01-01', 'cfg', 'Unhandled plugin error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_sid.code', '2000-01-01', 'cfg', '-32005');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_sid.message', '2000-01-01', 'cfg', 'SID error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_sid.data', '2000-01-01', 'cfg', 'Incorrect SID value');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_realm.code', '2000-01-01', 'cfg', '-32006');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_realm.message', '2000-01-01', 'cfg', 'Realm error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.bad_realm.data', '2000-01-01', 'cfg', 'Incorrect Realm code');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_bt.code', '2000-01-01', 'cfg', '-32011');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_bt.message', '2000-01-01', 'cfg', 'Base type error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_bt.data', '2000-01-01', 'cfg', 'Error found in base type definition');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_mt.code', '2000-01-01', 'cfg', '-32012');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_mt.message', '2000-01-01', 'cfg', 'Argument type');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_bad_mt.data', '2000-01-01', 'cfg', 'Error found in argument type definition');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_no_acc.code', '2000-01-01', 'cfg', '-32031');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_no_acc.message', '2000-01-01', 'cfg', 'Access forbidden');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.ws_no_acc.data', '2000-01-01', 'cfg', 'Access to this method is forbidden');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_no_acc.code', '2000-01-01', 'cfg', '-32032');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_no_acc.message', '2000-01-01', 'cfg', 'Access forbidden');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.db_no_acc.data', '2000-01-01', 'cfg', 'Access to this method is forbidden');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_error.code', '2000-01-01', 'cfg', '-32099');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_error.message', '2000-01-01', 'cfg', 'Last error');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.error.no_error.data', '2000-01-01', 'cfg', 'Reserved as last error code');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.cache.lib', '2000-01-01', 'cfg', 'PGWS::Plugin::System::Cache');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.cache.pogc', '2000-01-01', 'cfg', 'cache');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.cache.poid', '2000-01-01', 'cfg', '0');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.cache.data_set', '2000-01-01', 'cfg', '1');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.acl.lib', '2000-01-01', 'cfg', 'PGWS::Plugin::System::ACL');
+INSERT INTO prop_value VALUES ('be', 1, 'ws.daemon.be.plugin.store.lib', '2000-01-01', 'cfg', 'PGWS::Plugin::System::Store');
+INSERT INTO prop_value VALUES ('cache', 1, 'ws.plugin.cache.code', '2000-01-01', 'cfg', 'none');
+INSERT INTO prop_value VALUES ('cache', 1, 'ws.plugin.cache.is_active', '2000-01-01', 'cfg', '0');
+INSERT INTO prop_value VALUES ('cache', 2, 'ws.plugin.cache.code', '2000-01-01', 'cfg', 'meta');
+INSERT INTO prop_value VALUES ('cache', 2, 'ws.plugin.cache.expire_time', '2000-01-01', 'cfg', '0');
+INSERT INTO prop_value VALUES ('cache', 3, 'ws.plugin.cache.code', '2000-01-01', 'cfg', 'short');
+INSERT INTO prop_value VALUES ('cache', 3, 'ws.plugin.cache.expire_time', '2000-01-01', 'cfg', '3');
+INSERT INTO prop_value VALUES ('cache', 4, 'ws.plugin.cache.code', '2000-01-01', 'cfg', 'session');
+INSERT INTO prop_value VALUES ('cache', 5, 'ws.plugin.cache.code', '2000-01-01', 'cfg', 'big');
+INSERT INTO prop_value VALUES ('cache', 5, 'ws.plugin.cache.cache_size', '2000-01-01', 'cfg', '4096k');
+INSERT INTO prop_value VALUES ('cache', 5, 'ws.plugin.cache.expire_time', '2000-01-01', 'cfg', '10m');
 INSERT INTO prop_value VALUES ('job', 1, 'ws.daemon.mgr.listen.job', '2000-01-01', 'job', 'job_event');
 INSERT INTO prop_value VALUES ('job', 1, 'ws.daemon.mgr.listen.stat', '2000-01-01', 'job', 'job_stat');
 INSERT INTO prop_value VALUES ('job', 1, 'ws.daemon.mgr.listen.reload', '2000-01-01', 'job', 'job_reload');
@@ -14676,6 +14798,16 @@ INSERT INTO team VALUES (1, 'Users', '');
 --
 
 SELECT pg_catalog.setval('team_id_seq', 1, true);
+
+
+SET search_path = cfg, pg_catalog;
+
+--
+-- Name: prop_pkey; Type: CONSTRAINT; Schema: cfg; Owner: -
+--
+
+ALTER TABLE ONLY prop
+    ADD CONSTRAINT prop_pkey PRIMARY KEY (code);
 
 
 SET search_path = ev, pg_catalog;
@@ -15037,14 +15169,6 @@ ALTER TABLE ONLY pkg
 
 
 --
--- Name: prop_pkey; Type: CONSTRAINT; Schema: ws; Owner: -
---
-
-ALTER TABLE ONLY prop
-    ADD CONSTRAINT prop_pkey PRIMARY KEY (code);
-
-
---
 -- Name: ref_item_pkey; Type: CONSTRAINT; Schema: ws; Owner: -
 --
 
@@ -15342,6 +15466,15 @@ ALTER TABLE ONLY team
     ADD CONSTRAINT team_pkey PRIMARY KEY (id);
 
 
+SET search_path = cfg, pg_catalog;
+
+--
+-- Name: prop_code; Type: INDEX; Schema: cfg; Owner: -
+--
+
+CREATE INDEX prop_code ON prop USING btree (lower((code)::text) text_pattern_ops);
+
+
 SET search_path = ws, pg_catalog;
 
 --
@@ -15349,13 +15482,6 @@ SET search_path = ws, pg_catalog;
 --
 
 CREATE INDEX method_code ON method USING btree (lower((code)::text) text_pattern_ops);
-
-
---
--- Name: prop_code; Type: INDEX; Schema: ws; Owner: -
---
-
-CREATE INDEX prop_code ON prop USING btree (lower((code)::text) text_pattern_ops);
 
 
 SET search_path = wsd, pg_catalog;
@@ -15399,6 +15525,15 @@ CREATE RULE error_ins AS ON INSERT TO error DO INSTEAD (INSERT INTO ws.error_dat
 CREATE RULE page_ins AS ON INSERT TO page DO INSTEAD (INSERT INTO ws.page_data (code, up_code, class_id, action_id, group_id, sort, uri, tmpl, id_fixed, id_session, is_hidden, target, uri_re, uri_fmt, pkg) VALUES (new.code, new.up_code, new.class_id, new.action_id, new.group_id, new.sort, new.uri, new.tmpl, new.id_fixed, new.id_session, DEFAULT, DEFAULT, new.uri_re, new.uri_fmt, COALESCE(new.pkg, (ws.pg_cs())::text)); UPDATE ws.page_data SET is_hidden = COALESCE(new.is_hidden, page_data.is_hidden), target = COALESCE(new.target, page_data.target) WHERE ((page_data.code)::text = (new.code)::text); INSERT INTO page_name (code, name) VALUES (new.code, new.name); );
 
 
+SET search_path = cfg, pg_catalog;
+
+--
+-- Name: prop_is_mask; Type: TRIGGER; Schema: cfg; Owner: -
+--
+
+CREATE TRIGGER prop_is_mask BEFORE INSERT OR UPDATE ON prop FOR EACH ROW EXECUTE PROCEDURE prop_calc_is_mask();
+
+
 SET search_path = ws, pg_catalog;
 
 --
@@ -15436,13 +15571,6 @@ CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON page_data FOR EACH ROW EXECUTE 
 CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON method FOR EACH ROW EXECUTE PROCEDURE method_insupd_trigger();
 
 
---
--- Name: prop_is_mask; Type: TRIGGER; Schema: ws; Owner: -
---
-
-CREATE TRIGGER prop_is_mask BEFORE INSERT OR UPDATE ON prop FOR EACH ROW EXECUTE PROCEDURE prop_calc_is_mask();
-
-
 SET search_path = wsd, pg_catalog;
 
 --
@@ -15463,7 +15591,7 @@ CREATE TRIGGER handler_id_update_forbidden AFTER UPDATE ON job_todo FOR EACH ROW
 -- Name: insupd; Type: TRIGGER; Schema: wsd; Owner: -
 --
 
-CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON prop_value FOR EACH ROW EXECUTE PROCEDURE ws.wsd_prop_value_insupd_trigger();
+CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON prop_value FOR EACH ROW EXECUTE PROCEDURE cfg.prop_value_insupd_trigger();
 
 
 --

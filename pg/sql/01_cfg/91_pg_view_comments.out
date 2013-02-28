@@ -1,0 +1,29 @@
+             test              
+-------------------------------
+  ***** pg_view_comments *****
+
+         rel         |      code      |    rel_src     |  rel_src_col   | status_id |                    anno                     
+---------------------+----------------+----------------+----------------+-----------+---------------------------------------------
+ cfg.prop_attr       | is_mask        | cfg.prop       | is_mask        |         1 | Свойство не атомарно
+ cfg.prop_attr       | value_fmt      | cfg.prop       | value_fmt      |         1 | Строка формата для вывода значения
+ cfg.prop_owner_attr | pog_sort       | wsd.prop_group | sort           |         1 | Порядок сортировки
+ cfg.prop_attr       | pkg            | cfg.prop       | pkg            |         1 | Пакет, в котором добавлено свойство
+ cfg.prop_owner_attr | pkg            | wsd.prop_owner | pkg            |         1 | Пакет, в котором добавлена группа
+ cfg.prop_attr       | name           | cfg.prop       | name           |         1 | Название
+ cfg.prop_attr       | value          | wsd.prop_value | value          |         1 | Значение свойства
+ cfg.prop_owner_attr | name           | wsd.prop_owner | name           |         1 | Название
+ cfg.prop_attr       | valid_from     | wsd.prop_value | valid_from     |         1 | Дата начала действия
+ cfg.prop_owner_attr | poid           | wsd.prop_owner | poid           |         1 | ID владельца (Property Owner ID)
+ cfg.prop_owner_attr | anno           | wsd.prop_owner | anno           |         1 | Аннотация
+ cfg.prop_attr       | anno           | cfg.prop       | anno           |         1 | Аннотация
+ cfg.prop_attr       | value_pkg      | wsd.prop_value | pkg            |         1 | Пакет, в котором задано значение
+ cfg.prop_attr       | code           | wsd.prop_value | code           |         1 | Код свойства
+ cfg.prop_attr       | def_value      | cfg.prop       | def_value      |         1 | Значение по умолчанию
+ cfg.prop_owner_attr | pogc           | wsd.prop_owner | pogc           |         1 | Код группы (Property Owner Group Code)
+ cfg.prop_attr       | poid           | wsd.prop_value | poid           |         1 | ID владельца (Property Owner ID)
+ cfg.prop_owner_attr | pog_name       | wsd.prop_group | name           |         1 | Название
+ cfg.prop_owner_attr | is_id_required | wsd.prop_group | is_id_required |         1 | Загрузка без указания poid не используется
+ cfg.prop_attr       | pogc_list      | cfg.prop       | pogc_list      |         1 | Массив кодов разрешенных групп (prop_group)
+ cfg.prop_owner_attr | sort           | wsd.prop_owner | sort           |         1 | Порядок сортировки
+ cfg.prop_attr       | pogc           | wsd.prop_value | pogc           |         1 | Код группы (Property Owner Group Code)
+

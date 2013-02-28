@@ -165,33 +165,3 @@ $_$
   END;
 $_$;
 
-/* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION prop_calc_is_mask() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
-$_$
-  -- prop_calc_is_mask: Расчет значения поля is_mask
-  BEGIN
-    NEW.is_mask := ws.mask_is_multi(NEW.code);
-    RETURN NEW;
-  END;
-$_$;
-
-/* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION wsd_prop_value_insupd_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
-$_$
-  DECLARE
-    v_rows INTEGER;
-  BEGIN
-    SELECT INTO v_rows
-      count(1)
-      FROM ws.prop
-      WHERE NEW.pogc = ANY(pogc_list)
-        AND NEW.code ~ ws.mask2regexp(code)
-    ;
-    IF v_rows = 0 THEN
-      RAISE EXCEPTION 'Unknown code % in group %', NEW.code, NEW.pogc;
-    ELSIF v_rows > 1 THEN
-      RAISE EXCEPTION 'code % related to % props, but need only 1', NEW.code, v_rows;
-    END IF;
-    RETURN NEW;
-  END;
-$_$;

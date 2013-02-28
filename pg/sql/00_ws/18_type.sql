@@ -94,14 +94,11 @@ CREATE DOMAIN d_booleana AS boolean[];
 CREATE DOMAIN d_texta AS text[];
 CREATE DOMAIN d_ida AS INTEGER[];
 CREATE DOMAIN d_moneya AS DECIMAL(16,2)[];
+
 /* ------------------------------------------------------------------------- */
 CREATE DOMAIN d_classcode AS char(2);
 CREATE DOMAIN d_errcode AS char(5) CHECK (VALUE ~ E'^Y\\d{4}$') ;
 CREATE DOMAIN d_format  AS text;
-
-/* ------------------------------------------------------------------------- */
-CREATE DOMAIN d_prop_code AS TEXT CHECK (VALUE ~ E'^([a-z\\d_]+)(\\.((:?[a-z\\d_]+)|(\\([a-z\\d_]+(,[a-z\\d_]+)+\\))))*$') ;
-COMMENT ON DOMAIN d_prop_code IS 'Код свойства';
 
 /* ------------------------------------------------------------------------- */
 CREATE TYPE t_hashtable AS (

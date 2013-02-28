@@ -17,34 +17,14 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Реестр свойств.
+    Реестр свойств. Дополнение
 */
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.prop_group (pogc, sort, name) VALUES
-  ('fcgi',  3, 'Демон FastCGI')
-, ('tm',    4, 'Демон TM')
-, ('be',    2, 'Бэкенд')
-, ('fe',    1, 'Фронтенд')
-, ('db',    5, 'БД')
-;
-INSERT INTO wsd.prop_group (pogc, sort, is_id_required, name) VALUES
-  ('cache', 6, FALSE, 'Кэш')
+INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
+  ('be',    1,  'ws.daemon.be.plugin.wiki.lib',          'PGWS::Plugin::Wiki')
 ;
 
-/* ------------------------------------------------------------------------- */
-INSERT INTO wsd.prop_owner (pogc, poid, sort, name) VALUES
-  ('fcgi',  1,  1,  'Первичный Демон FastCGI')
-, ('tm',    1,  1,  'Первичный Демон TM')
-, ('be',    1,  1,  'Первичный Бэкенд')
-, ('fe',    1,  1,  'Первичный Фронтенд')
-, ('db',    1,  1,  'БД')
-, ('cache', 1,  1,  'нет')
-, ('cache', 2,  2,  'метаданные системы')
-, ('cache', 3,  3,  'Анти-DoS')
-, ('cache', 4,  4,  'Данные сессий')
-, ('cache', 5,  5,  'Большие объекты')
-;

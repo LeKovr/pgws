@@ -260,7 +260,7 @@ $_$
     UPDATE wsd.job SET
       run_pid = a_pid,
       run_ip = inet_client_addr(),
-      run_at = CURRENT_TIMESTAMP,
+      run_at = clock_timestamp(), --CURRENT_TIMESTAMP,
       status_id = job.const_status_id_process()
       WHERE
         id = r.id

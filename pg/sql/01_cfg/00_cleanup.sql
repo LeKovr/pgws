@@ -17,26 +17,14 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Удаление объектов пакета из схемы wsd
+    Проверка возможности удаления пакета
+    Удаление связей с wsd
 */
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_clean_value('ws.daemon.be.plugin.wiki.lib');
 
-/* ------------------------------------------------------------------------- */
-DELETE FROM wsd.role_acl WHERE class_id = 10; -- TODO: wiki.const_class_id();
+ALTER TABLE wsd.prop_group ALTER COLUMN pkg DROP DEFAULT;
 
-/* ------------------------------------------------------------------------- */
-DELETE FROM wsd.file_folder_format WHERE folder_code = 'wiki';
-DELETE FROM wsd.file_folder WHERE pkg = :'PKG';
-/* ------------------------------------------------------------------------- */
+ALTER TABLE wsd.prop_owner ALTER COLUMN pkg DROP DEFAULT;
 
-DROP TABLE wsd.doc_keyword;
-DROP TABLE wsd.doc_diff;
-DROP TABLE wsd.doc;
-DROP TABLE wsd.doc_group;
-
-DROP SEQUENCE wsd.doc_id_seq;
-
-/* ------------------------------------------------------------------------- */
-DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';
+ALTER TABLE wsd.prop_value ALTER COLUMN pkg DROP DEFAULT;

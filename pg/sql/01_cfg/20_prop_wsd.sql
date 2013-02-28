@@ -21,7 +21,7 @@
 */
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.pkg_script_protected (pkg, code, ver) VALUES ('ws', :'FILE', :'VER');
+INSERT INTO wsd.pkg_script_protected (pkg, code, ver) VALUES (:'PKG', :'FILE', :'VER');
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.prop_group (

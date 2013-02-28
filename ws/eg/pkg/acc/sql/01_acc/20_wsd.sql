@@ -23,8 +23,6 @@
 /* ------------------------------------------------------------------------- */
 INSERT INTO wsd.pkg_script_protected (code, pkg, ver) VALUES (:'FILE', :'PKG', :'VER');
 
-SET LOCAL search_path = ws, i18n_def, public;
-
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.team (
   id              INTEGER      PRIMARY KEY

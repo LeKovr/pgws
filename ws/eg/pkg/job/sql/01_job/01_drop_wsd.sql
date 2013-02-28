@@ -21,16 +21,14 @@
 */
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.prop_value WHERE pkg = :'PKG';
-DELETE FROM wsd.prop_owner WHERE pkg = :'PKG';
-DELETE FROM wsd.prop_group WHERE pkg = :'PKG';
+DROP TABLE wsd.job_cron;
+DROP TABLE wsd.job_dust;
+DROP TABLE wsd.job_past;
+DROP TABLE wsd.job_todo;
+DROP TABLE wsd.job;
 
 /* ------------------------------------------------------------------------- */
-DROP TABLE wsd.job;
-DROP TABLE wsd.job_todo;
-DROP TABLE wsd.job_past;
-DROP TABLE wsd.job_dust;
-
 DROP SEQUENCE wsd.job_seq;
+
 /* ------------------------------------------------------------------------- */
 DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';

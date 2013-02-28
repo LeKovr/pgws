@@ -56,7 +56,6 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id) VALUES
   ,('ws.dt_facet',                2, 1, 2, 7)
   ,('ws.dt_part',                 2, 1, 2, 7)
   ,('ws.class_status_action_acl', 2, 1, 2, 7)
-  ,('ws.cache',                   2, 1, 2, 5)
   ,('ws.class_action',            2, 1, 2, 3)
   ,('ws.class_status',            2, 1, 2, 3)
   ,('ws.class_acl',               2, 1, 2, 3)

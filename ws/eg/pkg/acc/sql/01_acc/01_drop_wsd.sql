@@ -23,6 +23,7 @@
 /* ------------------------------------------------------------------------- */
 
 DROP TABLE wsd.session;
+DROP TABLE wsd.account_contact;
 DROP TABLE wsd.account_role;
 DROP TABLE wsd.account;
 DROP TABLE wsd.role_acl;

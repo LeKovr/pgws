@@ -17,26 +17,39 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Удаление объектов пакета из схемы wsd
+    Функции триггеров пакета cfg
 */
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_clean_value('ws.daemon.be.plugin.wiki.lib');
+CREATE OR REPLACE FUNCTION prop_calc_is_mask() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+  BEGIN
+    NEW.is_mask := ws.mask_is_multi(NEW.code);
+    RETURN NEW;
+  END;
+$_$;
+SELECT pg_c('f', 'prop_calc_is_mask', 'Расчет значения поля is_mask');
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.role_acl WHERE class_id = 10; -- TODO: wiki.const_class_id();
+CREATE OR REPLACE FUNCTION prop_value_insupd_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_rows INTEGER;
+  BEGIN
+    SELECT INTO v_rows
+      count(1)
+      FROM cfg.prop
+      WHERE NEW.pogc = ANY(pogc_list)
+        AND NEW.code ~ ws.mask2regexp(code)
+    ;
+    IF v_rows = 0 THEN
+      RAISE EXCEPTION 'Unknown code % in group %', NEW.code, NEW.pogc;
+    ELSIF v_rows > 1 THEN
+      RAISE EXCEPTION 'code % related to % props, but need only 1', NEW.code, v_rows;
+    END IF;
+    RETURN NEW;
+  END;
+$_$;
+SELECT pg_c('f', 'prop_value_insupd_trigger', 'Проверка наличия свойства в таблице prop');
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.file_folder_format WHERE folder_code = 'wiki';
-DELETE FROM wsd.file_folder WHERE pkg = :'PKG';
-/* ------------------------------------------------------------------------- */
-
-DROP TABLE wsd.doc_keyword;
-DROP TABLE wsd.doc_diff;
-DROP TABLE wsd.doc;
-DROP TABLE wsd.doc_group;
-
-DROP SEQUENCE wsd.doc_id_seq;
-
-/* ------------------------------------------------------------------------- */
-DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';

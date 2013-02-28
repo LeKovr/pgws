@@ -21,7 +21,7 @@
 */
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
+INSERT INTO wsd.pkg_script_protected (pkg, code, ver) VALUES (:'PKG', :'FILE', :'VER');
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES

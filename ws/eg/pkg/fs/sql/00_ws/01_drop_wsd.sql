@@ -23,8 +23,12 @@
 /* ------------------------------------------------------------------------- */
 
 DROP TABLE wsd.file_link;
-DROP TABLE wsd.file;
 DROP SEQUENCE wsd.file_id_seq;
+DROP TABLE wsd.file;
+
+DROP TABLE wsd.file_folder_format;
+DROP TABLE wsd.file_folder;
+
 
 /* ------------------------------------------------------------------------- */
 DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';

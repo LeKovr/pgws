@@ -80,26 +80,4 @@
  ws.pg_sql                      | datname          | pg_catalog.pg_stat_activity      | datname          |         2 | 
  ws.pg_sql                      | duration         |                                  |                  |         3 | (now() - pg_stat_activity.query_start)
  ws.pg_sql                      | procpid          | pg_catalog.pg_stat_activity      | procpid          |         2 | 
- ws.prop_attr                   | anno             | ws.prop                          | anno             |         1 | Аннотация
- ws.prop_attr                   | code             | wsd.prop_value                   | code             |         1 | Код свойства
- ws.prop_attr                   | def_value        | ws.prop                          | def_value        |         1 | Значение по умолчанию
- ws.prop_attr                   | is_mask          | ws.prop                          | is_mask          |         1 | Свойство не атомарно
- ws.prop_attr                   | name             | ws.prop                          | name             |         1 | Название
- ws.prop_attr                   | pkg              | ws.prop                          | pkg              |         1 | Пакет, в котором добавлено свойство
- ws.prop_attr                   | pogc             | wsd.prop_value                   | pogc             |         1 | Код группы (Property Owner Group Code)
- ws.prop_attr                   | pogc_list        | ws.prop                          | pogc_list        |         1 | Массив кодов разрешенных групп (prop_group)
- ws.prop_attr                   | poid             | wsd.prop_value                   | poid             |         1 | ID владельца (Property Owner ID)
- ws.prop_attr                   | valid_from       | wsd.prop_value                   | valid_from       |         1 | Дата начала действия
- ws.prop_attr                   | value            | wsd.prop_value                   | value            |         1 | Значение свойства
- ws.prop_attr                   | value_fmt        | ws.prop                          | value_fmt        |         1 | Строка формата для вывода значения
- ws.prop_attr                   | value_pkg        | wsd.prop_value                   | pkg              |         1 | Пакет, в котором задано значение
- ws.prop_owner_attr             | anno             | wsd.prop_owner                   | anno             |         1 | Аннотация
- ws.prop_owner_attr             | is_id_required   | wsd.prop_group                   | is_id_required   |         1 | Загрузка без указания poid не используется
- ws.prop_owner_attr             | name             | wsd.prop_owner                   | name             |         1 | Название
- ws.prop_owner_attr             | pkg              | wsd.prop_owner                   | pkg              |         1 | Пакет, в котором добавлена группа
- ws.prop_owner_attr             | pogc             | wsd.prop_owner                   | pogc             |         1 | Код группы (Property Owner Group Code)
- ws.prop_owner_attr             | pog_name         | wsd.prop_group                   | name             |         1 | Название
- ws.prop_owner_attr             | pog_sort         | wsd.prop_group                   | sort             |         1 | Порядок сортировки
- ws.prop_owner_attr             | poid             | wsd.prop_owner                   | poid             |         1 | ID владельца (Property Owner ID)
- ws.prop_owner_attr             | sort             | wsd.prop_owner                   | sort             |         1 | Порядок сортировки
 

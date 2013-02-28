@@ -35,7 +35,7 @@ use constant POID               => ($ENV{'PGWS_DB_POID'}        or 1);      # Pr
 
 use constant LOG_CONNECT        => ($ENV{'PGWS_DB_LOG_CONNECT'});
 
-use constant PROP_FUNC          => ($ENV{'PGWS_DB_PROP_FUNC'}   or 'ws.prop_group_value_list(?, ?, ?, FALSE, NULL)');
+use constant PROP_FUNC          => ($ENV{'PGWS_DB_PROP_FUNC'}   or 'cfg.prop_group_value_list(?, ?, ?, FALSE, NULL)');
 use constant PROP_PREFIX        => ($ENV{'PGWS_DB_PROP_PREFIX'} or 'ws.daemon');
 
 use constant SET_APPNAME        => ($ENV{'PGWS_DB_SET_APPNAME'} or 0);

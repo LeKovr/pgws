@@ -8,7 +8,7 @@
      data = api('ws.method_by_code', 'code' => get.code);
    END;
    classes = api('ws.class');
-   caches = api('ws.cache');
+   caches = api('cfg.cache');
    rvf = api('ws.method_rvf');
    dts = api('ws.dt:5');
    u_xsd = uri(code => 'api.xsd');

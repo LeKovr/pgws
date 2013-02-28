@@ -17,26 +17,14 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Удаление объектов пакета из схемы wsd
+    Функции ядра
 */
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_clean_value('ws.daemon.be.plugin.wiki.lib');
+CREATE OR REPLACE FUNCTION cache(a_id d_id32 DEFAULT 0) RETURNS SETOF t_hashtable STABLE STRICT LANGUAGE 'sql' AS
+$_$
+  SELECT poid::text, name FROM wsd.prop_owner WHERE pogc = 'cache' AND $1 IN (poid, 0) ORDER BY name;
+$_$;
+SELECT pg_c('f', 'cache', 'Атрибуты кэша по id');
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.role_acl WHERE class_id = 10; -- TODO: wiki.const_class_id();
-
-/* ------------------------------------------------------------------------- */
-DELETE FROM wsd.file_folder_format WHERE folder_code = 'wiki';
-DELETE FROM wsd.file_folder WHERE pkg = :'PKG';
-/* ------------------------------------------------------------------------- */
-
-DROP TABLE wsd.doc_keyword;
-DROP TABLE wsd.doc_diff;
-DROP TABLE wsd.doc;
-DROP TABLE wsd.doc_group;
-
-DROP SEQUENCE wsd.doc_id_seq;
-
-/* ------------------------------------------------------------------------- */
-DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';

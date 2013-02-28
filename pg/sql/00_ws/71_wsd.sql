@@ -21,15 +21,5 @@
 */
 
 /* ------------------------------------------------------------------------- */
-ALTER TABLE wsd.prop_group ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
-
-ALTER TABLE wsd.prop_owner ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
-
-ALTER TABLE wsd.prop_value ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
-
 ALTER TABLE wsd.pkg_script_protected ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
-
-/* ------------------------------------------------------------------------- */
-CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON wsd.prop_value
-  FOR EACH ROW EXECUTE PROCEDURE wsd_prop_value_insupd_trigger()
-;
+ALTER TABLE wsd.pkg_script_protected ALTER COLUMN schema SET DEFAULT ws.pg_cs();

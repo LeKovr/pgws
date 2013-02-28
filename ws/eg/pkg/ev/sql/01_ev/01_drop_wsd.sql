@@ -26,7 +26,7 @@ DELETE FROM wsd.prop_value WHERE pkg = :'PKG';
 DELETE FROM wsd.prop_owner WHERE pkg = :'PKG';
 DELETE FROM wsd.prop_group WHERE pkg = :'PKG';
 
-DELETE FROM ws.prop                 WHERE pkg = :'PKG';
+DELETE FROM cfg.prop                 WHERE pkg = :'PKG';
 */
 /* ------------------------------------------------------------------------- */
 DROP TABLE wsd.event_notify_spec;

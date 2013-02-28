@@ -29,12 +29,12 @@ CREATE TABLE wsd.pkg_script_protected (
   pkg         TEXT
 , code        TEXT
 , ver         TEXT DEFAULT '000'
-, schema      TEXT DEFAULT 'wsd' -- TODO: write code using it
+, schema      TEXT
 , created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 , CONSTRAINT  pkg_script_protected_pkey PRIMARY KEY (pkg, code, ver)
 );
 COMMENT ON TABLE wsd.pkg_script_protected IS 'Оперативные данные пакетов PGWS';
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.pkg_script_protected (pkg, code, ver) VALUES ('ws', :'FILE', :'VER');
+INSERT INTO wsd.pkg_script_protected (pkg, code, ver, schema) VALUES (:'PKG', :'FILE', :'VER', :'PKG');
 

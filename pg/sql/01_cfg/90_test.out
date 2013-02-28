@@ -1,0 +1,55 @@
+          test          
+------------------------
+  ***** prop_attr *****
+
+                                                      prop_attr                                                       
+----------------------------------------------------------------------------------------------------------------------
+ (ws.daemon.db.sql.0,cfg,{db},t,"","SQL настройки соединения с БД",,,db,1,2000-01-01,cfg,"SET datestyle TO 'German'")
+
+          test          
+------------------------
+  ***** prop_info *****
+
+        code         | pkg | pogc_list | is_mask | def_value |             name              | value_fmt | anno 
+---------------------+-----+-----------+---------+-----------+-------------------------------+-----------+------
+ ws.daemon.db.sql.:i | cfg | {db}      | t       |           | SQL настройки соединения с БД |           | 
+
+             test             
+------------------------------
+  ***** prop_owner_attr *****
+
+ pogc  | poid | pkg | sort |     name      | anno | is_id_required | pog_sort | pog_name 
+-------+------+-----+------+---------------+------+----------------+----------+----------
+ cache |    4 | cfg |    4 | Данные сессий |      | f              |        6 | Кэш
+
+             test             
+------------------------------
+  ***** prop_value_list *****
+
+           id           |      name       
+------------------------+-----------------
+ FE.def.acl             | info.acl_check
+ FE.def.code            | ws.page_by_code
+ FE.def.login           | acc.login
+ FE.def.logout          | acc.logout
+ FE.def.sid             | acc.sid_info
+ FE.def.uri             | ws.page_by_uri
+ FE.error_500           | /error/
+ FE.sid_arg             | 
+ FE.site_is_hidden      | 1
+ FE.tmpl.error          | app/error
+ FE.tmpl.ext            | .tt2
+ FE.tmpl.jobs           | job/
+ FE.tmpl.layout_default | style01
+ FE.tmpl.pages          | page/
+ FE.tmpl.skin_default   | default
+
+                test                
+------------------------------------
+  ***** prop_group_value_list *****
+
+     id     |           name            
+------------+---------------------------
+ DB.1.sql.0 | SET datestyle TO 'German'
+ DB.1.sql.1 | SET time zone local
+

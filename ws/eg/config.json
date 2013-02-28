@@ -32,7 +32,7 @@
   },
   "inactive_defaults": {
     "DB_SQL_APPNAME": "SET application_name = '%s'",
-    "DB_PROP_FUNC": "ws.prop_group_value_list(?, ?, ?, FALSE, NULL)",
+    "DB_PROP_FUNC": "cfg.prop_group_value_list(?, ?, ?, FALSE, NULL)",
     "DB_PROP_PREFIX": "ws.daemon",
   },
 }

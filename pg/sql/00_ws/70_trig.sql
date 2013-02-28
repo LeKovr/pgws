@@ -44,10 +44,3 @@ CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON page_data
 CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON method
   FOR EACH ROW EXECUTE PROCEDURE method_insupd_trigger()
 ;
-
-/* ------------------------------------------------------------------------- */
-CREATE TRIGGER prop_is_mask BEFORE INSERT OR UPDATE ON prop
-  FOR EACH ROW EXECUTE PROCEDURE ws.prop_calc_is_mask()
-;
-
-/* ------------------------------------------------------------------------- */

@@ -26,13 +26,6 @@
 SELECT ws.pkg_is_core_only();
 
 /* ------------------------------------------------------------------------- */
-ALTER TABLE wsd.prop_group ALTER COLUMN pkg DROP DEFAULT;
-
-ALTER TABLE wsd.prop_owner ALTER COLUMN pkg DROP DEFAULT;
-
-ALTER TABLE wsd.prop_value ALTER COLUMN pkg DROP DEFAULT;
-
 ALTER TABLE wsd.pkg_script_protected ALTER COLUMN pkg DROP DEFAULT;
+ALTER TABLE wsd.pkg_script_protected ALTER COLUMN schema DROP DEFAULT;
 
-/* ------------------------------------------------------------------------- */
-DROP TRIGGER IF EXISTS insupd ON wsd.prop_value;

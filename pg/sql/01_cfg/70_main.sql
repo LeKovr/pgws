@@ -17,26 +17,24 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Удаление объектов пакета из схемы wsd
+    Создание триггеров и настройка умолчаний для объектов пакета cfg
 */
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_clean_value('ws.daemon.be.plugin.wiki.lib');
+CREATE TRIGGER prop_is_mask BEFORE INSERT OR UPDATE ON prop
+  FOR EACH ROW EXECUTE PROCEDURE prop_calc_is_mask()
+;
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.role_acl WHERE class_id = 10; -- TODO: wiki.const_class_id();
+ALTER TABLE wsd.prop_group ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
+
+ALTER TABLE wsd.prop_owner ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
+
+ALTER TABLE wsd.prop_value ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.file_folder_format WHERE folder_code = 'wiki';
-DELETE FROM wsd.file_folder WHERE pkg = :'PKG';
-/* ------------------------------------------------------------------------- */
-
-DROP TABLE wsd.doc_keyword;
-DROP TABLE wsd.doc_diff;
-DROP TABLE wsd.doc;
-DROP TABLE wsd.doc_group;
-
-DROP SEQUENCE wsd.doc_id_seq;
+CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON wsd.prop_value
+  FOR EACH ROW EXECUTE PROCEDURE cfg.prop_value_insupd_trigger()
+;
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';

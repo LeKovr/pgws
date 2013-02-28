@@ -73,6 +73,6 @@ select
 select job.create(job.handler_id('acc.mailtest'), null, -2, '2012-08-16');
 
 -- отправить команду рестарта процессов
-SELECT pg_notify('job_reload', ws.prop_value('job',1,'ws.daemon.mgr.reload_key'));
+SELECT pg_notify('job_reload', cfg.prop_value('job',1,'ws.daemon.mgr.reload_key'));
 
 */

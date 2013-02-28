@@ -17,26 +17,27 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Удаление объектов пакета из схемы wsd
+    Тесты
 */
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_clean_value('ws.daemon.be.plugin.wiki.lib');
+SELECT ws.test('prop_attr');
+SELECT cfg.prop_attr('db', 1, 'ws.daemon.db.sql.0');
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.role_acl WHERE class_id = 10; -- TODO: wiki.const_class_id();
+SELECT ws.test('prop_info');
+SELECT * FROM cfg.prop_info('ws.daemon.db.sql', true);
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.file_folder_format WHERE folder_code = 'wiki';
-DELETE FROM wsd.file_folder WHERE pkg = :'PKG';
-/* ------------------------------------------------------------------------- */
-
-DROP TABLE wsd.doc_keyword;
-DROP TABLE wsd.doc_diff;
-DROP TABLE wsd.doc;
-DROP TABLE wsd.doc_group;
-
-DROP SEQUENCE wsd.doc_id_seq;
+SELECT ws.test('prop_owner_attr');
+SELECT * FROM cfg.prop_owner_attr('cache', 4);
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';
+SELECT ws.test('prop_value_list');
+SELECT * FROM cfg.prop_value_list('fe', 2, 'ws.daemon.fe', false, '2013-01-01', 'FE.', '%s');
+
+/* ------------------------------------------------------------------------- */
+SELECT ws.test('prop_group_value_list');
+SELECT * FROM cfg.prop_group_value_list('db', 0, 'ws.daemon.db', false, '2013-01-01', 'DB.', '%s'); 
+
+/* ------------------------------------------------------------------------- */

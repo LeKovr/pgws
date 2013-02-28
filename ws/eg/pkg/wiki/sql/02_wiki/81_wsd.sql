@@ -24,11 +24,6 @@
 INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
-  ('be',    1,  'ws.daemon.be.plugin.wiki.lib',          'PGWS::Plugin::Wiki')
-;
-
-/* ------------------------------------------------------------------------- */
 INSERT INTO wsd.doc_group (id, code, name, anno) VALUES
   (1, 'wk',   'Public',   'Public info')
 , (2, 'sys',  'Internal', 'Internal info')
@@ -41,10 +36,12 @@ INSERT INTO wsd.role_acl (role_id, class_id, object_id, acl_id) VALUES
 , (acc.const_role_id_user(),  wiki.const_class_id(), 1, 2) -- доступ на чтение для авторизованных
 ;
 
+/* ------------------------------------------------------------------------- */
 INSERT INTO wsd.file_folder (code, class_id, has_version, has_file_code, page_code, name) VALUES
 ('wiki', wiki.const_doc_class_id(), FALSE, FALSE, 'wiki.wk.file', 'Файл статьи wiki')
 ;
 
+/* ------------------------------------------------------------------------- */
 INSERT INTO wsd.file_folder_format(folder_code, format_code) VALUES
 ('wiki', fs.const_file_format_any())
 ;

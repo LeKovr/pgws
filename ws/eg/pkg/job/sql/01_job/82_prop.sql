@@ -22,7 +22,7 @@
 */
 
 /* ------------------------------------------------------------------------- */
-UPDATE ws.prop SET pogc_list = array_append(pogc_list, 'job') WHERE code IN (
+UPDATE cfg.prop SET pogc_list = array_append(pogc_list, 'job') WHERE code IN (
   'ws.daemon.startup.pm.n_processes'
 , 'ws.daemon.startup.pm.die_timeout'
 , 'ws.daemon.mgr.listen_wait'
@@ -30,7 +30,7 @@ UPDATE ws.prop SET pogc_list = array_append(pogc_list, 'job') WHERE code IN (
 );
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO ws.prop (code,                 pogc_list,               def_value, name) VALUES
+INSERT INTO cfg.prop (code,                 pogc_list,               def_value, name) VALUES
   ('ws.daemon.mgr.cron_every',          ARRAY['job'],               '60',     'Запуск cron, если номер секунды в сутках кратен заданной')
 , ('ws.daemon.mgr.cron_predict',        ARRAY['job'],               '50',     'За сколько секунд до запуска cron резервировать процесс')
 , ('ws.daemon.mgr.mem_size',            ARRAY['job'],               '131072', 'Объем разделяемой памяти для очереди выполненных задач, байт')
