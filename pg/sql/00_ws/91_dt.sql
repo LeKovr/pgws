@@ -17,28 +17,21 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Тесты перехода от dt.id к dt.code
+    Тесты авторегистрации композитных типов и доменов
 */
 
 /* ------------------------------------------------------------------------- */
-\set TYPES '''{text, numeric, integer, json, uuid, ws.d_emails, ws.d_id32a, ws.facet, ws.z_facet, ws.t_hashtable, ws.z_cache, ws.dt_part}''::text[]'
 
-SELECT ws.test('dt_check');
+SELECT ws.test('dt_register');
 
-SELECT ws.dt_parent_base_code(code), ws.dt_is_complex(code), ws.dt_code(code), ws.dt(code), array(select ws.dt_facet(code)) as dt_facet, array(select dt_tree::text from ws.dt_tree(code)) as dt_tree
-  FROM ws.dt
-  WHERE code = ANY(:TYPES)
-  ORDER BY code
-;
-
-SELECT array(select ws.dt_part(code)) as dt_part, ws.dt_parts(code)
-  FROM ws.dt
-  WHERE code = ANY(:TYPES)
-    AND is_complex = true
-  ORDER BY code
-;
-
-SELECT * FROM ws.dt_tree('ws.d_acls');
+select * from ws.dt('ws.t_hashtable');
+select * from ws.dt_part('ws.t_hashtable');
+select * from ws.dt('ws.t_acl_check');
+select * from ws.dt_part('ws.t_acl_check');
+select * from ws.dt('ws.t_pg_proc_info');
+select * from ws.dt_part('ws.t_pg_proc_info');
+select * from ws.dt('ws.t_page_info');
+select * from ws.dt_part('ws.t_page_info'); 
 
 
 /* ------------------------------------------------------------------------- */

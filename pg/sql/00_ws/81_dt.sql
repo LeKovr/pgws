@@ -189,9 +189,16 @@ INSERT INTO dt_facet VALUES (dt_code('d_errcode'), facet_id('length'), 5);
 
 INSERT INTO dt (code, parent_code, anno) VALUES (pg_cs('d_money'), dt_code('numeric'), 'Деньги');
 
+SELECT pg_c('t','t_hashtable', 'Хэштаблица')
+, pg_c('c','t_hashtable.id',    'ID')
+, pg_c('c','t_hashtable.name',  'Название')
+;
+SELECT ws.pg_register_class(oid) FROM pg_type WHERE typname = 't_hashtable';
+/* 9367
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('t_hashtable'), 'Хэштаблица', true);
 INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('t_hashtable'), 1, 'id',  dt_code('d_id32'), 'ID');
 INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('t_hashtable'), 2, 'name', dt_code('text'), 'Название');
+*/
 
 INSERT INTO dt (code, parent_code, anno) VALUES (pg_cs('d_acl'), dt_code('d_id32'), 'Уровень доступа');
 INSERT INTO dt (code, parent_code, anno, is_list) VALUES (pg_cs('d_acls'), dt_code('d_acl'), 'Массив уровней доступа', true);
@@ -231,6 +238,14 @@ INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_store_set'), 'Аргу�
 INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('z_store_set'), 1, 'path',   dt_code('d_path'), 'ID данных');
 INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('z_store_set'), 2, 'data',   dt_code('text'), 'данные');
 
+
+SELECT pg_c('t','t_page_info', 'Параметры страницы');
+SELECT ws.pg_register_class(oid) FROM pg_type WHERE typname = 't_page_info';
+SELECT pg_c('t','t_pg_proc_info', 'Параметры хранимой процедуры');
+SELECT ws.pg_register_class(oid) FROM pg_type WHERE typname = 't_pg_proc_info';
+SELECT pg_c('t','t_acl_check', 'Результат проверки ACL');
+SELECT ws.pg_register_class(oid) FROM pg_type WHERE typname = 't_acl_check';
+/* 9367
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('t_page_info'), 'Параметры страницы', true);
 
 INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('t_page_info'), 1, 'req', dt_code('text'), '');
@@ -261,5 +276,5 @@ INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code(
 INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('t_acl_check'), 2, 'id', dt_code('integer'), '');
 INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('t_acl_check'), 3, 'code', dt_code('text'), '');
 INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('t_acl_check'), 4, 'name', dt_code('text'), '');
-
+*/
 /* ------------------------------------------------------------------------- */
