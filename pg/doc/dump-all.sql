@@ -615,6 +615,13 @@ CREATE TYPE t_acl_check AS (
 
 
 --
+-- Name: TYPE t_acl_check; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON TYPE t_acl_check IS 'Результат проверки ACL';
+
+
+--
 -- Name: t_date_info; Type: TYPE; Schema: ws; Owner: -
 --
 
@@ -669,6 +676,27 @@ CREATE TYPE t_hashtable AS (
 	id text,
 	name text
 );
+
+
+--
+-- Name: TYPE t_hashtable; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON TYPE t_hashtable IS 'Хэштаблица';
+
+
+--
+-- Name: COLUMN t_hashtable.id; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN t_hashtable.id IS 'ID';
+
+
+--
+-- Name: COLUMN t_hashtable.name; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON COLUMN t_hashtable.name IS 'Название';
 
 
 --
@@ -794,6 +822,13 @@ CREATE TYPE t_page_info AS (
 
 
 --
+-- Name: TYPE t_page_info; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON TYPE t_page_info IS 'Параметры страницы';
+
+
+--
 -- Name: t_pg_object; Type: TYPE; Schema: ws; Owner: -
 --
 
@@ -824,6 +859,13 @@ CREATE TYPE t_pg_proc_info AS (
 	args text,
 	args_pub text
 );
+
+
+--
+-- Name: TYPE t_pg_proc_info; Type: COMMENT; Schema: ws; Owner: -
+--
+
+COMMENT ON TYPE t_pg_proc_info IS 'Параметры хранимой процедуры';
 
 
 --
@@ -9000,11 +9042,13 @@ $_$;
 
 CREATE FUNCTION pg_register_class(a_oid oid) RETURNS d_code
     LANGUAGE plpgsql
-    AS $$ /* ws:ws:50_pg.sql / 187 */ 
+    AS $_$ /* ws:ws:50_pg.sql / 187 */ 
   DECLARE
     r_pg_type pg_catalog.pg_type;
     v_code TEXT;
     v_type TEXT;
+    v_tpnm TEXT;
+    v_islist boolean;
     rec RECORD;
   BEGIN
     SELECT INTO r_pg_type * FROM pg_catalog.pg_type WHERE oid = a_oid;
@@ -9015,53 +9059,85 @@ CREATE FUNCTION pg_register_class(a_oid oid) RETURNS d_code
          v_code := current_schema() || '.'|| v_code;
       END IF;
 */
-    RAISE NOTICE 'Registering datatype: % (%)', v_code, a_oid;
-    INSERT INTO ws.dt (code, anno, is_complex)
-      VALUES (v_code, COALESCE(obj_description(r_pg_type.typrelid, 'pg_class'), obj_description(a_oid, 'pg_type'), v_code), true)
-    ;
-
-    FOR rec IN
-      SELECT a.attname
-        , pg_catalog.format_type(a.atttypid, a.atttypmod)
-        , (SELECT substring(pg_catalog.pg_get_expr(d.adbin, d.adrelid) for 128)
-          FROM pg_catalog.pg_attrdef d
-          WHERE d.adrelid = a.attrelid AND d.adnum = a.attnum AND a.atthasdef) as def_val
-        , a.attnotnull
-        , a.attnum
-        , pg_catalog.col_description(a.attrelid, a.attnum) as anno
-      FROM pg_catalog.pg_attribute a
-      WHERE a.attrelid = r_pg_type.typrelid AND a.attnum > 0 AND NOT a.attisdropped
-      ORDER BY a.attnum
-    LOOP
-      v_type := rec.format_type;
-      IF v_type ~ E'^timestamp[\\( ]' THEN
-        v_type := 'timestamp'; -- clean "timestamp(0) without time zone"
-      ELSIF v_type ~ E'^time[\\( ]' THEN
-        v_type := 'time'; -- clean "time without time zone"
-      ELSIF v_type ~ E'^numeric\\(' THEN
-        v_type := 'numeric'; -- clean "numeric(14,4)"
-      ELSIF v_type ~ E'^double' THEN
-        v_type := 'double'; -- clean "double precision"
-      ELSIF v_type ~ E'^character varying' THEN
-        v_type := 'text'; -- TODO: allow length
+    IF r_pg_type.typtype in ('c','b','d') THEN
+      v_tpnm := CASE
+        WHEN r_pg_type.typtype = 'c' THEN
+          'Composite'
+        WHEN r_pg_type.typtype = 'b' THEN
+          'Base'
+        WHEN r_pg_type.typtype = 'd' THEN
+          'Domain'
+        END;
+      RAISE NOTICE 'Registering "%" type: % (%)', v_tpnm, v_code, a_oid;      
+      IF r_pg_type.typtype = 'd' THEN
+        v_type := 
+         (SELECT pg_catalog.format_type(oid, typtypmod)
+          FROM pg_type
+          WHERE oid = r_pg_type.typbasetype);
+        IF ws.dt_parent_base_code(v_type) is null THEN
+          v_type := (select code from ws.dt where code = current_schema() || '.' || v_type);
+        END IF;
+        IF v_type IS NULL THEN
+          RAISE EXCEPTION 'Parent type for domain % is unknown', v_code;          
+        END IF;
       END IF;
-      RAISE NOTICE '   column % %', rec.attname, v_type;
-      IF ws.dt_code(v_type) IS NULL THEN
-        RAISE EXCEPTION 'Unknown type (%)', v_type;
-      END IF;
-      BEGIN
-        INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null)
-          VALUES (v_code, rec.attnum, rec.attname, ws.dt_code(v_type), COALESCE(rec.anno, rec.attname), rec.def_val, NOT rec.attnotnull)
-        ;
-        EXCEPTION
-          WHEN CHECK_VIOLATION THEN
-            RAISE EXCEPTION 'Unregistered % part type (%)', v_code, v_type
+      INSERT INTO ws.dt (code, anno, is_complex, parent_code)
+        VALUES (v_code, COALESCE(obj_description(r_pg_type.typrelid, 'pg_class'), obj_description(a_oid, 'pg_type'), v_code), 
+          CASE WHEN r_pg_type.typtype = 'd' then false else true end
+        , v_type)
+      ;
+      FOR rec IN
+        SELECT a.attname
+          , pg_catalog.format_type(a.atttypid, a.atttypmod)
+          , (SELECT substring(pg_catalog.pg_get_expr(d.adbin, d.adrelid) for 128)
+            FROM pg_catalog.pg_attrdef d
+            WHERE d.adrelid = a.attrelid AND d.adnum = a.attnum AND a.atthasdef) as def_val
+          , a.attnotnull
+          , a.attnum
+          , pg_catalog.col_description(a.attrelid, a.attnum) as anno
+        FROM pg_catalog.pg_attribute a
+        WHERE a.attrelid = r_pg_type.typrelid AND a.attnum > 0 AND NOT a.attisdropped
+        ORDER BY a.attnum
+      LOOP
+        v_islist := case when rec.format_type ~ '\[\]$' then true else false end;
+        v_type := btrim(rec.format_type, '[]');
+        IF v_type ~ E'^timestamp[\\( ]' THEN
+          v_type := 'timestamp'; -- clean "timestamp(0) without time zone"
+        ELSIF v_type ~ E'^time[\\( ]' THEN
+          v_type := 'time'; -- clean "time without time zone"
+        ELSIF v_type ~ E'^numeric\\(' THEN
+          v_type := 'numeric'; -- clean "numeric(14,4)"
+        ELSIF v_type ~ E'^double' THEN
+          v_type := 'double'; -- clean "double precision"
+        ELSIF v_type ~ E'^character varying' THEN
+          v_type := 'text'; -- TODO: allow length
+        END IF;
+        RAISE NOTICE '   column % %', rec.attname, v_type;   
+        IF ws.dt_code(v_type) IS NULL THEN
+          v_type := 
+           (SELECT ws.pg_register_class(oid)  
+            FROM pg_type
+            WHERE typname = v_type);
+          IF ws.dt_code(v_type) IS NULL THEN
+            RAISE EXCEPTION 'Unknown type (%)', v_type;
+          END IF;
+        END IF;
+        BEGIN
+          INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null, is_list)
+            VALUES (v_code, rec.attnum, rec.attname, ws.dt_code(v_type), COALESCE(rec.anno, rec.attname), rec.def_val, NOT rec.attnotnull,v_islist)
           ;
-      END;
-    END LOOP;
+          EXCEPTION
+            WHEN CHECK_VIOLATION THEN
+              RAISE EXCEPTION 'Unregistered % part type (%)', v_code, v_type
+            ;
+        END;
+      END LOOP;
+    ELSE
+      RAISE EXCEPTION 'ERROR: OID = % неподдерживаемого типа "%"', a_oid, r_pg_type.typtype;
+    END IF;
     RETURN v_code;
   END;
-$$;
+$_$;
 
 
 --
@@ -10094,7 +10170,7 @@ $$;
 
 CREATE FUNCTION tr_exception() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ /* ws:ws:50_pg.sql / 268 */ 
+    AS $$ /* ws:ws:50_pg.sql / 302 */ 
   DECLARE
     v_text TEXT;
   BEGIN
@@ -10111,7 +10187,7 @@ $$;
 
 CREATE FUNCTION tr_notify() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ /* ws:ws:50_pg.sql / 254 */ 
+    AS $$ /* ws:ws:50_pg.sql / 288 */ 
   DECLARE
     v_channel TEXT;
   BEGIN
@@ -13707,7 +13783,7 @@ INSERT INTO dt_facet VALUES ('ws.d_errcode', 1, '5', 'text', NULL);
 -- Data for Name: dt_part; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO dt_part VALUES ('ws.t_hashtable', 1, 'id', 'ws.d_id32', 'smallint', true, NULL, 'ID', false);
+INSERT INTO dt_part VALUES ('ws.t_hashtable', 1, 'id', 'text', 'text', true, NULL, 'ID', false);
 INSERT INTO dt_part VALUES ('ws.t_hashtable', 2, 'name', 'text', 'text', true, NULL, 'Название', false);
 INSERT INTO dt_part VALUES ('ws.z_uncache', 1, 'code', 'text', 'text', true, NULL, 'код метода', false);
 INSERT INTO dt_part VALUES ('ws.z_uncache', 2, 'key', 'text', 'text', true, NULL, 'ключ кэша', false);
@@ -13720,30 +13796,37 @@ INSERT INTO dt_part VALUES ('ws.z_acl_check', 6, 'id2', 'text', 'text', true, NU
 INSERT INTO dt_part VALUES ('ws.z_store_get', 1, 'path', 'ws.d_path', 'text', true, NULL, 'ID данных', false);
 INSERT INTO dt_part VALUES ('ws.z_store_set', 1, 'path', 'ws.d_path', 'text', true, NULL, 'ID данных', false);
 INSERT INTO dt_part VALUES ('ws.z_store_set', 2, 'data', 'text', 'text', true, NULL, 'данные', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 1, 'req', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 2, 'code', 'ws.d_code', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 3, 'up_code', 'ws.d_code', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 4, 'class_id', 'ws.d_class', 'smallint', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 5, 'action_id', 'ws.d_id32', 'smallint', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 6, 'sort', 'ws.d_sort', 'smallint', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 7, 'uri', 'ws.d_regexp', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 8, 'tmpl', 'ws.d_path', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 9, 'name', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 10, 'uri_re', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 11, 'uri_fmt', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_page_info', 12, 'args', 'text', 'text', true, NULL, '', true);
-INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 1, 'schema', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 2, 'name', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 3, 'anno', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 4, 'rt_oid', 'oid', 'oid', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 5, 'rt_name', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 6, 'is_set', 'boolean', 'boolean', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 7, 'args', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 8, 'args_pub', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_acl_check', 1, 'value', 'integer', 'integer', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_acl_check', 2, 'id', 'integer', 'integer', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_acl_check', 3, 'code', 'text', 'text', true, NULL, '', false);
-INSERT INTO dt_part VALUES ('ws.t_acl_check', 4, 'name', 'text', 'text', true, NULL, '', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 1, 'code', 'ws.d_code', 'text', true, NULL, 'code', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 2, 'up_code', 'ws.d_code', 'text', true, NULL, 'up_code', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 3, 'class_id', 'ws.d_class', 'smallint', true, NULL, 'class_id', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 4, 'action_id', 'ws.d_id32', 'smallint', true, NULL, 'action_id', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 5, 'group_id', 'ws.d_id32', 'smallint', true, NULL, 'group_id', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 6, 'sort', 'ws.d_sort', 'smallint', true, NULL, 'sort', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 7, 'uri', 'ws.d_regexp', 'text', true, NULL, 'uri', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 8, 'tmpl', 'ws.d_path', 'text', true, NULL, 'tmpl', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 9, 'id_fixed', 'ws.d_id', 'integer', true, NULL, 'id_fixed', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 10, 'id_session', 'ws.d_code', 'text', true, NULL, 'id_session', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 11, 'is_hidden', 'boolean', 'boolean', true, NULL, 'is_hidden', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 12, 'target', 'text', 'text', true, NULL, 'target', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 13, 'uri_re', 'text', 'text', true, NULL, 'uri_re', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 14, 'uri_fmt', 'text', 'text', true, NULL, 'uri_fmt', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 15, 'pkg', 'text', 'text', true, NULL, 'pkg', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 16, 'name', 'text', 'text', true, NULL, 'name', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 17, 'req', 'text', 'text', true, NULL, 'req', false);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 18, 'args', 'text', 'text', true, NULL, 'args', true);
+INSERT INTO dt_part VALUES ('ws.t_page_info', 19, 'group_name', 'text', 'text', true, NULL, 'group_name', false);
+INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 1, 'schema', 'text', 'text', true, NULL, 'schema', false);
+INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 2, 'name', 'text', 'text', true, NULL, 'name', false);
+INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 3, 'anno', 'text', 'text', true, NULL, 'anno', false);
+INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 4, 'rt_oid', 'oid', 'oid', true, NULL, 'rt_oid', false);
+INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 5, 'rt_name', 'text', 'text', true, NULL, 'rt_name', false);
+INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 6, 'is_set', 'boolean', 'boolean', true, NULL, 'is_set', false);
+INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 7, 'args', 'text', 'text', true, NULL, 'args', false);
+INSERT INTO dt_part VALUES ('ws.t_pg_proc_info', 8, 'args_pub', 'text', 'text', true, NULL, 'args_pub', false);
+INSERT INTO dt_part VALUES ('ws.t_acl_check', 1, 'value', 'integer', 'integer', true, NULL, 'value', false);
+INSERT INTO dt_part VALUES ('ws.t_acl_check', 2, 'id', 'integer', 'integer', true, NULL, 'id', false);
+INSERT INTO dt_part VALUES ('ws.t_acl_check', 3, 'code', 'text', 'text', true, NULL, 'code', false);
+INSERT INTO dt_part VALUES ('ws.t_acl_check', 4, 'name', 'text', 'text', true, NULL, 'name', false);
 INSERT INTO dt_part VALUES ('ws.t_date_info', 1, 'date', 'date', 'date', true, NULL, 'date', false);
 INSERT INTO dt_part VALUES ('ws.t_date_info', 2, 'day', 'ws.d_id32', 'smallint', true, NULL, 'day', false);
 INSERT INTO dt_part VALUES ('ws.t_date_info', 3, 'month', 'ws.d_id32', 'smallint', true, NULL, 'month', false);
@@ -13859,6 +13942,7 @@ INSERT INTO dt_part VALUES ('ws.dt_part', 1, 'dt_code', 'ws.d_code', 'text', fal
 INSERT INTO dt_part VALUES ('ws.dt_part', 2, 'part_id', 'ws.d_cnt', 'integer', false, '0', 'ID поля', false);
 INSERT INTO dt_part VALUES ('ws.dt_part', 3, 'code', 'ws.d_code_arg', 'text', false, NULL, 'Код поля', false);
 INSERT INTO dt_part VALUES ('ws.dt_part', 4, 'parent_code', 'ws.d_code', 'text', false, NULL, 'Код родительского типа', false);
+INSERT INTO dt_part VALUES ('wiki.doc_link', 1, 'id', 'ws.d_id32', 'smallint', false, NULL, 'ID статьи', false);
 INSERT INTO dt_part VALUES ('ws.dt_part', 5, 'base_code', 'ws.d_code', 'text', false, NULL, 'Код базового типа', false);
 INSERT INTO dt_part VALUES ('ws.dt_part', 6, 'allow_null', 'boolean', 'boolean', false, 'true', 'Разрешен NULL', false);
 INSERT INTO dt_part VALUES ('ws.dt_part', 7, 'def_val', 'text', 'text', true, NULL, 'Значение по умолчанию', false);
@@ -14024,7 +14108,6 @@ INSERT INTO dt_part VALUES ('wiki.doc_extra', 2, 'is_toc_preferred', 'boolean', 
 INSERT INTO dt_part VALUES ('wiki.doc_extra', 3, 'toc', 'text', 'text', true, NULL, 'toc', false);
 INSERT INTO dt_part VALUES ('wiki.doc_extra', 4, 'anno', 'text', 'text', true, NULL, 'anno', false);
 INSERT INTO dt_part VALUES ('wiki.z_doc_extra', 1, 'id', 'ws.d_id', 'integer', false, NULL, 'ID статьи', false);
-INSERT INTO dt_part VALUES ('wiki.doc_link', 1, 'id', 'ws.d_id32', 'smallint', false, NULL, 'ID статьи', false);
 INSERT INTO dt_part VALUES ('wiki.doc_link', 2, 'path', 'text', 'text', false, NULL, 'path', false);
 INSERT INTO dt_part VALUES ('wiki.doc_link', 3, 'is_wiki', 'boolean', 'boolean', false, 'true', 'is_wiki', false);
 INSERT INTO dt_part VALUES ('wiki.doc_link', 4, 'link_id', 'ws.d_id', 'integer', true, NULL, 'link_id', false);
@@ -14295,15 +14378,15 @@ INSERT INTO page_data VALUES ('api.test', 'main', 2, 1, NULL, 7, 'docs/test$', '
 -- Data for Name: pkg; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:23.619761');
-INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:45.119616');
+INSERT INTO pkg VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
 
 
 --
@@ -14317,15 +14400,15 @@ SELECT pg_catalog.setval('pkg_id_seq', 9, true);
 -- Data for Name: pkg_log; Type: TABLE DATA; Schema: ws; Owner: -
 --
 
-INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:23.619761');
-INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_log VALUES (1, 'ws', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:45.119616');
+INSERT INTO pkg_log VALUES (2, 'apidoc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_log VALUES (3, 'fs', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_log VALUES (4, 'ev', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_log VALUES (5, 'job', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_log VALUES (6, 'acc', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_log VALUES (7, 'wiki', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_log VALUES (8, 'app', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_log VALUES (9, 'i18n', '000', '+', 'jean', '', '', 'apache', NULL, '2013-03-13 13:18:52.228548');
 
 
 --
@@ -14353,8 +14436,8 @@ SET search_path = wsd, pg_catalog;
 -- Data for Name: account; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-02-28 20:07:31', '2013-02-28 20:07:31', '2013-02-28 20:07:31');
-INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-02-28 20:07:31', '2013-02-28 20:07:31', '2013-02-28 20:07:31');
+INSERT INTO account VALUES (1, 4, 4, 'admin', 'pgws', 'Admin', true, true, '2013-03-13 13:18:52', '2013-03-13 13:18:52', '2013-03-13 13:18:52');
+INSERT INTO account VALUES (2, 4, 5, 'pgws-job-service', 'change me at config.json and pkg/acc/sql/01_acc/81_wsd.sql', 'Job', true, true, '2013-03-13 13:18:52', '2013-03-13 13:18:52', '2013-03-13 13:18:52');
 
 
 --
@@ -14495,14 +14578,14 @@ SELECT pg_catalog.setval('file_id_seq', 1, false);
 -- Data for Name: job; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job VALUES (1, '2013-02-28 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-02-28', NULL, NULL, NULL, NULL, NULL, '2013-02-28 20:07:30.814544', NULL, NULL, NULL, NULL);
+INSERT INTO job VALUES (1, '2013-03-13 23:50:00', 85800, 9, 2, -2, NULL, NULL, '2013-03-13', NULL, NULL, NULL, NULL, NULL, '2013-03-13 13:18:52.228548', NULL, NULL, NULL, NULL);
 
 
 --
 -- Data for Name: job_cron; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO job_cron VALUES (true, '2013-02-28 20:07:30.814544', NULL);
+INSERT INTO job_cron VALUES (true, '2013-03-13 13:18:52.228548', NULL);
 
 
 --
@@ -14534,21 +14617,21 @@ SELECT pg_catalog.setval('job_seq', 25, true);
 -- Data for Name: pkg_script_protected; Type: TABLE DATA; Schema: wsd; Owner: -
 --
 
-INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'ws', '2013-02-28 20:07:23.619761');
-INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'cfg', '2013-02-28 20:07:23.619761');
-INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'cfg', '2013-02-28 20:07:23.619761');
-INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'cfg', '2013-02-28 20:07:23.619761');
-INSERT INTO pkg_script_protected VALUES ('fs', '20_wsd.sql', '000', 'fs', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('ev', '20_wsd.sql', '000', 'ev', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'ev', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('job', '20_wsd.sql', '000', 'job', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'job', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'job', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('acc', '20_wsd.sql', '000', 'acc', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'acc', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('wiki', '20_wsd.sql', '000', 'wiki', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wiki', '2013-02-28 20:07:30.814544');
-INSERT INTO pkg_script_protected VALUES ('wiki', '82_prop_wsd.sql', '000', 'wiki', '2013-02-28 20:07:30.814544');
+INSERT INTO pkg_script_protected VALUES ('ws', '11_wsd.sql', '000', 'ws', '2013-03-13 13:18:45.119616');
+INSERT INTO pkg_script_protected VALUES ('ws', '20_prop_wsd.sql', '000', 'cfg', '2013-03-13 13:18:45.119616');
+INSERT INTO pkg_script_protected VALUES ('ws', '81_prop_owner_wsd.sql', '000', 'cfg', '2013-03-13 13:18:45.119616');
+INSERT INTO pkg_script_protected VALUES ('ws', '83_prop_val_wsd.sql', '000', 'cfg', '2013-03-13 13:18:45.119616');
+INSERT INTO pkg_script_protected VALUES ('fs', '20_wsd.sql', '000', 'fs', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('ev', '20_wsd.sql', '000', 'ev', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('ev', '82_wsd.sql', '000', 'ev', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('job', '20_wsd.sql', '000', 'job', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('job', '81_prop_owner_wsd.sql', '000', 'job', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('job', '83_prop_val_wsd.sql', '000', 'job', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('acc', '20_wsd.sql', '000', 'acc', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('acc', '81_wsd.sql', '000', 'acc', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('wiki', '20_wsd.sql', '000', 'wiki', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('wiki', '81_wsd.sql', '000', 'wiki', '2013-03-13 13:18:52.228548');
+INSERT INTO pkg_script_protected VALUES ('wiki', '82_prop_wsd.sql', '000', 'wiki', '2013-03-13 13:18:52.228548');
 
 
 --
