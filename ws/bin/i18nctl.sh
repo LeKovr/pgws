@@ -34,7 +34,7 @@ i18n_help() {
   Where
     init [LANG] - create or update .po files from DB and templates for LANG
     make [LANG] - compile .po files and generate schema sql for LANG
-    make [LANG] - remove temp files
+    clean [LANG] - remove temp files
 
     LANG - translation name. Default: en
 
