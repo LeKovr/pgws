@@ -22,6 +22,8 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE DOMAIN d_id AS INTEGER;
+COMMENT ON DOMAIN d_id IS 'Идентификатор';
+
 CREATE DOMAIN d_id_positive AS INTEGER CHECK (VALUE > 0);
 
 CREATE DOMAIN d_id32 AS INTEGER CHECK (VALUE > -32768 AND VALUE < 32767);
@@ -52,6 +54,7 @@ Name        ::= (Letter | '_' | ':') ( NameChar)*
 */
 
 CREATE DOMAIN d_sid AS TEXT;
+COMMENT ON DOMAIN d_sid IS 'Идентификатор сессии';
 
 CREATE DOMAIN d_login AS TEXT CHECK (VALUE ~ E'^[a-zA-Z0-9\\.+_@\\-]{5,}$');
 

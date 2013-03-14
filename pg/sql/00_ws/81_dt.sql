@@ -38,6 +38,7 @@ INSERT INTO dt (parent_code, code, anno) VALUES
 , ('bigint',     'bigint',     'Длинное целое')
 , ('json',       'json',       'Данные в формате JSON')
 , ('uuid',       'uuid',       'Universally Unique IDentifier')
+, ('bpchar',     'bpchar',     'Blank Padded Char')
 ;
 
 -- parent для массива хэшей, но они пока не поддерживаются DBD::Pg
@@ -84,6 +85,8 @@ INSERT INTO facet_dt_base (id, base_code) VALUES
 , ( 9, 'smallint')
 , (10, 'smallint')
 , (11, 'smallint')
+
+, (1,  'bpchar')
 ;
 
 -- parent для массива хэшей, но они пока не поддерживаются DBD::Pg

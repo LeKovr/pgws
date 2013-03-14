@@ -51,6 +51,7 @@ $_$
   END;
 $_$;
 
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_register_proarg_old(a_code ws.d_code) RETURNS ws.d_code VOLATILE LANGUAGE 'plpgsql' AS
 $_$
@@ -195,12 +196,6 @@ $_$
   BEGIN
     SELECT INTO r_pg_type * FROM pg_catalog.pg_type WHERE oid = a_oid;
     v_code := ws.pg_type_name(a_oid);
-/*    v_code := pg_catalog.format_type(a_oid, NULL);
-      IF r_pg_type.typnamespace = ws.pg_schema_oid(current_schema()) THEN
-         -- в этом случае схемы в имени не будет
-         v_code := current_schema() || '.'|| v_code;
-      END IF;
-*/
     IF r_pg_type.typtype in ('c','b','d') THEN
       v_tpnm := CASE
         WHEN r_pg_type.typtype = 'c' THEN
@@ -211,11 +206,14 @@ $_$
           'Domain'
         END;
       RAISE NOTICE 'Registering "%" type: % (%)', v_tpnm, v_code, a_oid;      
+      v_islist := FALSE;
       IF r_pg_type.typtype = 'd' THEN
         v_type := 
          (SELECT pg_catalog.format_type(oid, typtypmod)
           FROM pg_type
           WHERE oid = r_pg_type.typbasetype);
+        v_islist := CASE WHEN v_type ~ '\[\]$' THEN TRUE ELSE FALSE END;
+        v_type := split_part(btrim(v_type, '[]'),' ', 1);
         IF ws.dt_parent_base_code(v_type) is null THEN
           v_type := (select code from ws.dt where code = current_schema() || '.' || v_type);
         END IF;
@@ -223,10 +221,10 @@ $_$
           RAISE EXCEPTION 'Parent type for domain % is unknown', v_code;          
         END IF;
       END IF;
-      INSERT INTO ws.dt (code, anno, is_complex, parent_code)
+      INSERT INTO ws.dt (code, anno, is_complex, parent_code, is_list)
         VALUES (v_code, COALESCE(obj_description(r_pg_type.typrelid, 'pg_class'), obj_description(a_oid, 'pg_type'), v_code), 
           CASE WHEN r_pg_type.typtype = 'd' then false else true end
-        , v_type)
+        , v_type, v_islist)
       ;
       FOR rec IN
         SELECT a.attname
@@ -279,6 +277,12 @@ $_$
     END IF;
     RETURN v_code;
   END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pg_register_type(a_type ws.d_code) RETURNS ws.d_code VOLATILE LANGUAGE 'sql' AS
+$_$
+  SELECT ws.pg_register_class(oid) FROM pg_type WHERE typname = $1 /* a_type */;
 $_$;
 
 /* ------------------------------------------------------------------------- */
