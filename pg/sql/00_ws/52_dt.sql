@@ -44,9 +44,17 @@ $_$;
 SELECT pg_c('f', 'dt_is_complex', 'Значение is_complex для заданного типа');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_code(a_code d_code) RETURNS d_code STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION dt_code(a_code d_code) RETURNS d_code LANGUAGE 'plpgsql' AS
 $_$
-  SELECT code FROM ws.dt WHERE code IN ($1, ws.pg_cs($1), 'ws.'||$1) ORDER BY 1;
+  DECLARE
+    v_code TEXT;
+  BEGIN
+    SELECT code INTO v_code FROM ws.dt WHERE code IN (a_code, ws.pg_cs(a_code), 'ws.'||a_code) ORDER BY 1;
+    IF v_code IS NULL and a_code ~ '^d_' THEN
+      v_code := current_schema() || '.' || a_code;
+    END IF;
+    RETURN v_code;
+  END;
 $_$;
 SELECT pg_c('f', 'dt_by_code', 'Атрибуты типа по маске кода');
 

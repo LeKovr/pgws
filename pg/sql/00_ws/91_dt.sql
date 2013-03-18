@@ -22,7 +22,7 @@
 
 /* ------------------------------------------------------------------------- */
 
-SELECT ws.test('dt_register');
+SELECT ws.test('dt_register_complex');
 
 select * from ws.dt('ws.t_hashtable');
 select * from ws.dt_part('ws.t_hashtable');

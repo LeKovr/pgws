@@ -21,34 +21,33 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_insupd_trigger() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION dt_insupd_trigger() RETURNS TRIGGER LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     v_code ws.d_code;
   BEGIN
-
     IF NEW.code = NEW.parent_code AND (NEW.is_complex OR NEW.is_list) THEN
       -- базовый тип - только скаляр
       RAISE EXCEPTION 'Unsupported value set: % % % %', NEW.code, NEW.parent_code, NEW.is_complex, NEW.is_list;
     END IF;
-
     IF NEW.parent_code IS NOT NULL THEN
       -- определить base_id если задан parent_code
       IF NEW.code = NEW.parent_code THEN
         NEW.base_code := NEW.code;
       ELSE
         v_code := ws.dt_parent_base_code(NEW.parent_code);
+        IF v_code IS NULL then
+           v_code := ws.pg_register_type(split_part(NEW.parent_code, '.', 2));
+           v_code := ws.dt_parent_base_code(NEW.parent_code);
+        END IF;
         IF v_code IS NULL THEN
           RAISE EXCEPTION 'Incorrect parent_code: %', NEW.parent_code;
         END IF;
         NEW.base_code := v_code;
       END IF;
     END IF;
-
     -- TODO: запретить изменение is_list и is_complex для parent
-
     -- NEW.anno := COALESCE(NEW.anno, NEW.code);
-
     RETURN NEW;
   END;
 $_$;
@@ -159,9 +158,10 @@ $_$
     IF NEW.arg_dt_code IS NOT NULL AND NOT COALESCE(ws.dt_is_complex(NEW.arg_dt_code), false) THEN
         RAISE EXCEPTION 'Method arg type (%) must be complex', NEW.arg_dt_code;
     END IF;
-
+    
     RAISE NOTICE 'New method: %(%) -> %.', NEW.code_real, NEW.arg_dt_code, NEW.rv_dt_code;
     RETURN NEW;
   END;
 $_$;
+
 

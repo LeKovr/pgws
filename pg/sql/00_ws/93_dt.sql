@@ -1,6 +1,8 @@
 
 /* ------------------------------------------------------------------------- */
 
+SELECT ws.test('dt_register_sample');
+
 SET SEARCH_PATH='ws';
 CREATE DOMAIN d_test_1 AS INT; 
 CREATE DOMAIN d_test_2 AS TEXT;

@@ -173,6 +173,9 @@ $_$
       END IF;
       v_name := regexp_replace(split_part(v_def, ' ', 2), '^a_', '');
       v_type := split_part(v_def, ' ', 3);
+      IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = dt_code(v_type)) THEN
+        PERFORM ws.pg_register_type(v_type);
+      END IF;     
       v_arg_anno := COALESCE(ws.pg_proarg_arg_anno(v_src, split_part(v_def, ' ', 2)), '');
       RAISE NOTICE '   column name=%, type=%, def=%, null=%, anno=%', v_name, v_type, v_default, v_allow_null, v_arg_anno;
       INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null)
@@ -212,13 +215,17 @@ $_$
          (SELECT pg_catalog.format_type(oid, typtypmod)
           FROM pg_type
           WHERE oid = r_pg_type.typbasetype);
+        v_type := split_part(v_type, ' ', 1);
         v_islist := CASE WHEN v_type ~ '\[\]$' THEN TRUE ELSE FALSE END;
         v_type := split_part(btrim(v_type, '[]'),' ', 1);
+        IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = dt_code(v_type)) THEN
+          v_type := ws.pg_register_type(split_part(btrim(v_type, '[]'),' ', 1));
+        END IF;
         IF ws.dt_parent_base_code(v_type) is null THEN
           v_type := (select code from ws.dt where code = current_schema() || '.' || v_type);
         END IF;
         IF v_type IS NULL THEN
-          RAISE EXCEPTION 'Parent type for domain % is unknown', v_code;          
+          RAISE EXCEPTION 'Parent type for domain % is unknown', v_code;
         END IF;
       END IF;
       INSERT INTO ws.dt (code, anno, is_complex, parent_code, is_list)
@@ -252,12 +259,9 @@ $_$
         ELSIF v_type ~ E'^character varying' THEN
           v_type := 'text'; -- TODO: allow length
         END IF;
-        RAISE NOTICE '   column % %', rec.attname, v_type;   
-        IF ws.dt_code(v_type) IS NULL THEN
-          v_type := 
-           (SELECT ws.pg_register_class(oid)  
-            FROM pg_type
-            WHERE typname = v_type);
+        RAISE NOTICE '   column % %', rec.attname, v_type;
+        IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code IN ('ws.' || v_type, v_type)) THEN
+          v_type := ws.pg_register_type(v_type);
           IF ws.dt_code(v_type) IS NULL THEN
             RAISE EXCEPTION 'Unknown type (%)', v_type;
           END IF;

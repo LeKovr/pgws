@@ -1,5 +1,7 @@
 
 /* ------------------------------------------------------------------------- */
+SELECT ws.test('dt_register_domain');
+
 
 SELECT * FROM ws.dt('ws.d_id');
 SELECT * FROM ws.dt('ws.d_id32');

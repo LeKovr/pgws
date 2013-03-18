@@ -1,6 +1,6 @@
-           test           
---------------------------
-  ***** dt_register *****
+               test               
+----------------------------------
+  ***** dt_register_complex *****
 
       code      | parent_code | base_code | allow_null | def_val |    anno    | is_list | is_complex | is_sql 
 ----------------+-------------+-----------+------------+---------+------------+---------+------------+--------
@@ -45,10 +45,10 @@
 ----------------+---------+------------+-------------+-----------+------------+---------+------------+---------
  ws.t_page_info |       1 | code       | ws.d_code   | text      | t          |         | code       | f
  ws.t_page_info |       2 | up_code    | ws.d_code   | text      | t          |         | up_code    | f
- ws.t_page_info |       3 | class_id   | ws.d_class  | smallint  | t          |         | class_id   | f
- ws.t_page_info |       4 | action_id  | ws.d_id32   | smallint  | t          |         | action_id  | f
- ws.t_page_info |       5 | group_id   | ws.d_id32   | smallint  | t          |         | group_id   | f
- ws.t_page_info |       6 | sort       | ws.d_sort   | smallint  | t          |         | sort       | f
+ ws.t_page_info |       3 | class_id   | ws.d_class  | integer   | t          |         | class_id   | f
+ ws.t_page_info |       4 | action_id  | ws.d_id32   | integer   | t          |         | action_id  | f
+ ws.t_page_info |       5 | group_id   | ws.d_id32   | integer   | t          |         | group_id   | f
+ ws.t_page_info |       6 | sort       | ws.d_sort   | integer   | t          |         | sort       | f
  ws.t_page_info |       7 | uri        | ws.d_regexp | text      | t          |         | uri        | f
  ws.t_page_info |       8 | tmpl       | ws.d_path   | text      | t          |         | tmpl       | f
  ws.t_page_info |       9 | id_fixed   | ws.d_id     | integer   | t          |         | id_fixed   | f
