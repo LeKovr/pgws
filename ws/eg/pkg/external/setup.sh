@@ -98,7 +98,11 @@ for s in * ; do
       echo "bootstrap setup"
       mk_lnd bootstrap.js js/core $s/docs/assets/js/
       mk_lnd bootstrap.min.js js/core/minified $s/docs/assets/js/
-      mk_lnd bootstrap.css css $s/docs/assets/css/
+      # mk_lnd bootstrap.css css $s/docs/assets/css/
+      [ -e ../www/css/bootstrap.css ] && rm ../www/css/bootstrap.css
+      perl -pi -e 's/..\/img/\/img\/external/g' < $s/docs/assets/css/bootstrap.css > ../www/css/bootstrap.css
+      mk_lnd glyphicons-halflings.png img $s/img/
+      mk_lnd glyphicons-halflings-white.png img $s/img/
       ;;
     *)
       echo "js setup ($s)"

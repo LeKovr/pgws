@@ -28,6 +28,7 @@ INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, pkg, uri, t
  , ('api.xsd',  'api', 2, 1, 5, :'PKG', 'docs/xsd$',    'apidoc/xsd',     'Описание типов')
  , ('api.class','api', 2, 1, 1, :'PKG', 'docs/class$',  'apidoc/class',   'Описание классов')
  , ('api.smd1', 'api', 2, 1, 4, :'PKG', 'docs/smd1$',   'apidoc/smd1',    'Описание методов (JS)')
+ , ('api.markup', 'api', 2, 1, 6, :'PKG', 'docs/markup$',   'apidoc/markup',    'Примеры разметки страниц')
  , ('api.class.single','api.class', 2, 1, null, :'PKG', 'docs/class/:i$',  'apidoc/class',   'Описание класса')
 ;
 
