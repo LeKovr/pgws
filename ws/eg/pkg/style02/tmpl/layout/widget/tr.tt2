@@ -1,0 +1,22 @@
+[% META
+  description = 'tr таблицы'
+%]
+  <tr>
+    [% FOR l IN list; 
+        IF use_th;
+    %]
+         <th>[% l %]</th>
+    [%  
+        ELSE;
+    %]
+      <td>[% l %]</td>
+    [% END;
+    END; %]
+  </tr>
+  
+[%# example
+#	tr(
+#	list - ['data1','data2'] - данные одной строчки таблицы
+#	use_th - признак тэга th (td - по умолчанию)
+#	); 
+%]

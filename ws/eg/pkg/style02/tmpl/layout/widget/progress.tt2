@@ -1,0 +1,14 @@
+[% META
+  description = 'прогресс бар'
+%]
+ 
+      <div class="progress [% class %]">
+        <div class="bar" style="width: [% progress %]%;"></div>
+      </div>
+
+[%# example
+#	progress(
+#		class - класс
+#		progress -  прогресс в процентах
+#	); 
+%]

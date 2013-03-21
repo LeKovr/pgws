@@ -30,11 +30,15 @@ DROP TABLE wsd.role_acl;
 DROP TABLE wsd.role_team;
 DROP TABLE wsd.role;
 DROP TABLE wsd.team;
+DROP TABLE wsd.object_class_role;
+DROP TABLE wsd.class_role_acl;
+DROP TABLE wsd.class_role;
 
 DROP SEQUENCE wsd.account_id_seq;
 DROP SEQUENCE wsd.session_id_seq;
 DROP SEQUENCE wsd.team_id_seq;
 DROP SEQUENCE wsd.role_id_seq;
+DROP SEQUENCE wsd.class_role_id_seq;
 
 /* ------------------------------------------------------------------------- */
 DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';

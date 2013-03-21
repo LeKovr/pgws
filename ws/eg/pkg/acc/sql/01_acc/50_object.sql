@@ -24,12 +24,12 @@
 CREATE OR REPLACE FUNCTION object_acl(a_class_id d_id, a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
-    v_role_id INTEGER;
-    v_acl_id ws.d_acl;
+    r_session   wsd.session;
+    v_acl_id    ws.d_acl;
   BEGIN
     -- текущая роль пользователя
-    SELECT INTO v_role_id
-      role_id
+    SELECT INTO r_session
+      *
       FROM wsd.session
       WHERE sid = a__sid
         AND deleted_at IS NULL
@@ -46,11 +46,19 @@ $_$
       RETURN QUERY
         SELECT acl_id::ws.d_acl
           FROM wsd.role_acl
-          WHERE role_id IN (v_role_id, acc.const_role_id_user())
+          WHERE role_id IN (r_session.role_id, acc.const_role_id_user())
             AND class_id = a_class_id
             AND object_id = a_id
       ;
       -- TODO: поддержка отношений объекта и группы пользователя
+      RETURN QUERY
+        SELECT acl_id::ws.d_acl
+          FROM wsd.object_class_role ocr
+            JOIN wsd.class_role cr ON cr.id = ocr.class_role_id AND cr.class_id = a_class_id AND cr.obj_id = a_id
+            JOIN wsd.class_role_acl cra ON cra.class_role_id = cr.id
+          WHERE ocr.class_id = ws.class_id('account')
+            AND ocr.obj_id = r_session.account_id
+      ;
     END IF;
     RETURN;
   END;

@@ -25,7 +25,7 @@ INSERT INTO wsd.pkg_script_protected (code, pkg, ver) VALUES (:'FILE', :'PKG', :
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.team (
-  id              INTEGER      PRIMARY KEY
+  id              INTEGER     PRIMARY KEY
 , name            TEXT        NOT NULL
 , anno            TEXT        NOT NULL
 );
@@ -130,7 +130,7 @@ CREATE TABLE wsd.session (
 , created_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
 , updated_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
 , deleted_at TIMESTAMP(0)
-, CONSTRAINT session_sid_key UNIQUE (sid)
+, CONSTRAINT session_sid_key UNIQUE (sid, deleted_at) -- TODO: доработать обеспечение уникальности активных sid
 );
 SELECT pg_c('r', 'wsd.session', 'Сессия авторизованного пользователя')
 , pg_c('c', 'wsd.session.deleted_at', 'Признак и время завершения сессии')
@@ -144,3 +144,37 @@ CREATE TABLE wsd.session_log (LIKE wsd.session INCLUDING CONSTRAINTS INCLUDING C
 */
 /* ------------------------------------------------------------------------- */
 CREATE INDEX sid_deleted_at ON wsd.session (sid, deleted_at);
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.class_role (
+  id            INTEGER       PRIMARY KEY
+, class_id      INTEGER       NOT NULL
+, obj_id        INTEGER       NOT NULL
+, name          TEXT          NOT NULL
+, anno          TEXT          NOT NULL
+, created_at    TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
+, updated_at    TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+SELECT pg_c('r', 'wsd.class_role', 'Роли внутри класса');
+
+CREATE SEQUENCE wsd.class_role_id_seq;
+ALTER TABLE wsd.class_role ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.class_role_id_seq');
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.class_role_acl (
+  class_role_id INTEGER       NOT NULL REFERENCES wsd.class_role
+, acl_id        INTEGER       NOT NULL
+, CONSTRAINT class_role_acl_pkey PRIMARY KEY (class_role_id, acl_id)
+);
+SELECT pg_c('r', 'wsd.class_role_acl', 'ACL ролей внутри класса');
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.object_class_role (
+  class_id        INTEGER     NOT NULL
+, obj_id          INTEGER     NOT NULL
+, class_role_id   INTEGER     NOT NULL REFERENCES wsd.class_role
+, CONSTRAINT object_class_role_pkey PRIMARY KEY (class_id, obj_id, class_role_id) 
+);
+SELECT pg_c('r', 'wsd.object_class_role', 'Роли действия одного объекта над другим');
+
+/* ------------------------------------------------------------------------- */

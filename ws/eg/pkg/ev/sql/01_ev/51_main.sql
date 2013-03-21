@@ -76,6 +76,105 @@ $_$
 $_$;
 SELECT pg_c('f', 'create', 'Создать событие');
 
+CREATE FUNCTION ev.role_list()
+  RETURNS SETOF ev.role LANGUAGE 'sql' AS
+$_$
+  SELECT * FROM ev.role;
+$_$;
+SELECT pg_c('f', 'role_list', 'Список ролей');
 
+CREATE FUNCTION ev.role_signup_list( a_role_id ws.d_id32 )
+  RETURNS SETOF wsd.event_role_signup LANGUAGE 'sql' AS
+$_$
+  -- a_role_id: ID роли
+  SELECT * FROM wsd.event_role_signup WHERE role_id = $1;
+$_$; 
+SELECT pg_c('f', 'role_signup_list', 'Список подписок роли');
 
+CREATE FUNCTION ev.kind_list()
+  RETURNS SETOF ev.kind LANGUAGE 'sql' AS
+$_$
+  SELECT * FROM ev.kind;
+$_$; 
+SELECT pg_c('f', 'kind_list', 'Список видов событий');
+
+CREATE FUNCTION ev.role_signup_ins(
+  a_role_id ws.d_id32
+, a_kind_id ws.d_id32
+, a_spec_id ws.d_id32
+, a_is_on   BOOL DEFAULT true
+, a_prio    INTEGER DEFAULT 1
+) RETURNS wsd.event_role_signup LANGUAGE 'sql' AS
+$_$
+  -- a_role_id: ID роли
+  -- a_kind_id: ID вида события
+  -- a_spec_id: ID специфкации ( если требуется )
+  -- a_is_on:   флаг включения ( если включён, пользователи данной роли получают уведомления, если нет — им надо подписаться вручную )
+  -- a_prio:    приоритет
+  INSERT INTO wsd.event_role_signup ( role_id, kind_id, spec_id, is_on, prio ) VALUES ( $1, $2, $3, $4, $5 ) RETURNING *;
+$_$;
+SELECT pg_c('f', 'role_signup_ins', 'Создание подписки роли');
+
+CREATE FUNCTION ev.role_signup_del(
+  a_role_id ws.d_id32
+, a_kind_id ws.d_id32
+, a_spec_id ws.d_id32
+) RETURNS wsd.event_role_signup LANGUAGE 'sql' AS
+$_$
+  -- a_role_id: ID роли
+  -- a_kind_id: ID вида события
+  -- a_spec_id: ID спецификации
+  DELETE FROM wsd.event_role_signup WHERE role_id = $1 AND kind_id = $2 AND spec_id = $3 RETURNING *;
+$_$;
+SELECT pg_c('f', 'role_signup_del', 'Удаление подписки роли');
+
+CREATE OR REPLACE FUNCTION ev.create_user_login( a_user_id ws.d_id32 )
+  RETURNS wsd.event LANGUAGE 'sql' AS
+$_$
+  -- a_user_id: ID аккаунта, выполнившего вход в систему
+  -- создаём событие user login
+  INSERT INTO wsd.event( status_id, kind_id, created_by, class_id )
+    VALUES ( ev.const_status_id_draft(), 1, $1, 3 ) RETURNING *;
+$_$;
+
+CREATE OR REPLACE FUNCTION ev.fire_user_login( a_user_id ws.d_id32 )
+  RETURNS wsd.event LANGUAGE 'plpgsql' AS
+$_$
+  -- a_user_id: ID аккаунта, выполнившего вход в систему
+  DECLARE
+    r_account wsd.account;  
+    r_event   wsd.event;
+  BEGIN
+      -- создаём событие user login
+      INSERT INTO wsd.event( status_id, kind_id, created_by, class_id )
+        VALUES ( ev.const_status_id_draft(), 1, a_user_id, 3 ) RETURNING * INTO r_event;
+      -- выбираем пользователя с указанным в событии id
+      SELECT * INTO r_account FROM wsd.account WHERE id = a_user_id;
+      -- если логин начинается с pro_ то спецификация 1
+      IF position('pro_' in r_account.login) = 1 THEN
+        INSERT INTO wsd.event_spec ( event_id, spec_id ) VALUES ( r_event.id, 1 );
+      -- иначе 0
+      ELSE
+        INSERT INTO wsd.event_spec ( event_id, spec_id ) VALUES ( r_event.id, 0 );
+      END IF;
+      UPDATE wsd.event SET status_id = ev.const_status_id_rcpt() WHERE id = r_event.id;
+    RETURN r_event;
+  END;
+$_$;
+
+CREATE OR REPLACE FUNCTION ev.notifications_list( a_account_id ws.d_id32 )
+  RETURNS SETOF wsd.event_notify LANGUAGE 'sql' AS
+$_$
+  -- a_account_id: ID аккаунта пользователя
+  SELECT * FROM wsd.event_notify WHERE account_id = $1;
+$_$;
+SELECT pg_c('f', 'notifications_list', 'Список уведомлений пользователя');
+
+CREATE OR REPLACE FUNCTION ev.new_notifications_count( a_account_id ws.d_id32 )
+  RETURNS BIGINT LANGUAGE 'sql' AS
+$_$
+  -- a_account_id: ID аккаунта пользователя
+  SELECT COUNT(*) FROM wsd.event_notify WHERE account_id = $1 AND is_new = TRUE;
+$_$;
+SELECT pg_c('f', 'new_notifications_count', 'Возвращает количество новых уведомлений пользователя');
 /* ------------------------------------------------------------------------- */

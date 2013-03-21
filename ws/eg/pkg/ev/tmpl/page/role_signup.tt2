@@ -1,0 +1,59 @@
+[% 
+	role_id     = page.args.0;
+	signups = api( 'ev.role_signup_list', role_id => role_id );
+	event_kinds = api( 'ev.kind_list' );
+	event_kinds_by_id = api( 'ev.kind_list:5' );
+	meta.head.api = 1
+%]
+
+<ul>
+[% FOR signup IN signups %]
+[% event_kind = event_kinds_by_id.${ signup.kind_id }; %]
+	<li>
+		[% event_kind.name %]
+[% IF signup.spec_id %]
+		, спецификация [% signup.spec_id %]
+[% END %]
+		<button class="signup-delete-button" kind_id="[% signup.kind_id %]" spec_id="[% signup.spec_id %]">удалить</button>
+	</li>	
+[% END %]
+</ul>
+
+<form id="signup-form">
+	<select id="kind_id">
+[% FOR ek IN event_kinds %]
+		<option value="[% ek.id %]" has_spec="[% ek.has_spec %]">[% ek.name %]</option>
+[% END %]
+	</select>
+	<span id="spec_id">Спецификация:<input type="text" name="spec_id" /></span>
+	<input type="submit" value="Добавить" />
+</form>
+
+<script type="text/javascript">
+function signupFormOnSubmit() {
+		api( 'ev.role_signup_ins', 'div', location.reload, { prio:1, role_id:[% role_id %], kind_id:$('#kind_id').val(), spec_id: ( $('[name=spec_id]').val() || 0 ) })
+		return false;
+}
+
+function signupDeleteButtonOnClick( e ) {
+		var spec_id = e.currentTarget.getAttribute('spec_id');
+		var kind_id = e.currentTarget.getAttribute('kind_id');
+		api( 'ev.role_signup_del', 'div', location.reload, { role_id:[% role_id %], kind_id:kind_id, spec_id:spec_id });
+}
+
+function kindIdOnChange() {
+	if ( $(this).find('option:selected').attr('has_spec') == '0' ) {
+		$('#spec_id').hide();
+	}
+	else {
+		$('#spec_id').show();
+	}
+}
+
+$( function() {
+	$('#signup-form').submit( signupFormOnSubmit );
+	$('.signup-delete-button').click( signupDeleteButtonOnClick );
+	$('#kind_id').change( kindIdOnChange );
+	$('#kind_id').change();
+});
+</script>

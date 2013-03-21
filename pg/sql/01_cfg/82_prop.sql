@@ -40,6 +40,9 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 
 , ('ws.daemon.fe.tmpl.layout_default',  ARRAY['fe'],                'style01','Название макета страниц')
 , ('ws.daemon.fe.tmpl.skin_default',    ARRAY['fe'],                'default','Название скина страниц')
+, ('ws.daemon.fe.tmpl.css.cookie',      ARRAY['fe'],                'PGWS_css','Название cookie для хранения названия css')
+, ('ws.daemon.fe.tmpl.css.default',     ARRAY['fe'],                'default','Название css страниц')
+, ('ws.daemon.fe.tmpl.css.allowed',     ARRAY['fe'],                'amelia, cerulean, cosmo, cyborg, journal, readable, simplex, slate, spacelab, spruce, superhero, united','Доступные css страниц')
 , ('ws.daemon.lang.default',            ARRAY['fe','be'],           'ru',     'Код язык сайта по умолчанию')
 , ('ws.daemon.lang.allowed.:i',         ARRAY['fe','be'],           '',       'Допустимые коды языка сайта')
 , ('ws.daemon.fe.tt2.:s',               ARRAY['fe'],                '',       'Параметр конфигурации TemplateToolkit')
@@ -59,7 +62,7 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 
 , ('ws.daemon.fe.tmpl.ext',             ARRAY['fe'],                '.tt2',       '')
 
-, ('ws.daemon.fe.tmpl.error',           ARRAY['fe'],                'app/error', 'Каталог шаблонов страниц описаний ошибок')
+, ('ws.daemon.fe.tmpl.error',           ARRAY['fe'],                'app/error', 'Шаблон страницы описаний ошибок')
 , ('ws.daemon.fe.tmpl.pages',           ARRAY['fe'],                'page/','Каталог шаблонов, вызываемых по GET-запросу')
 , ('ws.daemon.fe.tmpl.jobs',            ARRAY['fe'],                'job/', 'Каталог шаблонов, вызываемых из Job')
 

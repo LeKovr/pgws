@@ -88,11 +88,6 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, arg_
 ;
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-  ('main',      NULL, 2, 1, 0, '$',            'app/index',          'API')
-;
-
-/* ------------------------------------------------------------------------- */
 -- ошибки уровня приложения. Коды синхронизированы с кодами PostgreSQL
 -- см. "http://www.postgresql.org/docs/8.4/static/errcodes-appendix.html"
 

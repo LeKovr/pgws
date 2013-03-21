@@ -21,4 +21,4 @@
 */
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM ws.page_data             WHERE pkg = :'PKG';
+DROP FUNCTION ws.register_pages_apidoc(ws.d_sort);

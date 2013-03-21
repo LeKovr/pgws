@@ -1,0 +1,12 @@
+[% META
+  description = 'Абзац'
+%]
+
+<p [% class ? 'class=' _ class _ '':''; %]>[% text %]</p>
+
+[%#example
+#  p(
+#    class - css класс
+#    text - содержимое
+#  );
+%]

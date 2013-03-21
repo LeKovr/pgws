@@ -1,0 +1,28 @@
+[% META
+  description = 'кнопки'
+%]
+[% IF !type; %]
+  [% IF ullist; %]
+    <div class="btn-group">
+  [% END; %]
+  <a class="btn [% class %]" href="#">[% IF icon; %] <i class="[% icon %]"></i> [% END; %]   [% name %]</a>
+  [% IF ullist; %]
+    <a class="btn dropdown-toggle [% class %]" data-toggle="dropdown" href="#"><span class="caret"></span></a>
+            [% ullist %]
+    </div><!-- /btn-group -->
+  [% END; %]
+[% ELSE; %]
+  <button type="[% type %]" class="btn [% class %]">[% name %]</button>
+[% END; %]
+
+
+[%# example
+#	btn(
+#		type = 'submit'  or 'reser',  необязательный параметр.
+#		class - дополнительный класс для кнопки
+#		icon - класс для добавление иконки на кнопку  
+#		name - название кнопки
+#		ullist - ul тэг, в том случае если нужно открывать список по нажатию на кнопку
+#	); 
+	
+	%]

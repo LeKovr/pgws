@@ -55,7 +55,7 @@ SELECT pg_c('f', 'server', 'Сервер вики');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION id_by_code (a_code d_code) RETURNS d_id32 STABLE LANGUAGE 'sql' AS
 $_$
-  -- a_group_code: Код группы документов
+  -- a_code: Код группы документов
 -- TODO: не возвращать ID если нет доступа на чтение к группе
   SELECT id::ws.d_id32
     FROM wsd.doc_group
@@ -63,6 +63,18 @@ $_$
   ;
 $_$;
 SELECT pg_c('f', 'id_by_code', 'ID wiki по ее коду');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION name_by_code (a_code d_code) RETURNS TEXT STABLE LANGUAGE 'sql' AS
+$_$
+  -- a_code: Код группы документов
+-- TODO: не возвращать name если нет доступа на чтение к группе
+  SELECT name
+    FROM wsd.doc_group
+    WHERE code = $1 /* a_group_code */
+  ;
+$_$;
+SELECT pg_c('f', 'name_by_code', 'Название wiki по ее коду');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION doc_id_by_code (

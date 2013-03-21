@@ -10,6 +10,7 @@ jquery-1.7.2.min.js http://code.jquery.com/jquery-1.7.2.min.js
 jquery-1.7.2.js http://code.jquery.com/jquery-1.7.2.js 
 jquery.json-2.3.min.js http://jquery-json.googlecode.com/files/jquery.json-2.3.min.js
 jquery.json-2.3.js http://jquery-json.googlecode.com/files/jquery.json-2.3.js
+jquery-cookie-1.3.1.zip https://nodeload.github.com/carhartl/jquery-cookie/zip/v1.3.1
 bootstrap-2.3.0.zip https://github.com/twitter/bootstrap/archive/v2.3.0.zip
 EOF
 }
@@ -18,7 +19,7 @@ EOF
 DIR=downloads
 SRC=src
 WWW=www
-
+WWW_skin=www/css/skin
 
 mk_ln() {
   local src=$1
@@ -44,7 +45,7 @@ mk_lnd() {
   [ -e ../www/$dest/$name ] || ln -s $up/src/$dir$src ../www/$dest/$name
 }
 
-for d in $DIR $SRC $WWW ; do
+for d in $DIR $SRC $WWW $WWW_skin ; do
   [ -d $d ] || mkdir $d
 done
 
@@ -104,6 +105,10 @@ for s in * ; do
       mk_lnd glyphicons-halflings.png img $s/img/
       mk_lnd glyphicons-halflings-white.png img $s/img/
       ;;
+    jquery-cookie-*)
+      echo "jquery cookie setup"
+      mk_lnd jquery.cookie.js js/core $s/
+      ;;
     *)
       echo "js setup ($s)"
       if [[ $s != ${s%.min.js} ]] ; then
@@ -114,3 +119,13 @@ for s in * ; do
     ;;
   esac
 done
+popd > /dev/null
+
+for style in amelia cerulean cosmo cyborg journal readable simplex slate spacelab spruce superhero united ; do
+  if [ ! -f $WWW_skin/$style.css ] ; then
+    echo "Load $style"
+    curl -L -k -R -o $WWW_skin/$style.css http://bootswatch.com/$style/bootstrap.css
+  fi
+done
+
+echo "Setup external files complete"

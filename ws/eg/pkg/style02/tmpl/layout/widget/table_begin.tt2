@@ -1,0 +1,13 @@
+[% META
+  description = 'таблица'
+%]
+
+<table class="table [% class %]">
+
+
+  
+  [%# example
+#	table(
+#		class - дополнительный класс
+#	); 
+%]

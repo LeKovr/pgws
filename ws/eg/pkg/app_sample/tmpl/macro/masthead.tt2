@@ -1,0 +1,41 @@
+[% META
+  description = 'список виджетов';
+
+mc = 'layout/style02/widget';
+
+MACRO ul   INCLUDE "$mc/ul.tt2";
+MACRO h   INCLUDE "$mc/h.tt2";
+MACRO sub_begin   INCLUDE "$mc/sub_begin.tt2";
+MACRO sub_end   INCLUDE "$mc/sub_end.tt2";
+MACRO navbar_begin   INCLUDE "$mc/navbar_begin.tt2";
+MACRO navbar_end   INCLUDE "$mc/navbar_end.tt2";
+MACRO input   INCLUDE "$mc/input.tt2";
+MACRO btn   INCLUDE "$mc/btn.tt2";
+MACRO table_begin   INCLUDE "$mc/table_begin.tt2";
+MACRO table_end   INCLUDE "$mc/table_end.tt2";
+MACRO tr   INCLUDE "$mc/tr.tt2";
+MACRO select   INCLUDE "$mc/select.tt2";
+MACRO section_begin   INCLUDE "$mc/section_begin.tt2";
+MACRO section_end   INCLUDE "$mc/section_end.tt2";
+MACRO row_begin   INCLUDE "$mc/row_begin.tt2";
+MACRO row_end   INCLUDE "$mc/row_end.tt2";
+MACRO div_begin   INCLUDE "$mc/div_begin.tt2";
+MACRO div_end   INCLUDE "$mc/div_end.tt2";
+MACRO well_begin   INCLUDE "$mc/well_begin.tt2";
+MACRO well_end   INCLUDE "$mc/well_end.tt2";
+MACRO controlGroup_begin   INCLUDE "$mc/controlGroup_begin.tt2";
+MACRO controlGroup_end   INCLUDE "$mc/controlGroup_end.tt2";
+MACRO p   INCLUDE "$mc/p.tt2";
+MACRO span   INCLUDE "$mc/span.tt2";
+MACRO pagination   INCLUDE "$mc/pagination.tt2";
+MACRO breadcrumb   INCLUDE "$mc/breadcrumb.tt2";
+MACRO navtabs   INCLUDE "$mc/navtabs.tt2";
+MACRO label   INCLUDE "$mc/label.tt2";
+MACRO badge   INCLUDE "$mc/badge.tt2";
+MACRO progress   INCLUDE "$mc/progress.tt2";
+MACRO alert_begin   INCLUDE "$mc/alert_begin.tt2";
+MACRO alert_end   INCLUDE "$mc/alert_end.tt2";
+MACRO container_begin   INCLUDE "$mc/container_begin.tt2";
+MACRO container_end   INCLUDE "$mc/container_end.tt2";
+%]
+

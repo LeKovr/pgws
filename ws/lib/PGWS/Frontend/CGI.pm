@@ -127,7 +127,7 @@ sub new {
   $self->{'prefix'} ||= $prefix;
 
 
-  $self->fetch_cook(COOKIE_MASK);
+  $self->{'cookie'} = $self->fetch_cook(COOKIE_MASK);
 
   return $self;
 }
@@ -136,8 +136,9 @@ sub new {
 sub fetch_cook {
   my ($self, $mask) = @_;
   if ($mask and $ENV{'HTTP_COOKIE'} and $ENV{'HTTP_COOKIE'} =~ /(^| )$mask(;|$)/) {
-    $self->{'cookie'} = $2;
+    return $2;
   }
+  return undef;
 }
 
 #----------------------------------------------------------------------

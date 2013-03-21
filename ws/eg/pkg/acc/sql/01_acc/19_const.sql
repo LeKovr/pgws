@@ -65,3 +65,17 @@ $_$;
 SELECT pg_c('f', 'const_error_status', 'Константа: Код ошибки авторизации с недопустимым статусом');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_class_id() RETURNS ws.d_class IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 11::ws.d_class;
+$_$;
+SELECT pg_c('f', 'const_class_id', 'Константа: ID класса account');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_team_class_id() RETURNS ws.d_class IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 12::ws.d_class;
+$_$;
+SELECT pg_c('f', 'const_team_class_id', 'Константа: ID класса team');
+
+/* ------------------------------------------------------------------------- */

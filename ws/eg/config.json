@@ -1,7 +1,7 @@
 {
   "SHELL": {
     "DAEMON_USER": "apache",
-    "PACKAGES"   : "apidoc fs ev job acc wiki app i18n style01",
+    "PACKAGES"   : "apidoc fs job acc ev wiki app i18n style01",
   },
   "ACTIVE": {
     "DB_CONNECT" : "dbi:Pg:dbname=pgws;user=apache",

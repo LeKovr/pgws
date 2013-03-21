@@ -61,3 +61,5 @@ CREATE OR REPLACE VIEW session_info AS SELECT
     JOIN wsd.role r ON (r.id = s.role_id)
 ;
 
+
+/* ------------------------------------------------------------------------- */

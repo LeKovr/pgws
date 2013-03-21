@@ -72,24 +72,6 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, 
 ;
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, id_fixed, name) VALUES
-  ('wiki.wk',         'main',     :WID, 1, 8,    '(wk):u$',         'wiki/index',   id_by_code('wk'), 'Вики')
-, ('wiki.wk.edit',    'wiki.wk',  :WID, 3, NULL, '(wk):u/edit$',    'wiki/edit',    id_by_code('wk'), 'Редактирование')
-, ('wiki.wk.history', 'wiki.wk',  :WID, 1, NULL, '(wk):u/history$', 'wiki/history', id_by_code('wk'), 'История изменений')
-, ('wiki.wk.file',    'wiki.wk',  :WID, 1, NULL, '(wk):u/file/:i/:s$','wiki/file_redirect', id_by_code('wk'), 'Файл')
-;
-
-/*
--- тестирование нового функционала общего назначения
-INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-  ('wikitab',       'main',     2, 1, NULL, 'wikitest$',             NULL,           'TabTest')
-, ('wikitab.index', 'wikitab',  2, 1, 1,    'wikitab$',       'wiki/eg/tabs', 'Main' )
-, ('wikitab.tab1',  'wikitab',  2, 1, 2,    'wikitab/tab1$',  'wiki/eg/tabs',  'Tab1')
-, ('wikitab.tab2',  'wikitab',  2, 1, 3,    'wikitab/tab2$',  'wiki/eg/tabs',  'Tab2')
-;
-*/
-
-/* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.error (code, id_count, message) VALUES
   ('Y9901', 1, 'Не найдена группа "%s"')
 , ('Y9902', 1, 'Версия документа (%s) не актуальна и(или) устарела')

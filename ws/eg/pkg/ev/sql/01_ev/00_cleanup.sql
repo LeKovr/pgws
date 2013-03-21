@@ -21,11 +21,9 @@
 */
 
 /* ------------------------------------------------------------------------- */
---DELETE FROM ws.page_data             WHERE pkg = :'PKG';
+DELETE FROM ws.method                WHERE pkg = :'PKG';
 
---DELETE FROM ws.method                WHERE pkg = :'PKG';
-
-ALTER TABLE wsd.event DROP CONSTRAINT event_fk_status_id;
+ALTER TABLE wsd.event DROP CONSTRAINT IF EXISTS event_fk_status_id;
 
 -- DROP TRIGGER IF EXISTS notify_oninsert ON wsd.event;
 -- DROP TRIGGER IF EXISTS notify_onupdate ON wsd.event;

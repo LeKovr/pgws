@@ -32,12 +32,6 @@ INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, is_write) VALU
 ;
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-  ('login',   'main', 1, 8, null, 'login$',     'acc/login',    'Вход')
-, ('logout',  'main', 1, 2, null, 'logout$',    'acc/logout',   'Выход')
-;
-
-/* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.error (code, id_count, message) VALUES
   (acc.const_error_password(),  0, 'неправильный пароль')
 , (acc.const_error_login(),     0, 'неизвестный логин')

@@ -1,0 +1,5 @@
+[%
+  meta.html_headers.push(
+    "/js/external/core/jquery.cookie.js"
+  );
+%]

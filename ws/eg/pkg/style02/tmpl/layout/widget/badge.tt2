@@ -1,0 +1,12 @@
+[% META
+  description = 'знак'
+%]
+ 
+ <span class="badge [% IF class; 'badge-' _ class _ ''; END; %]">[% text %]</span> 
+
+[%# example
+#	badge(
+#		class - класс
+#		text -  текст
+#	); 
+%]

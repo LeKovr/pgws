@@ -23,7 +23,6 @@
 
 /* ------------------------------------------------------------------------- */
 
-DELETE FROM ws.page_data             WHERE pkg = :'PKG';
 DELETE FROM ws.method                WHERE pkg = :'PKG';
 
 \set WID wiki.const_class_id()      -- wiki class id

@@ -1,0 +1,29 @@
+[% META
+  description = 'тэг ul'
+%]
+
+<ul class="[% class %]">
+  [% FOR l IN links; 
+    IF l.active %]
+      <li class="active [% l.class %]"><a class="[% l.classLink %]" href="[% l.htef %]" [% l.linkparam %] >[% l.name %]</a>[% l.content %]</li>
+    [% ELSE; %]
+      <li class="[% l.class %]"><a class="[% l.classLink %]" href="[% l.href %]" [% l.linkparam %][% IF l.rel; ' rel="' _ l.rel _ '"'; END %]>[% l.name %]</a>[% l.content %]</li>
+    [% END; %]	
+  [% END; %]
+</ul>
+
+
+  [%# example
+#	ul(
+#		class - класс
+#		links - массив элементов
+#			links.active - '1' выбранный пункт
+#			links.class - css класс для  тэга <li/>
+#			links.classLink - css класс для тэга <a/>
+#			links.href - ссылка
+#			links.linkparam - дополнительные параметры
+#			links.name - имя пункта
+#			links.content - дополнительное содержимое тэга <li/> наример для вложенных списков
+#		
+#	); 
+%]

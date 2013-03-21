@@ -26,14 +26,14 @@ SET LOCAL search_path = wiki, ws, i18n_def, public;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_class_id() RETURNS d_class IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 10::ws.d_class
+  SELECT 20::ws.d_class
 $_$;
 SELECT pg_c('f', 'const_class_id', 'ID класса wiki');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_doc_class_id() RETURNS d_class IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 11::ws.d_class
+  SELECT 21::ws.d_class
 $_$;
 SELECT pg_c('f', 'const_doc_class_id', 'ID класса статьи wiki');
 

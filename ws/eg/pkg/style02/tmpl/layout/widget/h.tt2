@@ -1,0 +1,13 @@
+[% META
+  description = 'тэг h?'
+%]
+<h[% type %]  [% IF id; %] id='[% id %]' [% END; %] [% IF class; %] class='[% class %]' [% END; %]>[% text %]</h[% type %]>
+
+[%# example
+#	h(
+#		type = тип заголовка [1-6]
+#		id = id -шник элемента
+#		class - класс заголовка
+#		text -  текст загловка
+#	); 
+%]

@@ -1,0 +1,4 @@
+[% META
+  description = 'контейнер начало'
+%]
+    <div class="container">

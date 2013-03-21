@@ -1,0 +1,12 @@
+[% META
+  description = 'тэг span'
+%]
+
+<span [% class ? 'class=' _ class _ '':''; %]>[% text %]</span>
+
+[%#example
+#   span(
+#     class - css стиль
+#     text - содержимое  
+#    );
+%]

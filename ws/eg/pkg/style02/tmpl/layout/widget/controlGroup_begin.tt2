@@ -1,0 +1,12 @@
+[% META
+  description = 'блок формата [Заголовок Поле ввода]'
+%]
+  
+  <div class="control-group [% class %]">
+    <label class="control-label">[% label %]</label>
+      <div class="controls">
+
+[%#example
+#    class - дополнительные классы
+№    label - Заголовок
+%]

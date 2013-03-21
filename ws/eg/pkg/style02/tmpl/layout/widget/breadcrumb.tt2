@@ -1,0 +1,20 @@
+[% META
+  description = 'хлебные крошки'
+%]
+  [%  ull=[];
+    FOREACH link IN links;
+     IF loop.last; 
+       ull.push({name=link.name,href=link.href});
+     ELSE;
+       ull.push({name=link.name,href=link.href, content='<span class="divider">/</span>'});
+     END;
+    END;
+
+    ul(class='breadcrumb',links = ull); 
+  %]
+
+[% #example
+#  breadcrumb(
+#   links = name - название; href -ссылка
+#  );
+%]

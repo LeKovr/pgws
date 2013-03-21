@@ -1,0 +1,23 @@
+[% META
+  description = 'select'
+%]
+
+<select [% IF multiple; %]multiple="multiple" [% END; %]>
+  [% FOR o IN options; %]
+    [% IF o.selected; %]
+      <option selected='selected'>[% o.text %]</option>
+    [% ELSE; %]
+      <option>[% o.text %]</option>
+    [% END; %]
+    
+  [% END; %]
+</select>
+
+[%# example
+#	select(
+#		multiple - '1' много строчный формат поля select
+#		options -  список option
+#			options.selected - выбранный пункт
+#			options.text - название пункта
+#	); 
+%]

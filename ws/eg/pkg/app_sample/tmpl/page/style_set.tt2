@@ -1,0 +1,48 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Главная страница описания API';
+
+  PROCESS 'macro/masthead.tt2'; 
+  meta.head.cookie = 1;
+
+  styles = [
+      {name='Текущий', active = 1},
+      {class='divider'},
+  ];
+  
+%][%
+container_begin;
+  row_begin;
+    div_begin(span=6);
+  FOR s IN resp.css.allowed_list;
+    IF resp.css.current == s;
+     styles.push({ name = s.ucfirst, rel = s, active = 1});
+     styles.0.active = 0;
+    ELSE;
+      styles.push({ name = s.ucfirst, rel = s});
+    END;
+  END;
+      
+      h(type = 3, text = 'Изменение стиля интерфейса', id = 'list'); 
+      well_begin;
+        ul(class='nav nav-list set_style',links = styles);
+      well_end;
+    div_end;
+  row_end;
+container_end;
+%]
+<script type="text/javascript">
+$(document).ready(function(){
+  $('.set_style > li > a').each(function(i, element){
+    element.onclick = function(){
+      var rel = $(this).attr('rel');
+      if (rel !== undefined) {
+        $.cookie('[% resp.css.cookie %]', rel, { expires: 7, path: '/' });
+      } else {
+        $.cookie('[% resp.css.cookie %]', null);
+      }
+    };
+  });
+});
+</script>

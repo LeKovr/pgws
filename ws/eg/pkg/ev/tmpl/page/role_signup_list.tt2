@@ -1,0 +1,16 @@
+[% meta.head.api = 1 %]
+[%
+  roles = api('ev.role_list');
+	
+%]
+
+Доступные роли и их подписки:
+<ul>
+[% FOR r IN roles %]
+[% u = uri( code => 'ev.role_signup', id => r.id ); %]
+  <li>
+		<a href="[% uri_mk( u.req ) %]">[% r.title %]</a>
+		[% signups = api( 'ev.role_signup_list', role_id => r.id ); %]
+	</li>
+[% END %]
+</ul>

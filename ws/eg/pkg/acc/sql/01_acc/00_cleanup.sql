@@ -22,8 +22,6 @@
 
 /* ------------------------------------------------------------------------- */
 
-DELETE FROM ws.page_data             WHERE pkg = :'PKG';
-
 DELETE FROM ws.method                WHERE pkg = :'PKG';
 DELETE FROM job.handler             WHERE pkg = :'PKG';
 

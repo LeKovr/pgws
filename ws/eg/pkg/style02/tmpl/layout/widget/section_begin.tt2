@@ -1,0 +1,16 @@
+[% META
+  description = 'тэг section begin'
+%]
+
+<section id="[% id %]">
+  <div class="page-header">
+    [% h(type = 1, text = header); %]
+  </div>
+
+[%
+#example
+#  section_begin(
+#    id - id-шник элемента
+#    header - заголовок
+#  );
+%]

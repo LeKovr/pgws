@@ -1,0 +1,11 @@
+[% META
+  description = 'блок сообщение начало'
+%]
+
+        <div class="alert [% IF type; 'alert-' _ type _ ''; END; %]">
+
+[%#example
+#  alert_begin(
+#    type - css класс [block, warning, error]
+#  );
+%]

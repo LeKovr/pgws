@@ -1,0 +1,17 @@
+[% META
+  description = 'блок для разметки ширины '
+%]
+  [% IF width == 'low'; class = 'span3'; END;
+   IF width == 'medium'; class = 'span6'; END;
+   IF width == 'high'; class = 'span12'; END;
+%]
+
+
+<div class='[% class; span ? ' span' _ span _ '': '';  offset ? ' offset' _ offset _ '': '';%]'>
+[% #example
+#  div_begin(
+#   width = 'low' or 'medium' or 'high' - ширина блока
+#   span = [1-12] - определение более точной ширина блока
+#   offset = [1-12] - определение отступа блока
+#  );
+%]

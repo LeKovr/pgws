@@ -1,0 +1,8 @@
+         test          
+-----------------------
+  ***** info.add *****
+
+   code   | class_id | action_id | cache_id | rvf_id | is_write | is_i18n | is_sql |   code_real    |      arg_dt      |  rv_dt  |      name      |  args_exam  |         args         
+----------+----------+-----------+----------+--------+----------+---------+--------+----------------+------------------+---------+----------------+-------------+----------------------
+ info.add |        2 |         1 |        2 |      2 | f        | f       | t      | app_sample.add | app_sample.z_add | integer | Сумма 2х целых | a=37, b=-37 | a integer, b integer
+

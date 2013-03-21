@@ -45,9 +45,9 @@ $_$
     , ws.sprintf(uri_fmt, $2, $3, $4)
     , ws.uri_args(ws.sprintf(uri_fmt, $2, $3, $4), uri_re)
     , ws.page_group_name(group_id)
-    FROM page WHERE code LIKE $1 ORDER BY code;
+    FROM page WHERE code LIKE $1 ORDER BY sort;
 $_$;
-SELECT pg_c('f', 'page_by_code', 'Атрибуты страницы  по коду и идентификаторам');
+SELECT pg_c('f', 'page_by_code', 'Атрибуты страницы  по маске кода и идентификаторам');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_by_action(a_class_id d_class DEFAULT 0, a_action_id d_id32 DEFAULT 0, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
@@ -108,7 +108,7 @@ $_$
     , ws.sprintf(uri_fmt, $2, $3, $4)
     , ws.uri_args(ws.sprintf(uri_fmt, $2, $3, $4), uri_re)
     , ws.page_group_name(group_id)
-    FROM page WHERE sort IS NOT NULL AND up_code IS NOT DISTINCT FROM $1 AND ws.is_ids_enough(class_id, $2, $3, $4) ORDER BY group_id, sort, 1;
+    FROM page WHERE sort IS NOT NULL AND up_code IS NOT DISTINCT FROM $1 AND ws.is_ids_enough(class_id, COALESCE(id_fixed::text,$2), $3, $4) ORDER BY group_id, sort, code;
 $_$;
 SELECT pg_c('f', 'page_childs', 'Атрибуты страниц, имеющих предком заданную');
 

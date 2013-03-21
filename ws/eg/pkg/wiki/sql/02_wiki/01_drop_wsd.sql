@@ -24,12 +24,6 @@
 SELECT cfg.prop_clean_value('ws.daemon.be.plugin.wiki.lib');
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.role_acl WHERE class_id = 10; -- TODO: wiki.const_class_id();
-
-/* ------------------------------------------------------------------------- */
-DELETE FROM wsd.file_folder_format WHERE folder_code = 'wiki';
-DELETE FROM wsd.file_folder WHERE pkg = :'PKG';
-/* ------------------------------------------------------------------------- */
 
 DROP TABLE wsd.doc_keyword;
 DROP TABLE wsd.doc_diff;

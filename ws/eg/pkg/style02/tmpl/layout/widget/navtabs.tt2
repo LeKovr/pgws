@@ -1,0 +1,31 @@
+[% META
+  description = 'виджет владки'
+%]
+[%   ullink=[];
+     i=0;
+     FOR link IN links;
+      i=i+1;
+      ullink.push({active = link.active, linkparam='data-toggle=\'tab\'',name=link.name,href='#' _ i _ ''});
+     END;
+
+    ul(class='nav nav-tabs', links=ullink); 
+%]
+      <div class="tabbable">
+        <div class="tab-content">
+          [% i=0; 
+             FOR link IN links; 
+             i=i+1;
+          %]
+          <div class="tab-pane [% IF link.active; 'active'; END; %]" id="[% i %]">
+            [% link.content %]
+          </div>
+          [% END; %]
+        </div>
+      </div> <!-- /tabbable -->
+
+[%#example
+# links - массив данных
+#    links.active -активная вкладка
+#    links.name - название вкладки
+#    links.content - содержимое вкладки
+%]

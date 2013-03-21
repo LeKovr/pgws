@@ -1,0 +1,12 @@
+[% META
+  description = 'названия'
+%]
+ 
+ <span class="label [% IF class; 'label-' _ class _ ''; END; %]">[% text %]</span> 
+
+[%# example
+#	label(
+#		class - класс
+#		text -  текст
+#	); 
+%]

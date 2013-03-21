@@ -1,0 +1,12 @@
+[% META
+  description = 'тэг section end'
+%]
+
+</section>
+
+[%
+#example
+#  section_begin(
+#    header - заголовок
+#  );
+%]

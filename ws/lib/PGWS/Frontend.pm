@@ -241,10 +241,13 @@ sub process_get {
   $meta->setsource('get');
   $meta->debug('page start');
   my $errors = [];
+
+  my $css = $self->load_cookie($req, 'css');
   my $resp = {
     post_uri => $dbc->config('fe.post.'.$req->prefix),
     layout   => $dbc->config('fe.tmpl.layout_default'),
     skin     => $dbc->config('fe.tmpl.skin_default'),
+    css      => $css,
     enc      => $meta->charset,
     ctype    => 'text/html',
     title    => '',
@@ -486,6 +489,25 @@ sub load_session {
 
   $meta->stage_out;
   return $session;
+}
+
+#----------------------------------------------------------------------
+sub load_cookie {
+  my ($self, $req, $tag) = @_;
+  my $dbc = $self->dbc;
+
+  my $data = $dbc->config('fe.tmpl.'.$tag);
+  my $user_data = $req->fetch_cook($data->{'cookie'}.'=([\\w]+)');
+  my @allowed = split /,\s*/, $data->{'allowed'};
+  my $current = $data->{'default'};
+  foreach my $t (@allowed) {
+    if ($user_data eq $t) { $current = $t; last; }
+  }
+  $data->{'allowed_list'} = \@allowed;
+  $data->{'current'} = $current;
+  #$data->{'user'} = $user_data;
+  #print STDERR '===',Dumper($data);
+  return $data;
 }
 
 #----------------------------------------------------------------------

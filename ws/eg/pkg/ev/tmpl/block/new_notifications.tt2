@@ -1,0 +1,6 @@
+[%
+  count = api( 'ev.new_notifications_count', account_id => session.account_id );
+%]
+<div class="notifications-counter">
+[% l('Уведомления') %]<sup><small>[% count.new_notifications_count %]</small></sup>
+</div>

@@ -107,3 +107,22 @@ SELECT pg_c('r', 'kind',          'Вид события')
 , pg_c('c', 'kind.spec_name',     'Название спецификации (если она есть)')
 , pg_c('c', 'kind.anno',          'Аннотация')
 ;
+
+CREATE TABLE role (
+	id ws.d_id32,
+	title text,
+	CONSTRAINT role_pkey PRIMARY KEY ( id )
+);
+SELECT pg_c( 'r', 'role', 'Эмуляция системы ролей для модуля ev' )
+, pg_c('c', 'role.id',    'ID роли')
+, pg_c('c', 'role.title', 'Название роли')
+;
+
+CREATE TABLE account_role (
+	account_id ws.d_id32,
+	role_id    ws.d_id32
+);
+SELECT ws.pg_c( 'r', 'account_role', 'Эмуляция системы ролей для модуля ev' )
+, pg_c('c', 'account_role.account_id', 'ID аккаунта')
+, pg_c('c', 'account_role.role_id',    'ID роли')
+;
