@@ -21,9 +21,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-SET LOCAL search_path = ev, ws, i18n_def, public;
-
-/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_pkg() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'ev'::text

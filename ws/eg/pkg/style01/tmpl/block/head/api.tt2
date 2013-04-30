@@ -5,7 +5,6 @@ meta.top_headers.push(
 );
 %]<script type="text/javascript">
   //<![CDATA[
-  if (window.PGWS === undefined) { window.PGWS = {}; }
   window.PGWS.req = {
     post_uri: "[% resp.post_uri %]",
     sid: "[% session.sid %]",

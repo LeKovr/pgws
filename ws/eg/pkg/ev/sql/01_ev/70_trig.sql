@@ -20,17 +20,13 @@
     Триггеры
 */
 
-CREATE TRIGGER
-  event_onupdate
-  AFTER UPDATE ON wsd.event
-  FOR EACH ROW
+/* ------------------------------------------------------------------------- */
+CREATE TRIGGER event_onupdate AFTER UPDATE ON wsd.event FOR EACH ROW
   WHEN (NEW.status_id = ev.const_status_id_rcpt())
   EXECUTE PROCEDURE ev.tr_send_notifications()
 ;
 
-CREATE TRIGGER
-  session_oninsert
-  AFTER INSERT ON wsd.session
-  FOR EACH ROW
+/* ------------------------------------------------------------------------- */
+CREATE TRIGGER session_ev_oninsert AFTER INSERT ON wsd.session FOR EACH ROW 
   EXECUTE PROCEDURE ev.tr_fire_user_login()
 ;

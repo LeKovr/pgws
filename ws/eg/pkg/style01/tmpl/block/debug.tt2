@@ -1,45 +1,47 @@
 [% META
   description = 'Блок отладки, подключается при conf/frontend.json:tmpl.debug=1';
+container_begin;
   IF 0;
-    %]<pre>[%
-    USE dumper(indent=1, pad="  ");
-    dumper.dump(    req ) %];
-    %]</pre>[%
+    USE dumper(indent=1, pad="  "); '<!-- ' _ dumper.dump(req) _ ' -->';
   END;
-  IF page.code != 'main'; root_page = uri(code => 'main'); root_href = uri_mk(root_page.req); END;
-  IF root_href;
-    %]<div class="pagination-centered">
-<a href="[% root_href %]">[% root_page.name %]</a>
-<hr style="margin:15px 0px;" />
-</div>
-[%
-  END;
-%]
-<script type="text/javascript"><!--
-function toggleSpan(id) {  var s = document.getElementById(id).style;  s.display = (s.display == 'none') ? 'inline' : 'none' }
---></script>
-<div style="text-align: right">
-<input type="checkbox" id="envt" onclick="toggleSpan('debug'); return true;" title="DEBUG">
-</div>
+    row_begin;
+    div_begin(width='high');
+    '<hr />';
+      div_begin(class='pull-right');
+        %]<input type="checkbox" id="envt" onclick="toggleSpan('debug'); return true;" title="DEBUG">[%
+      div_end;
+    div_end;
+    row_end;
+  %]
 <style type="text/css">
-table.debug {
-  width: 90%;
-  border-width: 1px 1px 1px 1px;
-  border-collapse: collapse;
-}
 table.debug th, table.debug td {
-  border-width: 1px 1px 1px 1px;
-  padding: 1px 1px 1px 1px;
-  border-style: inset;
+  padding: 1px 1px 1px 10px;
+}
+table.debug td:first-child {
+  white-space: nowrap;
 }
 </style>
+<div style="display: none;" id="debug">
+[% 
+  FOREACH block IN meta.todo;
+    row_begin;
+      div_begin(width='high');
+        alert_begin(type='info');
+          h(type = 4, text = block.key, class = 'alert-heading');   
+          block.value;
+        alert_end;
+      div_end;
+    row_end;
+  END;
 
-<div style="display: none;" id="debug" >
-[% IF meta.head.api %]
-<form id="debug-form">
-<table class="debug">
-<tr><th align="left" colspan="5">[% l('JSON-RPC debug levels') %]</th></tr>
-<tr><th>[% l('Stage') %]</th><th>[% l('Default') %]</th><th>[% l('No data') %]</th><th>[% l('Debug') %]</th><th>[% l('Dump') %]</th></tr>
+  IF meta.head.api;
+    section_begin(header = l('JSON-RPC debug levels'));
+      row_begin;
+        div_begin(width='medium' class='pagination-centered');
+          %]<form id="debug-form">[%
+            table_begin(class='table-bordered table-striped table-hover debug pagination-centered');
+              tr(list = [ l('Stage'), l('Default'), l('No data'), l('Debug'), l('Dump')], use_th=1 thead=1);
+              %]
   <tr><th>[% l('default') %]</th>
     <td class="centering">[% debug.default %]<input type="radio" name="default" value="[% debug.default %]" checked></td>
     <td class="centering">4<input type="radio" name="default" value="4"></td>
@@ -76,27 +78,48 @@ table.debug th, table.debug td {
     <td class="centering">5<input type="radio" name="validate" value="5"></td>
     <td class="centering">6<input type="radio" name="validate" value="6"></td>
   </tr>
-  <tr><th align="left" colspan="4">[% l('Request logs') %]</th>
-    <td align="right"><a href="#" onclick="$('#debug-console').html(''); return false;">(clear)</a></td>
-  </tr>
-</table>
-</form>
-[% ELSE %]
-<div id="top">API is not active</div>
-[% END %]
-<div id="debug-console">
-[% IF debug_data %]
-<table class="debug">
-[% FOR row IN debug_data %]
-  <tr class="[% (loop.count mod 2) ? 'even' : 'odd' %]">
-    <td nowrap valign="top" width="30%">[ [% row.source %] / [% row.stage %] / [% row.level %] ] [% row.caller %] / [% row.line %]</td>
-    <td>[% (row.message) ? row.message : '<pre style="font-size:9px; color: grey">' _ row.data _ '</pre>' %]</td>
-  </tr>
-[% END %]
-</table>
-[% END %]
-</div>
-</div>
-<script type="text/javascript"><!--
-if (document.getElementById('envt')) { document.getElementById('envt').checked=false; }
---></script>
+              [%
+            table_end;
+          %]</form>[%
+        div_end;
+      row_end;
+    section_end;  
+  ELSE;
+    alert_begin(type='block');
+      h(type = 4, text = block.key, class = 'alert-heading');   
+      l('API is not active');
+    alert_end;
+  END;
+  section_begin(header = l('Request logs'));
+    row_begin;
+      div_begin(class='pull-right');
+        %]<a href="#" onclick="$('#debug-console').html(''); return false;">(clear)</a>[%
+      div_end;
+    row_end;
+    row_begin;
+      div_begin(id='debug-console');
+        table_begin(class='table-bordered table-striped table-hover debug pagination-centered');
+          IF debug_data;
+            FOR row IN debug_data;
+              key = '[ ' _ row.source _ ' / ' _ row.stage  _ ' / ' _ row.level _ ' ] ' _ row.caller _ ' / ' _ row.line;
+              value = (row.message) ? row.message : '<pre style="font-size:9px; color: grey">' _ row.data _ '</pre>';
+              tr(list = [ key, value ]); 
+            END;
+          END;
+        table_end;
+      div_end;
+    row_end;
+  section_end;
+div_end;
+container_end;
+meta.js.${meta.js.size} = BLOCK %]
+<script>
+//<![CDATA[
+function toggleSpan(id) {  var s = document.getElementById(id).style;  s.display = (s.display == 'none') ? 'inline' : 'none' }
+$(document).ready(function(){
+  if (document.getElementById('envt')) { document.getElementById('envt').checked=false; }
+});
+//]]>
+</script>
+[% END; # BLOCK
+%]

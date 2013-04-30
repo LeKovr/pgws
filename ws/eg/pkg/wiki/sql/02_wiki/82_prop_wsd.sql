@@ -21,9 +21,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO wsd.pkg_script_protected (code, ver) VALUES (:'FILE', :'VER');
-
-/* ------------------------------------------------------------------------- */
 INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
   ('be',    1,  'ws.daemon.be.plugin.wiki.lib',          'PGWS::Plugin::Wiki')
 ;

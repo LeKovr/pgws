@@ -2,7 +2,7 @@
   description = 'navbat начало'
 %]
 
-  <div class="navbar [% class %]">
+  <div class="navbar[% class ? ' ' _ class : '';%]">
     <div class="navbar-inner">
       <div class="container" style="width: auto;">
         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -10,12 +10,11 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </a>
-        <a class="brand" href="#">[% name %]</a>
-        <div class="nav-collapse">
+        [% IF name %]<a class="brand" href="#">[% name %]</a>[% END %]
         
 [%# example
-#	navbar_begin(
-#		class - дополнительный класс 
-#		name -  заголовок в меню
-#	); 
+#  navbar_begin(
+#    class - дополнительный класс 
+#    name -  заголовок в меню
+#  ); 
 %]

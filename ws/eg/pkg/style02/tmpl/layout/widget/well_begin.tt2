@@ -2,4 +2,4 @@
   description = 'блок с серым фоном, закругленными углами '
 %]
   
-  <div class='well'>
+  <div class="well">

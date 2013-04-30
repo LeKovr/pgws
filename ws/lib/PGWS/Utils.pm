@@ -25,9 +25,11 @@ use JSON;
 
 use File::Basename;
 use File::Path;
-use Digest::SHA1 qw(sha1_hex);
+use File::stat;
+use Digest::SHA qw(sha1_hex);
 use MIME::Base64 qw(encode_base64);
 use Data::Dumper;
+use URI::Escape;
 
 #----------------------------------------------------------------------
 ## @fn hash data_get($config_file)
@@ -91,6 +93,29 @@ sub data_get {
     $data = $json->decode($data);
   }
   return $data;
+}
+
+#----------------------------------------------------------------------
+# посчитать sha1 hexdigest файла
+sub data_sha1 {
+  my $path = shift;
+  open my $fh, $path or die "$path error: ".$!;
+  binmode($fh);
+  my $sha = Digest::SHA->new(1)->addfile($fh)->hexdigest;
+  close $fh;
+  return $sha;
+}
+
+#----------------------------------------------------------------------
+# файл существует и не старше заданного числа секунд
+sub data_is_actual {
+  my ($path, $ttl) = @_;
+  if ($ttl and -f $path) {
+    return 1 if $ttl == -1;
+    my $mtime = stat($path)->mtime;
+    return (time() - $mtime <= $ttl);
+  }
+  return 0;
 }
 
 #----------------------------------------------------------------------
@@ -183,10 +208,16 @@ sub format_message {
 }
 
 #----------------------------------------------------------------------
+#PGWS::Utils::uri_escape($arg_value)
+sub uri_esc {
+  return uri_escape_utf8(@_); # URI::Escape
+}
+
+#----------------------------------------------------------------------
 #PGWS::Utils::uri_mk($req->prefix, $sid, @_)
 sub uri_mk {
   my ($proto, $prefix, $sid, $name, $args, $anchor) = @_;
-
+  $name ||= '';
   my $s = $sid;
   if ($args) {
     $s = ($sid?$sid.'&':'').$args;
@@ -281,6 +312,20 @@ sub hashtree_go {
     $walked .= ".$tag";
   }
   return $node;
+}
+
+#----------------------------------------------------------------------
+# Имя файла для кэша URI
+sub uri_cache_name {
+  my ($path, $args) = @_;
+  $path .= '/';
+  if (%$args) {
+    my $name = join '&', map { $args->{$_} } sort keys %$args;
+    $path .= sha1_hex($name).'.html';
+  } else {
+    $path .= 'index.html';
+  }
+  return $path;
 }
 
 1;

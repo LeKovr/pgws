@@ -20,7 +20,7 @@
       </div>
     </fieldset>
     <div class="single btn">
-      <button  onClick="return formSend('main', 'acc.login')">[% l("Войти") %]</button>
+      <button  onClick="return formSend('main', 'account.login')">[% l("Войти") %]</button>
     </div>
     <div id="status"></div>
     <div id="errors" class="error"></div>
@@ -28,6 +28,7 @@
   </form>
 </div>
 
+[% meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
 
@@ -53,3 +54,4 @@ window.location.pathname = '[% root_href %]';
 
 //]]>
 </script>
+[% END; # BLOCK %]

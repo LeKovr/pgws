@@ -1,0 +1,28 @@
+[% META
+  description = 'Встраиваемый блок настройки стилей статьи wiki';
+  meta.todo.${component.name} = BLOCK %]
+   При генерации html (в perl-коде) элементов не задаются.<br />
+   Однако их можно назначить отдельно, т.к. контент статьи расположен внутри &lt;div id='wikibody'>,<br />
+   Чем этот блок и занимается
+  [% END; 
+  
+  styles = [
+    { key => 'table',   class => 'table-bordered table-striped table-hover pagination-centered' },
+    { key => 'div.toc', class => 'well'},
+  ];
+  # TODO: a class="external", a class="local"
+ 
+meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+//<![CDATA[
+PGWS.wikiStyle = function(rootId) {
+  [% FOREACH s IN styles; %]
+    $('#' + rootId + ' > [% s.key %]').addClass('[% s.class %]');
+  [% END;
+  %]
+};
+//]]>
+</script>
+[% 
+END; # BLOCK
+%]

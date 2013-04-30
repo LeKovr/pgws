@@ -1,0 +1,39 @@
+               test               
+----------------------------------
+  ***** dt_register_complex *****
+
+      code      | parent_code | base_code | allow_null | def_val |    anno    | is_list | is_complex | is_sql 
+----------------+-------------+-----------+------------+---------+------------+---------+------------+--------
+ ws.t_hashtable |             |           | t          |         | Хэштаблица | f       | t          | f
+
+    dt_code     | part_id | code | parent_code | base_code | allow_null | def_val |   anno   | is_list 
+----------------+---------+------+-------------+-----------+------------+---------+----------+---------
+ ws.t_hashtable |       1 | id   | text        | text      | t          |         | ID       | f
+ ws.t_hashtable |       2 | name | text        | text      | t          |         | Название | f
+
+      code      | parent_code | base_code | allow_null | def_val |        anno        | is_list | is_complex | is_sql 
+----------------+-------------+-----------+------------+---------+--------------------+---------+------------+--------
+ ws.t_page_info |             |           | t          |         | Параметры страницы | f       | t          | f
+
+    dt_code     | part_id |    code    | parent_code | base_code | allow_null | def_val |                                                   anno                                                   | is_list 
+----------------+---------+------------+-------------+-----------+------------+---------+----------------------------------------------------------------------------------------------------------+---------
+ ws.t_page_info |       1 | code       | ws.d_code   | text      | t          |         | Идентификатор страницы                                                                                   | f
+ ws.t_page_info |       2 | up_code    | ws.d_code   | text      | t          |         | идентификатор страницы верхнего уровня                                                                   | f
+ ws.t_page_info |       3 | class_id   | ws.d_class  | integer   | t          |         | ID класса, к которому относится страница                                                                 | f
+ ws.t_page_info |       4 | action_id  | ws.d_id32   | integer   | t          |         | ID акции, к которой относится страница                                                                   | f
+ ws.t_page_info |       5 | group_id   | ws.d_id32   | integer   | t          |         | ID группы страниц для меню                                                                               | f
+ ws.t_page_info |       6 | sort       | ws.d_sort   | integer   | t          |         | порядок сортировки в меню страниц одного уровня (NULL - нет в меню)                                      | f
+ ws.t_page_info |       7 | uri        | ws.d_regexp | text      | t          |         | мета-маска с именами переменных, которой должен соответствовать URI запроса (NULL - группировка страниц) | f
+ ws.t_page_info |       8 | tmpl       | ws.d_path   | text      | t          |         | файл шаблона (NULL для внешних адресов)                                                                  | f
+ ws.t_page_info |       9 | id_fixed   | ws.d_id     | integer   | t          |         | ID объекта взять из этого поля                                                                           | f
+ ws.t_page_info |      10 | id_session | ws.d_code   | text      | t          |         | ID объекта взять из этого поля сессии                                                                    | f
+ ws.t_page_info |      11 | is_hidden  | boolean     | boolean   | t          |         | Запрет включения внешних блоков в разметку страницы                                                      | f
+ ws.t_page_info |      12 | target     | text        | text      | t          |         | значение атрибута target в формируемых ссылках                                                           | f
+ ws.t_page_info |      13 | uri_re     | text        | text      | t          |         | regexp URI, вычисляется триггером при insert/update                                                      | f
+ ws.t_page_info |      14 | uri_fmt    | text        | text      | t          |         | строка формата для генерации URI, вычисляется триггером при insert/update                                | f
+ ws.t_page_info |      15 | pkg        | text        | text      | t          |         | пакет, в котором зарегистрирована страница                                                               | f
+ ws.t_page_info |      16 | name       | text        | text      | t          |         | Заголовок страницы                                                                                       | f
+ ws.t_page_info |      17 | req        | text        | text      | t          |         | URI                                                                                                      | f
+ ws.t_page_info |      18 | args       | text        | text      | t          |         | Массив аргументов URI                                                                                    | t
+ ws.t_page_info |      19 | group_name | text        | text      | t          |         | Название группы страниц                                                                                  | f
+

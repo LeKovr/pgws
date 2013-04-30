@@ -62,9 +62,8 @@ pgws_run_perl() {
 CMD=$1
 shift
 
-LOG=$PGWS_ROOT/var/log
 STAMP=$(date +%y%m%d-%H%m)-$$
-LOGFILE=$LOG/$CMD-$STAMP.log
+LOGFILE=$PGWS_ROOT/var/build/log/$CMD-$STAMP.log
 
 saveIFS="$IFS"
 IFS=$'\n'

@@ -2,11 +2,11 @@
   description = 'знак'
 %]
  
- <span class="badge [% IF class; 'badge-' _ class _ ''; END; %]">[% text %]</span> 
+  <span class="badge[% IF class; ' badge-' _ class ; END; %]">[% text %]</span> 
 
 [%# example
-#	badge(
-#		class - класс
-#		text -  текст
-#	); 
+#  badge(
+#    class - класс
+#    text -  текст
+#  ); 
 %]

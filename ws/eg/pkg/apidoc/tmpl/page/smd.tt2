@@ -2,7 +2,7 @@
 # Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
 # This file is part of PGWS - Postgresql WebServices.
   description = 'Описание методов';
-
+resp.skin = 'wide';
   PROCESS 'macro/tableform.tt2';
   data = api('ws.method_lookup', 'code' => '%');
   classes = api('ws.class');
@@ -12,32 +12,66 @@
   u_xsd = uri(code => 'api.xsd');
   u_cla = uri(code => 'api.class');
   cli = 0;
+
+  meta.spy_scroll = '.left-sidebar';
 %]
-<dl>
-[% FOR m IN data %]
-[% IF m.class_id != cli %]
-  [% IF cli %]</ul></dd>[% END %]
-  <dt>[% classes.${m.class_id}.name %]</dt>
-  [% cli = m.class_id %]
-<dd><ul>
-[% END %]
-<li><a href='#[% m.code %]'>[% m.code %]</a>([% m.args %]) - [% m.name %]</li>
-
-[% END %]
-</ul>
-</dd>
-</dl>
-
+<div class="span4 left-sidebar">
+  <ul class="nav nav-list affixed" data-spy="affix" data-offset-top="150">
+[% 
+class_id_pre = 0;
+FOR m IN data;
+  IF class_id_pre != m.class_id;
+    class_id_pre = m.class_id;
+    %]<li><a href="#[% classes.${m.class_id}.code %]"><i class="icon-chevron-right"></i> [% classes.${m.class_id}.name %]</a></li>[%
+  END;
+END;
+%]
+  </ul>
+</div>
 <style type="text/css">
   a.name { text-decoration: none; }
   .baseTable th { width: 10%; }
+.affix { top: 10px; }
 </style>
-
+<div class="span9">
 [%
+mtd_current = 0;
+class_id_pre = 0;
 FOR m IN data;
+IF class_id_pre != m.class_id;
+  IF class_id_pre; section_end; END;
+  section_begin(header = classes.${m.class_id}.name, id = classes.${m.class_id}.code);
+  class_id_pre = m.class_id;
+  well_begin;
+  '<ul>';
+  WHILE data.${mtd_current}.class_id == class_id_pre;
+    mm = data.${mtd_current};
+   %]<li><a href='#[% mm.code %]'>[% mm.code %]</a>[%  '(' _  m.args _ ') - ' _ mm.name %]</li>[%
+    mtd_current = mtd_current + 1;
+  END;
+  '</ul>';
+  well_end;
+END;
   tableform_begin(name = m.code, value = m.code);
   ac = api('ws.class_action', 'class_id' => m.class_id, 'id' => m.action_id );
   INCLUDE block/apidoc/smd_table_inc.tt2;
   tableform_end;
+  IF loop.last; section_end; END;
 END
+%]
+</div>
+[% meta.js.${meta.js.size} = BLOCK %]
+<script>
+// https://github.com/twitter/bootstrap/issues/6350
+function affixWidth(selector) {
+  // ensure the affix element maintains it width
+  var affix = $(selector);
+  var width = affix.width();
+  affix.width(width);
+}
+$(document).ready(function () {
+  affixWidth('.affixed');
+});
+</script>
+[% END;
 %]

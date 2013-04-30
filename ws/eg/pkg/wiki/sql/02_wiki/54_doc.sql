@@ -115,8 +115,8 @@ CREATE OR REPLACE FUNCTION doc_update_src (
   a__sid        text
   , a_id        ws.d_id
   , a_revision  ws.d_cnt
-  , a_src       text    DEFAULT ''
   , a_name      text    DEFAULT ''
+  , a_src       text    DEFAULT ''
   , a_links     d_links DEFAULT NULL
   , a_anno      text    DEFAULT ''
   , a_toc       text    DEFAULT ''
@@ -136,7 +136,7 @@ $_$
     v_account_id ws.d_id;
     v_revision ws.d_id;
   BEGIN
-    v_account_id := (acc.profile(a__sid)).id;
+    v_account_id := acc.sid_account_id(a__sid);
     IF v_account_id IS NULL THEN
       RAISE EXCEPTION 'unknown account'; -- TODO: ERRORCODE
     END IF;
@@ -189,7 +189,7 @@ $_$
     v_account_id ws.d_id;
     v_revision ws.d_id;
   BEGIN
-    v_account_id := (acc.profile(a__sid)).id;
+    v_account_id := acc.sid_account_id(a__sid);
     IF v_account_id IS NULL THEN
       RAISE EXCEPTION 'unknown account'; -- TODO: ERRORCODE
     END IF;
@@ -216,3 +216,40 @@ $_$
 $_$;
 SELECT pg_c('f', 'doc_update_attr', 'Изменение атрибутов документа');
 
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION doc_link_id(a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS acc.d_link STABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    r_session acc.session_info;
+    v_team_id ws.d_id;
+    v_account_id ws.d_id;
+  BEGIN
+    SELECT INTO r_session * FROM sid_info_internal(a__sid);
+    IF NOT FOUND THEN
+      RETURN acc.const_link_id_other();
+    ELSE
+      SELECT INTO v_account_id d.created_by
+        FROM wsd.doc
+        WHERE id = a_id
+      ;
+      IF v_account_id = r_session.account_id THEN
+        RETURN acc.const_link_id_owner();
+      ELSE
+        RETURN acc.const_link_id_other();
+      END IF;
+    END IF;
+  END
+$_$;
+SELECT pg_c('f', 'doc_link_id', 'Расчет связи doc с пользователем');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION doc_team_id(a_id d_id) RETURNS SETOF d_id STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT dg.team_id::ws.d_id 
+    FROM wsd.doc_group dg
+      JOIN wsd.doc d ON d.group_id = dg.id
+    WHERE d.id = $1;
+$_$;
+SELECT pg_c('f', 'doc_team_id', 'Команда владелец статьи wiki');
+
+/* ------------------------------------------------------------------------- */

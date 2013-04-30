@@ -1,0 +1,32 @@
+SET
+CREATE TYPE
+ pg_c | pg_c | pg_c | pg_c 
+------+------+------+------
+      |      |      | 
+
+CREATE FUNCTION
+    code     | parent_code | base_code | allow_null | def_val |       anno       | is_list | is_complex | is_sql 
+-------------+-------------+-----------+------------+---------+------------------+---------+------------+--------
+ bigint      | bigint      | bigint    | t          |         | Длинное целое    | f       | f          | f
+ ws.d_string | text        | text      | t          |         | Текстовая строка | f       | f          | f
+
+INSERT 0 1
+    code     | class_id | action_id | cache_id | rvf_id | is_write | is_i18n | is_sql | is_strict |  code_real  |  arg_dt_code  | rv_dt_code  |      name       | args_exam |     args      | pkg | realm_code 
+-------------+----------+-----------+----------+--------+----------+---------+--------+-----------+-------------+---------------+-------------+-----------------+-----------+---------------+-----+------------
+ ws.dt_debug |        2 |         1 |        2 |      3 | f        | f       | t      | f         | ws.dt_debug | ws.z_dt_debug | ws.t_test_1 | Test autodelete |           | inp ws.d_id32 | ws  | 
+
+    code     | parent_code | base_code | allow_null | def_val |        anno         | is_list | is_complex | is_sql 
+-------------+-------------+-----------+------------+---------+---------------------+---------+------------+--------
+ bigint      | bigint      | bigint    | t          |         | Длинное целое       | f       | f          | f
+ ws.d_string | text        | text      | t          |         | Текстовая строка    | f       | f          | f
+ ws.d_lang   | text        | text      | t          |         | Идентификатор языка | f       | f          | f
+
+DELETE 1
+ code | class_id | action_id | cache_id | rvf_id | is_write | is_i18n | is_sql | is_strict | code_real | arg_dt_code | rv_dt_code | name | args_exam | args | pkg | realm_code 
+------+----------+-----------+----------+--------+----------+---------+--------+-----------+-----------+-------------+------------+------+-----------+------+-----+------------
+
+    code     | parent_code | base_code | allow_null | def_val |       anno       | is_list | is_complex | is_sql 
+-------------+-------------+-----------+------------+---------+------------------+---------+------------+--------
+ bigint      | bigint      | bigint    | t          |         | Длинное целое    | f       | f          | f
+ ws.d_string | text        | text      | t          |         | Текстовая строка | f       | f          | f
+

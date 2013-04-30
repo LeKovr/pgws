@@ -1,13 +1,13 @@
 [% META
-  description = 'таблица'
-%]
+  description = 'таблица';
 
-<table class="table [% class %]">
-
-
+  '<table class="table';
+  class ? ' ' _ class : '';
+  '">';
+  "\n";
   
-  [%# example
-#	table(
-#		class - дополнительный класс
-#	); 
+# example
+#  table(
+#    class - дополнительный класс
+#  ); 
 %]

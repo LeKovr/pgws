@@ -21,28 +21,24 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION doc_update_extra (
-  a__sid        text
+CREATE OR REPLACE FUNCTION doc_update_extra_acc (
+  a_account_id  ws.d_id
   , a_id        ws.d_id
   , a_links     d_links DEFAULT NULL
   , a_anno      text    DEFAULT ''
   , a_toc       text    DEFAULT ''
   ) RETURNS d_id LANGUAGE 'plpgsql' AS
 $_$
-  -- a__sid:      ID сессии
+  -- a_account_id ID пользователя
   -- a_id:        ID статьи
   -- a links:     Список внешних ссылок
   -- a_anno:      Аннотация
   -- a toc:       Содержание
   DECLARE
-    v_account_id ws.d_id;
     v_revision ws.d_id;
   BEGIN
-    v_account_id := (acc.profile(a__sid)).id;
-    IF v_account_id IS NULL THEN
-      RAISE EXCEPTION 'unknown account'; -- TODO: ERRORCODE
-    END IF;
-    -- TODO: save diff and v_account_id
+
+    -- TODO: save diff and a_account_id
     UPDATE wsd.doc SET
         cached_at = CURRENT_TIMESTAMP
       WHERE id = a_id
@@ -68,6 +64,31 @@ $_$
       ;
     END IF;
     RETURN a_id;
+  END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION doc_update_extra (
+  a__sid        text
+  , a_id        ws.d_id
+  , a_links     d_links DEFAULT NULL
+  , a_anno      text    DEFAULT ''
+  , a_toc       text    DEFAULT ''
+  ) RETURNS d_id LANGUAGE 'plpgsql' AS
+$_$
+  -- a__sid:      ID сессии
+  -- a_id:        ID статьи
+  -- a links:     Список внешних ссылок
+  -- a_anno:      Аннотация
+  -- a toc:       Содержание
+  DECLARE
+    v_account_id ws.d_id;
+  BEGIN
+    v_account_id := acc.sid_account_id(a__sid);
+    IF v_account_id IS NULL THEN
+      RAISE EXCEPTION 'unknown account'; -- TODO: ERRORCODE
+    END IF;
+    RETURN wiki.doc_update_extra_acc(v_account_id, a_id, a_links, a_anno, a_toc);
   END;
 $_$;
 SELECT pg_c('f', 'doc_update_extra', 'Обновление вторичных данных',$_$/*

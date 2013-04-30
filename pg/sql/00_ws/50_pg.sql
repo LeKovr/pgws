@@ -51,6 +51,24 @@ $_$
   END;
 $_$;
 
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION normalize_type_name(a_type TEXT) RETURNS TEXT LANGUAGE 'sql' AS
+$_$
+  SELECT CASE
+    WHEN $1 ~ E'^timestamp[\\( ]' THEN
+      'timestamp' -- clean "timestamp(0) without time zone"
+    WHEN $1 ~ E'^time[\\( ]' THEN
+      'time' -- clean "time without time zone"
+    WHEN $1 ~ E'^numeric\\(' THEN
+      'numeric' -- clean "numeric(14,4)"
+    WHEN $1 ~ E'^double' THEN
+      'double' -- clean "double precision"
+    WHEN $1 ~ E'^character( varying)?' THEN
+      'text' -- TODO: allow length
+    ELSE
+      $1 
+    END
+$_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_register_proarg_old(a_code ws.d_code) RETURNS ws.d_code VOLATILE LANGUAGE 'plpgsql' AS
@@ -112,7 +130,7 @@ CREATE OR REPLACE FUNCTION ws.pg_register_proarg(a_code ws.d_code) RETURNS ws.d_
 $_$
   DECLARE
     v_i INTEGER;
-    v_code d_code;
+    v_code ws.d_code;
 
     v_args TEXT;
     v_src  TEXT;
@@ -173,16 +191,34 @@ $_$
       END IF;
       v_name := regexp_replace(split_part(v_def, ' ', 2), '^a_', '');
       v_type := split_part(v_def, ' ', 3);
-      IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = dt_code(v_type)) THEN
-        PERFORM ws.pg_register_type(v_type);
-      END IF;     
+      v_type := ws.pg_dt_registered(v_type);
       v_arg_anno := COALESCE(ws.pg_proarg_arg_anno(v_src, split_part(v_def, ' ', 2)), '');
       RAISE NOTICE '   column name=%, type=%, def=%, null=%, anno=%', v_name, v_type, v_default, v_allow_null, v_arg_anno;
       INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null)
-        VALUES (v_code, v_i, v_name, dt_code(v_type), v_arg_anno, v_default, v_allow_null)
+        VALUES (v_code, v_i, v_name, v_type, v_arg_anno, v_default, v_allow_null)
       ;
     END LOOP;
     RETURN v_code;
+  END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION dt_code_extract(a_anno TEXT, OUT o_type TEXT, OUT o_anno TEXT) IMMUTABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_pos INTEGER;
+  BEGIN
+    v_pos := position(',' IN a_anno);
+    IF v_pos > 1 THEN
+      o_type := substring(a_anno from 1 for v_pos -1);
+      o_anno := ltrim(substring(a_anno from v_pos + 1));
+      IF o_type !~ E'^[a-z][0-9a-z_\\.]+$' THEN
+        o_type := NULL;
+      END IF;
+    END IF;
+    IF o_type IS NULL THEN
+      o_anno := a_anno;
+    END IF;
   END;
 $_$;
 
@@ -195,34 +231,38 @@ $_$
     v_type TEXT;
     v_tpnm TEXT;
     v_islist boolean;
+    v_schm TEXT;
+    v_anno TEXT;
     rec RECORD;
   BEGIN
     SELECT INTO r_pg_type * FROM pg_catalog.pg_type WHERE oid = a_oid;
     v_code := ws.pg_type_name(a_oid);
-    IF r_pg_type.typtype in ('c','b','d') THEN
+--raise warning 'VT % -- %',v_code,(select array_agg(code::text)::text from ws.dt where code like '%d_prop_code');
+
+    IF r_pg_type.typtype IN ('c', 'd', 'p') THEN
       v_tpnm := CASE
         WHEN r_pg_type.typtype = 'c' THEN
           'Composite'
-        WHEN r_pg_type.typtype = 'b' THEN
-          'Base'
         WHEN r_pg_type.typtype = 'd' THEN
           'Domain'
+        WHEN r_pg_type.typtype = 'p' THEN
+          'Void'
         END;
       RAISE NOTICE 'Registering "%" type: % (%)', v_tpnm, v_code, a_oid;      
       v_islist := FALSE;
       IF r_pg_type.typtype = 'd' THEN
-        v_type := 
-         (SELECT pg_catalog.format_type(oid, typtypmod)
-          FROM pg_type
-          WHERE oid = r_pg_type.typbasetype);
-        v_type := split_part(v_type, ' ', 1);
-        v_islist := CASE WHEN v_type ~ '\[\]$' THEN TRUE ELSE FALSE END;
-        v_type := split_part(btrim(v_type, '[]'),' ', 1);
-        IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = dt_code(v_type)) THEN
-          v_type := ws.pg_register_type(split_part(btrim(v_type, '[]'),' ', 1));
+        -- проверить необходимость регистрации родительского домена
+        v_type := ws.pg_type_name(r_pg_type.typbasetype);
+        IF v_type ~ E'\\[\\]$' THEN
+          v_islist := TRUE;
+          v_type := split_part(btrim(v_type, '[]'),' ', 1);
         END IF;
-        IF ws.dt_parent_base_code(v_type) is null THEN
-          v_type := (select code from ws.dt where code = current_schema() || '.' || v_type);
+        v_type := ws.normalize_type_name(v_type);
+        IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = v_type) THEN
+          IF position('.' IN v_type) = 0 THEN
+            RAISE EXCEPTION 'Parent type for domain % is base and unknown (%)', v_code, v_type;
+          END IF;
+          v_type := ws.pg_register_type(v_type);
         END IF;
         IF v_type IS NULL THEN
           RAISE EXCEPTION 'Parent type for domain % is unknown', v_code;
@@ -230,10 +270,18 @@ $_$
       END IF;
       INSERT INTO ws.dt (code, anno, is_complex, parent_code, is_list)
         VALUES (v_code, COALESCE(obj_description(r_pg_type.typrelid, 'pg_class'), obj_description(a_oid, 'pg_type'), v_code), 
-          CASE WHEN r_pg_type.typtype = 'd' then false else true end
+          CASE WHEN r_pg_type.typtype = 'c' THEN true ELSE false END
         , v_type, v_islist)
       ;
+      IF r_pg_type.typtype = 'd' THEN
+        PERFORM ws.pg_register_class_facet(a_oid);
+        RETURN v_code;
+      ELSIF r_pg_type.typtype = 'p' THEN
+        RETURN v_code;
+      END IF;
+      
       FOR rec IN
+        -- TODO: перенести в 18_pg, возвращать refcursor
         SELECT a.attname
           , pg_catalog.format_type(a.atttypid, a.atttypmod)
           , (SELECT substring(pg_catalog.pg_get_expr(d.adbin, d.adrelid) for 128)
@@ -246,29 +294,22 @@ $_$
         WHERE a.attrelid = r_pg_type.typrelid AND a.attnum > 0 AND NOT a.attisdropped
         ORDER BY a.attnum
       LOOP
-        v_islist := case when rec.format_type ~ '\[\]$' then true else false end;
-        v_type := btrim(rec.format_type, '[]');
-        IF v_type ~ E'^timestamp[\\( ]' THEN
-          v_type := 'timestamp'; -- clean "timestamp(0) without time zone"
-        ELSIF v_type ~ E'^time[\\( ]' THEN
-          v_type := 'time'; -- clean "time without time zone"
-        ELSIF v_type ~ E'^numeric\\(' THEN
-          v_type := 'numeric'; -- clean "numeric(14,4)"
-        ELSIF v_type ~ E'^double' THEN
-          v_type := 'double'; -- clean "double precision"
-        ELSIF v_type ~ E'^character varying' THEN
-          v_type := 'text'; -- TODO: allow length
+        v_islist := case when rec.format_type ~ E'\\[\\]$' THEN TRUE ELSE FALSE END;
+        SELECT INTO v_type, v_anno * FROM ws.dt_code_extract(rec.anno);
+        IF v_type IS NULL THEN
+          v_type := btrim(rec.format_type, '[]');
+          v_type := ws.normalize_type_name(v_type);
+          RAISE NOTICE '   column % %', rec.attname, v_type;
+        ELSE
+          RAISE NOTICE '   column % % (%)', rec.attname, v_type, rec.format_type;
         END IF;
-        RAISE NOTICE '   column % %', rec.attname, v_type;
-        IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code IN ('ws.' || v_type, v_type)) THEN
-          v_type := ws.pg_register_type(v_type);
-          IF ws.dt_code(v_type) IS NULL THEN
-            RAISE EXCEPTION 'Unknown type (%)', v_type;
-          END IF;
+        v_type := ws.pg_dt_registered(v_type);
+        IF v_type IS NULL THEN
+          RAISE EXCEPTION 'Unknown type (%)', v_type;
         END IF;
         BEGIN
           INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null, is_list)
-            VALUES (v_code, rec.attnum, rec.attname, ws.dt_code(v_type), COALESCE(rec.anno, rec.attname), rec.def_val, NOT rec.attnotnull,v_islist)
+            VALUES (v_code, rec.attnum, rec.attname, v_type, COALESCE(v_anno, rec.attname), rec.def_val, NOT rec.attnotnull,v_islist)
           ;
           EXCEPTION
             WHEN CHECK_VIOLATION THEN
@@ -284,10 +325,97 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
+
+CREATE OR REPLACE FUNCTION pg_register_class_facet(a_oid oid, a_exe boolean DEFAULT TRUE) RETURNS boolean VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_cstr  TEXT;
+    v_type  TEXT;
+    v_tpnm  TEXT;
+    v_facet TEXT;
+  BEGIN
+    v_cstr := (SELECT consrc FROM pg_constraint WHERE contypid = a_oid);
+    v_type := ws.pg_type_name(a_oid);
+    IF coalesce(v_cstr, '') = '' THEN
+      RETURN TRUE;
+    ELSIF position(' AND ' in upper(v_cstr)) > 0 OR position(' OR ' in upper(v_cstr)) > 0 THEN
+      RAISE NOTICE 'Констрейнт c > 1 частью не поддерживается, домен OID: %', a_oid;
+      RETURN FALSE;
+    ELSE
+      v_cstr := btrim(v_cstr, '()');
+      IF position('VALUE ~ ' in upper(v_cstr)) > 0 THEN
+        v_facet := replace(v_cstr, 'VALUE ~ ''', '');
+        v_facet := replace(v_facet, '''::text', '');
+        v_facet := replace(v_facet, E'\\\\', E'\\'); -- TODO строка добавлена для совместимости с PG 9.0
+        IF a_exe THEN
+         INSERT INTO ws.dt_facet (code, facet_id, value) VALUES (v_type, facet_id('pattern'), v_facet);
+        END IF;
+        RETURN TRUE;
+      ELSE
+        DECLARE
+          v_i INT;
+          v_oper text[] = ARRAY['>=','=<','>','<'];
+          v_fct  text[] = ARRAY['minInclusive','maxInclusive','minExclusive','maxExclusive'];
+        BEGIN
+          FOR v_i in array_lower(v_oper,1)..array_upper(v_oper,1) LOOP
+            IF position('VALUE ' || v_oper[v_i] in v_cstr) > 0 THEN
+              v_facet := replace(v_cstr, 'VALUE ' || v_oper[v_i], '');
+              v_facet := split_part(v_facet, '::', 1);
+              v_facet := btrim(v_facet, ' ()');
+              IF a_exe THEN
+                INSERT INTO ws.dt_facet (code, facet_id, value) VALUES (v_type, facet_id(v_fct[v_i]), v_facet);
+              END IF;
+              RETURN TRUE;
+            END IF;
+          END LOOP;
+        END;
+      END IF;
+    END IF;
+    RAISE NOTICE 'Неподдерживаемый констрейнт, домен OID: %', a_oid;
+    RETURN FALSE;
+  END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pg_dt_registered(a_type d_code) RETURNS d_code LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_type TEXT;
+  BEGIN
+    IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = a_type) THEN
+      -- в текущем виде тип не найден
+      IF position('.' IN a_type) = 0 THEN
+        -- схема не указана, но должна быть в search_path
+        v_type := ws.pg_type_search(a_type);
+        IF v_type IS NULL THEN
+          RAISE EXCEPTION 'Type % not found', a_type;
+        END IF;
+        IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = v_type) THEN
+          -- тип существует, но не зарегистрирован
+          RETURN ws.pg_register_type(v_type);
+        END IF;
+        RETURN v_type; 
+      ELSE
+        -- регистрируем тип
+        RETURN ws.pg_register_type(a_type);
+      END IF;
+    END IF;
+    RETURN a_type;
+  END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_register_type(a_type ws.d_code) RETURNS ws.d_code VOLATILE LANGUAGE 'sql' AS
 $_$
-  SELECT ws.pg_register_class(oid) FROM pg_type WHERE typname = $1 /* a_type */;
+  SELECT ws.pg_register_class(ws.pg_type_oid($1));
 $_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION ws.pg_const(a_code d_code DEFAULT NULL) RETURNS SETOF t_hashtable STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT schema || '_' || code, value FROM ws.pg_const WHERE CASE WHEN $1 IS NULL THEN TRUE ELSE (schema || '_' || code) = $1 END ORDER BY 1;
+$_$;
+SELECT pg_c('f', 'pg_const', 'Константы PGWS для использования вне бэкенда');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION tr_notify (

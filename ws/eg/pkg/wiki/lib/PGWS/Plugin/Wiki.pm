@@ -57,7 +57,7 @@ sub _GenerateHeader {
     my $header = $self->_RunSpanGamut($id);
 
     # TODO: добавлять в метку все уровни выше для уникальности
-    push @{$self->{_metadata}{'toc_list'}}, [$level, $label, $header];
+    push @{$self->{_toc_list}}, [$level, $label, $header];
 
     if ($label ne '') {
         $self->{_crossrefs}{$label} = "#$label";
@@ -84,7 +84,7 @@ sub _GenerateAnchor {
           $url = $self->{'base_url'}.$url;
           # TODO: отработать вариант, когда url содержит "?arg=val"
         }
-        $self->{_metadata}{'links'}{$url} = $link_text;
+        $self->{_links}{$url} = $link_text;
       }
     }
     # Allow automatic cross-references to headers
@@ -123,7 +123,7 @@ sub _DoCodeBlocks {
         $codeblock = $self->_Detab($codeblock);
         $codeblock =~ s/\A\n+//;  # trim leading newlines
         $codeblock =~ s/\n+\z//;  # trim trailing newlines
-#print STDERR $codeblock;
+#print STDERR 'CODEFO',$codeblock;
 #        $result = "\n\n<pre class='code'>" . $codeblock . "\n</pre>\n\n";
         $result = "\n\n<pre><code>" . $codeblock . "\n</code></pre>\n\n";
 
@@ -175,26 +175,32 @@ sub format {
   my ($self, $srv, $meta, $args) = @_;
   my ($sid, $uri, $src, $extended, $id, @extra) = (@$args);
 
+  $src =~ s/\r//g; # TODO найти источник добавления \r в конце строк
+  # ?  HTML/4.01 says that line breaks are represented as "CR LF" pairs (i.e., `%0D%0A')
+
   my $m = PGWS::MultiMarkdown->new(
-    tab_width => 2,
+    tab_width => 4,
     use_metadata => 1,
     strip_metadata => 1,
     base_url => $uri,
+    _links => {},
+    _toc_list => [],
+    bibliography_title => 'Библиография'
   );
-  $m->{_metadata}{'links'} = {};
-  $m->{_metadata}{'toc_list'} = [];
+
+  #TODO:
+  #  $text = $self->_DoMarkdownCitations($text) unless $self->{disable_bibliography};
+  #  $text .= $self->_PrintMarkdownBibliography() unless $self->{disable_bibliography};
+
   my $html = $m->markdown( $src );
 
-  unless($extended) { # TODO: del "!"
-    return { 'result' => { 'data' => {'html' => $html} }};
-  }
-
-my @links = keys %{$m->{_metadata}{'links'}};
+  my @links = keys %{$m->{_links}};
 # TODO: нужен ли список?  my $toc_join = join "\n", map { $_->[2] } @{$m->{_metadata}{'toc'}};
   my $res = {
 #    'toc'   => $toc_join,
     'name' => $m->{_metadata}{'Title'},
     'links' => \@links,
+    'src' => $src
   };
 
   if ($html =~ /\A([\s\S]+)\n\<\!\-\-\s+CUT\s+\-\-\>/m) {
@@ -202,31 +208,20 @@ my @links = keys %{$m->{_metadata}{'links'}};
   }
 
   my $toc = '';
-  if ($m->{_metadata}{'TOC'} and $m->{_metadata}{'toc_list'}) {
+  if ($m->{_metadata}{'TOC'} and scalar(@{$m->{_toc_list}})) {
     my $is_ol = (lc($m->{_metadata}{'TOC'}) eq 'ordered');
-    my $toc_text = join "\n", map { _toc_link($is_ol, @{$_}) } @{$m->{_metadata}{'toc_list'}};
+    my $toc_text = join "\n", map { _toc_link($is_ol, @{$_}) } @{$m->{_toc_list}};
     $toc = $m->markdown($toc_text);
-    $toc =~ s/^<(o|u)l/<$1l class="toc"/;
   }
-  $res->{'html'} = $toc.$html;
+  $res->{'html'} = sprintf '<h1>%s</h1>%s%s',$res->{'name'}, 
+    $toc ? '<div class="toc">'.$toc.'</div>':'', 
+    $html; # bootstrap style;
   $res->{'toc'} = $toc;
 
-  if ($extended and $id) {
-    my @args = ($sid, $src, $id);
-    my $diff = $self->_mkdiff($srv, $meta, \@args);
-    my $d = $diff->{'result'}{'data'};
-    if ($d) {
-      my $df;
-      $d = "\n".$d;
-      $d =~ s|<|&lt;|gm;
-      $d =~ s|\n(?=\+)|</p><p class="add">|gm and $df=1;
-      $d =~ s|\n(?=\-)|</p><p class="del">|gm and $df=1;
-      $d =~ s|\n(?=\@\@)|</p><p class="hunk">|gm and $df=1;
-      $d =~ s|\n|</p><p>|gm and $df=1;
-      if ($df) { $d = "<p>$d</p>" };
-      $res->{'diff'} = $d;
-    }
-  }
+  my @args = ($sid, $src, $extended? $id : 0);
+  my $diff = $self->_mkdiff($srv, $meta, \@args);
+  $res->{'diff'} = $diff->{'result'}{'data'};
+
   $meta->dump($res);
   return { 'result' => { 'data' => $res }};
 }
@@ -235,20 +230,18 @@ my @links = keys %{$m->{_metadata}{'links'}};
 sub add {
   my ($self, $srv, $meta, $args) = @_;
   my ($sid, $uri, $group_id, $code, $src) = (@$args);
-
-  my @ids = ($sid, $group_id, $code ||'', $src);
+  my @ids = ($sid, $group_id, $code || '', 1);  # is_online = 1 TODO: вынести в интерфейс
   my $fmt_args = [$sid, $uri, $src, 1];
   my $tag = 'wiki.doc_create';
 
   return $self->_store($srv, $meta, $fmt_args, undef, $tag, @ids);
 }
-
 #----------------------------------------------------------------------
 sub save {
   my ($self, $srv, $meta, $args) = @_;
   my ($sid, $uri, $id, $rev, $src) = (@$args);
 
-  my @ids = ($sid, $id, $rev, $src);
+  my @ids = ($sid, $id, $rev);
   my $fmt_args = [$sid, $uri, $src, 1, $id];
   my $tag = 'wiki.doc_update_src';
 
@@ -259,14 +252,14 @@ sub save {
 sub _store {
   my ($self, $srv, $meta, $fmt_args, $parse_fld, $tag, @ids) = @_;
 
-  my @parsed_args = qw(name links anno toc);
+  my @parsed_args = qw(links anno toc);
   push (@parsed_args, $parse_fld) if ($parse_fld);
   my $wiki_def = $self->format($srv, $meta, $fmt_args);
-
   if ($tag eq 'wiki.doc_update_src' and !$wiki_def->{'result'}{'data'}{'diff'}) {
       return { 'result' => { 'error' => [{ 'code' => 'Y9904', 'message' => $srv->_error_fmt($meta, 'Y9904')}]}};
   }
-
+  push @ids, $wiki_def->{'result'}{'data'}{'name'} || '';
+  push @ids, $wiki_def->{'result'}{'data'}{'src'} || ''; # src
   push @ids, map { $wiki_def->{'result'}{'data'}{$_} || '' } @parsed_args;
 
   $meta->dump({
@@ -281,9 +274,8 @@ sub _store {
   }
   my $doc_id = $res->{'result'}{'data'};
   # reset cache
-  my $res1 = $srv->_call_meta($srv->def_uncache, $meta, 'nc:wiki.doc_info', $doc_id);
-  my $def = $res1->{'result'}{'data'};
-  $srv->_call_meta($srv->def_uncache, $meta, 'wiki.doc_id_by_code', $def->{'group_id'}, $def->{'code'} || undef);
+  my $def = $srv->_call_meta('wiki.doc_info', $meta, $doc_id);
+  $srv->_call_meta($srv->def_uncache, $meta, 'wiki.doc_id_by_code', sprintf ('%i,%s',$def->{'group_id'}, $def->{'code'} || undef));
   $srv->_call_meta($srv->def_uncache, $meta, 'wiki.doc_src', $doc_id);
 
   return $res;
@@ -296,18 +288,21 @@ sub _mkdiff {
   my ($sid, $src, $id, $rev) = (@$args);
 
   my @ids = ($id);
-  my $mtd_def = $srv->_explain_def('wiki.doc_src', $meta);
-  my $res = $srv->_call_cached($mtd_def, $meta, \@ids);
-  unless ($res and exists($res->{'result'}) and exists($res->{'result'}{'data'})) {
-    return $res;
+  my $src_orig = '';
+  if ($id) {
+    my $mtd_def = $srv->_explain_def('wiki.doc_src', $meta);
+    my $res = $srv->_call_cached($mtd_def, $meta, \@ids);
+    if ($res and exists($res->{'result'}) and exists($res->{'result'}{'data'})) {
+      $src_orig = $res->{'result'}{'data'};
+    }
   }
-  my $src_orig = $res->{'result'}{'data'};
 
-  utf8::decode($src_orig);
-  utf8::decode($src);
+ # utf8::decode($src_orig);
+ # utf8::decode($src);
   $meta->dump({ 'from' => $src_orig, 'to' => $src});
   my $diff = diff(\$src_orig, \$src, { STYLE => "Unified" });
   $meta->dump($diff);
+#print STDERR Dumper({ 'from' => $src_orig, 'to' => $src, 'diff' => $diff});
   return { 'result' => { 'data' => $diff }};
 }
 

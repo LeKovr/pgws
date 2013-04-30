@@ -23,11 +23,12 @@
 /* ------------------------------------------------------------------------- */
 /*
 DELETE FROM wsd.prop_value WHERE pkg = :'PKG';
-DELETE FROM wsd.prop_owner WHERE pkg = :'PKG';
-DELETE FROM wsd.prop_group WHERE pkg = :'PKG';
 
-DELETE FROM cfg.prop                 WHERE pkg = :'PKG';
+DELETE FROM cfg.prop_owner WHERE pkg = :'PKG';
+DELETE FROM cfg.prop_group WHERE pkg = :'PKG';
+DELETE FROM cfg.prop       WHERE pkg = :'PKG';
 */
+
 /* ------------------------------------------------------------------------- */
 DROP TABLE wsd.event_notify_spec;
 DROP TABLE wsd.event_notify;
@@ -37,7 +38,7 @@ DROP TABLE wsd.event_role_signup;
 DROP TABLE wsd.event_spec;
 DROP TABLE wsd.event;
 DROP SEQUENCE wsd.event_seq;
+DROP SEQUENCE wsd.event_reason_seq;
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';
 

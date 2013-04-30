@@ -52,27 +52,27 @@ msgstr ""
 msgid "4 копейки"
 msgstr ""
 
-#: var/build/i18n_def.i18n:324
+#: var/build/i18n_def.i18n:394
 msgid "ID акции, к которой относится страница"
 msgstr "Action ID page corresponds with"
 
-#: var/build/i18n_def.i18n:432
+#: var/build/i18n_def.i18n:502
 msgid "ID группы"
 msgstr "Group ID"
 
-#: var/build/i18n_def.i18n:331
+#: var/build/i18n_def.i18n:401
 msgid "ID группы страниц для меню"
 msgstr "Manu page group ID"
 
-#: var/build/i18n_def.i18n:317
+#: var/build/i18n_def.i18n:387
 msgid "ID класса, к которому относится страница"
 msgstr "Class ID page corresponds with"
 
-#: var/build/i18n_def.i18n:359
+#: var/build/i18n_def.i18n:429
 msgid "ID объекта взять из этого поля"
 msgstr ""
 
-#: var/build/i18n_def.i18n:366
+#: var/build/i18n_def.i18n:436
 msgid "ID объекта взять из этого поля сессии"
 msgstr "Session field to get object ID from"
 
@@ -80,59 +80,43 @@ msgstr "Session field to get object ID from"
 msgid "WebService (PGWS) default internationalization data"
 msgstr ""
 
-#: var/build/i18n_def.i18n:387
+#: var/build/i18n_def.i18n:457
 msgid "regexp URI, вычисляется триггером при insert/update"
 msgstr "regexp for URI, calculated by insert/update trigger"
 
-#: var/build/i18n_def.i18n:476
-msgid "Версия документа (%s) не актуальна и(или) устарела"
-msgstr ""
-
-#: var/build/i18n_def.i18n:503
-msgid "Вики"
-msgstr ""
-
-#: var/build/i18n_def.i18n:500
-msgid "Вход"
-msgstr ""
-
-#: var/build/i18n_def.i18n:501
-msgid "Выход"
-msgstr ""
-
-#: var/build/i18n_def.i18n:425
+#: var/build/i18n_def.i18n:495
 msgid "Группа страниц для меню"
 msgstr "Menu page group"
 
-#: var/build/i18n_def.i18n:479
-msgid "Документ не найден"
-msgstr ""
-
-#: var/build/i18n_def.i18n:478
-msgid "Документ не содержит изменений"
-msgstr ""
-
-#: var/build/i18n_def.i18n:477
-msgid "Документ с таким адресом уже создан (%s)"
-msgstr ""
-
-#: var/build/i18n_def.i18n:408
+#: var/build/i18n_def.i18n:351 var/build/i18n_def.i18n:478
 msgid "Заголовок страницы в карте сайта"
 msgstr "Sitemap page title"
 
-#: var/build/i18n_def.i18n:373
+#: var/build/i18n_def.i18n:337
+msgid "Заголовок страницы сайта в локали схемы БД"
+msgstr ""
+
+#: var/build/i18n_def.i18n:443
 msgid "Запрет включения внешних блоков в разметку страницы"
 msgstr ""
 
-#: var/build/i18n_def.i18n:303
+#: var/build/i18n_def.i18n:373
 msgid "Идентификатор страницы"
 msgstr "Page ID"
 
-#: var/build/i18n_def.i18n:505
-msgid "История изменений"
+#: var/build/i18n_def.i18n:270 var/build/i18n_def.i18n:306
+msgid "Код ошибки"
 msgstr ""
 
-#: var/build/i18n_def.i18n:439
+#: var/build/i18n_def.i18n:344
+msgid "Код страницы"
+msgstr ""
+
+#: var/build/i18n_def.i18n:277 var/build/i18n_def.i18n:313
+msgid "Количество аргументов в строке сообщения"
+msgstr ""
+
+#: var/build/i18n_def.i18n:509
 msgid "Название"
 msgstr ""
 
@@ -152,47 +136,43 @@ msgstr ""
 msgid "Название периода из заданного числа месяцев (252 max)"
 msgstr ""
 
-#: var/build/i18n_def.i18n:475
-msgid "Не найдена группа \"%s\""
-msgstr ""
-
-#: var/build/i18n_def.i18n:493
+#:
 msgid "Описание API"
 msgstr "API docs"
 
-#: var/build/i18n_def.i18n:499
+#:
 msgid "Описание класса"
 msgstr "Class"
 
-#: var/build/i18n_def.i18n:497
+#:
 msgid "Описание классов"
 msgstr "Classes"
 
-#: var/build/i18n_def.i18n:494
+#:
 msgid "Описание методов"
 msgstr "Methods"
 
-#: var/build/i18n_def.i18n:498
+#:
 msgid "Описание методов (JS)"
 msgstr "Methods via JS"
 
-#: var/build/i18n_def.i18n:271
+#: var/build/i18n_def.i18n:299
 msgid "Описание ошибки"
 msgstr "Error description"
 
-#: var/build/i18n_def.i18n:495
+#:
 msgid "Описание страниц"
 msgstr "Pages"
 
-#: var/build/i18n_def.i18n:496
+#:
 msgid "Описание типов"
 msgstr "Types"
 
-#: var/build/i18n_def.i18n:504
-msgid "Редактирование"
+#: var/build/i18n_def.i18n:263
+msgid "Сообщение об ошибке в локали схемы БД"
 msgstr ""
 
-#: var/build/i18n_def.i18n:296
+#: var/build/i18n_def.i18n:366
 msgid "Страница сайта"
 msgstr "Site page"
 
@@ -200,11 +180,15 @@ msgstr "Site page"
 msgid "Сумма прописью в рублях и копейках"
 msgstr ""
 
-#: var/build/i18n_def.i18n:502
+#:
 msgid "Тестовая страница"
 msgstr "Test page"
 
-#: var/build/i18n_def.i18n:465
+#: var/build/i18n_def.i18n:284 var/build/i18n_def.i18n:320
+msgid "Форматированная строка сообщения об ошибке"
+msgstr ""
+
+#: var/build/i18n_def.i18n:535
 msgid "внешний доступ к методу с \"%s\" запрещен"
 msgstr ""
 
@@ -276,19 +260,19 @@ msgstr ""
 msgid "десять"
 msgstr ""
 
-#: var/build/i18n_def.i18n:380
+#: var/build/i18n_def.i18n:450
 msgid "значение атрибута target в формируемых ссылках"
 msgstr "value of target attribute in generated links"
 
-#: var/build/i18n_def.i18n:461
+#: var/build/i18n_def.i18n:531
 msgid "значение не соответствует условию \"%s %s\""
 msgstr "value does not conform to condition \"%s %s\""
 
-#: var/build/i18n_def.i18n:462
+#: var/build/i18n_def.i18n:532
 msgid "значение не соответствует шаблону \"%s\""
 msgstr "value does not conform to template \"%s %s\""
 
-#: var/build/i18n_def.i18n:310
+#: var/build/i18n_def.i18n:380
 msgid "идентификатор страницы верхнего уровня"
 msgstr "id of parent level page"
 
@@ -316,9 +300,13 @@ msgstr ""
 msgid "месяцев"
 msgstr ""
 
-#: var/build/i18n_def.i18n:345
+#:
 msgid "мета-маска с именами переменных, которой должен соответствовать URI запроса"
 msgstr "metamask with variable names for request uri lookup"
+
+#: var/build/i18n_def.i18n:415
+msgid "мета-маска с именами переменных, которой должен соответствовать URI запроса (NULL - группировка страниц)"
+msgstr ""
 
 #: var/build/i18n_def.i18n:133
 msgid "миллиардов"
@@ -332,47 +320,39 @@ msgstr ""
 msgid "название"
 msgstr "name"
 
-#: var/build/i18n_def.i18n:460
+#: var/build/i18n_def.i18n:530
 msgid "не задано обязательное значение"
 msgstr "required value does not given"
 
-#: var/build/i18n_def.i18n:468
+#: var/build/i18n_def.i18n:538
 msgid "не найдена проверка для acl \"%s\""
 msgstr "no check for acl \"%s\""
 
-#: var/build/i18n_def.i18n:464
+#: var/build/i18n_def.i18n:534
 msgid "недопустимый код acl \"%s\""
 msgstr "incorrect acl code \"%s\""
 
-#: var/build/i18n_def.i18n:471
-msgid "неизвестный логин"
-msgstr ""
-
-#: var/build/i18n_def.i18n:467
+#: var/build/i18n_def.i18n:537
 msgid "некорректный идентификатор сессии \"%s\""
 msgstr "incorrect session id \"%s\""
 
-#: var/build/i18n_def.i18n:469
+#: var/build/i18n_def.i18n:539
 msgid "некорректный идентификатор статуса \"%s\""
 msgstr "incorrect status id \"%s\""
 
-#: var/build/i18n_def.i18n:466
+#: var/build/i18n_def.i18n:536
 msgid "необходима авторизация (не задан идентификатор сессии)"
 msgstr "authorization required (no session id)"
 
-#: var/build/i18n_def.i18n:470
-msgid "неправильный пароль"
-msgstr ""
-
-#: var/build/i18n_def.i18n:463
+#: var/build/i18n_def.i18n:533
 msgid "нет данных"
 msgstr "no data"
 
-#: var/build/i18n_def.i18n:474
+#:
 msgid "нет данных по a = %i"
 msgstr "no data for a = %i"
 
-#: var/build/i18n_def.i18n:473
+#:
 msgid "нет доступа к результату суммы при а = %i"
 msgstr "no access to sum result when a = %i"
 
@@ -396,11 +376,11 @@ msgstr ""
 msgid "одна тысяча"
 msgstr ""
 
-#: var/build/i18n_def.i18n:401
+#: var/build/i18n_def.i18n:471
 msgid "пакет, в котором зарегистрирована страница"
 msgstr ""
 
-#: var/build/i18n_def.i18n:338
+#: var/build/i18n_def.i18n:408
 msgid "порядок сортировки в меню страниц одного уровня (NULL - нет в меню)"
 msgstr "page order in one level menu"
 
@@ -444,15 +424,11 @@ msgstr ""
 msgid "сорок"
 msgstr ""
 
-#: var/build/i18n_def.i18n:472
-msgid "статус пользователя (%s) не допускает авторизацию"
-msgstr ""
-
 #: var/build/i18n_def.i18n:63
 msgid "сто"
 msgstr ""
 
-#: var/build/i18n_def.i18n:394
+#: var/build/i18n_def.i18n:464
 msgid "строка формата для генерации URI, вычисляется триггером при insert/update"
 msgstr "format string for URI generation, filled by insert/update trigger"
 
@@ -488,7 +464,7 @@ msgstr ""
 msgid "тысяч"
 msgstr ""
 
-#: var/build/i18n_def.i18n:352
+#: var/build/i18n_def.i18n:422
 msgid "файл шаблона (NULL для внешних адресов)"
 msgstr "template file (NULL for external URL)"
 

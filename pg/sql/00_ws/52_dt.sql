@@ -50,13 +50,10 @@ $_$
     v_code TEXT;
   BEGIN
     SELECT code INTO v_code FROM ws.dt WHERE code IN (a_code, ws.pg_cs(a_code), 'ws.'||a_code) ORDER BY 1;
-    IF v_code IS NULL and a_code ~ '^d_' THEN
-      v_code := current_schema() || '.' || a_code;
-    END IF;
     RETURN v_code;
   END;
 $_$;
-SELECT pg_c('f', 'dt_by_code', 'Атрибуты типа по маске кода');
+SELECT pg_c('f', 'dt_code', '*DEPRECATED* Код типа из ws.dt с добавлением текущей схемы');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt(a_code d_code DEFAULT NULL) RETURNS SETOF dt STABLE LANGUAGE 'sql' AS
@@ -116,19 +113,19 @@ $_$;
 SELECT pg_c('f', 'dt_parts', 'Список полей комплексного типа по коду как строка');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_tree(a_code d_code) RETURNS SETOF d_code STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION dt_tree(a_code d_code) RETURNS SETOF text STABLE LANGUAGE 'sql' AS
 $_$
   WITH RECURSIVE dtree AS (
-    SELECT d.*, ARRAY[code::text] as branches
+    SELECT d.code::text, d.parent_code::text, ARRAY[code::text] as branches
       FROM ws.dt d
       WHERE code = 'ws.d_code'
     UNION
-    SELECT d.*, dtree.branches || d.code::text
+    SELECT d.code::text, d.parent_code::text, dtree.branches || d.code::text
       FROM ws.dt d
         JOIN dtree ON d.code = dtree.parent_code 
       WHERE NOT d.code = ANY(dtree.branches)
   )
-  SELECT code 
+  SELECT code
     FROM dtree
     ORDER BY array_length(branches, 1);
 $_$;

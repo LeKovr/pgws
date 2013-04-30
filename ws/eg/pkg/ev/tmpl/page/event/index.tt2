@@ -1,0 +1,29 @@
+[% META
+  description = 'Список событий системы';
+  meta.todo.${template.name} = BLOCK %]
+   Глобальный список уведомлений (все события системы)
+<br>
+таблица "Время,Описание, кол-во получателей (команд и людей)"
+  [% END;
+
+  notifications = api( 'ev.news_info' );
+  team_id = page.args.0;
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = team_id, active_code=page.code;
+	INCLUDE block/ev/new_notifications.tt2
+%]
+<table>
+	<tr>
+		<th>Время</th>
+		<th>Описание</th>
+		<th>Подписанных аккаунтов</th>
+		<th>Подписанных команд</th>
+	</tr>
+[% FOR n IN notifications %]
+	<tr>
+		<td>[% n.created_at %]</td>
+		<td><b>[% n.name %]</b><p>[% n.anno %]</p></td>
+		<td>[% n.account_count %]</td>
+		<td>[% n.team_count %]</td>
+	</tr>
+[% END %]
+</table>

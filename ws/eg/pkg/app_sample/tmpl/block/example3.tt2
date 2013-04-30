@@ -1,32 +1,56 @@
 [% META
-  description = 'Пример блока вызова функции'
-%][% meta.head.api = 1
-%]
-<form id="form3" onsubmit="return false;">
-<div id="form3___err" style="color:red"></div>
-<div id="form3_code_err" style="color:red"></div>
-ID:<input type="text" name="code" size="10" value="api.smd"><button id="myB3" onClick="return form3send()">Get page</button>
-<div id="form3_id_err" style="color:red; height:15px"></div>
-<div id="form3_result" style="height:15px"></div>
+  description = 'Пример блока вызова функции';
+%][% 
+  meta.head.api = 1;
 
+  %]
+  <form id="form3" onsubmit="return false;" class="form-horizontal well">  
+  <fieldset>
+    <legend>Page by code:</legend>
+    [%
+    controlGroup_begin(label = 'ID:');
+    input(class='input-medium', name="code", value = "api.smd");
+    controlGroup_end;
+    %]
+    <div class="form-actions">
+      [% btn(type='submit', name='Get page',id = "myB3", onclick="return form3send()"); %]
+      </div>
+  </fieldset>
+  [%
+  alert_begin(id='form3_result');alert_end;
+  alert_begin(id='form3_status'); alert_end;
+  %]</form>
+  [%
+
+meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
+$('#form3_result').hide();
+$('#form3_status').hide();
+var option3 = {statusBlock: '#form3_status'};
 function form3send() {
-  $('#form3_result').text('');
-  $('#form3___err').text('');
-  api_form('ws.page_by_code', '#form3', form3ok, form3err);
+  $('#form3_result').text('&nbsp;');
+  api_form('ws.page_by_code', '#form3', form3ok, form3err, option3);
   return false;
 };
 var form3ok = function(formid, res) {
   $(formid + '_result').html( '<a href="[% req.prefix %]/'+res.req+'[% session.sid_arg %]">'+res.name+'</a>');
+  successAlertBlocks(formid);
 };
 var form3err = function(formid, res) {
-  $(formid + '_result').html( res.result.error[0].message);
+  var mess = '';
+  $(res.result.error).each(function(i){
+    mess += '<p>' + this.message + '</p>';
+  });
+  $(formid + '_result').html(mess);
+  errorAlertBlocks(formid);
 };
 
 //]]>
 </script>
-
-</form>
+<!-- [%# const('app_sample_const_error_notfound1') %] -->
+<!-- [%# const('app_sample_const_error_notfound') %] -->
+[% END; # BLOCK
+%]
 
 

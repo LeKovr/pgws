@@ -21,4 +21,4 @@
 */
 
 /* ------------------------------------------------------------------------- */
-DROP FUNCTION ws.register_pages_apidoc(ws.d_sort);
+DROP FUNCTION ws.register_pages_apidoc(ws.d_code, ws.d_path, ws.d_sort);

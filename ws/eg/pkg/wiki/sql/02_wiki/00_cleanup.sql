@@ -23,6 +23,8 @@
 
 /* ------------------------------------------------------------------------- */
 
+-- TODO: перенести удаление классов в pkg_op
+DELETE FROM ws.page_data             WHERE pkg = :'PKG';
 DELETE FROM ws.method                WHERE pkg = :'PKG';
 
 \set WID wiki.const_class_id()      -- wiki class id
@@ -41,3 +43,8 @@ DELETE FROM ws.dt_part          WHERE dt_code IN (SELECT code FROM ws.dt WHERE c
 DELETE from ws.dt               WHERE code LIKE 'wiki.%';
 
 DELETE FROM ws.error_data WHERE code ~ E'^Y99';
+
+/* ------------------------------------------------------------------------- */
+DELETE FROM wsd.prop_value WHERE code = 'ws.daemon.be.plugin.wiki.lib';
+
+

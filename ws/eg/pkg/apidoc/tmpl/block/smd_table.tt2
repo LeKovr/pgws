@@ -25,7 +25,7 @@
 [%
 FOR m IN data;
   ac = api('ws.class_action', 'class_id' => m.class_id, 'id' => m.action_id );
-  %]<table class="baseTable">[%
+  table_begin(class='baseTable table-striped table-bordered');
   INCLUDE block/apidoc/smd_table_inc.tt2;
   %]</table>[%
 END;

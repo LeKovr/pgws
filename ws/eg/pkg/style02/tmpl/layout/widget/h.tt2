@@ -1,13 +1,24 @@
 [% META
   description = 'тэг h?'
 %]
-<h[% type %]  [% IF id; %] id='[% id %]' [% END; %] [% IF class; %] class='[% class %]' [% END; %]>[% text %]</h[% type %]>
+<h[% type %][% IF id; %] id="[% id %]"[% END; %][% IF class; %] class="[% class %]"[% END; %]>[% 
+      IF href;
+        %]<a[% 
+          classLink ? ' class="' _ classLink _ '"' : '';
+          href      ? ' href="' _ href _ '"' : '';
+          rel       ? ' rel="' _ rel _ '"' : '';
+          linkparam ? ' ' _ linkparam : '';
+          %]>[% text %]</a>[%
+      ELSE;
+        text;
+      END;
+ %]</h[% type %]>
 
 [%# example
-#	h(
-#		type = тип заголовка [1-6]
-#		id = id -шник элемента
-#		class - класс заголовка
-#		text -  текст загловка
-#	); 
+#  h(
+#    type = тип заголовка [1-6]
+#    id = id -шник элемента
+#    class - класс заголовка
+#    text -  текст загловка
+#  ); 
 %]

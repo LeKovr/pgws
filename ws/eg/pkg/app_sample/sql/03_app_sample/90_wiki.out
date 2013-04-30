@@ -1,0 +1,58 @@
+        test        
+--------------------
+  ***** login *****
+
+    ip     | status_id | account_id | role_id | account_name | role_name 
+-----------+-----------+------------+---------+--------------+-----------
+ 127.0.0.1 |         1 |          1 |       9 | Admin        | Sys admin
+
+INSERT 0 1
+          test           
+-------------------------
+  ***** wiki_group *****
+
+ group_exists 
+--------------
+ t
+
+           test           
+--------------------------
+  ***** wiki_create *****
+
+ doc_created 
+-------------
+ t
+
+ doc_exists 
+------------
+ t
+
+           test           
+--------------------------
+  ***** wiki_update *****
+
+ src_updated 
+-------------
+ t
+
+ attr_updated 
+--------------
+ t
+
+ status_id | group_id | up_id |        code         | revision |         name          | group_name | updated_by_name 
+-----------+----------+-------+---------------------+----------+-----------------------+------------+-----------------
+         2 |       -1 |       | definitely/new/page |        2 | New test page updated | TestWiki   | Admin
+
+            test            
+----------------------------
+  ***** wiki_keywords *****
+
+ doc_keyword 
+-------------
+ page
+ test
+
+ logout 
+--------
+      1
+

@@ -5,8 +5,7 @@
   TMPL_LAYOUT       = 'style02';
   TMPL_UI_THEME     = 'external/ui/smoothness';
   BASE_LAYOUT       = 'style01';
-  # IF session.sid
-    # для тестов layout покажем авторизованным другой вариант
-    # resp.layout = 'grey';
-  # END
+
+  # эти виджеты используютя на всех страницах
+  PROCESS 'macro/base.tt2';
 %]

@@ -154,17 +154,35 @@ sub attrs {
 #----------------------------------------------------------------------
 sub header {
   my $self = shift;
-
+  my ($ctype, $status, $file_def) = @_;
+  my %resp;
   if ($ENV{'HTTP_ORIGIN'}) {
-    print $self->{'_q'}->header(
-      -type => $_[0],
-      -Access_Control_Allow_Credentials => 'true',
-      -Access_Control_Allow_Origin => $ENV{'HTTP_ORIGIN'}
+    %resp = (
+      '-type' => $ctype,
+      '-Access_Control_Allow_Credentials' => 'true',
+      '-Access_Control_Allow_Origin' => $ENV{'HTTP_ORIGIN'}
     );
   } else {
-    print $self->{'_q'}->header(@_);
+    %resp = (
+      '-type' => $ctype,
+      '-status' => $status
+    );
   }
-  if ($_[0] =~ /utf-8/ and !$self->{'encode_utf'}) { # and $_[0] =~ /plain/) {
+  if ($file_def) {
+    # TODO: check Last-Modified
+    my $last_modified = gmtime($file_def->{'mtime'});
+    # Если дата совпадает браузер и так контент не запросит
+    #if ($ENV{'HTTP_IF_MODIFIED_SINCE'} eq $last_modified) {
+    #  print $self->{'_q'}->header('text/html','304 Not Modified');
+    #  return;
+    #}
+    $resp{'-X_Accel_Redirect'} = $file_def->{'path'};
+    $resp{'-Last_Modified'} = $last_modified;
+  }
+  $self->{'_q'}->no_cache(1); # запрет на локальное кеширование без валидации на сервере
+  print $self->{'_q'}->header(%resp);
+  
+  if (!$file_def and $ctype =~ /utf-8/ and !$self->{'encode_utf'}) { # and $_[0] =~ /plain/) {
     binmode(STDOUT, ':encoding(utf8)');
   }
 #print STDERR "$_ = $ENV{$_}<br>\n" foreach sort keys %ENV;
@@ -210,13 +228,16 @@ sub redirect {
 sub send_file {
   my ($self, $file_def) = @_;
   my $name = $file_def->{'name'};
-  utf8::encode($name);
-  print $self->{'_q'}->header(
-    -type => $file_def->{'ctype'},
-    -attachment => $name,
-#    -Content_Disposition => $name,
-    -X_Accel_Redirect => $file_def->{'path'}
+  my %resp = (
+    '-type' => $file_def->{'ctype'},
+    '-X_Accel_Redirect' => $file_def->{'path'}
   );
+  if ($name) {
+    utf8::encode($name);
+    $resp{'-attachment'} = $name;
+#    -Content_Disposition => $name,
+  }
+  print $self->{'_q'}->header(%resp);
 }
 
 1;

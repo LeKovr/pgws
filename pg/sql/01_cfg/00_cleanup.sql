@@ -23,8 +23,15 @@
 
 /* ------------------------------------------------------------------------- */
 
-ALTER TABLE wsd.prop_group ALTER COLUMN pkg DROP DEFAULT;
+DROP FUNCTION cfg.prop_attr(text,integer,text);
+DROP FUNCTION cfg.prop_attr_system(text,integer,text);
+DROP FUNCTION cfg.prop_group_value_list(text,ws.d_id,text,boolean,date,text,text);
 
-ALTER TABLE wsd.prop_owner ALTER COLUMN pkg DROP DEFAULT;
+DROP VIEW cfg.prop_attr;
+DROP VIEW cfg.prop_attr_owned_nomask;
+DROP FUNCTION cfg.prop_value_list(text,ws.d_id,text,boolean,date,text,text);
+DROP TYPE cfg.t_prop_value;
 
-ALTER TABLE wsd.prop_value ALTER COLUMN pkg DROP DEFAULT;
+-- удалить fkey и default объектам схемы wsd
+-- операция выполняется автоматически только для первой схемы пакета
+SELECT ws.pkg_references(FALSE, :'PKG', 'cfg');

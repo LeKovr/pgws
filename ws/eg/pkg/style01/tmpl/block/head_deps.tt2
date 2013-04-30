@@ -15,8 +15,9 @@ IF meta.head.timepicker;
   meta.head.slider = 1;
 END;
 IF meta.head.jquery;
-  meta.top_headers.push(
-    "/js/external/core/minified/jquery-1.7.2.min.js"
+  # в списке скриптов этот - первый
+  meta.top_headers.unshift(
+    "/js/external/core/jquery-1.7.2.js"
   );
   meta.head.delete('jquery');
 END;

@@ -1,9 +1,0 @@
-[%
-  notifications = api( 'ev.notifications_list', account_id => session.account_id );
-	INCLUDE block/ev/new_notifications.tt2
-%]
-<ol>
-[% FOR n IN notifications %]
-	<li> Событие [% n.event_id %]</li>	
-[% END %]
-</ol>

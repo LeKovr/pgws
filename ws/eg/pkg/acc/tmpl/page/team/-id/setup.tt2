@@ -1,0 +1,22 @@
+[% META
+  description = 'Страница компании';
+  
+  team_id = page.args.0;
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;	
+%]
+
+<form class="well form-inline span4 offset-16 custom-form">
+  <fieldset>
+    <legend>Контакты</legend>
+
+  </fieldset>
+</form>
+
+<form class="well form-inline span4 offset-16 custom-form">
+  <fieldset>
+    <legend>Статус</legend>
+      [%controlGroup_begin;
+        select(options = [{text = 'Активен', selected = 1},{text = 'Отпуск'}]);
+      controlGroup_end;	%]
+  </fieldset>
+</form>

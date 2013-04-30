@@ -1,22 +1,29 @@
 [% META
-  description = 'tr таблицы'
+  description = 'tr таблицы';
+
+  IF thead; 
+    '<thead>';
+  END;
+  '<tr';
+    class ? ' class="' _ class _ '"':'';  
+  '>';
+  tag = use_th ? 'th' : 'td';
+  FOR l IN list; 
+    iter = loop.index;
+    w = widthL.$iter;
+    widthData = w ? ' style="width:' _ w _ '"' : '' ;
+    "<$tag $widthData>$l</$tag>";
+  END;
+  '</tr>';
+  IF thead; 
+    '</thead><tbody>';
+  END;
+  "\n";
 %]
-  <tr>
-    [% FOR l IN list; 
-        IF use_th;
-    %]
-         <th>[% l %]</th>
-    [%  
-        ELSE;
-    %]
-      <td>[% l %]</td>
-    [% END;
-    END; %]
-  </tr>
-  
 [%# example
-#	tr(
-#	list - ['data1','data2'] - данные одной строчки таблицы
-#	use_th - признак тэга th (td - по умолчанию)
-#	); 
+#  tr(
+#    list - ['data1','data2'] - данные одной строчки таблицы
+#    use_th - признак тэга th (td - по умолчанию)
+#    widthL - ['100px','26%'] - ширина колонок
+#  ); 
 %]

@@ -22,7 +22,7 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE doc_extra (
-  id                d_id32  PRIMARY KEY REFERENCES wsd.doc
+  id                d_id32  PRIMARY KEY REFERENCES wsd.doc ON DELETE CASCADE
 , is_toc_preferred  bool    NOT NULL DEFAULT FALSE
 , toc               text
 , anno              text
@@ -34,7 +34,7 @@ SELECT pg_c('r', 'doc_extra', 'Дополнительные данные ста�
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE doc_link (
-  id          d_id32  NOT NULL REFERENCES wsd.doc
+  id          d_id32  NOT NULL REFERENCES wsd.doc ON DELETE CASCADE
 , path        text    NOT NULL
 , is_wiki     bool    NOT NULL DEFAULT TRUE -- TODO считать триггером или при запросе
 , link_id     d_id    REFERENCES wsd.doc

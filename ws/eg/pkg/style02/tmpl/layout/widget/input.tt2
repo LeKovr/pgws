@@ -1,20 +1,39 @@
 [% META
   description = 'тэг input'
 %]
-  [% IF !rows; %]
-    <input "[% IF class; 'class=' _ class _ ''; END;%]" [% IF param; 'placeholder=' _ param _ ''; END; %] type=[% IF !type; %]"text"[% ELSE; %]"[% type %]"[% END; %] value='[% value %]' [% IF disabled %]disabled='disabled'[% END; id ? 'id=' _ id _ '':'';%]>
+[% 
+  IF !rows; 
+    %]<input[% 
+    IF class; ' class="' _ class _ '"'; END;
+    IF param; ' placeholder="' _ param _ '"'; END;
+    %] type="[% type ? type : 'text' %]"[% 
+    IF value; ' value="' _ value _ '"'; END;
+    IF name;  ' name="' _ name _ '"'; END;
+    IF id;    ' id="' _ id _ '"'; END;
+    IF disabled; ' disabled="disabled"'; END;
+    IF onclick; " onclick='$onclick'"; END;
+    IF checked; ' checked="checked"'; END;
+    %]>
   [% ELSE; %]
-    <textarea "[% IF class; 'class=' _ class _ ''; END;%]" [% IF param; 'placeholder=' _ param _ ''; END; %] rows='[% rows; %]' [% IF disabled %]disabled='disabled'[% END; id ? 'id=' _ id _ '':'';%]>[% value %]</textarea>
+    <textarea[% 
+    IF class; ' class="' _ class _ '"'; END;
+    IF param; ' placeholder="' _ param _ '"'; END; %] 
+    rows="[% rows; %]" 
+    [% IF disabled %] disabled="disabled"[% END; 
+    IF onclick; " onclick='$onclick'"; END;
+    id ? ' id="' _ id _ '"':'';%]>
+    [% value %]
+    </textarea>
   [% END; %]
   
   [%# example
-#	input(
-#		rows = если указан этот парметр, поле будет формата textarea
-#		class - класс 
-#		param -  для дополительных бутстраповских параметров
-#		type -  например 'password'
-#		value - содержимое поля
-#		disabled -'1'-поле закрыто для ввода
-#		id - айдишник элемента
-#	); 
+#  input(
+#    rows = если указан этот парметр, поле будет формата textarea
+#    class - класс 
+#    param -  для дополительных бутстраповских параметров
+#    type -  например 'password'
+#    value - содержимое поля
+#    disabled -'1'-поле закрыто для ввода
+#    id - айдишник элемента
+#  ); 
 %]

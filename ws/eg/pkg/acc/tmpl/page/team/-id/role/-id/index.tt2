@@ -1,0 +1,57 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'список ролей команды';
+ 
+  team_id = page.args.0;
+  role_id = page.args.1;
+  
+  team_profile = api('team.profile', id => team_id);
+  role = api('team.role', 'id' => team_id, 'role_id' => role_id).pop();
+
+  resp.title =  page.name _ l(' &laquo;[_1]&raquo;, команда ',role.name) _ l(' &laquo;[_1]&raquo;', team_profile.name);
+  
+  members = api('team.role_members', 'id' => team_id, 'role_id' => role_id);
+  permissions = api('team.permission', 'id' => team_id, 'role_id' => role_id);
+
+  members_list = [];
+  FOREACH m IN members;
+    members_list.push({name = m.name, href = uri_mk(uri(code => 'account.id', id => m.id).req)});
+  END;
+
+  perm_list = [];
+  FOREACH p IN permissions;
+    perm_list.push({name = p.name});
+  END;
+  
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id;
+
+  well_begin;
+    role.anno;
+  well_end;
+
+  section_begin(header = l('Пользователи'), id = 'accounts');
+    row_begin;
+      well_begin;
+        ul(links = members_list);
+      well_end;
+    row_end;
+  section_end;
+
+  section_begin(header = l('Разрешения'), id = 'permissions');
+    row_begin;
+      well_begin;
+        ul(links = perm_list);
+      well_end;
+    row_end;
+  section_end;
+
+  section_begin(header = l('Подписки'), id = 'signups');
+    row_begin;
+      well_begin;
+        INCLUDE 'block/ev/role_signup.tt2', team_id = team_id, role_id = role.id;
+      well_end;
+    row_end;
+  section_end;
+
+%]

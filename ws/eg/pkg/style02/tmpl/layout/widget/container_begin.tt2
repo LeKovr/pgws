@@ -1,4 +1,7 @@
 [% META
-  description = 'контейнер начало'
+  description = 'контейнер начало';
+  '<div class="container';
+    class ? ' ' _ class _ '"' : '"';
+    id ? ' id="' _ id _ '"' : '';
+  '>';
 %]
-    <div class="container">

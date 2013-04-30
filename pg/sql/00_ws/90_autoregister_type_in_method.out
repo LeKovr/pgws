@@ -1,0 +1,41 @@
+SET
+CREATE DOMAIN
+CREATE DOMAIN
+CREATE DOMAIN
+ pg_c | pg_c | pg_c 
+------+------+------
+      |      | 
+
+CREATE TYPE
+CREATE TYPE
+ pg_c | pg_c | pg_c 
+------+------+------
+      |      | 
+
+ pg_c | pg_c | pg_c 
+------+------+------
+      |      | 
+
+CREATE FUNCTION
+INSERT 0 1
+        code        | parent_code | base_code | allow_null | def_val |               anno                | is_list | is_complex | is_sql 
+--------------------+-------------+-----------+------------+---------+-----------------------------------+---------+------------+--------
+ ws.d_test_3        | integer     | integer   | t          |         | Домен 3                           | f       | f          | f
+ ws.d_test_4        | text        | text      | t          |         | Домен 4                           | f       | f          | f
+ ws.d_test_5        | integer     | integer   | t          |         | Домен 5                           | f       | f          | f
+ ws.t_test_1        |             |           | t          |         | Тест автоудаления типов 1         | f       | t          | f
+ ws.z_dt_autodelete |             |           | t          |         | Aргументы метода ws.dt_autodelete | f       | t          | f
+
+      dt_code       | part_id | code | parent_code | base_code | allow_null | def_val |  anno  | is_list 
+--------------------+---------+------+-------------+-----------+------------+---------+--------+---------
+ ws.t_test_1        |       1 | _a   | ws.d_test_3 | integer   | t          |         | Кол. a | f
+ ws.t_test_1        |       2 | _b   | ws.d_test_4 | text      | t          |         | Кол. b | f
+ ws.z_dt_autodelete |       1 | inp  | ws.d_test_5 | integer   | f          |         |        | f
+
+DELETE 1
+ code | parent_code | base_code | allow_null | def_val | anno | is_list | is_complex | is_sql 
+------+-------------+-----------+------------+---------+------+---------+------------+--------
+
+ dt_code | part_id | code | parent_code | base_code | allow_null | def_val | anno | is_list 
+---------+---------+------+-------------+-----------+------------+---------+------+---------
+

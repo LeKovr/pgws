@@ -21,37 +21,56 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION prop_clean_pkg (a_pkg TEXT, a_wsd_clean BOOLEAN) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION prop_cleanup_pkg (a_pogc TEXT[]) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
 $_$
--- a_pkg: пакет для которого производится чистка
--- a_wsd_clean: признак удаления атрибутов свойств в схеме wsd
+-- a_pogc: владельцы удаляемых свойств
+  DECLARE
+    v_item TEXT;
   BEGIN
 
-    -- удаление списка свойств для пакета a_pkg
-    DELETE FROM cfg.prop WHERE pkg = $1;
-    UPDATE cfg.prop SET pogc_list = ws.array_remove(pogc_list::text[], $1) WHERE $1 = ANY(pogc_list);
+    FOREACH v_item IN ARRAY $1 LOOP
+      DELETE FROM cfg.prop WHERE v_item = ANY(pogc_list) AND array_length(pogc_list, 1) = 1;
+      UPDATE cfg.prop SET pogc_list = ws.array_remove(pogc_list::text[], v_item) WHERE v_item = ANY(pogc_list);
+    END LOOP;
 
-    -- удаление значений свойств и владельцев из схемы wsd
-    IF $2 THEN
-      DELETE FROM wsd.prop_value WHERE pkg = $1;
-      DELETE FROM wsd.prop_owner WHERE pkg = $1;
-      DELETE FROM wsd.prop_group WHERE pkg = $1;
-    END IF;
+    DELETE FROM cfg.prop_owner WHERE pogc = ANY($1);
+    DELETE FROM cfg.prop_group WHERE pogc = ANY($1);
 
   END
 $_$;
-SELECT pg_c('f', 'prop_clean_pkg', 'Удаление свойств для отдельного пакета');
+SELECT pg_c('f', 'prop_cleanup_pkg', 'Удаление владельцев и реестра свойств');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION prop_clean_value (a_prop_value TEXT) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION prop_cleanup_system_value_pkg (a_code TEXT[]) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
 $_$
--- a_prop_value: значение свойства
+-- a_code: коды удаляемых свойств
+  DECLARE
+    v_item TEXT;
   BEGIN
 
-    DELETE FROM wsd.prop_value WHERE code = $1;
+    FOREACH v_item IN ARRAY $1 LOOP
+      DELETE FROM cfg.prop WHERE code = v_item;
+      DELETE FROM wsd.prop_value WHERE code ~ ws.mask2regexp(v_item::TEXT);
+    END LOOP;
 
   END
 $_$;
-SELECT pg_c('f', 'prop_clean_value', 'Удаление значения свойства');
+SELECT pg_c('f', 'prop_cleanup_system_value_pkg', 'Удаление системных свойств пакета');
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION prop_drop_pkg (a_pogc TEXT[], a_code TEXT DEFAULT NULL) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+-- a_pogc: владельцы удаляемых свойств
+-- a_code: код свойства
+  BEGIN
+
+    DELETE FROM wsd.prop_value
+      WHERE pogc IN (SELECT pogc FROM cfg.prop_group WHERE pogc = ANY($1))
+        AND code = COALESCE($2, code)
+    ;
+
+  END
+$_$;
+SELECT pg_c('f', 'prop_drop_pkg', 'Удаление значениий не системных свойств пакета');
 
 /* ------------------------------------------------------------------------- */
+

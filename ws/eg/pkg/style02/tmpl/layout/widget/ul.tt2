@@ -1,29 +1,55 @@
 [% META
   description = 'тэг ul'
-%]
+%][%
+#  USE dumper(indent=1, pad="  ");
+#  '<!-- '; dumper.dump(links); '-->';
 
-<ul class="[% class %]">
-  [% FOR l IN links; 
-    IF l.active %]
-      <li class="active [% l.class %]"><a class="[% l.classLink %]" href="[% l.htef %]" [% l.linkparam %] >[% l.name %]</a>[% l.content %]</li>
-    [% ELSE; %]
-      <li class="[% l.class %]"><a class="[% l.classLink %]" href="[% l.href %]" [% l.linkparam %][% IF l.rel; ' rel="' _ l.rel _ '"'; END %]>[% l.name %]</a>[% l.content %]</li>
-    [% END; %]	
-  [% END; %]
-</ul>
+  '<ul';
+  class ? ' class="' _ class _ '"' : ''; 
+  ">\n";
+  FOR l IN links; 
+    %]  <li[%
+    IF l.active 
+      %] class="active [% l.class %]"[%
+    ELSIF l.disabled 
+      %] class="disabled [% l.class %]"[%
+    ELSE; 
+      l.class ? ' class="' _ l.class _ '"' : '';
+    END;
+    '>';
+    IF l.name;
+      IF l.href;
+        %]<a[% 
+          l.classLink ? ' class="' _ l.classLink _ '"' : '';
+          l.href      ? ' href="' _ l.href _ '"' : '';
+          l.rel       ? ' rel="' _ l.rel _ '"' : '';
+          l.linkparam ? ' ' _ l.linkparam : '';
+          %]>[% l.name %]</a>[%
+      ELSE;
+        l.name;
+      END;
+    END;
+    IF l.childs.size;
+      "\n"; ul(class = l.classUl, links = l.childs);   
+    END;
+    l.content;
+    %]</li>
+    [%
+    "\n";
+  END; 
+  "</ul>\n";
 
-
-  [%# example
-#	ul(
-#		class - класс
-#		links - массив элементов
-#			links.active - '1' выбранный пункт
-#			links.class - css класс для  тэга <li/>
-#			links.classLink - css класс для тэга <a/>
-#			links.href - ссылка
-#			links.linkparam - дополнительные параметры
-#			links.name - имя пункта
-#			links.content - дополнительное содержимое тэга <li/> наример для вложенных списков
-#		
-#	); 
+# example
+#  ul(
+#    class - класс
+#    links - массив элементов
+#      links.active - '1' выбранный пункт
+#      links.class - css класс для  тэга <li/>
+#      links.classLink - css класс для тэга <a/>
+#      links.href - ссылка
+#      links.linkparam - дополнительные параметры
+#      links.name - имя пункта
+#      links.content - дополнительное содержимое тэга <li/> наример для вложенных списков
+#      links.childs - массив UL, вложенного в текущий LI
+#  ); 
 %]

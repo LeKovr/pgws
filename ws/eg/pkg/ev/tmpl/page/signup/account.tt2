@@ -1,0 +1,55 @@
+[% META
+  description = 'Подписки пользователя на уведомления';
+  meta.todo.${template.name} = BLOCK %]
+   таблица - список видов событий и флаг наличия подписки (ролевой и индивидуальной)<br/>
+  В будущем добавим период уведомления (сразу/ежедневно) и контакт (почта/смс) 
+  [% END;
+
+  account_id = page.args.0;
+  team_id = get.item('team_id');
+  team_id = team_id ? team_id : 0;
+
+  teams = api('account.team', id => account_id);
+
+  teams_opt = [];
+  FOREACH t IN teams;
+    IF ((team_id > 0) && (t.team_id == team_id)) || (t.is_default) ;
+      team_id = t.team_id;
+      opt = {value=t.team_id, text=t.team_name _ " - " _ t.role_name, selected=1};
+    ELSE; 
+      opt = {value=t.team_id, text=t.team_name _ " - " _ t.role_name};
+    END;
+    teams_opt.push(opt);
+  END;
+
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = account_id, active_code = page.code;
+
+  IF teams_opt.size > 1;
+  row_begin;
+    div_begin(class='form-horizontal');
+      %]<form>[%
+          controlGroup_begin(label = l('Команда'));
+            select(options = teams_opt, id='team_id', class='span3');
+            btn(name='Выбрать',onclick='changeRows()');
+        controlGroup_end;
+     %]</form>[%
+    div_end;
+  row_end;
+  END;
+
+  signups = api( 'account.signup', id => account_id, team_id => team_id );
+   FOR row IN signups;
+      IF loop.first;
+        table_begin(class='table-bordered table-striped table-hover');
+        tr(list = [ l('Группа'), l('Событие'), l('Активна'), l('Персональная'), l('Спецификация'), l('Изменить')], use_th = 1, thead = 1);
+      END;
+      is_on = row.is_on ? l('Да') : l('Нет');
+      is_own = row.is_own ? l('Да') : l('Нет');
+      tr(list = [row.group_name, row.kind_name, is_on, is_own, row.spec_id,
+        input(type='checkbox', checked = row.is_on, disabled = 1)]);
+      IF loop.last;
+        table_end(tbody=1);
+      END;
+    END;  
+  # USE dumper(indent=1, pad="  "); '<!-- ' _ dumper.dump(signups) _ ' -->';
+%]

@@ -1,0 +1,158 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Список компаний';
+#  meta.nosiblings = 1;
+#  meta.head.api = 1;
+#  meta.head.autocomplete = 1;
+#  meta.html_headers.push('/css/acc/common.css');
+
+  by = get.item('by');
+  pageNo = get.item('page');
+  name = get.item('name');
+  name = name ? name : '' ;
+  by = by ? by : 20;
+  pageNo = pageNo ? pageNo : 0;
+  teams = api('team.lookup', by => by, page => pageNo, name => name, need_rc = 1);
+
+  # формирование ссылок в tt2
+  options = [];
+  codeArg = name ? "name=$name&" : '';
+  FOR o IN [20, 50, 100];
+    link = { href = uri_mk(page.req, codeArg _ 'by=' _ o), name = o };
+    IF o == by;
+      link.class = 'disabled';
+    END;
+    options.push(link);
+  END;
+
+# ========================================================= #
+# Page layout
+# ========================================================= #
+%]<div class='form-horizontal'>[%
+  "<form action='$page.req'>";
+  input(type='hidden', name='by',value="$by");
+  controlGroup_begin(label='Поиск компании');
+  input(id='autoc', name='name' ,value=name);
+  btn(name='Показать',type='submit');
+
+  controlGroup_end;
+  "</form>";
+
+  IF teams.rows.size;
+    uldoplist= ul(class='dropdown-menu', links= options);
+    ul(class='nav nav-pills', links=[
+      {href='#', class='dropdown', classLink='dropdown-toggle', linkparam='data-toggle=\'dropdown\'', name='Количество строк <b class=\'caret\'></b>', content=uldoplist},
+    ]); 
+  
+    table_begin(class='table-bordered table-striped');
+      tr(list = ['Название', 'Город', 'Статус', 'Дата регистрации'], use_th=1, thead=1);
+      FOREACH t IN teams.rows;
+        href = uri_mk(uri(code => 'team.id', id => t.id).req);
+        tr(list=["<a href='$href'>$t.name</a>", t.city, t.status_name, t.registration_date]);
+      END;
+    table_end(tbody=1);
+    INCLUDE "block/$TMPL_LAYOUT/pager.tt2", pageNo = pageNo, count = teams.need_rc, by = by, hrefName = page.req _ '?name=' _ name _ '&';
+  ELSE;
+    alert_begin(class="block");
+    p(text=l("По заданным параметрам поиска команда не найдена"));
+    alert_end;
+  END;
+%]</div>[%
+  
+meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+//<![CDATA[
+
+/*******************************************************************************/
+//АВТОКОМПЛИТ
+//Для кеширования результатов вызовов списка методов и детализации по методу
+  PWL_cache={method_li:{},method_detail:{}} ;;
+
+$(document).ready(function(){
+  //Опции для autocomplete
+  $( "#autoc" ).typeahead({
+    source: function( request, response ) {
+      $.ajax({
+        url: "[% req.prefix %]/_team.lookup.json",
+        dataType: "json",
+        data: {
+          name: request,
+          by: 20
+        },
+        success: function( data ) {
+          if(typeof data.result.data != 'undefined'){
+      var dataArray = new Array();
+            $.map( data.result.data, function(item) {
+               var group = {
+      id: item.name,
+      name: item.name
+    };
+              dataArray.push(group);
+            });
+            response(dataArray);
+          }
+        }
+      });
+    },
+    matcher: function (item) {
+      if (item.name.toLowerCase().indexOf(this.query.trim().toLowerCase()) != -1) {
+    return true;
+  }
+    },
+    sorter: function (items) {
+      return items.sort();
+    },
+    highlighter: function (item) {
+      var regex = new RegExp( '(' + this.query + ')', 'gi' );
+      label = item.name;
+      return label.replace( regex, "<strong>$1</strong>" );
+    },
+    items: 9999
+  });
+});
+$.fn.typeahead.Constructor.prototype.render = function(items) {
+     var that = this
+ 
+     items = $(items).map(function (i, item) {
+       i = $(that.options.item).attr('data-value', item.id)
+       i.find('a').html(that.highlighter(item))
+       return i[0]
+     })
+ 
+     this.$menu.html(items)
+     return this
+};
+$.fn.typeahead.Constructor.prototype.next = function (event) {
+  var active = this.$menu.find('.active').removeClass('active');
+  next = active.next();
+  if (!next.length) {
+    next = $(this.$menu.find('li')[0]);
+  }
+  next.addClass('active');
+  $(this.$element).val($(next).attr('data-value'));
+};
+$.fn.typeahead.Constructor.prototype.prev = function (event) {
+  var active = this.$menu.find('.active').removeClass('active')
+   , prev = active.prev()
+   if (!prev.length) {
+    prev = this.$menu.find('li').last()
+   }
+  prev.addClass('active')
+  $(this.$element).val($(prev).attr('data-value'));
+};
+$.fn.typeahead.Constructor.prototype.select = function() {
+  this.hide();
+};
+$.fn.typeahead.Constructor.prototype.click = function(e) {
+  var active = this.$menu.find('.active').removeClass('active')
+  $(this.$element).val($(active).attr('data-value'));
+  this.hide();
+};
+var filtr = function(){
+  alert(123);
+};
+//]]>
+</script>
+[% END; # BLOCK
+%]

@@ -30,7 +30,7 @@ SELECT pg_c('f', 'status', 'Статус вики');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION acl(a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'sql' AS
 $_$
-  SELECT * FROM acc.object_acl(wiki.const_class_id(), $1, $2)
+  SELECT * FROM acc.object_acl(wiki.const_class_id(), $1, $2);
 $_$;
 SELECT pg_c('f', 'acl', 'ACL вики');
 
@@ -109,12 +109,63 @@ $_$;
 SELECT pg_c('f', 'keyword_by_name', 'список ключевых слов wiki, содержащих строку string');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION doc_create_acc (
+  a_account_id  ws.d_id
+  , a_id        ws.d_id
+  , a_code      ws.d_path DEFAULT ''
+  , a_is_online bool      DEFAULT FALSE
+  , a_name      text      DEFAULT ''
+  , a_src       text      DEFAULT ''
+  , a_links     d_links   DEFAULT NULL
+  , a_anno      text      DEFAULT ''
+  , a_toc       text      DEFAULT ''
+  ) RETURNS d_id LANGUAGE 'plpgsql' AS
+$_$
+  -- a_account_id ID пользователя
+  -- a_id:        ID wiki
+  -- a_code:      Код статьи
+  -- a_src:       Текст в разметке wiki
+  -- a_name:      Название
+  -- a links:     Список внешних ссылок
+  -- a_anno:      Аннотация
+  -- a toc:       Содержание
+  DECLARE
+    v_doc_id ws.d_id;
+    v_status ws.d_id32;
+  BEGIN
+    SELECT INTO v_doc_id
+      id
+      FROM wsd.doc
+      WHERE group_id = a_id
+        AND code = a_code
+    ;
+    IF FOUND THEN
+      RAISE EXCEPTION '%', ws.error_str(wiki.const_error_codeexists(), v_doc_id::text);
+    END IF;
+    v_status := CASE WHEN a_is_online THEN 
+      wiki.const_doc_status_id_online()
+    ELSE 
+      wiki.const_doc_status_id_draft()
+    END;
+    INSERT INTO wsd.doc (group_id, status_id, code, created_by, updated_by, name, src)
+      VALUES (a_id, v_status, a_code, a_account_id, a_account_id, a_name, a_src)
+      RETURNING id INTO v_doc_id
+    ;
+
+    PERFORM wiki.doc_update_extra_acc(a_account_id, v_doc_id, a_links, a_anno, a_toc);
+
+    RETURN v_doc_id;
+  END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION doc_create (
   a__sid        text
   , a_id        ws.d_id
   , a_code      ws.d_path DEFAULT ''
-  , a_src       text      DEFAULT ''
+  , a_is_online bool      DEFAULT FALSE
   , a_name      text      DEFAULT ''
+  , a_src       text      DEFAULT ''
   , a_links     d_links   DEFAULT NULL
   , a_anno      text      DEFAULT ''
   , a_toc       text      DEFAULT ''
@@ -130,31 +181,28 @@ $_$
   -- a toc:       Содержание
   DECLARE
     v_account_id ws.d_id;
-    v_doc_id ws.d_id;
   BEGIN
-    v_account_id := (acc.profile(a__sid)).id;
+    v_account_id := acc.sid_account_id(a__sid);
     IF v_account_id IS NULL THEN
       RAISE EXCEPTION 'unknown account'; -- TODO: ERRORCODE from acc.
     END IF;
-
-    SELECT INTO v_doc_id
-      id
-      FROM wsd.doc
-      WHERE group_id = a_id
-        AND code = a_code
-    ;
-    IF FOUND THEN
-      RAISE EXCEPTION '%', ws.error_str(wiki.const_error_codeexists(), v_doc_id::text);
-    END IF;
-
-    INSERT INTO wsd.doc (group_id, status_id, code, created_by, updated_by, name, src)
-      VALUES (a_id, wiki.const_doc_status_id_draft(), a_code, v_account_id, v_account_id, a_name, a_src)
-      RETURNING id INTO v_doc_id
-    ;
-
-    PERFORM wiki.doc_update_extra(a__sid, v_doc_id, a_links, a_anno, a_toc);
-
-    RETURN v_doc_id;
+    RETURN wiki.doc_create_acc(v_account_id, a_id, a_code, a_is_online, a_name, a_src, a_links, a_anno, a_toc);
   END;
 $_$;
 SELECT pg_c('f', 'doc_create', 'Создание документа');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION link_id(a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS acc.d_link IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT acc.const_link_id_other(); -- у группы статей нет владельца (есть только у статей)
+$_$;
+SELECT pg_c('f', 'link_id', 'Расчет связи wiki с пользователем');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION team_id(a_id d_id) RETURNS SETOF d_id STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT team_id::ws.d_id FROM wsd.doc_group WHERE id = $1;
+$_$;
+SELECT pg_c('f', 'team_id', 'Команда владелец wiki');
+
+/* ------------------------------------------------------------------------- */

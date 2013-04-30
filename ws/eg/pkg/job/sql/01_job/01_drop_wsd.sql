@@ -31,4 +31,8 @@ DROP TABLE wsd.job;
 DROP SEQUENCE wsd.job_seq;
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';
+SELECT cfg.prop_drop_pkg(ARRAY[job.const_job_group_prop()]);
+
+
+
+

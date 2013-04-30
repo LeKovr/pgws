@@ -44,3 +44,14 @@ CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON page_data
 CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON method
   FOR EACH ROW EXECUTE PROCEDURE method_insupd_trigger()
 ;
+
+/* ------------------------------------------------------------------------- */
+ CREATE TRIGGER del AFTER DELETE ON method
+  FOR EACH ROW EXECUTE PROCEDURE method_del_trigger()
+;
+
+/* ------------------------------------------------------------------------- */
+ CREATE TRIGGER del BEFORE DELETE ON dt_part
+  FOR EACH ROW EXECUTE PROCEDURE dt_part_del_trigger()
+;
+

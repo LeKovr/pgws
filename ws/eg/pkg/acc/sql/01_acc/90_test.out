@@ -1,22 +1,17 @@
-          test           
--------------------------
-  ***** role_const *****
-
- id | level_id | has_team | name  | anno 
-----+----------+----------+-------+------
-  1 |        1 | f        | Guest | 
-
- id | level_id | has_team |   name    | anno 
-----+----------+----------+-----------+------
-  2 |        1 | f        | Logged in | 
-
         test        
 --------------------
   ***** login *****
 
-    ip     | status_id | account_id | role_id | account_name | role_name 
------------+-----------+------------+---------+--------------+-----------
- 127.0.0.1 |         4 |          1 |       4 | Admin        | Admins
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+ team_account_add 
+------------------
+ t
+
+    ip     | status_id | role_id | account_name | role_name 
+-----------+-----------+---------+--------------+-----------
+ 127.0.0.1 |         1 |      -1 | Admin        | Admins
 
          test         
 ----------------------
@@ -30,9 +25,9 @@
 ----------------------
   ***** profile *****
 
- id | status_id | login | psw | name  | status_name 
-----+-----------+-------+-----+-------+-------------
-  1 |         4 | admin | *** | Admin | Активен
+ sid_account_id 
+----------------
+             -1
 
         test         
 ---------------------
@@ -41,4 +36,32 @@
  logout 
 --------
       1
+
+ team_account_del 
+------------------
+ t
+
+           test            
+---------------------------
+  ***** registration *****
+
+ status_id | login | psw | name | is_psw_plain | is_ip_checked 
+-----------+-------+-----+------+--------------+---------------
+
+INSERT 0 1
+ prop_value_edit 
+-----------------
+ t
+
+ prop_value_edit 
+-----------------
+ t
+
+ prop_value_edit 
+-----------------
+ t
+
+ status_id |  login   |     name     | is_psw_plain | is_ip_checked 
+-----------+----------+--------------+--------------+---------------
+         1 | reg_test | registration | t            | t
 

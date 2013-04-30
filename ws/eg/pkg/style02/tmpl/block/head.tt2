@@ -1,23 +1,29 @@
 [%
   meta.top_headers = [];
-  IF resp.css.current == 'default';
-    meta.top_headers.push(
-      "/css/$TMPL_LAYOUT/bootstrap.pgws.css"
-    );
-  ELSE;
-    meta.top_headers.push(
-      "/css/external/skin/${resp.css.current}.css"
-    );
-  END;
+  %]
+[%
+  master_css = session.css_tag # пользователь авторизован и задал скин в настройках
+    ? "/css/external/skin/${session.css_tag}.css"
+    : '/css/external/skin.css'
+  ;
   meta.top_headers.push(
-    "/js/external/core/jquery-1.7.2.js"
+    "$master_css"
+    "/css/$TMPL_LAYOUT/bootstrap.pgws.css"
     "/js/external/core/bootstrap.js"
    );
+  meta.head.jquery = 1;
+  # для переключения стилей на любой странице
+  meta.head.cookie = 1;
 
   INCLUDE "block/$BASE_LAYOUT/head_deps.tt2";
 
 %]
 <link href="/img/[% BASE_LAYOUT %]/favicon.ico?19721023"     rel="shortcut icon" />
+<script type="text/javascript">
+//<![CDATA[
+  if (window.PGWS === undefined) { window.PGWS = {}; }
+//]]>
+</script>
 [%
   FOREACH i IN meta.head;
     INCLUDE "block/$BASE_LAYOUT/head/${i.key}.tt2";
@@ -27,9 +33,10 @@
     v = h.split(' ');
     href = v.0;
     NEXT IF temp.exists(href);
+    NEXT IF h.search('\.js'); # подключаем внизу
     temp.$href = 1;
     lng = v.1 ? " charset=\"$v.1\"" : '';
-    f=(h.search('\.css') ? '<link  id="switch_style" href=%-60s type="text/css" rel="stylesheet" />' : '<script src=%-60s type="text/javascript"'_ lng _'></script>') _ "\n";
+    f=(h.search('\.css') ? '<link href=%-60s type="text/css" rel="stylesheet" />' : '<script src=%-60s type="text/javascript"'_ lng _'></script>') _ "\n";
     FILTER format(f); '"' _ href _ '"'; END;
   END;
 

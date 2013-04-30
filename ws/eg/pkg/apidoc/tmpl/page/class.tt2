@@ -3,6 +3,7 @@
 # This file is part of PGWS - Postgresql WebServices.
   description = 'Описание классов';
 
+  resp.skin = 'wide'; # страница на всю ширину
   PROCESS 'macro/tableform.tt2';
   class_id = page.args.0 || 0;
   data = api('ws.class:7', id => class_id);
@@ -18,20 +19,27 @@
     dumper.dump({pages => pages, tree => tree});
     %]<pre>[%
   END;
-
-  IF !class_id;
-    FOR d IN data;
-      IF loop.first; '<ul>'; END;
-      %]<li><a href='#[% d.code %]'>[% d.id %]. [% d.name %]</a></li>[%
-      IF loop.last; '</ul>'; END;
-    END;
-  END;
 %]
 <style type="text/css">
   a.name { text-decoration: none; }
   .short { width: 25%; }
+  .container {width:70%;}
 </style>
 [%
+container_begin;
+  ulLinks = [];
+  IF !class_id;
+    FOR d IN data;
+      ulLinks.push({name = d.id _ '. ' _ d.name, href = '#' _ d.code});
+    END;
+  END;
+  row_begin;
+    div_begin(size=4);
+      well_begin;
+	ul(links = ulLinks);
+      well_end;
+    div_end;
+  row_end;
 FOR d IN data;
   tableform_begin(name = d.code, value = d.id _ '. ' _ d.name);
 
@@ -43,16 +51,12 @@ FOR d IN data;
   st_rows = api('ws.class_status:7', 'class_id' => d.id);
   acl_rows = api('ws.class_acl:7', 'class_id' => d.id);
 
-  %]<h3><a name='[% d.code %]-action' class="name">[% l('Акции') %]</a></h3>[%
+  h(type=3, text='<a name=' _ d.code _ '-action class="name" href="#' _ d.code _ '-action">Акции</a>');
+  li = [];
   FOR r IN ca_rows;
-    IF loop.first;
-      %]<ul>[%
-    END;
-    %]<li><a href="#[% d.code %]-action-[% r.id %]">[% d.id _ '.' _ r.id _ '. ' _ r.name %]</a></li>[%
-    IF loop.last
-      %]</ul>[%
-    END;
+    li.push(href='#' _ d.code _ '-action-' _ r.id, name=d.id _ '.' _ r.id _ '. ' _ r.name);
   END;
+  ul(links=li);
   lcount=0;
   FOR ra IN ca_rows;
     csaa_rows = api('ws.class_status_action_acl:7', 'class_id' => d.id, 'action_id' => ra.id);
@@ -64,56 +68,59 @@ FOR d IN data;
         table.${r1.acl_id}.${r1.status_id} = 1;
       END;
     END;
-    %]<h4><a name='[% d.code %]-action-[% ra.id %]' class="name">[% d.id _ '.' _ ra.id _ '. ' _ ra.name %]</a></h4>[%
+    h(type=4,text='<a name=' _ d.code _ '-action-' _ ra.id _ ' class="name"  href="#' _ d.code _ '-action-' _ ra.id _ '">' _ d.id _ '.' _ ra.id _ '. ' _ ra.name _ '</a>');
+    table_begin(class = 'table-striped table-bordered');
+    td=[];
+    widthL=['25%'];
+    td.push('Уровень доступа \ Статус');
     FOR r IN acl_rows;
       IF loop.first;
-        %]<table class="baseTable"><tr><th class="short">[% l('Уровень доступа') _ ' \ ' _ l('Статус')%]</th>[%
         FOR s IN st_rows;
-          %]<th align="center">[% s.id _ '. ' _ s.name %]</th>[%
+          td.push(s.id _ '. ' _ s.name);
         END;
-        %]</tr>[%
+        tr(list=td, use_th=1, widthL=widthL, thead=1);
       END;
+      td = [];
  IF table.${r.id};
-      %]<tr class="[% IF lcount; 'even'; ELSE; 'odd'; END %]"><td>[% r.id _ '. ' _ r.name %]</td>[%
+      td.push(r.id _ '. ' _ r.name);
       FOR s IN st_rows;
-        %]<td align="center">[%
+        temp = ' ';
         IF table.${r.id}.${s.id} == 1;
-          'x';
+          temp = 'x';
         ELSIF table.${r.id}.${s.id} == 2;
-          '+';
+          temp = '+';
         END;
-        %]</td>[%
+        td.push(temp);
       END;
-      %]</tr>[%
+      tr(list = td);
       lcount = 1 - lcount;
 
   END;
-     IF loop.last
-        %]</table>[%
+     IF loop.last;
+        table_end;
       END;
     END;
 
     page_rows = api('ws.page_by_action:7', 'class_id' => d.id, 'action_id' => ra.id);
+    li=[];
     FOR p IN page_rows;
       IF loop.first;
-        %]<h5><a name='[% d.code %]-pages' class="name">[% l('Страницы') %]</a></h5><ul>[%
+        h(type=5, text='<a name=' _ d.code _ '-pages class="name" href="#' _ d.code _ '-pages">Страницы</a>');
       END;
-      %]<li><a href='[% uri_mk(u_page.req, undef, p.code) %]'>[% p.code _ ' - ' _ p.name %]</a></li>[%
-      IF loop.last
-        %]</ul>[%
-      END;
+      li.push(href=uri_mk(u_page.req, undef, p.code), name=p.code, content = ' - ' _ p.name);
     END;
+    ul(links = li);
 
     mtd_rows = api('ws.method_by_action', 'class_id' => d.id, 'action_id' => ra.id);
+    li=[];
     FOR p IN mtd_rows;
       IF loop.first;
-        %]<h5><a name='[% d.code %]-mathods' class="name">[% l('Методы') %]</a></h5><ul>[%
+        h(type=5, text='<a name=' _ d.code _ '-methods class="name" href="#' _ d.code _ '-methods">Методы</a>');
       END;
-      %]<li><a href='[% uri_mk(u_mtd.req, undef, p.code) %]'>[% p.code _ ' - ' _ p.name %]</a></li>[%
-      IF loop.last
-        %]</ul>[%
-      END;
+      li.push(href=uri_mk(u_mtd.req, undef, p.code), name=p.code, content = ' - ' _ p.name);
     END;
+    ul(links = li);
   END;
 END;
+container_end;
 %]

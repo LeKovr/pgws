@@ -24,21 +24,23 @@
 
 DROP TABLE wsd.session;
 DROP TABLE wsd.account_contact;
-DROP TABLE wsd.account_role;
+DROP TABLE wsd.account_team;
 DROP TABLE wsd.account;
-DROP TABLE wsd.role_acl;
-DROP TABLE wsd.role_team;
+DROP TABLE wsd.role_permission;
+DROP TABLE wsd.permission_acl;
+DROP TABLE wsd.permission;
 DROP TABLE wsd.role;
 DROP TABLE wsd.team;
-DROP TABLE wsd.object_class_role;
-DROP TABLE wsd.class_role_acl;
-DROP TABLE wsd.class_role;
+
+/* ------------------------------------------------------------------------- */
 
 DROP SEQUENCE wsd.account_id_seq;
 DROP SEQUENCE wsd.session_id_seq;
 DROP SEQUENCE wsd.team_id_seq;
 DROP SEQUENCE wsd.role_id_seq;
-DROP SEQUENCE wsd.class_role_id_seq;
+DROP SEQUENCE wsd.permission_id_seq;
+
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.pkg_script_protected WHERE pkg = :'PKG';
+SELECT cfg.prop_drop_pkg(ARRAY[acc.const_team_group_prop(),acc.const_account_group_prop()]);
+

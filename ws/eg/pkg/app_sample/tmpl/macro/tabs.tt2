@@ -1,10 +1,10 @@
 [% META
   description = 'Таблица имя-значение';
-
 mc = 'layout/' _ BASE_LAYOUT _ '/widget';
+mc2 = 'layout/' _ TMPL_LAYOUT _ '/widget';
 
 meta.head.tabs = 1;
-MACRO tabs_begin INCLUDE "$mc/tabs_begin.tt2";
+MACRO tabs_begin INCLUDE "$mc2/tabs_begin.tt2";
 MACRO tabs_end   INCLUDE "$mc/tabs_end.tt2";
 
 %]

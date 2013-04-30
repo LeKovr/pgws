@@ -1,0 +1,98 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Подключаемый блок загрузки файлов';
+
+# Аргументы:
+# obj_id - ID родительского документа
+# list_method - метод получения списка файлов
+
+%][%
+  meta.head.upload = 1;
+
+%]
+
+<div id='upload_form_template' class='hide span9'>
+  <div class='prepare'>
+    <form method='POST'>
+      <input type='hidden' name='id' value='[% obj_id; %]'>
+      <input type='file' class='inputFile' name='name' >
+      <input type='submit' class='hide' value='[% l('Отправить') %]'>
+    </form>
+  </div>
+  <span class='label span3'></span>
+  <div class='process hide span9'>
+      <div class='progressbarDiv'>
+        <div class='ui-progressbar-label'><span class='pb-percent offset1'></span><span>%. [% l('Осталось') %]: </span><span class='pb-sec'></span><span> [% l('сек')%]</span></div>
+      </div>
+      <input type='button' class='btnReset' value='[% l('Отменить') %]'>
+  </div>
+  <span class='status alert alert-info span2 hide'>
+  </span>
+</div>
+
+<div class="span9">
+  <div class="uploaded span4">
+[%
+  files = api(list_method, id => obj_id);
+  FOREACH f IN files;
+    %]<div class='fileDiv  span3'><a href="[% uri_mk(f.req) %]" >[% f.name %]</a> <a href='#' fileid='"[% f.id %]"' class='btnDelete close'>&times;</a><div class='deleteStatusError hide alert alert-error' ></div></div>[%
+  END
+%]
+  </div>
+</div>
+<div class="upload span9">
+  <input type='button' class='add' value='[% l('Загрузить файл') %]'>
+</div>
+[% meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+//<![CDATA[
+
+var deleteFileOptions = {
+  action:     '/_[% list_method %]_del.json',
+  id:         [% obj_id %],
+  prefix:     '[% req.prefix %]',
+  onSuccess:  function(self, obj){
+    $(obj).addClass('hide');
+  },
+  onError:    function(self, obj, mess){
+    $(obj).find(self.options.classErrorMessage).show();
+    $(obj).find(self.options.classErrorMessage).text(mess);
+  }
+};
+
+var onSuccess = function(container, response){
+  if (response.success === "true") {
+    var file = response.result.data;
+    $('.uploaded').append('<div class=\'fileDiv span3\'><a href="[% req.prefix %]/' + file.req + '">' + file.name + '</a> <a href="#" fileid="' + file.id + '" class="btnDelete close">&times;</a><div class="deleteStatusError alert alert-error hide" ></div></div>')
+    container.find('.status').show();
+    container.find('.status').text("[% l('Файл загружен') %]");
+    $('.btnDelete').deleteFile(deleteFileOptions);
+  } else {
+    var error = response.result.error[0].message;
+    container.find('.status').show();
+    container.find('.status').text(error);
+  }
+};
+
+var onError = function(container, jqXHR, textStatus, errorThrown){
+  if (jqXHR.status === 413){
+    $(container).find('.status').show();
+    $(container).find('.status').text("[% l('Размер файла больше допустимого') %]");
+  }
+};
+
+// ----------------------------------------------------------------------------
+$(document).ready(function(){
+  $('.upload').formFieldUpload({
+   action:      '/upload/_[% list_method %]_add.json'
+  , template:   '#upload_form_template'
+  , onSuccess:  onSuccess
+  , onError:    onError
+  });
+  $('.btnDelete').deleteFile(deleteFileOptions);
+});
+
+//]]>
+</script>
+[% END; # BLOCK %]

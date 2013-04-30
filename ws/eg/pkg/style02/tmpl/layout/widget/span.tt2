@@ -2,11 +2,12 @@
   description = 'тэг span'
 %]
 
-<span [% class ? 'class=' _ class _ '':''; %]>[% text %]</span>
+<span[% class ? ' class="' _ class _ '"':''; id ? ' id="' _ id _ '"' : '' ; %]>[% text %]</span>
 
 [%#example
-#   span(
-#     class - css стиль
-#     text - содержимое  
-#    );
+#  span(
+#    class - css стиль
+#    text - содержимое  
+#    id - id-шник элемента
+#  );
 %]

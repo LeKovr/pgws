@@ -22,8 +22,13 @@
 
 /* ------------------------------------------------------------------------- */
 DELETE FROM ws.method                WHERE pkg = :'PKG';
+DELETE FROM job.handler              WHERE pkg = :'PKG';
 
-ALTER TABLE wsd.event DROP CONSTRAINT IF EXISTS event_fk_status_id;
+-- ALTER TABLE wsd.event DROP CONSTRAINT IF EXISTS event_fk_status_id;
+
+
+DELETE FROM wsd.event_signup; -- TODO: разбирать fkey на wsd.event_role_signup
+DELETE FROM wsd.event_role_signup;
 
 -- DROP TRIGGER IF EXISTS notify_oninsert ON wsd.event;
 -- DROP TRIGGER IF EXISTS notify_onupdate ON wsd.event;

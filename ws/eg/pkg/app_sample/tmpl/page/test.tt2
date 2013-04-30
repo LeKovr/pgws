@@ -1,15 +1,36 @@
 [% META
   description = 'Страница примеров использования';
 %]
-
-
 <h2>Example 0</h2>
   API in template (sum at frontend):<br> 3+2=([% api('info.add',a => 3, b => 2) %])
 <h2>Example 1</h2>
-  API test: [% INCLUDE block/app_sample/example1.tt2 %]
+  [% INCLUDE block/app_sample/example1.tt2 %]
 <h2>Example 2</h2>
   [% INCLUDE block/app_sample/example2.tt2 %]
 <h2>Example 3</h2>
-  Page by code: [% INCLUDE block/app_sample/example3.tt2 %]
+  [% INCLUDE block/app_sample/example3.tt2 %]
 <hr>
-  Status:<p id="status" style="height:20px"></p>
+[% meta.js.${meta.js.size} = BLOCK %]
+   
+<script type="text/javascript">
+//<![CDATA[
+  successAlertBlocks = function(formid){
+    $(formid + '_result').removeClass('alert-error');
+    $(formid + '_result').addClass('alert-success');
+    $(formid + '_result').show();
+    $(formid + '_status').removeClass('alert-error');
+    $(formid + '_status').addClass('alert-success');
+    $(formid + '_status').show();
+  };
+  errorAlertBlocks = function(formid){
+    $(formid + '_result').removeClass('alert-success');
+    $(formid + '_result').addClass('alert-error');
+    $(formid + '_result').show();
+    $(formid + '_status').removeClass('alert-success');
+    $(formid + '_status').addClass('alert-error');
+    $(formid + '_status').show();
+  };
+//]]>
+</script>
+[% END; # BLOCK
+%]

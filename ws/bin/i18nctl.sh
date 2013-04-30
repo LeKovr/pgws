@@ -65,7 +65,7 @@ i18n_init() {
   # [ -f $BLD/$schema.sql ] || 
   { echo "Dumping $schema" ; . $DBCTL dump $schema ; }
   # [ -f $BLD/$schema.tpl ] || 
-  { echo "Prepare tpl" ; perl $BIN/quotedump4po.pl < $BLD/$schema.sql > $BLD/$schema.i18n ; }
+  { echo "Prepare tpl" ; perl $BIN/quotedump4po.pl < $BLD/dump-$schema.sql > $BLD/$schema.i18n ; }
 
   # Parse templates
   pushd $PGWS_ROOT > /dev/null

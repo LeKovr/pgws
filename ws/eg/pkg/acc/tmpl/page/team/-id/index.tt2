@@ -1,0 +1,31 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Страница компании';
+  meta.nosiblings = 1;
+  meta.head.api = 1;
+ # meta.html_headers.push('/css/acc/common.css');
+
+  team_id = page.args.0;
+  team_profile = api('team.profile', id => team_id);
+  resp.title =  page.name _ l(' &laquo;[_1]&raquo;', team_profile.name);
+
+  name_value = team_profile.name;
+
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", item = page, id = team_id;
+  
+  section_begin(header = 'Информация о команде', id = 'team');
+      h(type = 3, text = 'Название');
+        p(text=team_profile.name);
+      h(type = 3, text = 'Информация');
+        p(text=team_profile.anno);
+      h(type = 3, text = 'Город');
+        p(text=team_profile.city);
+  section_end();
+%]
+
+<script type="text/javascript">
+//<![CDATA[
+
+//]]>
+</script>

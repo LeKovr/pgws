@@ -31,19 +31,21 @@ SELECT pg_c('f', 'page_group_name', 'Название группы страни�
 CREATE OR REPLACE FUNCTION page_by_uri(a_uri TEXT DEFAULT '') RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
 $_$
   SELECT *
-    , $1
-    , ws.uri_args($1, uri_re)
+    , lower($1)
+    , ws.uri_args(lower($1), uri_re)
     , ws.page_group_name(group_id)
     FROM page WHERE $1 ~* ('^' || uri_re) ORDER BY uri_re DESC LIMIT 1;
 $_$;
 SELECT pg_c('f', 'page_by_uri', 'Атрибуты страницы по uri');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION page_by_code(a_code TEXT, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION page_by_code(a_code TEXT, a_id TEXT DEFAULT NULL
+, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL, a_id3 TEXT DEFAULT NULL
+) RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
 $_$
   SELECT *
-    , ws.sprintf(uri_fmt, $2, $3, $4)
-    , ws.uri_args(ws.sprintf(uri_fmt, $2, $3, $4), uri_re)
+    , ws.sprintf(uri_fmt, $2, $3, $4, $5)
+    , ws.uri_args(ws.sprintf(uri_fmt, $2, $3, $4, $5), uri_re)
     , ws.page_group_name(group_id)
     FROM page WHERE code LIKE $1 ORDER BY sort;
 $_$;
@@ -155,15 +157,54 @@ SELECT pg_c('f', 'method_by_action', 'Атрибуты страницы  по а
 CREATE INDEX company_title_like ON company (title text_pattern_ops);
 подходит только если не ilike или 1й символ не буква (only if the pattern starts with non-alphabetic characters)
 */
-CREATE OR REPLACE FUNCTION method_lookup(a_code d_code_like DEFAULT '%', a_page ws.d_cnt DEFAULT 0, a_by ws.d_cnt DEFAULT 0) RETURNS SETOF ws.method STABLE LANGUAGE 'sql' AS
+
+-- служебная ф-я для method_lookup - кастинг *
+CREATE OR REPLACE FUNCTION method_lookup_fetch(c_cursor REFCURSOR,  a_col TEXT) RETURNS SETOF ws.method STABLE LANGUAGE 'plperl' AS
+$_$ #
+while (defined (my $row = spi_fetchrow($_[0]))) {
+  delete $row->{$_[1]};
+  return_next($row);
+}
+return;
+$_$;
+
+CREATE OR REPLACE FUNCTION method_lookup(
+  a_code d_code_like DEFAULT '%'
+, a_page ws.d_cnt DEFAULT 0
+, a_by ws.d_cnt DEFAULT 0
+, a_need_rc REFCURSOR DEFAULT NULL
+) RETURNS SETOF ws.method STABLE LANGUAGE 'plpgsql' AS
 $_$
-  SELECT *
-    FROM ws.method
-    WHERE code ilike '%'||$1 -- ищем по всему имени
+  -- a_code:  фильтр по коду метода вида text[%]
+  -- a_page:  номер страницы (>= 0)
+  -- a_by:    количество строк на странице
+  -- a_need_rc: вернуть результат в хэше { need_rc =, rows =}, где need_rc - общее количество строк в выборке
+  DECLARE
+    v_rc REFCURSOR;
+    v_r RECORD;
+  BEGIN
+    OPEN v_rc FOR SELECT *, COUNT(1) OVER() AS _cnt
+      FROM ws.method
+      WHERE code ilike '%' || $1 -- ищем по всему имени
 --    WHERE lower(code) LIKE lower($1 ||'%') -- демоверсия поиска по началу с индексом
-  ORDER BY 2,3,1 -- code
-  OFFSET $2 * $3
-  LIMIT NULLIF($3, 0);
+      ORDER BY 2,3,1 -- code
+/*
+      -- Вариант от Ташпулатова Рустама
+      -- http://codeblow.com/questions/postgresql-parameterized-order-by-limit-in-table-function/
+      ORDER BY
+        CASE a_sort WHEN 1 THEN code END,
+        CASE a_sort WHEN 2 THEN name END
+*/
+      OFFSET $2 * $3
+      LIMIT NULLIF($3, 0)
+    ;
+    FETCH v_rc INTO v_r;
+    MOVE PRIOR FROM v_rc;
+    IF a_need_rc IS NOT NULL THEN
+      OPEN a_need_rc FOR EXECUTE 'SELECT ' || v_r._cnt;
+    END IF;
+    RETURN QUERY SELECT * from ws.method_lookup_fetch(v_rc, '_cnt');
+  END;
 $_$;
 SELECT ws.pg_c('f', 'method_lookup', 'Поиск метода по code');
 

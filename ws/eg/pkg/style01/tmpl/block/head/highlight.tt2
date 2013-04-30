@@ -1,3 +1,6 @@
-<script src="http://yandex.st/highlightjs/6.2/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
-
+[%
+  meta.top_headers.push(
+    "/js/external/addon/highlight.pack.js"
+    "/css/external/highlight/default.css"
+  );
+%]

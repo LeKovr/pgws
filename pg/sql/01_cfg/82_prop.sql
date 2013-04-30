@@ -38,7 +38,7 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.fcgi.frontend_poid',      ARRAY['fcgi'],              '1',      'POID настроек фронтенда')
 , ('ws.daemon.fcgi.core_poid',          ARRAY['fcgi'],              '1',      'POID настроек бэкенда')
 
-, ('ws.daemon.fe.tmpl.layout_default',  ARRAY['fe'],                'style01','Название макета страниц')
+, ('ws.daemon.fe.tmpl.layout_default',  ARRAY['fe'],                'style02','Название макета страниц')
 , ('ws.daemon.fe.tmpl.skin_default',    ARRAY['fe'],                'default','Название скина страниц')
 , ('ws.daemon.fe.tmpl.css.cookie',      ARRAY['fe'],                'PGWS_css','Название cookie для хранения названия css')
 , ('ws.daemon.fe.tmpl.css.default',     ARRAY['fe'],                'default','Название css страниц')
@@ -50,19 +50,18 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.fe.sid_arg',              ARRAY['fe'],                '',       'Если задан - брать ID сессии из этого аргумента запроса, а не из cookie')
 , ('ws.daemon.fe.error_500',            ARRAY['fe'],                '/error/','Адрес внешнего редиректа при фатальной ошибке PGWS')
 , ('ws.daemon.fe.site_is_hidden',       ARRAY['fe'],                '1',      'Не выводить внешние счетчики на страницах')
-, ('ws.daemon.fe.post.:u',              ARRAY['fe'],                '',       'Адрес, на который будут отправляться POST-запросы к PGWS')
 
-, ('ws.daemon.fe.def.sid',              ARRAY['fe'],                'acc.sid_info',   '')
-, ('ws.daemon.fe.def.login',            ARRAY['fe'],                'acc.login',  'Метод авторизации')
-, ('ws.daemon.fe.def.logout',           ARRAY['fe'],                'acc.logout', 'Метод завершения сессии')
+, ('ws.daemon.fe.def.sid',              ARRAY['fe'],                'account.sid_info',   'Метод получения информации о сессии')
+, ('ws.daemon.fe.def.login',            ARRAY['fe'],                'account.login',  'Метод авторизации')
+, ('ws.daemon.fe.def.logout',           ARRAY['fe'],                'account.logout', 'Метод завершения сессии')
 
 , ('ws.daemon.fe.def.acl',              ARRAY['fe'],                'info.acl_check', '')
-, ('ws.daemon.fe.def.uri',              ARRAY['fe'],                'ws.page_by_uri', '')
-, ('ws.daemon.fe.def.code',             ARRAY['fe'],                'ws.page_by_code','')
+, ('ws.daemon.fe.def.uri',              ARRAY['fe'],                'ws.page_by_uri', 'Метод получения страницы по URI')
+, ('ws.daemon.fe.def.code',             ARRAY['fe'],                'ws.page_by_code','Метод получения страницы по коду')
 
-, ('ws.daemon.fe.tmpl.ext',             ARRAY['fe'],                '.tt2',       '')
+, ('ws.daemon.fe.tmpl.ext',             ARRAY['fe'],                '.tt2',       'Расширение файлов шаблонов')
 
-, ('ws.daemon.fe.tmpl.error',           ARRAY['fe'],                'app/error', 'Шаблон страницы описаний ошибок')
+, ('ws.daemon.fe.tmpl.error',           ARRAY['fe'],                'app_sample/error', 'Шаблон страницы описаний ошибок')
 , ('ws.daemon.fe.tmpl.pages',           ARRAY['fe'],                'page/','Каталог шаблонов, вызываемых по GET-запросу')
 , ('ws.daemon.fe.tmpl.jobs',            ARRAY['fe'],                'job/', 'Каталог шаблонов, вызываемых из Job')
 
@@ -72,7 +71,7 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.be.nocache_prefix',       ARRAY['be'],                'nc:',   'Префикс запроса без проверки кэша')
 
 , ('ws.daemon.be.db_noacc_code',        ARRAY['be'],                '42501',   'Код ошибки БД при запрете доступа')
-, ('ws.daemon.be.acl_trigger',          ARRAY['be'],                'acc.log(in|out)',   'Regexp кодов методов меняющих ACL')
+, ('ws.daemon.be.acl_trigger',          ARRAY['be'],                'account.log(in|out)',   'Regexp кодов методов меняющих ACL')
 
 , ('ws.daemon.lang.sql.default',        ARRAY['be'],                'SET search_path TO i18n_def, public', 'Выбор языка по умолчанию')
 , ('ws.daemon.lang.sql.other',          ARRAY['be'],                'SET search_path TO i18n_%s, i18n_def, public', 'Выбор языка')
@@ -84,7 +83,7 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.be.def_method.rvf_id',    ARRAY['be'],                '3', '')
 
 , ('ws.daemon.be.def.class',            ARRAY['be'],                'ws.class', '')
-, ('ws.daemon.be.def.sid',              ARRAY['be'],                'acc.sid_info', '')
+, ('ws.daemon.be.def.sid',              ARRAY['be'],                'account.sid_info', '')
 , ('ws.daemon.be.def.err',              ARRAY['be'],                'ws.error_info', '')
 , ('ws.daemon.be.def.acl',              ARRAY['be'],                'info.acl_check', '')
 , ('ws.daemon.be.def.acl_eff',          ARRAY['be'],                'ws.acls_eff', '')
@@ -100,7 +99,7 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.be.plugin.:s.lib',        ARRAY['be'],                '',       'Пакет плагина')
 , ('ws.daemon.be.plugin.:s.pogc',       ARRAY['be'],                '',       'POGC настроек плагина (если используется)')
 , ('ws.daemon.be.plugin.:s.poid',       ARRAY['be'],                '',       'POID настроек плагина')
-, ('ws.daemon.be.plugin.:s.data_set', ARRAY['be'],                '',       'Сохранять дамп настроек плагина')
+, ('ws.daemon.be.plugin.:s.data_set',   ARRAY['be'],                '',       'Сохранять дамп настроек плагина')
 
 , ('ws.plugin.cache.code',              ARRAY['cache'],             '',       'Код кэша')
 , ('ws.plugin.cache.is_active',         ARRAY['cache'],             '1',      'Кэш включен')
@@ -114,24 +113,22 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.be.error.:s.data',        ARRAY['be'],                '', 'Аннотация ошибки JSON-RPC 2.0')
 
 , ('ws.daemon.log.encoding',                            ARRAY['be','fe'],             'UTF-8', 'Кодировка по умолчанию')
-, ('ws.daemon.log.default_level',                       ARRAY['be','fe'],             '3', 'Уровень отладки по умолчанию')
-, ('ws.daemon.log.syslog.default.(default,init,cache)', ARRAY['be'],                  '3', 'Уровень отладки запросов инициализации ядра')
+, ('ws.daemon.log.default_level',                       ARRAY['be','fe'],             '3', 'Уровень детализации по умолчанию')
+, ('ws.daemon.log.syslog.default.(default,init,cache)', ARRAY['be'],                  '3', 'Уровень детализации в файле для запросов инициализации ядра')
 
-, ('ws.daemon.log.syslog.default.(default,call,sid,acl,cache,validate)',ARRAY['fe'],  '3', 'Уровень отладки запросов POST')
-, ('ws.daemon.log.syslog.post.(default,call,sid,acl,cache,validate)',   ARRAY['fe'],  '3', 'Уровень отладки запросов POST')
-, ('ws.daemon.log.syslog.get.(default,call,sid,acl,cache,validate)',    ARRAY['fe'],  '3', 'Уровень отладки запросов GET')
-, ('ws.daemon.log.syslog.tmpl.(default,call,sid,acl,cache,validate)',   ARRAY['fe'],  '3', 'Уровень отладки запросов из шаблонов')
+, ('ws.daemon.log.syslog.default.(default,call,sid,acl,cache,validate)',ARRAY['fe'],  '3', 'Уровень детализации в файле по умолчанию')
+, ('ws.daemon.log.syslog.post.(default,call,sid,acl,cache,validate)',   ARRAY['fe'],  '3', 'Уровень детализации в файле для запросов POST')
+, ('ws.daemon.log.syslog.get.(default,call,sid,acl,cache,validate)',    ARRAY['fe'],  '3', 'Уровень детализации в файле для запросов GET')
+, ('ws.daemon.log.syslog.tmpl.(default,call,sid,acl,cache,validate)',   ARRAY['fe'],  '3', 'Уровень детализации в файле для запросов из шаблонов')
 
-, ('ws.daemon.log.debug.default.(default,call,sid,acl,cache,validate)', ARRAY['fe'],  '3', 'Уровень отладки запросов POST')
-, ('ws.daemon.log.debug.post.(default,call,sid,acl,cache,validate)',    ARRAY['fe'],  '3', 'Уровень отладки запросов POST')
-, ('ws.daemon.log.debug.get.(default,call,sid,acl,cache,validate)',     ARRAY['fe'],  '3', 'Уровень отладки запросов GET')
-, ('ws.daemon.log.debug.tmpl.(default,call,sid,acl,cache,validate)',    ARRAY['fe'],  '3', 'Уровень отладки запросов из шаблонов')
+, ('ws.daemon.log.debug.default.(default,call,sid,acl,cache,validate)', ARRAY['fe'],  '3', 'Уровень детализации в интерфейсе по умолчанию')
+, ('ws.daemon.log.debug.post.(default,call,sid,acl,cache,validate)',    ARRAY['fe'],  '3', 'Уровень детализации в интерфейсе для запросов POST')
+, ('ws.daemon.log.debug.get.(default,call,sid,acl,cache,validate)',     ARRAY['fe'],  '3', 'Уровень детализации в интерфейсе для запросов GET')
+, ('ws.daemon.log.debug.tmpl.(default,call,sid,acl,cache,validate)',    ARRAY['fe'],  '3', 'Уровень детализации в интерфейсе для запросов из шаблонов')
 
 ;
 
-
 /* ------------------------------------------------------------------------- */
-
 -- ALTER TABLE wsd.prop_value ADD CONSTRAINT prop_value_code_fkey FOREIGN KEY (code) REFERENCES job.prop(code);
 -- ALTER TABLE wsd.prop_value ADD CONSTRAINT prop_value_group_id_fkey FOREIGN KEY (group_id) REFERENCES job.prop_group(id);
 

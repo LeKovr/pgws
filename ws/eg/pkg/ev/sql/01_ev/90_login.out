@@ -1,22 +1,27 @@
-INSERT 0 2
+DO
 INSERT 0 1
-INSERT 0 2
+INSERT 0 1
+INSERT 0 1
 INSERT 0 1
               test              
 --------------------------------
   ***** user_login_spec_0 *****
 
- role_signup_ins 
------------------
- (1,1,0,t,1)
+ role_id | kind_id | spec_id | is_on | prio 
+---------+---------+---------+-------+------
+      -1 |       1 |       0 | t     |    1
 
  account_name 
 --------------
  Admin
 
- new_notifications_count 
--------------------------
-                       1
+ job_count 
+-----------
+         1
+
+ notification_count_new 
+------------------------
+                      1
 
  count 
 -------
@@ -26,35 +31,37 @@ INSERT 0 1
 --------------------------------
   ***** user_login_spec_1 *****
 
- role_signup_ins 
------------------
- (1,1,1,t,1)
+ role_id | kind_id | spec_id | is_on | prio 
+---------+---------+---------+-------+------
+      -1 |       1 |       1 | t     |    1
 
+INSERT 0 1
 INSERT 0 1
  account_name 
 --------------
  pro_admin
 
- new_notifications_count 
--------------------------
-                       2
+ job_count 
+-----------
+         0
+
+ notification_count_new 
+------------------------
+                      1
 
  count 
 -------
-     2
+     1
 
               test               
 ---------------------------------
   ***** ev.role_signup_del *****
 
- role_signup_del 
------------------
- (1,1,1,t,1)
+ role_id | kind_id | spec_id | is_on | prio 
+---------+---------+---------+-------+------
+      -1 |       1 |       1 | t     |    1
 
- role_signup_del 
------------------
- (1,1,0,t,1)
+ role_id | kind_id | spec_id | is_on | prio 
+---------+---------+---------+-------+------
+      -1 |       1 |       0 | t     |    1
 
-TRUNCATE TABLE
-TRUNCATE TABLE
-DELETE 1

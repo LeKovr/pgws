@@ -43,7 +43,7 @@ $_$
     IF a_code IS NULL THEN
       RAISE WARNING '::';
     ELSE
-      RAISE WARNING '::%', rpad('t/'||a_code||' ', 20, '.');
+      RAISE WARNING '::%', rpad('t/'||a_code||' ', 30, '.');
     END IF;
     RETURN ' ***** ' || a_code || ' *****';
   END;
@@ -56,116 +56,201 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_is_core_only() RETURNS BOOL STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pkg_references(a_is_on BOOL, a_pkg name, a_schema name DEFAULT NULL) RETURNS SETOF TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
+    r RECORD;
+    v_sql TEXT;
+    v_self_default TEXT;
+  BEGIN
+    -- defaults
+    FOR r IN SELECT * 
+      FROM wsd.pkg_default_protected
+      WHERE pkg = a_pkg
+        AND schema IS NOT DISTINCT FROM a_schema
+        AND is_active = NOT a_is_on
+    LOOP
+      v_sql := CASE WHEN a_is_on THEN
+        ws.sprintf('ALTER TABLE wsd.%s ALTER COLUMN %s SET DEFAULT %s'
+          , quote_ident(r.wsd_rel) 
+          , quote_ident(r.wsd_col) 
+          , r.func
+          )
+      ELSE       
+        ws.sprintf('ALTER TABLE wsd.%s ALTER COLUMN %s DROP DEFAULT'
+        , quote_ident(r.wsd_rel) 
+        , quote_ident(r.wsd_col) 
+        )
+      END;
+      IF r.wsd_rel = 'pkg_default_protected' THEN
+        v_self_default := v_sql; -- мы внутри цикла по этой же таблице
+      ELSE
+        EXECUTE v_sql;
+      END IF;
+      RETURN NEXT v_sql;
+    END LOOP;
+    IF v_self_default IS NOT NULL THEN
+      EXECUTE v_self_default;
+    END IF;
+    UPDATE wsd.pkg_default_protected SET is_active = a_is_on
+      WHERE pkg = a_pkg
+        AND schema IS NOT DISTINCT FROM a_schema
+        AND is_active = NOT a_is_on
+    ;
+    
+    -- fkeys
+    
+        -- Перед удалением пакета - удаление всех присоединенных пакетом зарегистрированных FK
+        -- rel in (select rel from wsd.pkg_fkey_required_by where required_by = a_pkg
+        -- После создания пакета - создание всех еще несуществующих зарегистрированных FK присоединенных пакетом таблиц 
+      --  NOT is_active AND rel not in (select rel from wsd.pkg_fkey_required_by where required_by not in (select code from ws.pkg)
+    
+    v_self_default := NULL;
+    FOR r IN SELECT * 
+      FROM wsd.pkg_fkey_protected
+      WHERE is_active = NOT a_is_on
+        AND CASE WHEN a_is_on THEN
+          rel NOT IN (SELECT rel FROM wsd.pkg_fkey_required_by WHERE required_by NOT IN (SELECT code FROM ws.pkg))
+            AND EXISTS (SELECT 1 FROM ws.pkg WHERE code = pkg)
+          ELSE
+          (pkg = a_pkg AND schema IS NOT DISTINCT FROM a_schema)
+          OR rel IN (SELECT rel FROM wsd.pkg_fkey_required_by WHERE required_by = a_pkg)
+        END
+    LOOP
+      v_sql := CASE WHEN a_is_on THEN
+        ws.sprintf('ALTER TABLE wsd.%s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s'
+          , quote_ident(r.wsd_rel)
+          , r.wsd_rel || '_' || replace(regexp_replace(r.wsd_col, E'\\s','','g'), ',', '_') || '_fkey'
+          , r.wsd_col -- может быть список колонок через запятую 
+          , r.rel
+          )
+      ELSE       
+        ws.sprintf('ALTER TABLE wsd.%s DROP CONSTRAINT %s'
+          , quote_ident(r.wsd_rel)
+          , r.wsd_rel || '_' || replace(regexp_replace(r.wsd_col, E'\\s','','g'), ',', '_') || '_fkey'
+        )
+      END;
+      IF r.wsd_rel = 'pkg_fkey_protected' THEN
+        v_self_default := v_sql; -- мы внутри цикла по этой же таблице
+      ELSE
+        EXECUTE v_sql;
+      END IF;
+      RETURN NEXT v_sql;
+    END LOOP;
+    IF v_self_default IS NOT NULL THEN
+      EXECUTE v_self_default;
+    END IF;
+    UPDATE wsd.pkg_fkey_protected SET is_active = a_is_on
+      WHERE is_active = NOT a_is_on
+        AND CASE WHEN a_is_on THEN
+          rel NOT IN (SELECT rel FROM wsd.pkg_fkey_required_by WHERE required_by NOT IN (SELECT code FROM ws.pkg))
+            AND EXISTS (SELECT 1 FROM ws.pkg WHERE code = pkg)
+          ELSE
+          (pkg = a_pkg AND schema IS NOT DISTINCT FROM a_schema)
+          OR rel IN (SELECT rel FROM wsd.pkg_fkey_required_by WHERE required_by = a_pkg)
+        END
+    ;
+    RETURN;
+  END;
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pkg_op_before(a_op t_pkg_op, a_code name, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    r_pkg ws.pkg%ROWTYPE;
+    r RECORD;
+    v_sql TEXT;
+    v_self_default TEXT;
     v_pkgs TEXT;
   BEGIN
-    SELECT INTO v_pkgs
-      array_to_string(array_agg(code),', ')
-      FROM ws.pkg
-      WHERE code <> 'ws'
-    ;
-    IF v_pkgs IS NOT NULL THEN
-      RAISE EXCEPTION '***************** There are app packages installed (%) *****************', v_pkgs;
-    END IF;
-    RETURN TRUE;
-  END;
-$_$;
-
-/* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_add(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$
-  DECLARE
-    r_pkg ws.pkg%ROWTYPE;
-  BEGIN
     r_pkg := ws.pkg(a_code);
-    IF r_pkg IS NULL THEN
-      INSERT INTO ws.pkg (id, code, ver, log_name, user_name, ssh_client)
-        VALUES (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client)
-        RETURNING * INTO r_pkg;
+    CASE a_op
+      WHEN 'init' THEN
+        IF r_pkg IS NOT NULL THEN
+          RAISE EXCEPTION '***************** Package % (%) installed already at % (%) *****************'
+          , a_code, a_ver, r_pkg.stamp, r_pkg.id
+          ;
+        END IF;
+        INSERT INTO ws.pkg (id, code, ver, log_name, user_name, ssh_client, op) VALUES 
+          (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client, a_op)
+          RETURNING * INTO r_pkg
+        ;
         INSERT INTO ws.pkg_log VALUES (r_pkg.*);
-      RETURN 'Ok';
-    END IF;
-    RAISE EXCEPTION '***************** Package % (%) installed already at % (%) *****************'
-      , a_code, a_ver, r_pkg.stamp, r_pkg.id;
-  END;
-$_$;
-
-/* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_make(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$
-  DECLARE
-    r_pkg ws.pkg%ROWTYPE;
-  BEGIN
-    UPDATE ws.pkg SET
-      id            = NEXTVAL('ws.pkg_id_seq') -- runs after rule
-      , log_name    = a_log_name
-      , user_name   = a_user_name
-      , ssh_client  = a_ssh_client
-      , stamp       = now()
-      , op          = '.'
-      WHERE code = a_code
-        AND ver  = a_ver
-        RETURNING * INTO r_pkg
-    ;
-    IF NOT FOUND THEN
-      RAISE EXCEPTION '***************** Package % ver % does not found *****************'
-        , a_code, a_ver
-      ;
-    END IF;
-    INSERT INTO ws.pkg_log VALUES (r_pkg.*);
+      WHEN 'make' THEN
+        UPDATE ws.pkg SET
+          id            = NEXTVAL('ws.pkg_id_seq') -- runs after rule
+        , log_name    = a_log_name
+        , user_name   = a_user_name
+        , ssh_client  = a_ssh_client
+        , stamp       = now()
+        , op          = a_op
+        WHERE code = a_code
+          AND ver  = a_ver
+          RETURNING * INTO r_pkg
+        ;
+        IF NOT FOUND THEN
+          RAISE EXCEPTION '***************** Package % ver % does not found *****************'
+          , a_code, a_ver
+          ;
+        END IF;
+        INSERT INTO ws.pkg_log VALUES (r_pkg.*);
+      WHEN 'drop', 'erase' THEN
+        SELECT INTO v_pkgs
+          array_to_string(array_agg(required_by::TEXT),', ')
+          FROM ws.pkg_required_by 
+          WHERE code = a_code
+        ;
+        IF v_pkgs IS NOT NULL THEN
+          RAISE EXCEPTION '***************** Package % is required by others (%) *****************', a_code, v_pkgs;
+        END IF;
+        PERFORM ws.pkg_references(FALSE, a_code);
+    END CASE;
     RETURN 'Ok';
   END;
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_del(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pkg_op_after(a_op t_pkg_op, a_code name, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     r_pkg ws.pkg%ROWTYPE;
-    v_id  INTEGER;
+    r RECORD;
+    v_sql TEXT;
+    v_self_default TEXT;
   BEGIN
     r_pkg := ws.pkg(a_code);
-    IF a_ver = r_pkg.ver THEN
-      INSERT INTO ws.pkg_log (id, code, ver, log_name, user_name, ssh_client, op)
-        VALUES (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client, '-')
-      ;
-      DELETE FROM ws.pkg
-        WHERE code = a_code
-      ;
-      RETURN 'Ok';
-    END IF;
-
-    RAISE EXCEPTION '***************** Package % (%) is not actial (%) *****************'
-      , a_code, a_ver, r_pkg.ver
-    ;
-  END
+    CASE a_op
+      WHEN 'init' THEN
+        IF a_code = 'ws' THEN
+          INSERT INTO ws.pkg (id, code, ver, log_name, user_name, ssh_client, op) VALUES 
+            (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client, a_op)
+            RETURNING * INTO r_pkg
+          ;
+          INSERT INTO ws.pkg_log VALUES (r_pkg.*);
+        END IF;
+        PERFORM ws.pkg_references(TRUE, a_code);
+      WHEN 'drop', 'erase' THEN
+        INSERT INTO ws.pkg_log (id, code, ver, log_name, user_name, ssh_client, op)
+          VALUES (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client, a_op)
+        ;
+        DELETE FROM ws.method           WHERE pkg = a_code;
+        DELETE FROM ws.page_data        WHERE pkg = a_code;
+        IF a_op = 'erase' THEN
+          DELETE FROM wsd.pkg_script_protected  WHERE pkg = a_code;
+          DELETE FROM wsd.pkg_default_protected WHERE pkg = a_code;
+          DELETE FROM wsd.pkg_fkey_protected    WHERE pkg = a_code;
+          DELETE FROM wsd.pkg_fkey_required_by  WHERE required_by = a_code;
+        END IF;
+        DELETE FROM ws.pkg_required_by  WHERE required_by = a_code;
+        DELETE FROM ws.pkg              WHERE code = a_code;
+      WHEN 'make' THEN
+        NULL;
+    END CASE;
+    RETURN 'Ok';
+  END;
 $_$;
 
-/* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_erase(a_code TEXT, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
-$_$
-  DECLARE
-    r_pkg ws.pkg%ROWTYPE;
-    v_id  INTEGER;
-  BEGIN
-    r_pkg := ws.pkg(a_code);
-    IF a_ver = r_pkg.ver THEN
-      INSERT INTO ws.pkg_log (id, code, ver, log_name, user_name, ssh_client, op)
-        VALUES (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client, '0')
-      ;
-      DELETE FROM ws.pkg
-        WHERE code = a_code
-      ;
-      RETURN 'Ok';
-    END IF;
-
-    RAISE EXCEPTION '***************** Package % (%) is not actial (%) *****************'
-      , a_code, a_ver, r_pkg.ver
-    ;
-  END
-$_$;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_require(a_code TEXT) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
 $_$

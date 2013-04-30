@@ -24,11 +24,11 @@
     },
     clickUrl:function(obj){
       var titleTotal = $(obj).text() + this.options.titleDelim + this.options.titleSuffix;
-      var titleTotalOld = $(this.options.classMenuItemActive).text() + this.options.titleDelim + this.options.titleSuffix;
+      var titleTotalOld = $('a' + this.options.classMenuItemActive).text() + this.options.titleDelim + this.options.titleSuffix;
       document.title = titleTotal;
       var data = { title: titleTotal, ident:this.identFunc(obj),href:$(obj).attr('href')};
-      var dataOld = { title: titleTotalOld, ident:this.identFunc(this.options.classMenuItemActive),href:$(this.options.classMenuItemActive).attr('href')};
-      window.history.replaceState(dataOld,titleTotalOld, $(this.options.classMenuItemActive).attr('href'));
+      var dataOld = { title: titleTotalOld, ident:this.identFunc('a' + this.options.classMenuItemActive),href:$('a' + this.options.classMenuItemActive).attr('href')};
+      window.history.replaceState(dataOld,titleTotalOld, $('a' + this.options.classMenuItemActive).attr('href'));
       window.history.pushState(data,titleTotal, $(obj).attr('href'));
       this.options.onSuccess(obj);
       },

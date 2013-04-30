@@ -1,4 +1,7 @@
 [% META
-  description = 'таблица конец'
+  description = 'таблица конец';
+  IF tbody; 
+    '</tbody>';
+  END;
 %]
   </table>

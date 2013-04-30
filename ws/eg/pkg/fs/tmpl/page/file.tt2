@@ -1,0 +1,20 @@
+[% META
+  description = 'Список предложений'
+%][% # page.args: doc_id, folder_code, file_code
+  doc_id = page.args.0;
+  folder_code = page.args.1;
+  file_code = page.args.2.remove('^/');
+  files = api(page.code _ '_' _ folder_code, id => doc_id, file_code => file_code);
+  file = files.0;
+
+  IF file;
+    store = sysapi('fe.file_attr', id => file.id);
+    store.path = '/' _ store.path;
+    meta.redirect_file = store;
+    STOP;
+  END;
+#  USE dumper(indent=1, pad="  ");
+#  '<!-- '; dumper.dump(files,page, folder_code); '-->';
+  meta.status = '404';
+  meta.status_note = 'Not Found';
+%]

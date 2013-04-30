@@ -1,0 +1,37 @@
+[%
+  
+
+  # Страницы учетной записи пользователя
+  account_id = session.account_id;
+  team_id = session.team_id
+
+  ua = uri(code => 'account.id', id => account_id);
+  IF uri_allowed(ua);
+    PROCESS "block/$TMPL_LAYOUT/load_subtree.tt2", item = ua, id = account_id, use_submenus = 0;
+    account_pages = link;
+    div_begin(size= 4 , offset=1);
+      well_begin;
+        h(type = 3, text= 'Моя учетная запись', href = uri_mk(ua.req));
+        ul(class = 'nav nav-list', links = account_pages.childs);
+     well_end;
+    div_end;
+  END;
+
+  # Страницы компании пользователя
+  IF team_id;
+    ut = uri(code => 'team.id', id => team_id);
+    IF uri_allowed(ut);
+      PROCESS "block/$TMPL_LAYOUT/load_subtree.tt2", item = ut, id = team_id, use_submenus = 0;
+      team_pages = link;
+      div_begin(size=4);
+        well_begin;
+          h(type = 3, text= 'Моя компания', href = uri_mk(ut.req));
+          ul(class = 'nav nav-list', links = team_pages.childs);
+        well_end;
+      div_end;
+    END;
+  END;
+
+  USE Dumper(indent=1, pad=" "); '<!-- ' _ Dumper.dump(session, team_pages, account_pages, ua) _ ' -->';
+
+%]

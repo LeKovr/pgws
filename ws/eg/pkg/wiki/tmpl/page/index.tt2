@@ -1,16 +1,16 @@
 [% META
   description = 'Просмотр статей wiki';
-  meta.html_headers.push(
-    '/css/wiki/common.css'
-  );
+
   meta.head.highlight = 1;
 
-  group_id = page.args.shift;
-  group_code = page.args.shift;
-  doc_path = page.args.shift;
+  group_id = page.args.0;
+  group_code = page.args.1;
+  doc_path = page.args.2;
   code = doc_path.remove('^/');
   doc_id = api('wiki.doc_id_by_code', id => group_id, code => code || undef);
-  edit_uri = uri(code => page.code _ '.edit', id => doc_path );
+
+  # если не задан group_code - мы на главной странице вики
+  edit_uri = uri(code => page.code _ (group_code ? '':'.doc') _'.edit', id => doc_path );
   IF !group_id;
     meta.status = '404';
     meta.status_note = 'Incorrect uri';
@@ -30,11 +30,23 @@
   resp.title = info.name;
 # place for INSERT
   src = api('wiki.doc_src', id => doc_id);
-  page = api('doc.format', uri => req.prefix _ '/' _ group_code, code => code, src => src, extended => 1, id => doc_id);
+  article = api('doc.format', uri => req.prefix _ '/' _ group_code, code => code, src => src, extended => 1, id => doc_id);
 %]
 <div id="wikibody">
-[%  page.html; %]
+[%  article.html; %]
 </div>
 [%
   INCLUDE "block/$TMPL_LAYOUT/wiki/btn_menu.tt2";
+  INCLUDE "block/wiki/style_js.tt2";
+
+  meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+//<![CDATA[
+$(document).ready(function(){
+  $('#wikibody').each(function(i, e) {hljs.highlightBlock(e, null)});
+  PGWS.wikiStyle('wikibody');
+});
+//]]>
+</script>
+[% END; # BLOCK
 %]

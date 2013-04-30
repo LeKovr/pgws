@@ -175,7 +175,7 @@ sub run {
 #----------------------------------------------------------------------
 sub run_prepared {
   my ($self, $meta, $method, $params) = @_;
-  $meta->debug('call for %s', $method);
+  $meta->debug('call for %s(%s)', $method, PGWS::Utils::json_out($params));
   $meta->stage_in('call');
   my $ret = $self->_process($meta, $method, $params);
   $meta->stage_out;
@@ -365,7 +365,7 @@ sub _call_cached {
     $cache = $caches->cache_by_id($cache_id);
   }
   if ($cache) { # self->cache and exists($self->cache->{$cache_id})) { # and $mtd_def->{'cache_id'} > 1) {
-    my $prekey = [lc($meta->encoding), $mtd_def->{'code'}, $rvf, @$args];
+    my $prekey = [lc($meta->encoding), $mtd_def->{'code'}, $rvf, map { (ref ($_) eq 'SCALAR')? $$_ : $_ } @$args];
     if ($mtd_def->{'is_i18n'}) {
       unshift @$prekey, $meta->{'lang'};
     }
@@ -427,6 +427,7 @@ sub _call_db {
     $meta->debug('Database call for %s with lang %s', $mtd_def->{'code_real'}, $meta->{'lang'});
   }
 
+  my (@args_prepared, @rc, %rc_data);
   eval {
     my $dbh = $self->dbc->dbh(!$mtd_def->{'is_rw'});
     $dbh->{RaiseError} = 1;
@@ -434,7 +435,32 @@ sub _call_db {
 
     $dbh->do(sprintf $self->dbc->config('lang.sql.encoding'), $meta->encoding);
     $dbh->do($lang_sql);
-    $ret = $dbh->selectall_arrayref($sql, $need_hash?{'Slice' => {} }:undef, @$args);
+    foreach my $a (@$args) {
+      if (ref $a eq 'SCALAR') {
+        my $tag = $$a;
+        push @rc, $tag;
+        $a = $tag;
+      }
+      push @args_prepared, $a;
+    }
+    $dbh->{'AutoCommit'} = 0 if (scalar(@rc));
+    # $dbh->begin_work or die $dbh->errstr
+    # Enable transactions (by turning "AutoCommit" off) until the next call to "commit" or "rollback". After the next "commit" or "rollback", "AutoCommit" will automatically be turned on again.
+
+    # TODO: !is_write => { $dbh->{ReadOnly} = 1; $dbh->{'AutoCommit'} = 0 }
+    $ret = $dbh->selectall_arrayref($sql, $need_hash?{'Slice' => {} }:undef, @args_prepared);
+    if (scalar(@rc)) {
+      foreach $a (@rc) {
+        my $data = $dbh->selectall_arrayref("FETCH ALL IN $a", undef);
+        if ($data and scalar(@$data) == 1 and scalar(@{$data->[0]}) == 1) {
+          $data = $data->[0][0];
+        }
+        $rc_data{$a} = $data;
+      }
+    }
+    $dbh->{'AutoCommit'} = 1;
+    # !$dbh->{'AutoCommit'} or $dbh->commit or die $dbh->errstr;
+
   };
   if ($@) {
     # Postgresql adds prefix "ERROR" in locale which set per database or server config
@@ -453,7 +479,7 @@ sub _call_db {
       }
       push @errors, @$e;
     } else {
-      return $self->_rpc_error($meta, 'db_error', $@);
+      return $self->_rpc_error($meta, 'db_error', { 'msg' => $@, 'sql' => $sql, 'args' => \@args_prepared});
     }
   } else {
 # (1, 'нет');
@@ -492,7 +518,12 @@ sub _call_db {
       $ret = PGWS::Utils::hashtree_mk($ret);
     }
     if (defined($ret)) {
-      $res->{'result'} = { 'data' => $ret };
+      if (scalar(@rc)) {
+        $rc_data{'rows'} = $ret;
+        $res->{'result'} = { 'data' => \%rc_data };
+      } else {
+        $res->{'result'} = { 'data' => $ret };
+      }
     } elsif (!defined($mtd_def->{'is_strict'}) or $mtd_def->{'is_strict'}) {
       # вернуть ошибку при пустом результате
       push @errors, $self->_app_error($meta, 'Y0010', $mtd_def->{'code'}) # no data;
@@ -519,7 +550,7 @@ sub _call_plugin {
   my $res;
   $meta->debug('Loading plugin method %s: %s', $plugin, $mtd);
   eval {
-    my $obj = $self->plugin($plugin);
+    my $obj = $self->plugin($plugin) or $self->_rpc_error($meta, 'pl_error', 'Empty plugin loaded: '.$plugin);
     $res = $obj->$mtd($self, $meta, $args, $mtd_def);
   };
   if ($@) {
@@ -529,7 +560,7 @@ sub _call_plugin {
   }
   return $res;
 }
-
+use Data::Dumper;
 #----------------------------------------------------------------------
 #$self->_validate_field($adef, $errors, $params->{$adef->{'code'}});
 sub _validate_field {
@@ -541,7 +572,7 @@ sub _validate_field {
   $code ||= $arg_def->{'code'};
   $anno ||= $arg_def->{'anno'};
   $facets ||= [];
-
+#print STDERR 'ARG', Dumper($arg_def);
   # пустое значение - не заданное значение
   $value = undef if (ref \$value eq 'SCALAR' and defined($value) and $value eq '');
 
@@ -571,6 +602,9 @@ sub _validate_field {
     # сохранить ограничения
     my $f = $self->_call_meta($self->def_dt_facet, $meta, $arg_def->{'code'});
     unshift (@$facets, @$f) if (scalar(@$f)); # чем выше уровень, тем раньше будет проверка
+  } elsif ($arg_def->{'base_code'} eq 'refcursor' and $value) {
+    my $ref = $code;
+    return \$ref;
   }
 
   if ($arg_def->{'is_list'}) {
@@ -651,7 +685,9 @@ sub _validate {
     foreach my $a (@$arg_def) {
       my $value = $self->_validate_field($meta, $mtd_def->{'code'}, $a, \@errors, $params->{$a->{'code'}});
       push @args, $value;
-      $args{$a->{'code'}} = $value if (defined($value));
+      if (defined($value)) {
+       $args{$a->{'code'}} = ref $value eq 'SCALAR' ? 'requested' : $value ;
+     }
     }
   }
   $meta->stage_out;

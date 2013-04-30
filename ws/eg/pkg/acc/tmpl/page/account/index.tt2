@@ -1,0 +1,168 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Список пользователей';
+
+  by = get.item('by');
+  pageNo = get.item('page');
+  name = get.item('name');
+  name = name ? name : '' ;
+  by = by ? by : 20;
+  pageNo = pageNo ? pageNo : 0;
+  accounts = api('account.lookup', by => by, page => pageNo, name => name, need_rc = 1);
+
+  # формирование ссылок в tt2
+  options = [];
+  codeArg = name ? 'name=' _ uri_escape(name) _ '&' : '';
+  FOR o IN [20, 50, 100];
+    link = { href = uri_mk(page.req, codeArg _ 'by=' _ o), name = o };
+    IF o == by;
+      link.class = 'disabled';
+    END;
+    options.push(link);
+  END;
+
+# ========================================================= #
+# Page layout
+# ========================================================= #
+%]<div class='form-horizontal'>[%
+  "<form action='$page.req'>";
+  input(type='hidden', name='by',value="$by");
+  controlGroup_begin(label='Поиск пользователя');
+
+  input(id='autoc', name='name' ,value=name);
+  btn(name='Показать',type='submit');
+  controlGroup_end;
+  "</form>";
+
+  IF accounts.rows.size;
+    uldoplist= ul(class='dropdown-menu', links= options);
+    ul(class='nav nav-pills', links=[
+      {href='#', class='dropdown', classLink='dropdown-toggle', linkparam='data-toggle=\'dropdown\'', name='Количество строк <b class=\'caret\'></b>', content=uldoplist},
+    ]); 
+  
+  
+    table_begin(class='table-bordered table-striped');
+        tr(list = ['Имя', 'Команда', 'Город', 'Статус', 'Дата регистрации'], use_th=1, thead=1);
+      FOREACH a IN accounts.rows;
+        href = uri_mk(uri(code => 'account.id', id => a.id).req);
+        team_href = uri_mk(uri(code => 'team.id', id => a.team_id).req);
+        tr(list=["<a href='$href'>$a.name</a>", "<a href='$team_href'>$a.team_name</a>", a.city, a.status_name, a.registration_date]);
+      END;
+    table_end(tbody=1);
+    INCLUDE "block/$TMPL_LAYOUT/pager.tt2", pageNo = pageNo, count = accounts.need_rc, by = by, hrefName = page.req _ '?name=' _ name _ '&';
+  ELSE;
+    alert_begin(class="block");
+    p(text=l("По заданным параметрам поиска пользователь не найден"));
+    alert_end;
+  END;
+%]</div>[%
+  
+meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+//<![CDATA[
+var changeRows = function(){
+  window.location.href = '[% page.req %]' + '?by=' + $('#sel').val() + '&name=' + $('#autoc').val();
+}
+
+
+/*******************************************************************************/
+//АВТОКОМПЛИТ
+//Для кеширования результатов вызовов списка методов и детализации по методу
+  PWL_cache={method_li:{},method_detail:{}} ;;
+
+$(document).ready(function(){
+  var anchor;
+  //повесили обработчики на <a> которые будут сформированы
+  if (location.hash) {
+    // загрузка описания метода при открытии страницы
+    anchor = window.location.hash.slice(1); //hash to string (= "myanchor")
+    $("#autoc").val( anchor );
+    form_send();
+  } else {
+  }
+  //Опции для autocomplete
+  $( "#autoc" ).typeahead({
+    source: function( request, response ) {
+      $.ajax({
+        url: "[% req.prefix %]/_account.lookup.json",
+        dataType: "json",
+        data: {
+          code: request
+        },
+        success: function( data ) {
+          if(typeof data.result.data != 'undefined'){
+      var dataArray = new Array();
+            $.map( data.result.data, function(item) {
+               var group = {
+      id: item.name,
+      name: item.name
+    };
+              dataArray.push(group);
+            });
+            response(dataArray);
+          }
+        }
+      });
+    },
+    matcher: function (item) {
+      if (item.name.toLowerCase().indexOf(this.query.trim().toLowerCase()) != -1) {
+    return true;
+  }
+    },
+    sorter: function (items) {
+      return items.sort();
+    },
+    highlighter: function (item) {
+      var regex = new RegExp( '(' + this.query + ')', 'gi' );
+      label = item.name;
+      return label.replace( regex, "<strong>$1</strong>" );
+    },
+    items: 9999
+  });
+});
+$.fn.typeahead.Constructor.prototype.render = function(items) {
+     var that = this
+ 
+     items = $(items).map(function (i, item) {
+       i = $(that.options.item).attr('data-value', item.id)
+       i.find('a').html(that.highlighter(item))
+       return i[0]
+     })
+ 
+     this.$menu.html(items)
+     return this
+};
+$.fn.typeahead.Constructor.prototype.next = function (event) {
+  var active = this.$menu.find('.active').removeClass('active');
+  next = active.next();
+  if (!next.length) {
+    next = $(this.$menu.find('li')[0]);
+  }
+  next.addClass('active');
+  $(this.$element).val($(next).attr('data-value'));
+};
+$.fn.typeahead.Constructor.prototype.prev = function (event) {
+  var active = this.$menu.find('.active').removeClass('active')
+   , prev = active.prev()
+   if (!prev.length) {
+    prev = this.$menu.find('li').last()
+   }
+  prev.addClass('active')
+  $(this.$element).val($(prev).attr('data-value'));
+};
+$.fn.typeahead.Constructor.prototype.select = function() {
+  this.hide();
+};
+$.fn.typeahead.Constructor.prototype.click = function(e) {
+  var active = this.$menu.find('.active').removeClass('active')
+  $(this.$element).val($(active).attr('data-value'));
+  this.hide();
+};
+var filtr = function(){
+  alert(123);
+};
+//]]>
+</script>
+[% END; # BLOCK
+%]

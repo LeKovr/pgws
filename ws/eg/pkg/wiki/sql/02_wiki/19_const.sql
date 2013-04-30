@@ -21,9 +21,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-SET LOCAL search_path = wiki, ws, i18n_def, public;
-
-/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_class_id() RETURNS d_class IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 20::ws.d_class
@@ -43,6 +40,13 @@ $_$
   SELECT 1::ws.d_id32
 $_$;
 SELECT pg_c('f', 'const_status_id_online', 'ID статуcа wiki, при котором статьи имеют свой статус');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION wiki.const_doc_status_id_online() RETURNS d_id32 IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 1::ws.d_id32
+$_$;
+SELECT pg_c('f', 'wiki.const_doc_status_id_online', 'ID статуcа опубликованной статьи wiki');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION wiki.const_doc_status_id_draft() RETURNS d_id32 IMMUTABLE LANGUAGE 'sql' AS

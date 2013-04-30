@@ -22,5 +22,9 @@
 
 SELECT ws.test('ev.pg_view_comments');
 
-select * from ws.pg_view_comments('ev.event_info')
-;
+SELECT * FROM ws.pg_view_comments('ev.signup_joined'); 
+SELECT * FROM ws.pg_view_comments('ev.signup'); 
+SELECT * FROM ws.pg_view_comments('ev.kind_info'); 
+SELECT * FROM ws.pg_view_comments('ev.role_signup_info'); 
+SELECT * FROM ws.pg_view_comments('ev.team_role_signup'); 
+SELECT * FROM ws.pg_view_comments('ev.event_info'); 

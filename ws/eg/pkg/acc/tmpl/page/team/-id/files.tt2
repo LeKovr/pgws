@@ -1,0 +1,34 @@
+[% META
+  description = 'Избранные файлы команды'
+%]
+
+[%
+  team_id = page.args.0;
+ # rows = api('team.file_list', 'id' => team_id);
+  c='';
+%]
+
+[%
+  team_id = page.args.0;
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;	
+  table_begin(class='table-bordered');
+%]
+
+  [% FOR row IN rows %]
+  [% IF loop.first; %]
+    <thead>[%
+      tr(list = ['Имя файла','Формат','Каталог','Дата загрузки'], use_th=1);
+    %]</thead
+  [% END %]
+  <tr class="[% IF loop.count mod 2; 'even'; ELSE; 'odd'; END %]">
+    <td>[% row.name %]</td>
+    <td>[% row.format_code %]</td>
+    <td>[% row.folder_name %]</td>
+    <td>[% row.created_at %]</td>
+  </tr>
+  [% END %]
+
+[%
+  table_end;
+%]
+      [% INCLUDE block/fs/file_upload.tt2 obj_id = team_id, list_method = 'team.fs_files' %]

@@ -1,0 +1,15 @@
+[% META
+  description = 'Список ролей, подписанных на категорию';
+  meta.todo.${template.name} = BLOCK %]
+    Список ролей, подписанных на события данной категории
+  [% END;
+%][%
+	kind_group_id = page.args.0;
+	accounts = api( 'ev.account_list_by_kind_group_id', group_id => kind_group_id );
+%]
+
+<ul>
+	[% FOR a IN accounts %]
+		<li>[% a.name %]</li>
+	[% END %]
+</ul>

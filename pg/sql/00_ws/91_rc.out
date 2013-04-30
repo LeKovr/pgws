@@ -1,0 +1,28 @@
+          test          
+------------------------
+  ***** rc_method *****
+
+       code        
+-------------------
+ ws.page_by_action
+ ws.page_by_code
+ ws.page_by_uri
+ ws.page_childs
+ ws.page_path
+ ws.page_tree
+
+     code     
+--------------
+ ws.page_path
+ ws.page_tree
+
+     code     
+--------------
+ ws.page_path
+ ws.page_tree
+
+ ?column? 
+----------
+        6
+
+CLOSE CURSOR

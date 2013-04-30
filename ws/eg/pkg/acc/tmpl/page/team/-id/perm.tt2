@@ -1,0 +1,53 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Разрешения';
+  meta.nosiblings = 1;
+  meta.head.api = 1;
+  meta.html_headers.push('/css/acc/common.css');
+
+  team_id = page.args.0;
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;
+  
+  roles = api('team.role', id => team_id);
+  permissions = api('team.permission', id => team_id);
+  role_permissions = [];
+  FOREACH r IN roles;
+    rps = api('team.permission', id => team_id, role_id => r.id);
+    role_permissions.push(rps);
+  END;
+  section_begin(header => l("Разрешения"), id => 'perm');
+    table_begin(class='table-bordered table-striped table-hover');
+      %]<thead>[%
+        h = [l("Разрешение/Роль")];
+        FOREACH r IN roles;
+          h.push(r.name);
+        END;
+        tr(list = h, use_th=1);
+      %]</thead>[%
+      FOREACH perm IN permissions;
+        p = [perm.name];
+        FOREACH rp IN role_permissions;
+          d => 'false';
+          u=[];
+          FOREACH r IN rp;
+            IF r.id == perm.id; d => 'true'; END;
+            u.push(r.id);
+          END;
+          IF d == 'true';
+            p.push('+');
+          ELSE;
+            p.push('-');
+          END;
+        END;
+        tr(list = p);
+      END;
+    table_end();
+  section_end();
+%] 
+
+<script type="text/javascript">
+//<![CDATA[
+
+//]]>
+</script>

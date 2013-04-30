@@ -25,20 +25,60 @@
 -- TODO: insert into .account
 
 \set SID '\'; \''
-\set LOGIN admin
+\set LOGIN admin_test_norealdb
 
-SELECT ws.test('role_const');
-SELECT * FROM wsd.role WHERE id = acc.const_role_id_guest();
-SELECT * FROM wsd.role WHERE id = acc.const_role_id_user();
+-- тестовый ID
+\set TEAM -1
+\set ROLE -1
+\set ACC -1
 
+-- begin: тест авторизации в системе
 SELECT ws.test('login');
-SELECT ip, status_id, account_id, role_id, account_name, role_name FROM acc.login('127.0.0.1',:'LOGIN', (SELECT psw FROM wsd.account WHERE login=:'LOGIN'), :SID);
+INSERT INTO wsd.role (id, name, anno) VALUES
+  (:ROLE, 'Admins', '');
+
+INSERT INTO wsd.account (id, status_id, login, psw, name) VALUES
+  (:ACC, acc.const_status_id_active(), :'LOGIN', :'PSW_DEFAULT', 'Admin');
+
+INSERT INTO wsd.team (id, name, status_id) VALUES
+  (:TEAM, 'ACC-Test-Admins', acc.const_team_status_id_active())
+;
+
+SELECT acc.team_account_add(:TEAM, :ACC, :ROLE);
+
+SELECT ip, status_id, role_id, account_name, role_name FROM acc.login('127.0.0.1', :'LOGIN', (SELECT psw FROM wsd.account WHERE login=:'LOGIN'), :SID);
+-- end: тест авторизации в системе
 
 SELECT ws.test('session');
 SELECT ip,sid FROM acc.sid_info(:SID, '127.0.0.1');
 
 SELECT ws.test('profile');
-SELECT id, status_id, login, psw, name, status_name FROM acc.profile(:SID);
+SELECT acc.sid_account_id(:SID);
 
 SELECT ws.test('logout');
 SELECT acc.logout(:SID);
+
+SELECT acc.team_account_del(:TEAM, :ACC);
+
+/* ------------------------------------------------------------------------- */
+-- Пример регистрации клиента!
+-- Регистрация проводится в два этапа: 
+-- 1 этап это вставка в таблицу acc.account, без заполнения полей name, city, sex...
+-- 2 этап это добавление значений свойств в wsd.prop_value
+-- Примечание: регистрация команды проводится по аналогичному алгоритму.
+
+SELECT ws.test('registration');
+SELECT status_id,login,psw,name,is_psw_plain,is_ip_checked FROM wsd.account where name = 'registration';
+-- begin: first step
+INSERT INTO wsd.account (login, psw) VALUES ('reg_test', '111111');
+-- end: first step
+
+-- begin: second step
+SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.account WHERE login = 'reg_test'), 'abp.name', 'registration');
+SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.account WHERE login = 'reg_test'), 'abp.geo.city', 'city_reg');
+SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.account WHERE login = 'reg_test'), 'abp.person.sex', 'male');
+-- end: second step
+
+SELECT  status_id,login,name,is_psw_plain,is_ip_checked FROM wsd.account where name = 'registration';
+
+/* ------------------------------------------------------------------------- */

@@ -19,9 +19,14 @@
   meta.nosiblings = 1;
   meta.nochilds = 1;
   meta.nopath = 1;
-  '<p>' _ note _ '</p>';
-  '<p><i>(' _  meta.status_note _ ')</i></p>';
-
+  div_begin(width='high');
+    alert_begin(type='block');
+      h(type = 4, text = note, class = 'alert-heading');   
+      IF meta.status_note;
+        p(text = meta.status_note);
+      END;
+    alert_end;
+  div_end;
   IF status == '403';
     u = uri(code => 'login');
     IF u;

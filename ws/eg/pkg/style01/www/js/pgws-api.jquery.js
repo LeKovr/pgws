@@ -41,7 +41,7 @@ var show_debug = function(data){
       );
     }
     ht = (ht !== '') ? '<hr style="margin:15px 0px;" />' + ht : '';
-    $('#debug-console').html('<table class="debug">' + s + '</table>' + ht);
+    $('#debug-console > table > tbody').prepend(s + '<tr><td colspan="2"><hr></td></tr>');
     for ( i = 0, len = data.length; i<len; ++i ){
       row = data[i];
       if (! row.message) { $('#debug-'+ i).text(row.data); }

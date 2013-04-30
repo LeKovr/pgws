@@ -11,10 +11,11 @@ jquery-1.7.2.js http://code.jquery.com/jquery-1.7.2.js
 jquery.json-2.3.min.js http://jquery-json.googlecode.com/files/jquery.json-2.3.min.js
 jquery.json-2.3.js http://jquery-json.googlecode.com/files/jquery.json-2.3.js
 jquery-cookie-1.3.1.zip https://nodeload.github.com/carhartl/jquery-cookie/zip/v1.3.1
-bootstrap-2.3.0.zip https://github.com/twitter/bootstrap/archive/v2.3.0.zip
+bootstrap-2.3.1.zip https://github.com/twitter/bootstrap/archive/v2.3.1.zip
+bootswatch-2.3.1.zip https://github.com/thomaspark/bootswatch/archive/v2.3.1.zip
+highlight.zip http://softwaremaniacs.org/soft/highlight/download/ "bash.js=on&css.js=on&diff.js=on&xml.js=on&http.js=on&ini.js=on&json.js=on&javascript.js=on&perl.js=on&sql.js=on&markdown.js=on&nginx.js=on"  
 EOF
 }
-
 
 DIR=downloads
 SRC=src
@@ -45,15 +46,16 @@ mk_lnd() {
   [ -e ../www/$dest/$name ] || ln -s $up/src/$dir$src ../www/$dest/$name
 }
 
-for d in $DIR $SRC $WWW $WWW_skin ; do
-  [ -d $d ] || mkdir $d
+for d in $DIR $WWW $WWW_skin ; do
+  [ -d $d ] || mkdir -p $d
 done
 
 pushd $DIR > /dev/null
 
 echo "Fetch..."
-fetch | while read dest src ; do
- [ -e $dest ] || curl -L -k -R -o $dest $src
+fetch | while read dest src post; do
+[[ "$post" ]] && post="-d \"$post\""
+ [ -e $dest ] || curl -L -k -R $post -o $dest $src
 done
 
 echo "Make src..."
@@ -109,23 +111,30 @@ for s in * ; do
       echo "jquery cookie setup"
       mk_lnd jquery.cookie.js js/core $s/
       ;;
+    bootswatch-*)
+      echo "bootswatch skins setup"
+      for style in amelia cerulean cosmo cyborg journal readable simplex slate spacelab spruce superhero united ; do
+        if [ ! -f ../$WWW_skin/$style.css ] ; then
+          echo "Link $style"
+          perl -pi -e 's/..\/img/\/img\/external/g' < $s/$style/bootstrap.css > ../$WWW_skin/$style.css
+        fi
+      done
+      ;;
+    highlight.js)
+      echo "highlight setup"
+      mk_lnd highlight.pack.js js/addon $s/
+      mk_lnd default.css css/highlight $s/styles/
+      ;;
     *)
       echo "js setup ($s)"
       if [[ $s != ${s%.min.js} ]] ; then
         mk_ln $s js/core/minified
-      else
+      elif [[ $s != ${s%.js} ]] ; then
         mk_ln $s js/core
       fi
     ;;
   esac
 done
 popd > /dev/null
-
-for style in amelia cerulean cosmo cyborg journal readable simplex slate spacelab spruce superhero united ; do
-  if [ ! -f $WWW_skin/$style.css ] ; then
-    echo "Load $style"
-    curl -L -k -R -o $WWW_skin/$style.css http://bootswatch.com/$style/bootstrap.css
-  fi
-done
 
 echo "Setup external files complete"

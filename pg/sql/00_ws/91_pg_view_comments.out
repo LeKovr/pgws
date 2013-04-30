@@ -2,8 +2,8 @@
 -------------------------------
   ***** pg_view_comments *****
 
-              rel               |       code       |             rel_src              |   rel_src_col    | status_id |                                    anno                                     
---------------------------------+------------------+----------------------------------+------------------+-----------+-----------------------------------------------------------------------------
+              rel               |       code       |             rel_src              |   rel_src_col    | status_id |                                                   anno                                                   
+--------------------------------+------------------+----------------------------------+------------------+-----------+----------------------------------------------------------------------------------------------------------
  i18n_def.error                 | code             | i18n_def.error_message           | code             |         1 | Код ошибки
  i18n_def.error                 | id_count         | i18n_def.error_message           | id_count         |         1 | Количество аргументов в строке сообщения
  i18n_def.error                 | message          | i18n_def.error_message           | message          |         1 | Форматированная строка сообщения об ошибке
@@ -20,7 +20,7 @@
  i18n_def.page                  | target           | ws.page_data                     | target           |         1 | значение атрибута target в формируемых ссылках
  i18n_def.page                  | tmpl             | ws.page_data                     | tmpl             |         1 | файл шаблона (NULL для внешних адресов)
  i18n_def.page                  | up_code          | ws.page_data                     | up_code          |         1 | идентификатор страницы верхнего уровня
- i18n_def.page                  | uri              | ws.page_data                     | uri              |         1 | мета-маска с именами переменных, которой должен соответствовать URI запроса
+ i18n_def.page                  | uri              | ws.page_data                     | uri              |         1 | мета-маска с именами переменных, которой должен соответствовать URI запроса (NULL - группировка страниц)
  i18n_def.page                  | uri_fmt          | ws.page_data                     | uri_fmt          |         1 | строка формата для генерации URI, вычисляется триггером при insert/update
  i18n_def.page                  | uri_re           | ws.page_data                     | uri_re           |         1 | regexp URI, вычисляется триггером при insert/update
  ws.caa                         | acl              | ws.class_action_acl_ext          | acl              |         1 | Название уровня доступа

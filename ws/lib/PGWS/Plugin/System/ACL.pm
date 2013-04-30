@@ -62,9 +62,11 @@ sub check {
   $tag = $class->{'code'}.$self->dbc->config('be.def_suffix.acl');
   my $acl = $self->_call_meta($tag, $meta, @ids, $sid);
   unless ($acl) {
-    $meta->dump({ 'tag' => $tag, 'sid' => $sid, 'ids' => \@ids });
+    # нет acl вообще => не будет и acl_eff
+    $meta->debug('No any object acl for %s(%s)', $tag, join(',', @ids, $sid));
+    $res->{'result'} = { 'data' => undef };
     $meta->stage_out;
-    die 'Cannot fetch object acl';
+    return $res;
   }
 
   # по классу, статусу, акции и acl сессии получить эффективные acl (те, которые подходят текущей операции)

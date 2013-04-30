@@ -1,6 +1,30 @@
 .PHONY: all help usage conf pkg var masterconf
-SHELL           = /bin/bash
-DATE		= `date +%y%m%d`
+SHELL               = /bin/bash
+DATE                = `date +%y%m%d`
+
+ROOT_DEFAULT        = /home/data/sampleapp
+WWW_HOST_DEFAULT    = pgws.local
+FCGI_SOCKET_DEFAULT = back.test.local:9001
+FE_COOKIE_DEFAULT   = PGWS_SID
+
+WWW_HOST           ?= $(WWW_HOST_DEFAULT)
+FCGI_SOCKET        ?= $(FCGI_SOCKET_DEFAULT)
+FE_COOKIE          ?= $(FE_COOKIE_DEFAULT)
+
+PGWS_ROOT          ?= $(shell dirname $$PWD)
+FILE_STORE_ROOT    ?= $(PGWS_ROOT)/data
+FILE_URI           ?= /file
+
+# пользователь, под которым работает демон FCGI
+DAEMON_USER        ?= apache
+DB_CONNECT         ?= dbi:Pg:dbname=pgws;user=apache
+PROCESS_PREFIX     ?= pgws-dev
+SRV_DEBUG          ?= 1
+
+TM_CMD             ?= 
+PACKAGES           ?= apidoc fs job acc ev wiki app_sample i18n style01
+
+NGINX_CFG_DIR       = nginx
 
 define HELP
   Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
@@ -25,47 +49,48 @@ help:
 all: help
 usage: help
 
-install: test data var pkg lib lib-pkg ctl setups tmpl nginxconf masterconf installcomplete
+install: test data var pkg lib lib-pkg ctl setups tmpl conf installcomplete
+conf: psw-conf nginx-conf master-conf
 
 # ------------------------------------------------------------------------------
 
 data:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; d=data/file/upload ; \
+	pushd $(PGWS_ROOT) > /dev/null ; d=data/file/upload ; \
 [ -d $$d ] || mkdir -p $$d; \
 for p in {0..9} ; do [ -d $$d/$$p ] || mkdir -m g+w $$d/$$p ; done ; \
+mkdir -m g+w data/file/www-cache ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
 
 var:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 [ -d var ] || mkdir var ; \
-for p in build cache conf ctl log run tmpl tmpc www ; do [ -d var/$$p ] || mkdir -m g+w var/$$p ; done ; \
+for p in build/log cache conf ctl log run tmpl tmpc www ; do [ -d var/$$p ] || mkdir -p -m g+w var/$$p ; done ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
 
 pkg:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; [ -d pkg ] || mkdir pkg ; root=$$PWD ; popd > /dev/null ; \
+	[ -d $(PGWS_ROOT)/pkg ] || mkdir $(PGWS_ROOT)/pkg ; \
 pushd ws/eg > /dev/null ; \
-for p in pkg/* ; do [ -e $$root/$$p ] || ln -s $$PWD/$$p $$root/$$p ; done ; \
+for p in pkg/* ; do [ -e $(PGWS_ROOT)/$$p ] || ln -s ../pgws/ws/eg/$$p $(PGWS_ROOT)/$$p ; done ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
 
 lib:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-R=$$(dirs +0) ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 [ -d lib ] || mkdir lib ; \
-pushd $$R/pgws/ws/ ; \
+pushd $(PGWS_ROOT)/pgws/ws/ ; \
 find lib -name *.pm -print | while read f ; do \
   d=$$(dirname $$f) ; n=$$(basename $$f) ; \
-  [ -d $$R/$$d ] || mkdir -p $$R/$$d ; \
-  [ -e $$R/$$d/$$n ] || ln -s $$R/pgws/ws/$$d/$$n $$R/$$d/$$n ; \
+  [ -d $(PGWS_ROOT)/$$d ] || mkdir -p $(PGWS_ROOT)/$$d ; \
+  [ -e $(PGWS_ROOT)/$$d/$$n ] || ln -s $(PGWS_ROOT)/pgws/ws/$$d/$$n $(PGWS_ROOT)/$$d/$$n ; \
 done ; \
 popd > /dev/null
 
@@ -73,15 +98,14 @@ popd > /dev/null
 
 lib-pkg:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-R=$$(dirs +0) ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 [ -d lib ] || mkdir lib ; \
-for p in pkg/* ; do if [ -d $$R/$$p/lib ] ; then \
-pushd $$R/$$p ; \
+for p in pkg/* ; do if [ -d $(PGWS_ROOT)/$$p/lib ] ; then \
+pushd $(PGWS_ROOT)/$$p ; \
 find lib -name *.pm -print | while read f ; do \
   d=$$(dirname $$f) ; n=$$(basename $$f) ; \
-  [ -d $$R/$$d ] || mkdir -p $$R/$$d ; \
-  [ -e $$R/$$d/$$n ] || ln -s $$R/$$p/$$d/$$n $$R/$$d/$$n ; \
+  [ -d $(PGWS_ROOT)/$$d ] || mkdir -p $(PGWS_ROOT)/$$d ; \
+  [ -e $(PGWS_ROOT)/$$d/$$n ] || ln -s $(PGWS_ROOT)/$$p/$$d/$$n $(PGWS_ROOT)/$$d/$$n ; \
 done ; \
 popd > /dev/null ; \
 fi ; done ; \
@@ -91,31 +115,30 @@ popd > /dev/null
 
 tmpl:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-R=$$(dirs +0) ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 PD=$$(ls pkg/) ; \
-for p in $$PD ; do if [ -d $$R/pkg/$$p ] && [ -d $$R/pkg/$$p/tmpl ] ; then \
-pushd $$R/pkg/$$p/tmpl ; \
+for p in $$PD ; do if [ -d $(PGWS_ROOT)/pkg/$$p ] && [ -d $(PGWS_ROOT)/pkg/$$p/tmpl ] ; then \
+pushd $(PGWS_ROOT)/pkg/$$p/tmpl ; \
 for d in * ; do if [[ "$$d" == "config.tt2" ]] ; then \
-  [ -e $$R/var/tmpl/$$p.tt2 ] || ln -s ../../pkg/$$p/tmpl/$$d $$R/var/tmpl/$$p.tt2 ; \
+  [ -e $(PGWS_ROOT)/var/tmpl/$$p.tt2 ] || ln -s ../../pkg/$$p/tmpl/$$d $(PGWS_ROOT)/var/tmpl/$$p.tt2 ; \
   elif [[ "$$d" == "macro" ]] ; then \
-  [ -d $$R/var/tmpl/$$d ] || mkdir -p $$R/var/tmpl/$$d ; \
+  [ -d $(PGWS_ROOT)/var/tmpl/$$d ] || mkdir -p $(PGWS_ROOT)/var/tmpl/$$d ; \
 for n in $$d/*.tt2 ; do \
-  [ -e $$R/var/tmpl/$$n ] || ln -s ../../../pkg/$$p/tmpl/$$n $$R/var/tmpl/$$n ; \
+  [ -e $(PGWS_ROOT)/var/tmpl/$$n ] || ln -s ../../../pkg/$$p/tmpl/$$n $(PGWS_ROOT)/var/tmpl/$$n ; \
 done else \
-  [ -d $$R/var/tmpl/$$d ] || mkdir -p $$R/var/tmpl/$$d ; \
-  [ -e $$R/var/tmpl/$$d/$$p ] || ln -s ../../../pkg/$$p/tmpl/$$d $$R/var/tmpl/$$d/$$p ; \
+  [ -d $(PGWS_ROOT)/var/tmpl/$$d ] || mkdir -p $(PGWS_ROOT)/var/tmpl/$$d ; \
+  [ -e $(PGWS_ROOT)/var/tmpl/$$d/$$p ] || ln -s ../../../pkg/$$p/tmpl/$$d $(PGWS_ROOT)/var/tmpl/$$d/$$p ; \
 fi ; done ; \
 popd > /dev/null ; \
 fi ; \
-if [ -d $$R/pkg/$$p ] && [ -d $$R/pkg/$$p/www ] ; then \
-pushd $$R/pkg/$$p/www ; \
+if [ -d $(PGWS_ROOT)/pkg/$$p ] && [ -d $(PGWS_ROOT)/pkg/$$p/www ] ; then \
+pushd $(PGWS_ROOT)/pkg/$$p/www ; \
 for d in $$(ls -A) ; do \
 if [ -d $$d ] ; then \
-  [ -d $$R/var/www/$$d ] || mkdir -p $$R/var/www/$$d ; \
-  [ -e $$R/var/www/$$d/$$p ] || ln -s ../../../pkg/$$p/www/$$d $$R/var/www/$$d/$$p ; \
+  [ -d $(PGWS_ROOT)/var/www/$$d ] || mkdir -p $(PGWS_ROOT)/var/www/$$d ; \
+  [ -e $(PGWS_ROOT)/var/www/$$d/$$p ] || ln -s ../../../pkg/$$p/www/$$d $(PGWS_ROOT)/var/www/$$d/$$p ; \
 else \
-  [ -e $$R/var/www/$$d ] || ln -s ../../pkg/$$p/www/$$d $$R/var/www/$$d ; \
+  [ -e $(PGWS_ROOT)/var/www/$$d ] || ln -s ../../pkg/$$p/www/$$d $(PGWS_ROOT)/var/www/$$d ; \
 fi \
 done ; \
 popd > /dev/null ; \
@@ -127,17 +150,16 @@ popd > /dev/null
 
 ctl:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-R=$$(dirs +0) ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 find pgws/ws/bin -name *ctl.sh -print | while read f ; do \
   d=$$(dirname $$f) ; n=$$(basename $$f) ; \
-  [ -e $$R/var/ctl/$$n ] || ln -s $$R/$$d/$$n $$R/var/ctl/$$n ; \
+  [ -e $(PGWS_ROOT)/var/ctl/$$n ] || ln -s ../../$$d/$$n $(PGWS_ROOT)/var/ctl/$$n ; \
 done ; \
 PD=$$(ls pkg/) ; \
-for p in $$PD ; do if [ -d $$R/pkg/$$p/bin ] ; then \
+for p in $$PD ; do if [ -d $(PGWS_ROOT)/pkg/$$p/bin ] ; then \
 find pkg/$$p/bin -name *ctl.sh -print | while read f ; do \
   d=$$(dirname $$f) ; n=$$(basename $$f) ; \
-  [ -e $$R/var/ctl/$$n ] || ln -s $$R/$$d/$$n $$R/var/ctl/$$n ; \
+  [ -e $(PGWS_ROOT)/var/ctl/$$n ] || ln -s ../../$$d/$$n $(PGWS_ROOT)/var/ctl/$$n ; \
 done ; \
 fi ; done ; \
 popd > /dev/null
@@ -146,41 +168,82 @@ popd > /dev/null
 
 setups:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-R=$$(dirs +0) ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 PD=$$(ls pkg/) ; \
-for p in $$PD ; do if [ -e $$R/pkg/$$p/setup.sh ] ; then \
-pushd $$R/pkg/$$p ; $$SHELL setup.sh ; popd > /dev/null ; \
+for p in $$PD ; do if [ -e $(PGWS_ROOT)/pkg/$$p/setup.sh ] ; then \
+pushd $(PGWS_ROOT)/pkg/$$p ; $$SHELL setup.sh ; popd > /dev/null ; \
 fi ; done ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
-
-nginxconf:
+psw-conf:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; d=nginx ; R=$$PWD ; \
-    [ -d $$d ] || mkdir -p $$d; \
-    for f in $$R/pgws/ws/eg/conf/*.conf; \
-        do if [ ! -e $$d/$$(basename $$f) ] ; then \
-            if [[ "$$R" == "/home/data/sampleapp" ]] ; then ln -s $$f -t $$d ; \
-            else cp $$f $$d/ ; sed -i "s|/home/data/sampleapp|$$PWD|g" $$d/*.conf ; fi ;\
-        fi ; done ; \
-	popd > /dev/null
-
-# ------------------------------------------------------------------------------
-
-masterconf:
-	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-[ -f config.json ] || cp ${PWD}/ws/eg/config.json . ; \
-[ -f pgws.sh ] || cp ${PWD}/ws/eg/pgws.sh pgws.sh ; \
+	pushd $(PGWS_ROOT) > /dev/null  ; \
+for f in upload job default ; do \
+  if [ ! -e var/build/psw_$$f ] ; then \
+    < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c$${1:-16} > var/build/psw_$$f ; \
+  fi ; \
+done ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
+nginx-conf:
+	@echo "*** $@ ***"
+	pushd $(PGWS_ROOT) > /dev/null ; \
+[ -d $(NGINX_CFG_DIR) ] || mkdir -p $(NGINX_CFG_DIR); \
+for f in $(PGWS_ROOT)/pgws/ws/eg/conf/{nginx,pgws}-*.conf; do \
+  bnf=$$(basename $$f) ; \
+  if [ ! -e $(NGINX_CFG_DIR)/$$bnf ] ; then \
+    if [[ "$(PGWS_ROOT)" == "$(ROOT_DEFAULT)" && "$(WWW_HOST)" == "$(WWW_HOST_DEFAULT)" \
+      && "$(FCGI_SOCKET)" == "$(FCGI_SOCKET_DEFAULT)" && "$(FE_COOKIE_DEFAULT)" == "$(FE_COOKIE)" ]] ; then \
+      echo "$$bnf: Keeping original configs" ; ln -s $$f -t $(NGINX_CFG_DIR) ; \
+    else \
+      echo "$$bnf: Setup for $(PGWS_ROOT) $(WWW_HOST) $(FCGI_SOCKET) $(FE_COOKIE)" ; \
+      sed -e "s|$(ROOT_DEFAULT)|$(PGWS_ROOT)|g" \
+        -e "s|$(WWW_HOST_DEFAULT)|$(WWW_HOST)|g" \
+        -e "s|$(FE_COOKIE_DEFAULT)|$(FE_COOKIE)|" \
+        -e "s|$(FCGI_SOCKET_DEFAULT)|$(FCGI_SOCKET)|g" $$f > $(NGINX_CFG_DIR)/$$bnf ; \
+    fi ;\
+  fi ; \
+done ; \
+p=$$(cat var/build/psw_upload) ; f=pgws-upload.conf ; \
+[ -e $(NGINX_CFG_DIR)/$$f ] || sed \
+  -e "s|=PSW_UPLOAD=|$$p|" \
+  -e "s|=FILE_STORE_ROOT=|$(FILE_STORE_ROOT)|g" \
+  -e "s|=FILE_URI=|$(FILE_URI)|g" \
+  pgws/ws/eg/conf/$${f}.inc > $(NGINX_CFG_DIR)/$$f ; \
+popd > /dev/null
 
+#      sed -e "s|$(ROOT_DEFAULT)|$$PWD|g;s|$(WWW_HOST_DEFAULT)|$(WWW_HOST)|g;s|$(FCGI_SOCKET_DEFAULT)|$(FCGI_SOCKET)|g" $$f > $(NGINX_CFG_DIR)/$$bnf ; \
+
+# ------------------------------------------------------------------------------
+master-conf:
+	@echo "*** $@ ***"
+	pushd $(PGWS_ROOT) > /dev/null ; \
+if [ ! -f config.json ] ; then \
+  p_up=$$(cat var/build/psw_upload) ; p_job=$$(cat var/build/psw_job) ; \
+  sed -e "s|$(ROOT_DEFAULT)|$(PGWS_ROOT)|g" \
+    -e "s|=PSW_UPLOAD=|$$p_up|" \
+    -e "s|=PSW_JOB=|$$p_job|" \
+    -e "s|=FILE_STORE_ROOT=|$(FILE_STORE_ROOT)|g" \
+    -e "s|=FILE_URI=|$(FILE_URI)|g" \
+    -e "s|=DAEMON_USER=|$(DAEMON_USER)|" \
+    -e "s|=DB_CONNECT=|$(DB_CONNECT)|" \
+    -e "s|=FCGI_SOCKET=|$(FCGI_SOCKET)|" \
+    -e "s|=PROCESS_PREFIX=|$(PROCESS_PREFIX)|" \
+    -e "s|=SRV_DEBUG=|$(SRV_DEBUG)|" \
+    -e "s|=TM_CMD=|$(TM_CMD)|" \
+    -e "s|=FE_COOKIE=|$(FE_COOKIE)|" \
+    -e "s|=PACKAGES=|$(PACKAGES)|" \
+    pgws/ws/eg/conf/config.json.inc > config.json ; \
+fi ; \
+[ -f pgws.sh ] || cp pgws/ws/eg/conf/pgws.sh.inc pgws.sh && chmod +x pgws.sh ; \
+popd > /dev/null
+
+# ------------------------------------------------------------------------------
 gitignore:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 [ -f .gitignore ] || touch .gitignore ; \
 for p in pgws var conf  ; do grep -E "^$$p" .gitignore > /dev/null || echo "$$p/*" >> .gitignore ; done ; \
 popd > /dev/null
@@ -198,7 +261,7 @@ uninstallcomplete:
 clean:
 	@echo "*** $@ ***"
 	rm -rf .install .usage ; \
-pushd .. > /dev/null ; \
+pushd $(PGWS_ROOT) > /dev/null ; \
 [ -f var/run/*.pid ] && ./pgws.sh fcgi stop ; \
 [ -d var ] && for p in var/{build,cache,ctl,log,run,tmpl,tmpc}/* ; do rm -rf $$p ; done ; \
 popd > /dev/null
@@ -207,7 +270,7 @@ popd > /dev/null
 
 uninstall-db:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 [ -f var/.build.pkg ] && ./pgws.sh db drop pkg ; \
 [ -f var/.build.pgws ] && ./pgws.sh db drop ; \
 popd > /dev/null
@@ -216,7 +279,7 @@ popd > /dev/null
 
 uninstall-dirs:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 [ -d var ] && for p in var/{build,cache,log,run,tmpl,tmpc} ; do rmdir $$p 2> /dev/null ; done ; \
 for p in var pkg conf ; do rmdir $$p 2> /dev/null ; done ; \
 popd > /dev/null
@@ -225,16 +288,16 @@ popd > /dev/null
 
 clean-conf:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-for p in conf/*.{json,conf} ; do [ $$p -ef pgws/ws/eg/$$p ] && rm $$p ; done ; \
-for f in config.json pgws.sh ; do [ -f $$f ] && diff --brief $$f pgws/ws/eg/$$f && rm $$f ; done ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
+for p in $(NGINX_CFG_DIR)/*.conf ; do echo "==$$p" ; if [ -L $$p ] ; then rm $$p ; else mv $$p $$p.save ; fi ; done ; \
+for f in config.json pgws.sh ; do [ -e $$f ] && mv $$f $$f.save ; done ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
 
 clean-pkg:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 [ -s var/i18n ] && [ var/i18n -ef pkg/i18n/src/templates ] && rm var/i18n ; \
 [ -d pkg ] && for p in pkg/* ; do [ $$p -ef pgws/ws/eg/$$p ] && rm $$p ; done ; \
 popd > /dev/null
@@ -243,15 +306,14 @@ popd > /dev/null
 
 clean-lib:
 	@echo "*** $@ ***"
-	pushd .. > /dev/null ; \
-R=$$(dirs +0) ; \
+	pushd $(PGWS_ROOT) > /dev/null ; \
 [ -d lib ] && find lib -name *.pm -print | while read f ; do \
   s=$$(readlink $$f) ; p=$$f ; \
-  if [[ "$$s" && "$$s" != "$${s#$$R/pgws/ws/lib/}" ]] ; then \
+  if [[ "$$s" && "$$s" != "$${s#$(PGWS_ROOT)/pgws/ws/lib/}" ]] ; then \
     rm $$p ; \
   else \
-    sr=$${s#$$R/pkg/} ; \
-    sf=$$R/pgws/ws/eg/pkg/$$sr ; \
+    sr=$${s#$(PGWS_ROOT)/pkg/} ; \
+    sf=$(PGWS_ROOT)/pgws/ws/eg/pkg/$$sr ; \
     if [[ "$$s" ]] && [[ "$$sf" ]] && [[ "$$s" != "$$sr" ]] && [ -f $$sf ] && [ $$p -ef $$sf ] ; then \
       rm $$p ; \
     else \
@@ -267,9 +329,8 @@ popd > /dev/null
 uninstall: uninstall-db clean clean-lib clean-pkg clean-conf uninstall-dirs uninstallcomplete
 
 # ------------------------------------------------------------------------------
-
 test:
-	CORELIB=$$PWD/ws/lib ; \
+	CORELIB=$(PGWS_ROOT)/pgws/ws/lib ; \
 	for f in ws/t/*.t ws/eg/pkg/*/t/*.t ; do \
 	d=$$(dirname $$f) ; \
 	n=$$(basename $$f) ; \
@@ -279,8 +340,9 @@ test:
 	popd ; \
 	done
 
+# ------------------------------------------------------------------------------
 critic:
-	CORELIB=$$PWD/ws/lib ; \
+	CORELIB=$(PGWS_ROOT)/pgws/ws/lib ; \
 	for f in ws/t/*.t ws/eg/pkg/*/t/*.t ; do \
 	d=$$(dirname $$f) ; \
 	n=$$(basename $$f) ; \
@@ -289,3 +351,23 @@ critic:
 	perl -I$$CORELIB -Ilib t/$$n ; \
 	popd ; \
 	done
+
+# ------------------------------------------------------------------------------
+keep-sql:
+	touch $(PGWS_ROOT)/var/build/keep_sql
+
+showconf:
+	@echo "*** $@ ***"
+	@echo "WWW_HOST         =  $(WWW_HOST)"
+	@echo "FCGI_SOCKET      =  $(FCGI_SOCKET)"
+	@echo "DAEMON_USER      =  $(DAEMON_USER)"
+	@echo "DB_CONNECT       =  $(DB_CONNECT)"
+	@echo "PROCESS_PREFIX   =  $(PROCESS_PREFIX)"
+	@echo "SRV_DEBUG        =  $(SRV_DEBUG)"
+	@echo "PGWS_ROOT        =  $(PGWS_ROOT)"
+	@echo "FILE_STORE_ROOT  =  $(FILE_STORE_ROOT)"
+	@echo "FILE_URI         =  $(FILE_URI)"
+	@echo "TM_CMD           =  $(TM_CMD)"
+	@echo "FE_COOKIE        =  $(FE_COOKIE)"
+	@echo "PACKAGES         =  $(PACKAGES)"
+	@echo "NGINX_CFG_DIR    =  $(NGINX_CFG_DIR)"

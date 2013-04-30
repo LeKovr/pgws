@@ -80,7 +80,7 @@ CREATE TABLE page_data (
 , is_hidden  BOOL     NOT NULL DEFAULT TRUE
 , target     text     NOT NULL DEFAULT ''
 , uri_re     text     NULL
-, uri_fmt    text     NOT NULL
+, uri_fmt    text     NULL
 , pkg        TEXT     NOT NULL
 , CONSTRAINT page_fkey_class_action FOREIGN KEY (class_id, action_id) REFERENCES class_action
 );
@@ -91,7 +91,7 @@ SELECT pg_c('r', 'page_data', 'Атрибуты страниц для page_data'
 , pg_c('c', 'page_data.action_id' , 'ID акции, к которой относится страница')
 , pg_c('c', 'page_data.group_id'  , 'ID группы страниц для меню')
 , pg_c('c', 'page_data.sort'      , 'порядок сортировки в меню страниц одного уровня (NULL - нет в меню)')
-, pg_c('c', 'page_data.uri'       , 'мета-маска с именами переменных, которой должен соответствовать URI запроса')
+, pg_c('c', 'page_data.uri'       , 'мета-маска с именами переменных, которой должен соответствовать URI запроса (NULL - группировка страниц)')
 , pg_c('c', 'page_data.tmpl'      , 'файл шаблона (NULL для внешних адресов)')
 , pg_c('c', 'page_data.id_fixed'  , 'ID объекта взять из этого поля')
 , pg_c('c', 'page_data.id_session', 'ID объекта взять из этого поля сессии')

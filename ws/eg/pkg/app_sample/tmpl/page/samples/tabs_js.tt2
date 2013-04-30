@@ -1,0 +1,80 @@
+  <div id="main">
+  </div>
+<div class="tabbable">
+  <div class="tab-content">
+   <div id="one" class="tab-pane">Section1</div>
+   <div id="two" class="tab-pane">Section2</div>
+   <div id="free" class="tab-pane">Section3</div>
+  </div>
+</div>
+[% 
+PROCESS 'macro/tabs.tt2';
+meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+//<![CDATA[
+
+var links = [['one','one'],['two','two'],['free','free']];
+
+var html='<ul class ="nav nav-tabs">';
+var content='';
+var index = location.href.indexOf('#');
+$(links).each(function(i){
+  if(index<0 && i == 0){
+    html+='<li class="active"><a class="ajax active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+    $('#'+this[1]).addClass('active');
+  return;
+  }
+  if(index>=0){
+    if(this[1] == location.href.substring(index+1)){
+      html+='<li class="active"><a class="ajax active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+    $('#'+this[1]).addClass('active');
+      return;
+    }
+  }
+  html+='<li><a class="ajax" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+});
+html+='</ul>';
+$('#main').html(html);
+
+/* ------------------------------------------------------------------------- */
+// Инициализация вкладки
+
+if (window.PGWS === undefined) { window.PGWS = {}; }
+window.PGWS.page = {
+  titleSuffix: '[% resp.title _ " - " _ our_title %]',
+};
+
+window.PGWS.tabContentEvents = function(obj) {
+
+};
+
+/* ------------------------------------------------------------------------- */
+// Управление вкладками
+
+window.PGWS.tabSelected = function(objActive){
+  $(".ajax").removeClass("active");
+  $(".ajax").parent('li').removeClass("active");
+  $(objActive).addClass("active");
+  $(objActive).parent('li').addClass("active");
+  $('.tab-content').find('.tab-pane').removeClass('active');
+  index = $(objActive).attr('href').indexOf('#');
+  $('#' + $(objActive).attr('href').substring(index+1)).addClass('active');
+};
+
+/* ------------------------------------------------------------------------- */
+// Инициализация основной страницы
+
+
+$(document).ready(function(){
+   $('.ajax').ajaxUrl({
+    onSuccess:  window.PGWS.tabSelected,
+    titleSuffix: window.PGWS.page.titleSuffix,
+    classMenuItemActive:'.active'
+  });
+  window.PGWS.tabContentEvents('');
+});
+//]]>
+</script>
+[% 
+    END; # BLOCK
+%]

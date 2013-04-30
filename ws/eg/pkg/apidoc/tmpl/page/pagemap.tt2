@@ -12,12 +12,9 @@
 %]
 
 <style type="text/css">
-  a.name { text-decoration: none; }
-  .baseTable th { width: 10%; }
   ul.page-tree { list-style: none; }
-  ul.page-tree li { list-style-type: none; }
 </style>
-
+[%  well_begin; %]
 <ul class="page-tree">[%
   FOR m IN tree
     %]<li style="padding-left: [% 40 + m.id * 20 %]px"><a href="#[% m.name %]" title="[% pages.${m.name}.uri_fmt %]">[% m.name %]</a> - [% pages.${m.name}.name %]</li>[%
@@ -25,6 +22,7 @@
 %]
 </ul>
 [%
+well_end;
 FOR p IN tree;
   m = pages.${p.name};
   tableform_begin(name = m.code, value = m.code);

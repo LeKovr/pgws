@@ -38,10 +38,10 @@ SELECT pg_c('r', 'compile_errors', 'Буфер хранения ошибок н�
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE pkg_log (
-  id          INTEGER PRIMARY KEY
-, code        TEXT NOT NULL DEFAULT 'ws'
+  id          d_id PRIMARY KEY
+, code        d_code NOT NULL DEFAULT 'ws'
 , ver         TEXT NOT NULL DEFAULT '000'
-, op          CHAR(1) DEFAULT '+'
+, op          t_pkg_op
 , log_name    TEXT
 , user_name   TEXT
 , ssh_client  TEXT
@@ -54,7 +54,7 @@ SELECT pg_c('r', 'pkg_log', 'Журнал изменений пакетов PGWS
 , pg_c('c', 'pkg_log.id',         'ID изменения')
 , pg_c('c', 'pkg_log.code',       'Код пакета')
 , pg_c('c', 'pkg_log.ver',        'Версия пакета (reserved)')
-, pg_c('c', 'pkg_log.op',         'Код операции (+ init, - drop, = make)')
+, pg_c('c', 'pkg_log.op',         'Код операции (init, drop, erase, make)')
 , pg_c('c', 'pkg_log.log_name',   '$LOGNAME из сессии пользователя в ОС')
 , pg_c('c', 'pkg_log.user_name',  '$USERNAME из сессии пользователя в ОС')
 , pg_c('c', 'pkg_log.ssh_client', '$SSH_CLIENT из сессии пользователя в ОС')
@@ -68,10 +68,10 @@ ALTER TABLE pkg_log ALTER COLUMN id SET DEFAULT NEXTVAL('pkg_id_seq');
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE pkg (
-  id          INTEGER NOT NULL UNIQUE
-, code        TEXT PRIMARY KEY -- для REFERENCES
+  id          d_id NOT NULL UNIQUE
+, code        d_code PRIMARY KEY -- для REFERENCES
 , ver         TEXT
-, op          CHAR(1) DEFAULT '+'
+, op          t_pkg_op
 , log_name    TEXT
 , user_name   TEXT
 , ssh_client  TEXT
@@ -83,7 +83,7 @@ SELECT pg_c('r', 'pkg', 'Актуальные (последние) измене�
 , pg_c('c', 'pkg.id',         'ID изменения')
 , pg_c('c', 'pkg.code',       'Код пакета')
 , pg_c('c', 'pkg.ver',        'Версия пакета (reserved)')
-, pg_c('c', 'pkg.op',         'Код операции (+ init, - drop, = make)')
+, pg_c('c', 'pkg.op',         'Код крайней операции (init, drop, erase, make)')
 , pg_c('c', 'pkg.log_name',   '$LOGNAME из сессии пользователя в ОС')
 , pg_c('c', 'pkg.user_name',  '$USERNAME из сессии пользователя в ОС')
 , pg_c('c', 'pkg.ssh_client', '$SSH_CLIENT из сессии пользователя в ОС')
@@ -92,4 +92,14 @@ SELECT pg_c('r', 'pkg', 'Актуальные (последние) измене�
 , pg_c('c', 'pkg.stamp',      'Момент выполнения изменения')
 ;
 
+/* ------------------------------------------------------------------------- */
+CREATE TABLE pkg_required_by (
+  code        d_code REFERENCES ws.pkg
+, required_by d_code DEFAULT ws.pg_cs()
+, CONSTRAINT pkg_required_by_pkey PRIMARY KEY (code, required_by)
+);
+SELECT pg_c('r', 'pkg_required_by', 'Зависимоть пакета от другого пакета')
+, pg_c('c', 'pkg_required_by.code',         'Код пакета')
+, pg_c('c', 'pkg_required_by.required_by',  'Код зависимого пакета')
+;
 /* ------------------------------------------------------------------------- */

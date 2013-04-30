@@ -1,0 +1,17 @@
+[%
+	kind_id = page.args.0;
+	events = api( 'ev.event_info_by_kind_id', kind_id => kind_id );
+%]
+
+<table>
+	<tr>
+		<th>Дата</th>
+		<th>Название</th>
+	</tr>
+[% FOR e IN events %]
+	<tr>
+		<td>[% e.created_at %]</td>
+		<td>[% e.name %]</td>
+	</tr>
+[% END %]
+</table>

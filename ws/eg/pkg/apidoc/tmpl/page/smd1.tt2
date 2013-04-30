@@ -13,9 +13,19 @@
     INCLUDE block/apidoc/smd_li.tt2;
     RETURN;
   END;
-  meta.head.autocomplete = 1;
   pg = uri(code => 'api.smd1');
 %]
+<div id="form1_code_err" style="color:green"></div>
+<div id="form1___err" style="color:green"></div>
+<div id="status" style="color:red"></div>
+<form id="form1" onsubmit="return false;">
+  [% l('Имя метода:') %]
+  <input type="text" id="autoc" name="code" autocomplete="off" data-provide="typeahead">
+  <button id="myB" onClick="form_send();">[% l('Найти') %]</button>
+</form>
+<div id="form_smd"></div>
+
+[% meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
   //Для кеширования результатов вызовов списка методов и детализации по методу
@@ -37,36 +47,90 @@ $(document).ready(function(){
     form_send();
   } else {
   }
-    checkAvailability();
+  
+  checkAvailability();
 
   //Опции для autocomplete
-  monkeyPatchAutocomplete();
-  $( "#autoc" ).autocomplete({
+
+  $( "#autoc" ).typeahead({
     source: function( request, response ) {
       $.ajax({
         url: "[% req.prefix %]/_ws.method_lookup.json",
         dataType: "json",
         data: {
-          code: request.term + '%'
+          code: request + '%'
         },
         success: function( data ) {
           if(typeof data.result.data != 'undefined'){
-            response( $.map( data.result.data, function( item ) {
-              return {
-                label: item.code + ' - ' +item.name,
-                value: item.code
-              }
-            }));
+	    var dataArray = new Array();
+            $.map( data.result.data, function(item) {
+               var group = {
+		  id: item.code,
+		  name: item.name
+		};
+              dataArray.push(group);
+            });
+            response(dataArray);
           }
         }
       });
     },
-    minLength: 1,
-    select: function( event, ui ) {
-      $('#myB').click();
+    matcher: function (item) {
+      if (item.id.toLowerCase().indexOf(this.query.trim().toLowerCase()) != -1) {
+	  return true;
+	}
     },
+    sorter: function (items) {
+      return items.sort();
+    },
+    highlighter: function (item) {
+      var regex = new RegExp( '(' + this.query + ')', 'gi' );
+      label = item.id;
+      return label.replace( regex, "<strong>$1</strong>" )  + ' - ' + item.name;
+    },
+    items: 9999
   });
 });
+$.fn.typeahead.Constructor.prototype.render = function(items) {
+     var that = this
+ 
+     items = $(items).map(function (i, item) {
+       i = $(that.options.item).attr('data-value', item.id)
+       i.find('a').html(that.highlighter(item))
+       return i[0]
+     })
+ 
+     this.$menu.html(items)
+     return this
+};
+$.fn.typeahead.Constructor.prototype.next = function (event) {
+  var active = this.$menu.find('.active').removeClass('active');
+  next = active.next();
+  if (!next.length) {
+    next = $(this.$menu.find('li')[0]);
+  }
+  next.addClass('active');
+  $(this.$element).val($(next).attr('data-value'));
+};
+$.fn.typeahead.Constructor.prototype.prev = function (event) {
+  var active = this.$menu.find('.active').removeClass('active')
+   , prev = active.prev()
+   if (!prev.length) {
+    prev = this.$menu.find('li').last()
+   }
+  prev.addClass('active')
+  $(this.$element).val($(prev).attr('data-value'));
+};
+$.fn.typeahead.Constructor.prototype.select = function() {
+  this.hide();
+  $('#myB').click();
+};
+$.fn.typeahead.Constructor.prototype.click = function(e) {
+  var active = this.$menu.find('.active').removeClass('active')
+  $(this.$element).val($(active).attr('data-value'));
+  this.hide();
+  $('#myB').click();
+};
 function show_method_li(method){
   var div_id=method.replace(/\./g,"_");
   var key = method+'%';
@@ -141,13 +205,4 @@ function myclick() {
 //  return true;
 };
 </script>
-
-<div id="form1_code_err" style="color:green"></div>
-<div id="form1___err" style="color:green"></div>
-<div id="status" style="color:red"></div>
-<form id="form1" onsubmit="return false;">
-  [% l('Имя метода:') %]
-  <input type="text" id="autoc" name="code" autocomplete="off" size="50">
-  <button id="myB" onClick="form_send();">[% l('Найти') %]</button>
-</form>
-<div id="form_smd"></div>
+[%  END; # BLOCK %]

@@ -26,15 +26,35 @@ CREATE TRIGGER prop_is_mask BEFORE INSERT OR UPDATE ON prop
 ;
 
 /* ------------------------------------------------------------------------- */
-ALTER TABLE wsd.prop_group ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
-
-ALTER TABLE wsd.prop_owner ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
-
-ALTER TABLE wsd.prop_value ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
+CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON wsd.prop_value
+  FOR EACH ROW
+  EXECUTE PROCEDURE cfg.prop_value_insupd_trigger()
+;
 
 /* ------------------------------------------------------------------------- */
-CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON wsd.prop_value
-  FOR EACH ROW EXECUTE PROCEDURE cfg.prop_value_insupd_trigger()
+CREATE TRIGGER value_insupd BEFORE INSERT OR UPDATE ON wsd.prop_value
+  FOR EACH ROW
+  WHEN (NEW.valid_from <> '2000-01-01'::date)
+  EXECUTE PROCEDURE cfg.prop_value_insupd_has_log()
+;
+
+/* ------------------------------------------------------------------------- */
+CREATE TRIGGER check_system_owner_insupd BEFORE INSERT OR UPDATE ON wsd.prop_value
+  FOR EACH ROW
+  WHEN (cfg.prop_is_pogc_system(NEW.pogc))
+  EXECUTE PROCEDURE cfg.prop_value_system_owner_insupd()
+;
+
+/* ------------------------------------------------------------------------- */
+CREATE TRIGGER validation_valid_from BEFORE INSERT OR UPDATE ON wsd.prop_value
+  FOR EACH ROW
+  WHEN (NEW.valid_from > now())
+  EXECUTE PROCEDURE cfg.prop_validation_valid_from()
+;
+
+/* ------------------------------------------------------------------------- */
+CREATE TRIGGER insupd_check_prop BEFORE INSERT OR UPDATE ON method
+  FOR EACH ROW EXECUTE PROCEDURE cfg.prop_value_check_method_fkeys()
 ;
 
 /* ------------------------------------------------------------------------- */

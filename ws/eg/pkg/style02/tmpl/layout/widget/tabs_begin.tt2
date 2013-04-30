@@ -1,0 +1,25 @@
+[%
+PROCESS 'macro/base.tt2';
+  linksUI=[];
+  FOR u IN meta.page_tabs;
+    act = IF u.code == page.code; 1; END;
+    linksUI.push(active = act, name = u.name, linkparam=' tag=' _ loop.count, href=uri_mk(u.req));
+  END;
+
+ navtabs(links=linksUI);
+%]
+<div id="error"></div>
+[%
+  FOR u IN meta.page_tabs;
+  # пустой div для каждой вкладки до текущей + начало div текущей вкладки
+    IF meta.page_full;
+      %]<div id="ajaxcontent-[% loop.count %]" class="tabcontent">[%
+    END;
+    IF u.code == page.code;
+      LAST;
+    END;
+    IF meta.page_full;
+      %]</div>[%
+    END;
+  END;
+%]

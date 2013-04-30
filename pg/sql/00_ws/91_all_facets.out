@@ -1,0 +1,57 @@
+CREATE TYPE
+CREATE FUNCTION
+    code    | base_code | facet_id |                          value                          |         anno          
+------------+-----------+----------+---------------------------------------------------------+-----------------------
+ ws.d_stamp | timestamp |        4 | ^\d{1,2}\.\d{2}\.\d{4}(?: +| +/ +)\d{2}:\d{2}(:\d{2})?$ | ДД.ММ.ГГГГ ЧЧ:ММ[:СС]
+
+    code     | base_code | facet_id | value | anno 
+-------------+-----------+----------+-------+------
+ ws.d_rating | numeric   |       10 | -2    | 
+ ws.d_rating | numeric   |        7 | 2     | 
+
+    code     | base_code | facet_id | value | anno  
+-------------+-----------+----------+-------+-------
+ ws.d_string | text      |        4 | ^[^  +| NO CR
+             |           |          | ]     | 
+
+    code    | base_code | facet_id |              value              |     anno      
+------------+-----------+----------+---------------------------------+---------------
+ ws.d_email | text      |        4 | (?:^$|^[^ ]+@[^ ]+\.[^ ]{2,6}$) | your@email.ru
+
+    code     | base_code | facet_id |              value              |     anno      
+-------------+-----------+----------+---------------------------------+---------------
+ ws.d_emails | text      |        4 | (?:^$|^[^ ]+@[^ ]+\.[^ ]{2,6}$) | your@email.ru
+
+   code    | base_code | facet_id |            value            | anno 
+-----------+-----------+----------+-----------------------------+------
+ ws.d_path | text      |        4 | ^(|[a-z\d_][a-z\d\.\-_/]+)$ | 
+
+       code       | base_code | facet_id | value | anno 
+------------------+-----------+----------+-------+------
+ ws.d_non_neg_int | integer   |       10 | 0     | 
+
+   code    | base_code | facet_id |         value          | anno 
+-----------+-----------+----------+------------------------+------
+ ws.d_code | text      |        4 | ^[a-z\d][a-z\d\.\-_]*$ | 
+
+     code      | base_code | facet_id |          value          | anno 
+---------------+-----------+----------+-------------------------+------
+ ws.d_code_arg | text      |        4 | ^[a-z\d_][a-z\d\.\-_]*$ | 
+
+    code    | base_code | facet_id |           value           | anno 
+------------+-----------+----------+---------------------------+------
+ ws.d_codei | text      |        4 | ^[a-z\d][a-z\d\.\-_A-Z]*$ | 
+
+      code      | base_code | facet_id |       value       | anno 
+----------------+-----------+----------+-------------------+------
+ ws.d_code_like | text      |        4 | ^[a-z\d\.\-_\%]+$ | 
+
+   code   | base_code | facet_id |                        value                        | anno 
+----------+-----------+----------+-----------------------------------------------------+------
+ ws.d_sub | text      |        4 | ^([a-z\d][a-z\d\.\-_]+)|([A-Z\d][a-z\d\.\-_:A-Z]+)$ | 
+
+     code     | base_code | facet_id |  value   | anno 
+--------------+-----------+----------+----------+------
+ ws.d_errcode | text      |        4 | ^Y\d{4}$ | 
+ ws.d_errcode | text      |        1 | 5        | 
+

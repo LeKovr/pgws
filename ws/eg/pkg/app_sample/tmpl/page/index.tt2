@@ -1,17 +1,14 @@
 [% META
   description = 'Главная страница API';
 
-  api_page = uri(code => 'api');
-  test_page = uri(code => 'api.test');
-  wiki_page = uri(code => 'wiki.wk');
+  site_map = uri(code => 'api.map');
+  test_page = uri(code => 'sample.test');
 %]
 <em>API</em> - [% l('раздел, посвященный программному интерфейсу к функционалу сайта') %].
 <p>[% l('В рамках этого раздела доступны') %]:
 <dl>
-<dt><a href="[% uri_mk(wiki_page.req) %]">[% wiki_page.name %]</a></dt>
-<dd>[% l('Пример приложения') %]</dd>
+<dt><a href="[% uri_mk(site_map.req) %]">[% site_map.name %]</a></dt>
+<dd>[% l('Описание страниц сайта') %]</dd>
 <dt><a href="[% uri_mk(test_page.req) %]">[% test_page.name %]</a></dt>
 <dd>[% l('Демонстрация базовых примеров работы с API') %]</dd>
-<dt><a href="[% uri_mk(api_page.req) %]">[% api_page.name %]</a></dt>
-<dd>[% l('Автодокументация по объектам API') %]</dd>
 </dl>

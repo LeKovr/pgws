@@ -1,0 +1,23 @@
+SET
+CREATE DOMAIN
+CREATE DOMAIN
+CREATE DOMAIN
+ pg_c | pg_c | pg_c 
+------+------+------
+      |      | 
+
+CREATE TYPE
+ pg_c | pg_c | pg_c 
+------+------+------
+      |      | 
+
+ pg_register_type 
+------------------
+ ws.t_test_3
+
+CREATE FUNCTION
+INSERT 0 1
+       code       | class_id | action_id | cache_id | rvf_id | is_write | is_i18n | is_sql | is_strict |    code_real     |    arg_dt_code     | rv_dt_code |       name       | args_exam |      args       | pkg | realm_code 
+------------------+----------+-----------+----------+--------+----------+---------+--------+-----------+------------------+--------------------+------------+------------------+-----------+-----------------+-----+------------
+ ws.dt_returnvoid |        2 |         1 |        2 |      3 | f        | f       | t      | f         | ws.dt_returnvoid | ws.z_dt_returnvoid | void       | Test RETURN VOID |           | inp ws.d_test_8 | ws  | 
+

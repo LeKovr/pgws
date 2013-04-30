@@ -1,5 +1,5 @@
 [% META
   description = 'блок формата [Заголовок Поле ввода] конец'
 %]
-    </div>
-  </div>
+    </div><!-- controls -->
+  </div><!-- controlGroup -->

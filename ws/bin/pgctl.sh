@@ -30,13 +30,15 @@ db_help() {
   cat <<EOF
 
   Usage:
-    $0 db (init|make|drop|doc) [SRC] [PKG]
+    $0 db (init|make|drop|doc|create) [SRC] [PKG]
 
   Where
     init - create DB objects
     make - compile code
     drop - drop DB objects
     erase - drop DB objects
+
+    create - create database (if shell user granted)
 
     doc  - make docs for schema SRC (Default: ws)
     dump - dump schema SRC (Default: all)
@@ -67,6 +69,7 @@ db_run_sql_begin() {
 BEGIN;
 \set ON_ERROR_STOP 1
 SET CLIENT_ENCODING TO 'utf-8';
+-- SET CONSTRAINTS ALL DEFERRED;
 EOF
   if [[ "$BUILD_DEBUG" ]] ; then
     echo "SET CLIENT_MIN_MESSAGES TO 'DEBUG';" >> $file
@@ -95,6 +98,7 @@ db_run_test() {
   local file=$5
   cat >> $file <<EOF
 SAVEPOINT ${point}_test;
+\set TEST $bd/$name
 \o $bd/$name.out
 \i $bd/$n
 \o
@@ -114,13 +118,13 @@ EOF
 }
 
 # ------------------------------------------------------------------------------
-is_file_protected() {
+file_protected_csum() {
   local pkg=$1
-  local ver=$2
+  local schema=$2
   local file=$3
 
-  ${PG_BINDIR}psql -X -d "$CONN" -P tuples_only -c "SELECT code FROM wsd.pkg_script_protected WHERE pkg = '$pkg' AND ver='$ver' AND code = '$file'" 2>> /dev/null | while read result ; do
-    [[ "$result" == "$file" ]] && echo "1"
+  ${PG_BINDIR}psql -X -d "$CONN" -P tuples_only -c "SELECT csum FROM wsd.pkg_script_protected WHERE pkg = '$pkg' AND schema = '$schema' AND code = '$file'" 2>> /dev/null | while read result ; do
+    echo $result
   done
 }
 
@@ -179,10 +183,10 @@ EOF
 
   log_end=""
   op_is_del=""
-  [[ "$run_op" == "del" || "$run_op" == "erase" ]] && op_is_del=1
+  [[ "$run_op" == "drop" || "$run_op" == "erase" ]] && op_is_del=1
   local path=$PGWS_ROOT/$src
   if [[ "$src" == "$PGWS" ]] ; then
-    [[ "$run_op" == "add" ]] && log_end="1"
+    [[ "$run_op" == "init" ]] && log_end="1"
   fi
 
   pushd $path > /dev/null
@@ -213,13 +217,13 @@ EOF
     dn="${sn}_data"   # persistent data schema
     [[ "$pn" == "pg" ]] && pn="ws" # system package got project name
     if [[ "$p" != "$p_pre" ]] ; then
+      echo -n "$pn: "
       echo "\\qecho '-- ******* Package: $pn --'" >> $BLD/build.sql
       echo "\\set PKG $pn" >> $BLD/build.sql
       echo "\\set VER $ver" >> $BLD/build.sql
-      # операция add для всех пакетов, кроме ws, регистрируется в начале
-      if [[ "$p" != "$p_pre" ]] && [[ "$pn" != "ws" ]] && [[ "$run_op" == "add" ]] ; then
-        echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
-        p_pre=$p
+      if [[ "$pn" != "ws" || "$run_op" != "init" ]] ; then
+        # начало выполнения операции (не вызывается только для init пакета ws)
+        echo "SELECT ws.pkg_op_before('$run_op', '$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
       fi
     fi
     echo "\\qecho '-- ------- Schema: $sn'" >> $BLD/build.sql
@@ -227,33 +231,65 @@ EOF
     [ -d "$BLD/$bd" ] || mkdir $BLD/$bd
     echo -n > $BLD/errors.diff
     pushd $s > /dev/null
+    local search_set=""
     for f in $file_mask ; do
       if [ -f "$f" ] ; then
+        echo -n "."
         n=$(basename $f)
 #        echo "Found: $s/$f"
         echo "Processing file: $s/$f" >> $LOGFILE
+        local csum=$(perl -I$PGWS_ROOT/lib -MPGWS::Utils -e "print PGWS::Utils::data_sha1('$f');")
         # вариант с заменой 1го вхождения + поддержка plperl
         $AWK_BIN "{ print gensub(/(\\\$_\\\$)($| +#?)/, \"\\\1\\\2 /* $pn:$sn:\" FILENAME \" / \" FNR \" */ \",\"g\")};" $f > $BLD/$bd/$n
         # вариант без удаления прошлых комментариев
         # awk "{gsub(/\\\$_\\\$(\$| #?)/, \"/* $pn:$sn:$n / \" FNR \" */ \$_\$ /* $pn:$sn:$n / \" FNR \" */ \")}; 1" $f > $BLD/$bd/$n
         # вариант с удалением прошлых комментариев
         # awk "{gsub(/(\/\* .+ \/ [0-9]+ \*\/ )?\\\$_\\\$( \/\* .+ \/ [0-9]+ \*\/)?/, \"/* $pn:$sn:$n / \" FNR \" */ \$_\$ /* $pn:$sn:$n / \" FNR \" */ \")}; 1" $f > $BLD/$bd/$n
-        local is_prot=$(is_file_protected $pn $ver $n)
-        if [[ ! $is_prot ]]; then
-          echo "\\qecho '----- $pn:$sn:$n -----'">> $BLD/build.sql
+        # настройка serach_path для init и make
+        if [[ ! "$search_set" ]] && [[ "$n" > "12_00" ]]; then
+          echo "SET LOCAL search_path = $sn, ws, i18n_def, public;" >> $BLD/build.sql
+          search_set=1
+        fi
+        echo "\\qecho '----- ($csum) $pn:$sn:$n -----'">> $BLD/build.sql
+
+        local db_csum=""
+        local skip_file=""
+        if [[ "$n" =~ .+_wsd_[0-9]{3}\.sql ]]; then  # old bash: ${X%_wsd_[0-9][0-9][0-9].sql}
+          # protected script
+          local db_csum=$(file_protected_csum $pn $sn $n)
+          if [[ "$db_csum" ]]; then
+            if [[ "$db_csum" != "$csum" ]]; then
+              echo "!!!WARNING!!! Changed control sum of protected file $f. Use 'db erase' or 'git checkout -- $f'"
+              skip_file=1
+            else
+              # already installed. Skip
+              skip_file=1
+            fi
+          else
+            # save csum
+            db_csum=$csum
+          fi
+        fi
+        # однократный запуск PROTECTED
+        if [[ ! "$skip_file" ]]; then
           echo "\\set FILE $n" >> $BLD/build.sql
           echo "\i $bd/$n" >> $BLD/build.sql
+          [[ "$db_csum" ]] && echo "INSERT INTO wsd.pkg_script_protected (pkg, schema, code, csum) VALUES ('$pn', '$sn', '$n', '$db_csum');" >> $BLD/build.sql 
         else
-          echo "\\qecho '----- PROTECTED FILE $pn:$sn:$n -----'">> $BLD/build.sql
+          echo "\\qecho '----- SKIPPED PROTECTED FILE  -----'" >> $BLD/build.sql
+          [[ "$db_csum" != "$csum" ]] && echo "\\qecho '!!!WARNING!!! protected csum is $db_csum'" >> $BLD/build.sql
         fi
       fi
     done
     popd > /dev/null
     if [[ ! "$op_is_del" ]] ; then
+      # тесты для init и make
       echo "SET LOCAL search_path = i18n_def, public;" >> $BLD/build.sql
 
       # TODO: 01_require.sql
+      [ -f $s/9?_*.inc ] && cp $s/9?_*.inc $BLD/$bd/
       for f in $s/9?_*.sql ; do
+        echo -n "."
         [ -s "$f" ] || continue
         n=$(basename $f)
 #        echo "Found test: $f"
@@ -271,9 +307,11 @@ EOF
 
     [[ -f "$BLD/keep_sql" ]] || echo "\! rm -rf $bd" >> $BLD/build.sql
 
+    # завершение выполнения операции (не вызывается только для drop/erase пакета ws)
     [[ "$p" != "$p_pre" ]] && ( [[ "$pn" != "ws" ]] || [[ ! "$op_is_del" ]] ) \
-      && echo "SELECT ws.pkg_$run_op('$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+      && echo "SELECT ws.pkg_op_after('$run_op', '$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
     p_pre=$p
+    echo .
   done
 
   test_op=$(cat $BLD/test.cnt)
@@ -285,8 +323,17 @@ EOF
   # print last "Ok"
   [[ "$op_is_del" ]] || echo "SELECT ws.test(NULL);" >> $BLD/build.sql
   pushd $BLD > /dev/null
+
+  # Get passwords
+  PSW_JOB=$(cat psw_job)
+  PSW_DEFAULT=$(cat psw_default)
+  [[ "$PSW_JOB" ]] || PSW_JOB="not set. Run make clean-conf ; make conf"
+  [[ "$PSW_DEFAULT" ]] || PSW_DEFAULT="not set. Run make clean-conf ; make conf"
+  # не сохраняем пароли в других файлах
+
   echo "Running build.sql..."
-  [[ "$DO_SQL" ]] && ${PG_BINDIR}psql -X -P footer=off -d "$CONN" -f build.sql 3>&1 1>$LOGFILE 2>&3 | log $TEST_TTL
+  [[ "$DO_SQL" ]] && ${PG_BINDIR}psql -X -P footer=off -d "$CONN" -f build.sql \
+    -v PSW_JOB="$PSW_JOB" -v PSW_DEFAULT="$PSW_DEFAULT" 3>&1 1>$LOGFILE 2>&3 | log $TEST_TTL
   RETVAL=$?
   popd > /dev/null
   if [[ $RETVAL -eq 0 ]] ; then
@@ -297,9 +344,10 @@ EOF
     else
       local flagfile=${flag}.pkg
     fi
-    [[ "$run_op" == "add" ]] && touch $flagfile
+    [[ "$run_op" == "init" ]] && touch $flagfile
     [[ "$op_is_del" ]] && [ -f $flagfile ] && rm $flagfile
     echo "Complete"
+    [[ "$op_is_del" ]] || echo "Default system password: $PSW_DEFAULT"
   else
 #    echo "*** Errors found"
 #    grep ERROR $LOGFILE || echo "    None."
@@ -373,8 +421,25 @@ db_doc() {
     echo "$bin must be installed to use doc feature"
     exit
   fi
-  c=${CONN#dbname=}
+  c0=${CONN#*dbname=} ; c=${c0%% *}
   postgresql_autodoc -s $schema -f $BLD/$schema -d "$c"
+}
+
+# ------------------------------------------------------------------------------
+db_create() {
+
+  local bin="createdb"
+  local has_bin=$(whereis -b $bin)
+  if [[ "$has_bin" == "$bin:" ]] ; then
+    echo "$bin must be in search path to use this feature"
+    exit
+  fi
+  c0=${CONN#*dbname=} ; c=${c0%% *}
+  u0=${CONN#*user=} ;   u=${u0%% *}
+  echo -n "Create database \"$c\"..."
+  ${PG_BINDIR}psql -X -d "$CONN" -P tuples_only -c "SELECT NULL" > /dev/null 2>> $LOGFILE && { echo "Database already exists" ; exit ; }
+  createdb -O $u -E UTF8 -T template0 --lc-collate=C --lc-ctype='ru_RU.UTF-8' $c && createlang plperl $c && echo "OK"
+  # TODO: ALTER DATABASE $c SET lc_messages='en_US.utf8';
 }
 
 # ------------------------------------------------------------------------------
@@ -398,10 +463,10 @@ pkg=$@
 
 case "$cmd" in
   init)
-    db_run add "[1-8]?_*.sql" $src "$pkg"
+    db_run init "[1-8]?_*.sql" $src "$pkg"
     ;;
   drop)
-    db_run del "00_*.sql" $src "$pkg"
+    db_run drop "00_*.sql" $src "$pkg"
     ;;
   erase)
     echo "!!!WARNING!!! Erase will drop persistent data"
@@ -416,13 +481,16 @@ case "$cmd" in
     db_run erase "0?_*.sql" $src "$pkg"
     ;;
   make)
-    db_run make "19_*.sql [3-6]?_*.sql" $src "$pkg"
+    db_run make "1[4-9]_*.sql [3-6]?_*.sql" $src "$pkg"
     ;;
   doc)
     db_doc $src
     ;;
   dump)
     db_dump $src
+    ;;
+  create)
+    db_create
     ;;
 #  dumpdata)
 #    db_dumpdata

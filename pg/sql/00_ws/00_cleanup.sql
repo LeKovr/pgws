@@ -21,11 +21,3 @@
     Удаление связей с wsd
 */
 
-/* ------------------------------------------------------------------------- */
--- Будет ошибка если есть неудаленные пакеты приложения
-SELECT ws.pkg_is_core_only();
-
-/* ------------------------------------------------------------------------- */
-ALTER TABLE wsd.pkg_script_protected ALTER COLUMN pkg DROP DEFAULT;
-ALTER TABLE wsd.pkg_script_protected ALTER COLUMN schema DROP DEFAULT;
-

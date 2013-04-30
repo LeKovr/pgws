@@ -1,0 +1,33 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'список ролей команды';
+ 
+  team_id = page.args.0;
+  
+  team_profile = api('team.profile', id => team_id);
+  resp.title =  page.name _ l(' команды &laquo;[_1]&raquo;', team_profile.name);
+  
+  team_roles = api('team.role', 'id' => team_id);
+  
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;	
+
+  table_begin(class='table-bordered table-striped');
+    tr(list = ['Роль','Описание','Пользователей', 'Командная'], use_th=1, thead=1);
+    FOR role IN team_roles;
+      href = uri_mk(uri(code => 'team.id.setup.role.id', id => team_id, id1 => role.id).req);
+        team_only = role.is_team_only != 0 ? l('Да') : l('Нет');
+        mute_if_general = role.is_team_only ? '' : 'muted';
+
+        team_role_number = api('team.role_number:3', id => team_id, role_id => role.id);
+            # USE dumper(indent=1, pad="  "); '<!-- ' _ dumper.dump(an) _ ' -->';
+        IF team_role_number; an = team_role_number.account_number; ELSE; an = '0'; END;
+        tr(list = [
+          "<a href='$href'>$role.name</a>"
+          , role.anno
+          , an
+          , team_only
+        ], class = mute_if_general);      
+    END;
+  table_end(tbody=1);
+%]

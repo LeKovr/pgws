@@ -1,5 +1,4 @@
 [% META
   description = 'начало меню'
 %]
-
-  <div class="subnav subnav-fixed">
+  <div class="subnav">

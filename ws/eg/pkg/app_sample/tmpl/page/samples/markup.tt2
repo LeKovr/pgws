@@ -1,0 +1,488 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Примеры разметки страниц';
+
+  resp.skin = 'wide'; # страница на всю ширину
+
+%]
+
+ <!-- Navbar
+    ================================================== -->
+ <div class="navbar ">
+   <div class="navbar-inner">
+     <div class="container">
+       <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+         <span class="icon-bar"></span>
+         <span class="icon-bar"></span>
+         <span class="icon-bar"></span>
+       </a>
+       <div class="nav-collapse collapse" id="main-menu">
+        <ul class="nav" id="main-menu-left">
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Изменить тему <b class="caret"></b></a>
+            <ul class="dropdown-menu" id="swatch-menu">
+              <li><a href="#" rel="default">Текущая</a></li>
+              <li class="divider"></li>
+              <li><a href="#" rel="amelia">Amelia</a></li>
+              <li><a href="#" rel="cerulean">Cerulean</a></li>
+              <li><a href="#" rel="cosmo">Cosmo</a></li>
+              <li><a href="#" rel="cyborg">Cyborg</a></li>
+              <li><a href="#" rel="journal">Journal</a></li>
+              <li><a href="#" rel="readable">Readable</a></li>
+              <li><a href="#" rel="simplex">Simplex</a></li>
+              <li><a href="#" rel="slate">Slate</a></li>
+              <li><a href="#" rel="spacelab">Spacelab</a></li>
+              <li><a href="#" rel="spruce">Spruce</a></li>
+              <li><a href="#" rel="superhero">Superhero</a></li>
+              <li><a href="#" rel="united">United</a></li>
+            </ul>
+          </li>
+        </ul>
+       </div>
+     </div>
+   </div>
+ </div>
+
+    
+[%  
+PROCESS 'macro/base.tt2'; 
+container_begin;
+# Masthead
+# ==================================================
+    
+ %]
+
+<header class="jumbotron subhead">
+  [% row_begin;
+      div_begin(width='medium');
+       h(type = 1, text = 'Заголовок');
+       p(class='lead',text='Оформление от bootswatch.com с подгружаемым шрифтом');
+      div_end;
+  row_end;
+  sub_begin;
+    ul(class = 'nav nav-pills', links = [ { href = '#typography', name = 'Typography'},
+					    { href = '#navbar', name = 'Navbar'},
+						 { href = '#buttons', name = 'Buttons', active = 1},
+						 { href = '#forms', name = 'Forms'},
+						 { href = '#tables', name = 'Tables'},
+						 { href = '#miscellaneous', name = 'Miscellaneous'}]);
+  sub_end; %]
+</header>
+
+
+
+[%
+# Typography
+# ================================================== 
+ section_begin(header = 'Typography', id = 'typography'); 
+
+    row_begin; 
+
+     div_begin(width = 'low');
+      well_begin;
+       h(type = 1, text = 'h1. Heading 1');
+       h(type = 2, text = 'h2. Heading 2');
+       h(type = 3, text = 'h3. Heading 3');
+       h(type = 4, text = 'h4. Heading 4');
+       h(type = 5, text = 'h5. Heading 5');
+       h(type = 6, text = 'h6. Heading 6');
+      well_end;
+     div_end; 
+
+     div_begin(width = 'low');
+      h(type = 3, text = 'Example body text');
+      p(text='Nullam quis risus eget urna mollis ornare vel eu leo. Cum 
+sociis natoque penatibus et magnis dis parturient montes, nascetur 
+ridiculus mus. Nullam id dolor id nibh ultricies vehicula ut id elit.');
+      p('Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor 
+auctor. Duis mollis, est non commodo luctus, nisi erat porttitor ligula,
+ eget lacinia odio sem nec elit. Donec sed odio dui.');
+     div_end;
+
+     div_begin(width = 'low');
+      h(type = 3, text = 'Example addresses'); %]
+      <address>
+        <strong>Twitter, Inc.</strong><br>
+        795 Folsom Ave, Suite 600<br>
+        San Francisco, CA 94107<br>
+        <abbr title="Phone">P:</abbr> (123) 456-7890
+      </address>
+      <address>
+        <strong>Full Name</strong><br>
+        <a href="mailto:#">first.last@gmail.com</a>
+      </address>
+   [% div_end;
+
+   row_end; 
+  
+  row_begin; 
+   div_begin(width = 'medium');%]
+      <blockquote>
+        [%p(text='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.');%]
+        <small>Someone famous in <cite title="Source Title">Source Title</cite></small>
+      </blockquote>
+  [% div_end;
+     div_begin(width = 'medium');%]
+      <blockquote class="pull-right">
+        [%p(text='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.');%]
+        <small>Someone famous in <cite title="Source Title">Source Title</cite></small>
+      </blockquote>
+   [% div_end; 
+  row_end;
+
+ section_end;
+
+# Navbar
+#================================================== 
+
+submenu = [
+  {href='#', name='Action'},
+  {href='#', name='Another action'},
+  {href='#', name='Something else here'},
+  {href='#', class='divider'},
+  {href='#', name='Separated link'}
+];
+
+uldropdown =  ul(class='dropdown-menu', links = submenu); 
+
+section_begin(header = 'Navbars', id = 'navbar'); 
+
+# navbar 1
+
+  navbar_begin(name = 'My name'); 
+    ul(class='nav', links = [
+      {active = 1, href='#', name = 'Home'},
+      {href='#', name = 'Link'},
+      {href='#', name = 'Link2'},
+      {href='#', name = 'Link3'},
+      {href='#', class = 'dropdown', classLink = 'dropdown-toggle', name = 'Dropdown <b class="caret"></b>', childs = submenu, linkparam = 'data-toggle="dropdown"', classUl = 'dropdown-menu'}
+    ]) 
+    %]<form class="navbar-search pull-left" action="">[% 
+      input(class='search-query span2', param='Search'); 
+    %]</form>[% 
+    ul(class='nav pull-right', links = [
+      {href='#', name = 'Link'},
+      {class = 'divider-vertical'},
+      {href = '#', class = 'dropdown', classLink = 'dropdown-toggle', name = 'Dropdown <b class="caret"></b>', childs = submenu, linkparam = 'data-toggle="dropdown"', classUl = 'dropdown-menu'}
+    ]);
+  navbar_end; 
+  
+# navbar 2
+
+  navbar_begin(name = 'My name', class='navbar-inverse'); 
+    ul(class='nav', links = [
+      {active = 1, href='#', name = 'Home'},
+      {href='#', name = 'Link'},
+      {href='#', name = 'Link2'},
+      {href='#', name = 'Link3'},
+      {href='#', class = 'dropdown', classLink = 'dropdown-toggle', name = 'Dropdown <b class="caret"></b>', content = uldropdown, linkparam = 'data-toggle="dropdown"'}
+    ]) 
+    %]<form class="navbar-search pull-left" action="">[% 
+      input(class='search-query span2', param='Search'); 
+    %]</form>[% 
+    ul(class='nav pull-right', links = [
+      {href='#', name = 'Link'},
+      {href = '#', class = 'divider-vertical'},
+      {href = '#', class = 'dropdown', classLink = 'dropdown-toggle', name = 'Dropdown <b class="caret"></b>', content = uldropdown, linkparam = 'data-toggle="dropdown"'}
+    ]);
+  navbar_end; 
+section_end;
+
+# Buttons
+# ==================================================
+ section_begin(header = 'Buttons', id = 'buttons'); 
+	table_begin(class='table-bordered table-striped');
+	%] <thead> [%
+	  tr(use_th=1, list = ['Button', 'Large Button', 'Small Button', 'Disabled Button', 'Button with Icon', 'Split Button']);
+	%] </thead> [%
+          tr(list = [btn(name='Default'), btn(name='Default', class='btn-large'), btn(name='Default', class='btn-small'), btn(name='Default', class='disabled'), btn(name='Default', icon='icon-cog'), btn(name='Default', ullist=uldropdown)]);
+  	  tr(list = [btn(name='Primary', class='btn-primary'), btn(name='Primary', class='btn-primary btn-large'), btn(name='Primary', class='btn-primary btn-small'), btn(name='Primary', class='btn-primary disabled'), btn(name='Primary', icon='icon-cog', class='btn-primary'), btn(name='Primary', class='btn-primary', ullist=uldropdown)]);
+	  tr(list = [btn(name='Info', class='btn-info'), btn(name='Info', class='btn-info btn-large'), btn(name='Info', class='btn-info btn-small'), btn(name='Info', class='btn-info disabled'), btn(name='Info', icon='icon-cog', class='btn-info'), btn(name='Info', class='btn-info', ullist=uldropdown)]);
+	  tr(list = [btn(name='Success', class='btn-success'), btn(name='Success', class='btn-success btn-large'), btn(name='Success', class='btn-success btn-small'), btn(name='Success', class='btn-success disabled'), btn(name='Success', icon='icon-cog', class='btn-success'), btn(name='Success', class='btn-success', ullist=uldropdown)]);
+	  tr(list = [btn(name='Warning', class='btn-warning'), btn(name='Warning', class='btn-warning btn-large'), btn(name='Warning', class='btn-warning btn-small'), btn(name='Warning', class='btn-warning disabled'), btn(name='Warning', icon='icon-cog', class='btn-warning'), btn(name='Warning', class='btn-warning', ullist=uldropdown)]);
+	  tr(list = [btn(name='Danger', class='btn-danger'), btn(name='Danger', class='btn-danger btn-large'), btn(name='Danger', class='btn-danger btn-small'), btn(name='Danger', class='btn-danger disabled'), btn(name='Danger', icon='icon-cog', class='btn-danger'), btn(name='Danger', class='btn-danger', ullist=uldropdown)]);
+	  tr(list = [btn(name='Inverse',  class='btn-inverse'), btn(name='Inverse', class='btn-inverse btn-large'), btn(name='Inverse', class='btn-inverse btn-small'), btn(name='Inverse', class='btn-inverse disabled'), btn(name='Inverse', icon='icon-random', class='btn-inverse'), btn(name='Inverse', class='btn-inverse', ullist=uldropdown)]);
+	table_end;
+	  
+  section_end;
+
+# Forms  <div class="span10 offset1">
+# ==================================================
+ section_begin(header = 'Forms', id = 'forms');
+  row_begin; 
+  div_begin(size = 10, offset=1);
+  well_begin;
+%]
+      <form class="form-search">
+        [% input(class='input-medium search-query');
+        btn(type='submin', name='Search'); %]
+      </form>
+[% well_end; 
+  well_begin;%]
+        <form class="form-search">
+          [% input(class='input-small', param='Email'); 
+          input(class='input-small', param='Password', type='password'); 
+          btn(type='submit', name='Go'); %]
+        </form>
+[% well_end;  %]
+
+      <form class="form-horizontal well">
+        <fieldset>
+          <legend>Controls Bootstrap supports</legend>
+          [% controlGroup_begin(label = 'Text input'); 
+             input(class='input-xlarge', id='input01'); 
+              p(class='help-block', text='In addition to freeform text, any HTML5 text-based input appears like so.');
+          controlGroup_end; 
+          controlGroup_begin(label = 'Checkbox'); %] 
+              <label class="checkbox">
+		[% input (type='checkbox', value='option1', id='optionsCheckbox'); %]
+                Option one is this and that—be sure to include why it's great
+              </label>
+       [% controlGroup_end; 
+          controlGroup_begin(label = 'Select list');  
+	      select(options = [{text = 'something', selected = 1},{text = 2},{text = 3},{text = 4},{text = 5}]); 
+          controlGroup_end;
+          controlGroup_begin(label = 'Multicon-select');  
+	      select(options = [{text = '1', selected = 1},{text = 2},{text = 3},{text = 4},{text = 5}], multiple=1); 
+          controlGroup_end;
+          controlGroup_begin(label = 'File input');  
+              input(type='file' class='input-file');
+          controlGroup_end;
+          controlGroup_begin(label = 'Textarea');  
+              input(class='input-xlarge',rows=3);
+          controlGroup_end;
+          controlGroup_begin(label = 'Focused input');  
+              input(class='input-xlarge focused', value='This is focused…');
+          controlGroup_end;
+          controlGroup_begin(label = 'Uneditable input');
+            span(text='Some value here', class='input-xlarge uneditable-input');
+          controlGroup_end;
+          controlGroup_begin(label = 'Disabled input');
+              input(class='input-xlarge disabled', param='Disabled input here…', disabled=1);
+          controlGroup_end;
+          controlGroup_begin(label = 'Disabled checkbox');%]
+              <label class="checkbox">
+                [% input(type='checkbox', value='option1', disabled=1); %]
+                This is a disabled checkbox
+              </label>
+          [% controlGroup_end;
+          controlGroup_begin(label = 'Input with warning', class='warning');
+              input();
+              span(class='help-inline', text='Something may have gone wrong');
+          controlGroup_end;
+          controlGroup_begin(label = 'Input with error', class='error');
+              input();
+              span(class='help-inline', text='Please correct the error');
+          controlGroup_end;
+          controlGroup_begin(label = 'Input with success', class='success');
+              input();
+              span(class='help-inline', text='Woohoo!');
+          controlGroup_end;
+          controlGroup_begin(label = 'Select with success', class='success');
+            select(options = [{text = '1', selected = 1},{text = 2},{text = 3},{text = 4},{text = 5}]); 
+              span(class='help-inline', text='Woohoo!');
+          controlGroup_end;%]
+          <div class="form-actions">
+            [% btn(type='submit', class='btn btn-primary', name='Save changes'); %]
+            [% btn(type='reset', name='Cancel'); %]
+          </div>
+        </fieldset>
+      </form>
+    [% div_end; 
+    row_end;
+section_end;
+
+# Tables
+# ==================================================
+ section_begin(header = 'Tables', id = 'tables');
+    table_begin(class='table-bordered table-striped table-hover');
+      tr(list = ['#','First Name','Last Name','UserName'], use_th=1 thead=1);
+      tr(list = [1,'Mark','Otto','@mdo']);;
+      tr(list = [2,'Jacob','Thornton','@fat']);
+      tr(list = [3,'Larry','the Bird','@twitter']);
+    table_end;
+  section_end;
+
+# Miscellaneous
+# ================================================== 
+section_begin(header = 'Miscellaneous', id = 'miscellaneous');
+ 
+  row_begin;
+   div_begin(width='low');
+       h(type = 3, text = 'Breadcrumbs', id = 'breadcrumbs');         
+       breadcrumb(links=[{name = 'Home'}]);
+       breadcrumb(links=[{name = 'Home', href='#1'},{name = 'Library',href='#2'},{name = 'Data'}]);
+    div_end;
+    div_begin(width='low');
+      h(type = 3, text = 'Pagination', id = 'pagination');
+      pagination(links=[
+        {href='#', name='&larr;'},
+        {href='#', active=1,name=10},
+        {href='#', classLink='disabled',name='...'},
+        {href='#', name=20},
+        {href='#', name='&rarr;'}
+      ]);      
+      pagination(class='pagination-centered', links=[
+        {href='#', active=1,name=1},
+        {href='#', name=2},
+        {href='#', name=3},
+        {href='#', name=4},
+        {href='#', name=5}
+      ]);
+    div_end;
+    
+    div_begin(width='low');
+      h(type = 3, text = 'Pagers', id = 'pager');               
+      ul(class='pager',links=[
+        {href='#', name = 'Previous'},
+        {href='#', name='Next'}
+      ]);
+
+      ul(class='pager',links=[
+        {href='#', name = '&larr; Older', classLink='previous disabled'},
+        {href='#', name='Newer &rarr;', classLink='next'}
+      ]);
+    div_end;
+  div_end;
+
+# Navs
+#  ==================================================
+ row_begin;
+    div_begin(size=4);
+
+       h(type = 3, text = 'Tabs', id = 'tabs');
+       navtabs(links=[{active=1,name='Section 1',content='This section1'},{name='Section 2', content='This section2'},{name='Section 3', content='This section3'}]);
+
+    div_end; 
+    div_begin(width='low');
+      h(type = 3, text = 'Pills', id = 'pills');
+      
+      uldoplist= ul(class='dropdown-menu', links=[
+        {href='#', name='Action'},
+        {href='#', name='Another action'},
+        {href='#', name='Something else here'},
+        {class='divider'},
+        {href='#', name='Separated link'}
+      ]);
+      ul(class='nav nav-pills', links=[
+        {href='#', active=1,name='Home'},
+        {href='#', name='Profile'},
+        {href='#', class='dropdown', classLink='dropdown-toggle', linkparam='data-toggle=\'dropdown\'', name='Dropdown <b class=\'caret\'></b>', content=uldoplist},
+        {href='#', class='disabled',name='Disabled link'}
+      ]); 
+    div_end;
+    div_begin(width='low');
+      h(type = 3, text = 'Lists', id = 'list'); 
+      well_begin;
+        ul(class='nav nav-list',links=[
+          {class='nav-header',name='List header'},
+          {href='#', active=1,name='Home'},
+          {href='#', name='Library'},
+          {href='#', name='Applications'},
+          {class='nav-header',name='Another list header'},
+          {href='#', name='Profile'},
+          {href='#', name='Settings'},
+          {class='divider'},
+          {href='#', name='Help'}]);
+      well_end;
+     div_end;
+  row_end;
+
+# Labels
+# ==================================================
+ row_begin;
+    div_begin(width='medium');    
+      h(id='labels',type='3', text='Labels');
+      label(text='Default');
+      label(text='Success',class='success');
+      label(text='Warning',class='warning');
+      label(text='Important',class='important');
+      label(text='Info',class='info');
+      label(text='Inverse',class='inverse');
+    div_end;
+    div_begin(width='medium');    
+      h(id='badges',type='3', text='badge');
+      badge(text='Default');
+      badge(text='Success',class='success');
+      badge(text='Warning',class='warning');
+      badge(text='Important',class='important');
+      badge(text='Info',class='info');
+      badge(text='Inverse',class='inverse');
+    div_end;
+  row_end;
+
+# Progress bars
+# ==================================================
+  h(type = 3, text = 'Progress bars', id = 'progressbars'); 
+
+  row_begin;
+    div_begin(width='low');
+      progress(progress=60);
+
+    div_end;
+    div_begin(width='low');
+      progress(class='progress-info progress-striped', progress=20);
+    div_end;
+    div_begin(width='low');
+      progress(class='progress-danger progress-striped active', progress=45);
+    div_end;
+  row_end;
+
+# Alerts & Messages
+# ==================================================
+  h(type = 3, text = 'Alerts', id = 'alerts');   
+  row_begin;
+    div_begin(width='high');
+        alert_begin(type='block');%]
+          <a class="close">×</a>
+          [% h(type = 4, text = 'Alert block', class = 'alert-heading');   
+          p(text="Best check yo self, you're not looking too good. Nulla vitae elit libero, a pharetra augue. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.");
+        alert_end;
+    div_end;
+  row_end;
+  row_begin;
+    div_begin(size=4);
+        alert_begin(type='error');%]
+        <a class="close">×</a>
+        <strong>Error</strong> Change a few things up and try submitting again.
+        [%alert_end;
+    div_end;
+    div_begin(size=4);
+        alert_begin(type='success');%]
+        <a class="close">×</a>
+        <strong>Success</strong> You successfully read this important alert message.
+        [%alert_end;
+    div_end;
+    div_begin(size=4);
+        alert_begin(type='info');%]
+        <a class="close">×</a>
+        <strong>Information</strong> This alert needs your attention, but it's not super important.
+      [%alert_end;
+    div_end;
+  row_end;
+section_end;
+container_end;
+%]
+
+
+    <!-- Le javascript
+    ================================================== -->
+    
+
+[% meta.js.${meta.js.size} = BLOCK %]
+<script>
+$(function() {
+  $('#swatch-menu li a').bind('click',
+    function(e) {
+      if($(this).attr('rel') == 'default'){
+	$("#switch_style").attr("href", "/css/style02/bootstrap.pgws.css");       
+      }else{
+	$("#switch_style").attr("href", "http://bootswatch.com/"+$(this).attr('rel')+"/bootstrap.min.css");       
+      }
+      return false;
+    }
+  );
+});
+</script>
+[% END; # BLOCK %]

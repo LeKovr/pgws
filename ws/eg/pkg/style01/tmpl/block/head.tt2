@@ -8,7 +8,11 @@
 
 %]
 <link href="/img/[% TMPL_LAYOUT %]/favicon.ico?19721023"     rel="shortcut icon" />
-
+<script type="text/javascript">
+//<![CDATA[
+  if (window.PGWS === undefined) { window.PGWS = {}; }
+//]]>
+</script>
 [%
   FOREACH i IN meta.head;
     INCLUDE "block/$TMPL_LAYOUT/head/${i.key}.tt2";

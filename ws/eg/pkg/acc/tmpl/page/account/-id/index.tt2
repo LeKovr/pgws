@@ -1,0 +1,51 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Страница пользователя';
+  meta.nosiblings = 1;
+  meta.head.api = 1;
+  meta.html_headers.push('/css/acc/common.css');
+
+  acc_id = page.args.0;
+  acc_profile = api('account.profile', id => acc_id);
+  acc_role = api('account.role', id => acc_id);
+  c = '';
+
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = acc_id, active_code=page.code;
+  
+  section_begin(header = 'Информация о пользователе', id = 'acc_info');
+  
+  rows = api('account.prop_abp_attr', 'id' => acc_id);
+  table_begin(class='table-bordered table-striped table-hover form');
+    FOR row IN rows;
+      IF row.value.defined;
+        row_value = row.value;
+      ELSE;
+        row_value = row.def_value;
+      END;
+      tr(list = [row.name, row_value]);
+    END;
+    tr(list = [l('Дата регистрации'), acc_profile.created_at]);
+  table_end;
+  
+  section_end();
+
+  section_begin(header = 'Роли пользователя в командах', id = 'acc_role');
+  teams = api('account.team', id => acc_id);
+
+  table_begin(class='table-bordered table-striped table-hover form');
+  FOR row IN teams;
+    IF loop.first;
+      tr(list = ['Команда','Название роли'], use_th=1, thead=1);
+    END;
+      tr(list = [row.team_name, row.role_name]);
+  END;
+  table_end;
+  section_end();
+%]
+<style type="text/css">
+table.form td:first-child {
+  white-space: nowrap;
+  width: 20%;
+}
+</style>

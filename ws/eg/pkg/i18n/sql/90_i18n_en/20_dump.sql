@@ -278,6 +278,34 @@ CREATE TABLE error_message (
 
 
 --
+-- Name: TABLE error_message; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON TABLE error_message IS 'Сообщение об ошибке в локали схемы БД';
+
+
+--
+-- Name: COLUMN error_message.code; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN error_message.code IS 'Код ошибки';
+
+
+--
+-- Name: COLUMN error_message.id_count; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN error_message.id_count IS 'Количество аргументов в строке сообщения';
+
+
+--
+-- Name: COLUMN error_message.message; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN error_message.message IS 'Форматированная строка сообщения об ошибке';
+
+
+--
 -- Name: error; Type: VIEW; Schema: i18n_en; Owner: -
 --
 
@@ -293,6 +321,27 @@ COMMENT ON VIEW error IS 'Error description';
 
 
 --
+-- Name: COLUMN error.code; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN error.code IS 'Код ошибки';
+
+
+--
+-- Name: COLUMN error.id_count; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN error.id_count IS 'Количество аргументов в строке сообщения';
+
+
+--
+-- Name: COLUMN error.message; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN error.message IS 'Форматированная строка сообщения об ошибке';
+
+
+--
 -- Name: page_name; Type: TABLE; Schema: i18n_en; Owner: -
 --
 
@@ -300,6 +349,27 @@ CREATE TABLE page_name (
     code ws.d_code NOT NULL,
     name text NOT NULL
 );
+
+
+--
+-- Name: TABLE page_name; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON TABLE page_name IS 'Заголовок страницы сайта в локали схемы БД';
+
+
+--
+-- Name: COLUMN page_name.code; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN page_name.code IS 'Код страницы';
+
+
+--
+-- Name: COLUMN page_name.name; Type: COMMENT; Schema: i18n_en; Owner: -
+--
+
+COMMENT ON COLUMN page_name.name IS 'Sitemap page title';
 
 
 --
@@ -363,7 +433,7 @@ COMMENT ON COLUMN page.sort IS 'page order in one level menu';
 -- Name: COLUMN page.uri; Type: COMMENT; Schema: i18n_en; Owner: -
 --
 
-COMMENT ON COLUMN page.uri IS 'metamask with variable names for request uri lookup';
+COMMENT ON COLUMN page.uri IS 'мета-маска с именами переменных, которой должен соответствовать URI запроса (NULL - группировка страниц)';
 
 
 --
@@ -488,16 +558,6 @@ INSERT INTO error_message VALUES ('Y0103', 0, 'authorization required (no sessio
 INSERT INTO error_message VALUES ('Y0104', 1, 'incorrect session id "%s"');
 INSERT INTO error_message VALUES ('Y0105', 1, 'no check for acl "%s"');
 INSERT INTO error_message VALUES ('Y0106', 1, 'incorrect status id "%s"');
-INSERT INTO error_message VALUES ('Y0301', 0, 'неправильный пароль');
-INSERT INTO error_message VALUES ('Y0302', 0, 'неизвестный логин');
-INSERT INTO error_message VALUES ('Y0303', 1, 'статус пользователя (%s) не допускает авторизацию');
-INSERT INTO error_message VALUES ('Y0021', 1, 'no access to sum result when a = %i');
-INSERT INTO error_message VALUES ('Y0022', 1, 'no data for a = %i');
-INSERT INTO error_message VALUES ('Y9901', 1, 'Не найдена группа "%s"');
-INSERT INTO error_message VALUES ('Y9902', 1, 'Версия документа (%s) не актуальна и(или) устарела');
-INSERT INTO error_message VALUES ('Y9903', 1, 'Документ с таким адресом уже создан (%s)');
-INSERT INTO error_message VALUES ('Y9904', 0, 'Документ не содержит изменений');
-INSERT INTO error_message VALUES ('Y9905', 0, 'Документ не найден');
 
 
 --
@@ -510,20 +570,6 @@ INSERT INTO error_message VALUES ('Y9905', 0, 'Документ не найде�
 -- Data for Name: page_name; Type: TABLE DATA; Schema: i18n_en; Owner: -
 --
 
-INSERT INTO page_name VALUES ('main', 'API');
-INSERT INTO page_name VALUES ('api', 'API docs');
-INSERT INTO page_name VALUES ('api.smd', 'Methods');
-INSERT INTO page_name VALUES ('api.map', 'Pages');
-INSERT INTO page_name VALUES ('api.xsd', 'Types');
-INSERT INTO page_name VALUES ('api.class', 'Classes');
-INSERT INTO page_name VALUES ('api.smd1', 'Methods via JS');
-INSERT INTO page_name VALUES ('api.class.single', 'Class');
-INSERT INTO page_name VALUES ('login', 'Вход');
-INSERT INTO page_name VALUES ('logout', 'Выход');
-INSERT INTO page_name VALUES ('api.test', 'Test page');
-INSERT INTO page_name VALUES ('wiki.wk', 'Вики');
-INSERT INTO page_name VALUES ('wiki.wk.edit', 'Редактирование');
-INSERT INTO page_name VALUES ('wiki.wk.history', 'История изменений');
 
 
 --

@@ -29,6 +29,8 @@
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id) VALUES
   ('wiki.status',                2, 1, 3, 2) --, pg_cs('wiki_status'))
 , ('wiki.acl',                   2, 1, 3, 6) --, pg_cs('wiki_acl'))
+, ('wiki.link_id',               2, 1, 3, 2)
+, ('wiki.team_id',               2, 1, 3, 2)
 
 , ('wiki.id_by_code',       :WID, 1, 3, 2)
 , ('wiki.doc_id_by_code',   :WID, 1, 3, 2)
@@ -41,13 +43,15 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id) VALUES
 , ('wiki.doc_src',          :DID, 1, 3, 2)
 , ('wiki.doc_extra',        :DID, 1, 3, 3)
 , ('wiki.doc_link',         :DID, 1, 3, 7)
-, ('wiki.doc_file',         :DID, 1, 3, 7)
+, ('wiki.fs_files',         :DID, 1, 3, 7)
 , ('wiki.doc_diff',         :DID, 1, 3, 3)
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
   ('doc.status',                2, 1, 3, 2, pg_cs('doc_status'))
 , ('doc.acl',                   2, 1, 3, 6, pg_cs('doc_acl'))
+, ('doc.link_id',               2, 1, 3, 2, pg_cs('doc_link_id'))
+, ('doc.team_id',               2, 1, 3, 2, pg_cs('doc_team_id'))
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write) VALUES
@@ -55,11 +59,11 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write) V
 
 , ('wiki.doc_update_src',   :DID, 3, 1, 2, true)
 , ('wiki.doc_update_attr',  :DID, 3, 1, 2, true)
-, ('wiki.doc_file_del',     :DID, 3, 1, 2, true)
+, ('wiki.fs_files_del',     :DID, 3, 1, 2, true)
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, realm_code) VALUES
-  ('wiki.doc_file_add',     :DID, 3, 1, 3, true, ws.const_realm_upload())
+  ('wiki.fs_files_add',     :DID, 3, 1, 3, true, ws.const_realm_upload())
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, arg_dt_code, rv_dt_code, name, args_exam) VALUES

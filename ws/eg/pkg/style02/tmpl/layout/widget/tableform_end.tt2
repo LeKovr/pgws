@@ -1,0 +1,4 @@
+[% META
+  description = 'Завершение таблицы'
+%]
+[% table_end; %]

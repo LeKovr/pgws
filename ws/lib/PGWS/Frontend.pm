@@ -26,7 +26,8 @@ use PGWS::Meta;
 use PGWS::Core;
 use PGWS::DBConfig;
 
-use Template;
+use Template 2.24;
+use Template::Exception;
 
 use strict;
 
@@ -50,6 +51,9 @@ use constant FILE_STORE_PATH    => ($ENV{PGWS_FILE_STORE_PATH});
 
 use constant DEBUG_IFACE        => ($ENV{PGWS_FE_DEBUG_IFACE} || 0);
 
+use constant CACHE_STORE        => ($ENV{PGWS_FE_CACHE_STORE_DIR} || 'www-cache');
+use constant CACHE_MODE         => ($ENV{PGWS_FE_CACHE_MODE} || 0);  # 0 - Nope, 1 - R, 2 - W, 3 - RW
+use constant CACHE_TTL          => ($ENV{PGWS_FE_CACHE_TTL} || 0);   # 0 - Nope, -1 - Forever, else - given seconds
 
 use Locale::Maketext::Simple('Path' => ROOT.'/var/i18n');
 
@@ -62,6 +66,7 @@ sub ws        { $_[0]->{'_ws'}       }
 sub template  { $_[0]->{'template'} }
 
 sub dbc       { $_[0]->{'_dbc'} }
+sub const     { $_[0]->{'_const'} }
 
 use Data::Dumper;
 #----------------------------------------------------------------------
@@ -244,7 +249,7 @@ sub process_get {
 
   my $css = $self->load_cookie($req, 'css');
   my $resp = {
-    post_uri => $dbc->config('fe.post.'.$req->prefix),
+    post_uri => $req->prefix, # TODO: для CGI реализовать подмену api_cgi => /cgi-bin/pwl.pl
     layout   => $dbc->config('fe.tmpl.layout_default'),
     skin     => $dbc->config('fe.tmpl.skin_default'),
     css      => $css,
@@ -257,7 +262,14 @@ sub process_get {
   my $ws = $self->ws;
   $meta->debug('resp start');
   my ($status, $note, $vars, $file) = $self->response($meta, $req, $resp, $ws);
-
+  if ($status eq '201') {
+    my $file_def = $vars->{'meta'}{'redirect_file'};
+    my $path = $file_def->{'path'}; # TODO: or die
+    $meta->debug('Send responce from cache: '.$path);
+    $file_def->{'path'} = join '/', FILE_URI, CACHE_STORE, $path;
+    $req->header($resp->{'ctype'}.'; '.$meta->charset, "200 OK", $file_def);
+    return;
+  }
   my $pages   = $dbc->config('fe.tmpl.pages');
   my $erfile  = $dbc->config('fe.tmpl.error');
   my $ext     = $dbc->config('fe.tmpl.ext');
@@ -266,15 +278,15 @@ sub process_get {
     $vars->{'status'} = $status;
   }
   $meta->dump({'file' =>$file, 'vars' => $vars}); #, 'env' => \%ENV });
-  my $out = '';
+  my ($body, $top, $btm) = ('', '', '');
   $meta->setsource('tmpl');
-  my $resp_page = $self->template->process($pages.$file.$ext, $vars, \$out);
+  my $resp_page = $self->template->process($pages.$file.$ext, $vars, \$body);
   if ($vars->{'meta'}{'status'} ne '200') {
     $file = $erfile;
     $note = $vars->{'meta'}{'status_note'};
     $status = $vars->{'status'} = $vars->{'meta'}{'status'};
     $meta->debug('Error status: '.$status);
-    $resp_page = $self->template->process($pages.$file.$ext, $vars, \$out);
+    $resp_page = $self->template->process($pages.$file.$ext, $vars, \$body);
   }
   unless($resp_page) {
     my $error = $self->template->error();
@@ -283,7 +295,7 @@ sub process_get {
     ($status, $note) = ('500', 'Server error');
     $vars->{'status'} = $status;
     if ($file ne $erfile) {
-      $self->template->process($pages.$erfile.$ext, $vars, \$out) or die 'error processing error page: '.$self->template->error();
+      $self->template->process($pages.$erfile.$ext, $vars, \$body) or die 'error processing error page: '.$self->template->error();
     }
   }
   $meta->debugN('get', 'page ready');
@@ -302,16 +314,45 @@ sub process_get {
 
   $file = 'layout/'.$resp->{'layout'}.'/'.$resp->{'skin'}.$ext;
   $vars->{'layout_head'} = 1;
-  $self->template->process($file, $vars, $req) or die 'error processing header ('.$file.'): '.$self->template->error();
-  $req->print($out);
+  $self->template->process($file, $vars, \$top) or die 'error processing header ('.$file.'): '.$self->template->error();
+  $req->print($top, $body);
   $vars->{'layout_head'} = 0;
   $meta->dump({'vars' => $vars});
   $meta->debug('at footer after %s with %i hits and %i db calls', $meta->elapsed, $meta->stat_hit, $meta->stat_db);
   $vars->{'debug_data'} = $meta->data if ($meta->has_data);
 
-  $self->template->process($file, $vars, $req) or die 'error processing footer ('.$file.'): '.$self->template->error();
+  $self->template->process($file, $vars, \$btm) or die 'error processing footer ('.$file.'): '.$self->template->error();
+  $req->print($btm);
+  if ((CACHE_MODE & 2) == 2 and !$vars->{'session'}{'sid'}) { $self->response_cache($vars, $meta, $top, $body, $btm); }
   $meta->debugN('get', 'exit after %s with %i hits and %i db calls', $meta->elapsed, $meta->stat_hit, $meta->stat_db);
+}
 
+
+#----------------------------------------------------------------------
+# Сохранить страницу в кэше
+sub response_cache {
+  my ($self, $vars, $meta, @content) = @_;
+  my $path = PGWS::Utils::uri_cache_name($vars->{'page'}{'req'}, $vars->{'get'});
+  $meta->debug('Going to set cache: '.$path);
+  PGWS::Utils::data_set(join ("\n", @content), join '/', FILE_STORE_PATH, CACHE_STORE.$path);
+}
+
+#----------------------------------------------------------------------
+# Получить страницу из кэша, если она там есть
+sub response_cached {
+  my ($self, $vars, $meta) = @_;
+  my $found = 0;
+  my $path = PGWS::Utils::uri_cache_name($vars->{'page'}{'req'}, $vars->{'get'});
+  my $path_abs =join '/', FILE_STORE_PATH, CACHE_STORE.$path;
+  $meta->debug('Going to get cache: '.$path);
+  if (PGWS::Utils::data_is_actual($path_abs, CACHE_TTL)) {
+    $vars->{'meta'}{'redirect_file'} = {
+      'path' => $path,
+      'mtime' => (stat ($path_abs))[9]
+    };
+    return 1;
+  }
+  return 0;
 }
 
 #----------------------------------------------------------------------
@@ -345,6 +386,7 @@ sub response {
       $meta->debug('setup id %s from session field %s', $page->{'args'}[0], $page->{'id_session'});
     }
     $acl = $self->acl($ws, $errors, $meta, $session, $page, $params);
+    # TODO: убрать "добавление префикса для всех кроме главной"
     $page->{'req'} = $req->prefix.'/'.$page->{'req'} if($page and $page->{'req'});
     $page->{'is_hidden'} ||= $dbc->config('fe.site_is_hidden'); # закрываем незакрытое если весь сайт закрыт (не production)
   }
@@ -354,7 +396,7 @@ sub response {
     $session->{'sid_arg'} .= ($have_sid_arg?'&':'?').'lang='.$session->{'lang'};
     $session->{'sid_pre'} .= 'lang='.$session->{'lang'}.'&';
   }
-  my $tmpl_meta = { 'status' => '200', 'html_headers' => [], 'head' => {} };
+  my $tmpl_meta = { 'status' => '200', 'html_headers' => [], 'head' => {}, 'js' => [], 'todo' => {}};
 
   my $vars = {
     'uri_allowed' => sub { acl($self, $ws, $errors, $meta, $session, @_) },
@@ -376,9 +418,10 @@ sub response {
     return ('409', 'Conflict', $vars); #
   } elsif (!$acl) {
     return ('403', 'Forbidden', $vars); # необходимость авторизации определяется по !$acl
-  }
+  } elsif (!$sid and ((CACHE_MODE & 1) == 1) and $self->response_cached($vars, $meta)) {
+    return ('201', 'Created', $vars);
+  } #!$sid and  and
   return ('200', 'OK', $vars, $page->{'tmpl'});
-
 }
 
 #----------------------------------------------------------------------
@@ -500,8 +543,10 @@ sub load_cookie {
   my $user_data = $req->fetch_cook($data->{'cookie'}.'=([\\w]+)');
   my @allowed = split /,\s*/, $data->{'allowed'};
   my $current = $data->{'default'};
-  foreach my $t (@allowed) {
-    if ($user_data eq $t) { $current = $t; last; }
+  if ($user_data) {
+    foreach my $t (@allowed) {
+      if ($user_data eq $t) { $current = $t; last; }
+    }
   }
   $data->{'allowed_list'} = \@allowed;
   $data->{'current'} = $current;
@@ -517,11 +562,22 @@ sub tmpl_vars {
     'l'           => sub { i18n($self, $ws, $errors, $meta->{'lang'}, @_) },
     'uri_mk'      => sub { PGWS::Utils::uri_mk($proto, $prefix, $stg_args, @_) },
     'uri_mk_form' => sub { PGWS::Utils::uri_mk_form($proto, $prefix, $stg_args, @_) },
+    'uri_escape'  => sub { PGWS::Utils::uri_esc(@_) },
     'json'        => sub { PGWS::Utils::json_out(@_) },
     'is_bit_set'  => sub { my ($a,$b) = @_; return ($a & $b) == $b; },
     'api'         => sub { api($self, $ws, $errors, $meta, undef, @_) },
     'sysapi'      => sub { sysapi($self, $ws, $errors, $meta, undef, @_) },
     'uri'         => sub { api($self, $ws, $errors, $meta, undef, $def_code, @_); },
+    'const'       => sub { 
+      my $ret = $self->dbc->const($_[0], 1);
+      unless (defined($ret)) {
+        my ($package, $filename, $line) = caller;
+        my $r = ROOT.'var/tmpl'; # INCLUDE_PATH
+        $filename =~s /^$r//;
+        $meta->sys_error('template error: Requested const (%s) does not exists at %s line %i', $_[0], $filename, $line); 
+      }
+      return $ret;
+    },
   }
 }
 

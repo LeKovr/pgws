@@ -38,6 +38,8 @@ use constant LOG_CONNECT        => ($ENV{'PGWS_DB_LOG_CONNECT'});
 use constant PROP_FUNC          => ($ENV{'PGWS_DB_PROP_FUNC'}   or 'cfg.prop_group_value_list(?, ?, ?, FALSE, NULL)');
 use constant PROP_PREFIX        => ($ENV{'PGWS_DB_PROP_PREFIX'} or 'ws.daemon');
 
+use constant CONST_FUNC         => ($ENV{'PGWS_DB_CONST_FUNC'}   or 'ws.pg_const()');
+
 use constant SET_APPNAME        => ($ENV{'PGWS_DB_SET_APPNAME'} or 0);
 use constant SQL_APPNAME        => ($ENV{'PGWS_DB_SQL_APPNAME'} or 'SET application_name = \'%s\'');
 
@@ -74,6 +76,7 @@ sub init {
   if (DB_CONNECT) {
     $self->{'_conf'} = $self->config_from_db($dbh, $self->{'pogc'}, $self->{'poid'});
     PGWS::Utils::data_set($self->{'_conf'}, $self->dump_name($self->{'pogc'}, $self->{'poid'})) if ($self->{'data_set'});
+    $self->{'_const'} = $self->const_from_db($dbh);
   } else {
     # load from file
     my $file = $self->dump_name($self->{'pogc'}, $self->{'poid'});
@@ -93,6 +96,27 @@ sub config_from_db {
   );
   my $ret = PGWS::Utils::hashtree_mk($data);
   return $ret;
+}
+
+#----------------------------------------------------------------------
+sub const_from_db {
+  my ($self, $dbh) = @_;
+
+  my $sql = sprintf SQL_SELECT_FORMAT, CONST_FUNC;
+  my $data = $dbh->selectall_arrayref($sql);
+  my $ret = {};
+  foreach my $i (@$data) {
+    $ret->{$i->[0]} = $i->[1];
+  }
+  return $ret;
+}
+
+#----------------------------------------------------------------------
+sub const {
+  my ($self, $key, $quiet) = @_;
+
+  PGWS::bye "Requested const $key does not exists" unless (exists($self->{'_const'}{$key}) or $quiet);
+  return $self->{'_const'}{$key};
 }
 
 #----------------------------------------------------------------------
@@ -148,9 +172,13 @@ sub db_detach {
 #----------------------------------------------------------------------
 sub _connect {
   my ($self, $reconnect) = @_;
-  my $dbh = DBI->connect(DB_CONNECT) or PGWS::bye $DBI::errstr;
-  $dbh->{'pg_enable_utf8'} = 1;
-
+  my $dbh = DBI->connect(DB_CONNECT, undef, undef,{
+    RaiseError => 0,
+    PrintError => 1,
+    AutoCommit => 1,
+    pg_enable_utf8 => 1,
+  }) or PGWS::bye $DBI::errstr;
+#  $dbh->{'pg_enable_utf8'} = 1;
   # own config
   my $conf_db = $self->config_from_db($dbh, POGC, POID);
   my $init = $conf_db->{'db'}{'sql'};

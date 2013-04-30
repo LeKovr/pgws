@@ -23,8 +23,9 @@
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION cache(a_id d_id32 DEFAULT 0) RETURNS SETOF t_hashtable STABLE STRICT LANGUAGE 'sql' AS
 $_$
-  SELECT poid::text, name FROM wsd.prop_owner WHERE pogc = 'cache' AND $1 IN (poid, 0) ORDER BY name;
+  SELECT poid::text, name FROM cfg.prop_owner WHERE pogc = 'cache' AND $1 IN (poid, 0) ORDER BY name;
 $_$;
 SELECT pg_c('f', 'cache', 'Атрибуты кэша по id');
 
 /* ------------------------------------------------------------------------- */
+

@@ -1,0 +1,30 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'список сотрудников команды';
+ 
+  team_id = page.args.0;
+  
+  team_profile = api('team.profile', id => team_id);
+  resp.title =  page.name _ l(' &laquo;[_1]&raquo;', team_profile.name);
+  
+  members = api('team.account_attr', 'id' => team_id);
+  
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;
+
+  table_begin(class='table-bordered table-striped');
+    tr(list = ['Сотрудник', 'Роль', 'Статус', 'Последнее посещение'], use_th=1);
+    %]<tbody>[%
+    FOR account IN members;
+      account_href = uri_mk(uri(code => 'account.id', id => account.id).req);
+      role_href = uri_mk(uri(code => 'team.id.setup.role.id', id => team_id, id1 => account.role_id).req);
+        tr(list = [
+          "<a href='$account_href'>$account.name</a>",
+          "<a href='$role_href'>$account.role_name</a>",
+          account.status_name,
+          account.last_visit
+        ]);      
+    END;
+    %]</tbody>[% 
+  table_end;
+%]

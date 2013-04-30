@@ -2,22 +2,30 @@
   description = 'select'
 %]
 
-<select [% IF multiple; %]multiple="multiple" [% END; %]>
+<select[% 
+    IF name;  ' name="' _ name _ '"'; END;
+    IF id;    ' id="' _ id _ '"'; END;
+    IF class; ' class="' _ class _ '"'; END; 
+    IF multiple; ' multiple="multiple"'; END; 
+    IF disabled; ' disabled="disabled"'; END;
+  %]>
   [% FOR o IN options; %]
     [% IF o.selected; %]
-      <option selected='selected'>[% o.text %]</option>
+      <option selected="selected"[% IF o.value; ' value="' _ o.value _ '"'; END; %]>[% o.text %]</option>
     [% ELSE; %]
-      <option>[% o.text %]</option>
+      <option[% IF o.value; ' value="' _ o.value _ '"'; END; %]>[% o.text %]</option>
     [% END; %]
-    
   [% END; %]
 </select>
 
 [%# example
-#	select(
-#		multiple - '1' много строчный формат поля select
-#		options -  список option
-#			options.selected - выбранный пункт
-#			options.text - название пункта
-#	); 
+#  select(
+#    name - имя элемента
+#    id - id элемента
+#    multiple - '1' много строчный формат поля select
+#    options -  список option
+#      options.selected - выбранный пункт
+#      options.text - название пункта
+#      options.value - значение пункта
+#  ); 
 %]

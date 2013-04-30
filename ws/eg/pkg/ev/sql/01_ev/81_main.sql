@@ -29,6 +29,4 @@ INSERT INTO status (id, name) VALUES
 , /*5*/ (ev.const_status_id_archive() , 'Архив')
 ;
 
-ALTER TABLE wsd.event ADD CONSTRAINT event_fk_status_id FOREIGN KEY (status_id) REFERENCES ev.status(id);
-
 /* ------------------------------------------------------------------------- */

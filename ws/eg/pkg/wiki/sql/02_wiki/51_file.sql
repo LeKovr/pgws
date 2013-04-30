@@ -21,17 +21,24 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION doc_file (
-  a_id        ws.d_id
-, a_file_id   ws.d_id DEFAULT 0
-) RETURNS SETOF fs.file_info LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION fs_files ( -- ВНИМАНИЕ! 
+  a_id d_id
+, a_file_code   ws.d_string DEFAULT NULL
+) RETURNS SETOF fs.file_info STABLE LANGUAGE 'sql' AS
 $_$
-  SELECT * FROM fs.file_info WHERE class_id = wiki.const_doc_class_id() AND obj_id = $1 AND $2 IN (id, 0) ORDER BY created_at;
+  -- a_id:    ID статьи
+  -- a_file_id: ID файла
+  SELECT * FROM fs.file_list(wiki.const_doc_class_id(), fs.const_folder_code_default(), $1, $2);
 $_$;
-SELECT pg_c('f', 'doc_file', 'Атрибуты файлов статьи');
+SELECT pg_c('f', 'fs_files', 'Список файлов статьи', $_$
+Этот метод должен регистрироваться в API с именем PAGE_CODE,
+где
+PAGE - код страницы выгрузки файла (есть в fs.folder)
+CODE - код папки (fs.const_folder_code_default())
+$_$);
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION doc_file_add (
+CREATE OR REPLACE FUNCTION fs_files_add (
   a__sid      text
 , a_id        ws.d_id
 , a__path     text
@@ -51,32 +58,37 @@ $_$
   -- a_ctype: Content type
   -- a_anno:  Комментарий
   DECLARE
-    v_account_id INTEGER;
-    v_code TEXT;
-    v_file_id INTEGER;
+    v_account_id  ws.d_id;
+    v_path        ws.d_string; -- ws.d_path;
+    v_file_code   ws.d_string;
   BEGIN
     -- TODO: content-type & extention control
-    v_account_id := (acc.profile(a__sid)).id;
-    v_file_id := fs.file_add(v_account_id, 'wiki', a_id, a__path, a__size, a__csum, a_name, NULL, a_ctype, NULL, a_anno);
-    RETURN QUERY SELECT * FROM wiki.doc_file(a_id, v_file_id);
+    v_account_id := acc.sid_account_id(a__sid);
+    v_path = substring(a__path from 2); -- TODO: удалять начальный слеш на уровне ядра
+    v_file_code := fs.file_add(v_account_id, wiki.const_doc_class_id(), fs.const_folder_code_default(), a_id, v_path, a__size, a__csum, a_name, NULL, a_ctype, NULL, a_anno);
+    RETURN QUERY SELECT * FROM wiki.fs_files(a_id, v_file_code);
     RETURN;
   END;
 $_$;
-SELECT pg_c('f', 'doc_file_add', 'Добавление в статью загруженного файла');
+SELECT pg_c('f', 'fs_files_add', 'Добавление в статью загруженного файла', $_$
+Этот метод должен регистрироваться в API с именем PARENT_add,
+где
+PARENT - имя, под которым зарегистирован Список файлов статьи
+$_$);
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION doc_file_del (
+CREATE OR REPLACE FUNCTION fs_files_del (
   a_id        ws.d_id
 , a_file_id   ws.d_id
-) RETURNS BOOL LANGUAGE 'plpgsql' AS
+) RETURNS BOOL LANGUAGE 'sql' AS
 $_$
-  BEGIN
-    DELETE FROM wsd.file_link WHERE class_id = wiki.const_doc_class_id() AND obj_id = a_id AND id = a_file_id;
-    -- TODO: если файл уже нигде не используется - удалить его?
-    RETURN TRUE;
-  END;
+  SELECT fs.file_link_delete(wiki.const_doc_class_id(), fs.const_folder_code_default(), $1, $2);
 $_$;
-SELECT pg_c('f', 'doc_file_del', 'Удаление файла из статьи');
+SELECT pg_c('f', 'fs_files_del', 'Удаление файла из статьи', $_$
+Этот метод должен регистрироваться в API с именем PARENT_del,
+где
+PARENT - имя, под которым зарегистирован Список файлов статьи
+$_$);
 
 
 /* ------------------------------------------------------------------------- */

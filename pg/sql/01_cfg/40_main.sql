@@ -20,19 +20,40 @@
     Представления информации о свойствах
 */
 
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW prop_owner_attr AS SELECT
   po.*
 , pog.is_id_required
 , pog.sort AS pog_sort
 , pog.name AS pog_name
-  FROM wsd.prop_owner po
-    JOIN wsd.prop_group AS pog USING (pogc)
+  FROM cfg.prop_owner po
+    JOIN cfg.prop_group AS pog USING (pogc)
   ORDER BY pog_sort, sort
 ;
 SELECT pg_c('v', 'prop_owner_attr', 'Владельцы свойств');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW prop_attr_owned_nomask AS SELECT
+  p.*
+, po.pogc
+, po.poid
+, po.name as owner_name
+, COALESCE(cfg.prop_valid_from(po.pogc, po.poid, p.code), cfg.const_valid_from_date()) as valid_from
+, cfg.prop_value(po.pogc, po.poid, p.code) as value
+--, (SELECT value FROM cfg.prop_value_list(po.pogc, po.poid) WHERE code = p.code) as value
+  FROM cfg.prop p
+--    LEFT JOIN wsd.prop_value pv ON pv.code = p.code AND pv.pogc = ANY(p.pogc_list)
+    JOIN cfg.prop_owner po ON po.pogc = ANY(p.pogc_list) 
+  WHERE NOT p.is_mask
+;  
+SELECT pg_c('v', 'prop_attr_owned_nomask', 'Атрибуты свойств без маски')
+, pg_c('c', 'prop_attr_owned_nomask.valid_from', 'Начало действия значения')
+, pg_c('c', 'prop_attr_owned_nomask.value', 'Значение')
+;
+
+/* ------------------------------------------------------------------------- */
+
 CREATE OR REPLACE VIEW prop_attr AS SELECT -- явно заданные значения с описаниями по маске
   pv.code --    p.*
 , p.pkg
@@ -42,27 +63,35 @@ CREATE OR REPLACE VIEW prop_attr AS SELECT -- явно заданные знач
 , p.name
 , p.value_fmt
 , p.anno
+, p.has_log
 , pv.pogc
 , pv.poid
+, po.name as owner_name
 , pv.valid_from
-, pv.pkg as value_pkg
 , pv.value
-  FROM cfg.prop p
+  FROM prop p
   , wsd.prop_value pv
+    JOIN cfg.prop_owner po ON po.pogc = pv.pogc
   WHERE pv.pogc = ANY (p.pogc_list)
     AND p.is_mask
     AND pv.code ~ ws.mask2regexp(p.code)
   UNION SELECT
-  p.*
-, po.pogc
-, po.poid
-, '2000-01-02'::DATE AS valid_from
-, po.pkg as value_pkg
-, (SELECT value FROM wsd.prop_value WHERE pogc = po.pogc AND poid = po.poid AND code = p.code) AS value
-  FROM cfg.prop p
-  , wsd.prop_owner po
-  WHERE po.pogc = ANY (p.pogc_list)
-    AND NOT p.is_mask
+    *
+    FROM cfg.prop_attr_owned_nomask
   ORDER BY pogc, poid, code, valid_from
 ;
 SELECT pg_c('v', 'prop_attr', 'Атрибуты свойств');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW prop_history AS SELECT
+  pv.valid_from
+, pv.value
+  FROM wsd.prop_value pv
+  ORDER BY valid_from DESC
+;
+SELECT pg_c('v', 'prop_history', 'Журнал значений свойств');
+
+/* ------------------------------------------------------------------------- */
+
+
+

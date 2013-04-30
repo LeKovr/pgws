@@ -53,3 +53,78 @@ $_$;
 SELECT pg_c('f', 'prop_value_insupd_trigger', 'Проверка наличия свойства в таблице prop');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION prop_value_insupd_has_log() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_log  BOOLEAN;
+  BEGIN
+
+    SELECT INTO v_log
+      has_log
+      FROM cfg.prop
+      WHERE NEW.pogc = ANY(pogc_list)
+        AND NEW.code ~ ws.mask2regexp(code)
+    ;
+
+    IF NOT v_log THEN
+      RAISE EXCEPTION 'Incorrect valid from date';
+    END IF;
+
+    RETURN NEW;
+
+  END;
+$_$;
+SELECT pg_c('f', 'prop_value_ins_has_log', 'Обработка логирования значений');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION prop_value_system_owner_insupd() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_rows INTEGER;
+  BEGIN
+      SELECT INTO v_rows
+        count(1)
+        FROM cfg.prop_owner
+        WHERE NEW.pogc = pogc
+          AND NEW.poid = poid
+      ;
+
+    IF v_rows = 0 THEN
+      RAISE EXCEPTION 'Not system owner with poid=% in group %', NEW.poid, NEW.pogc;
+    END IF;
+
+    RETURN NEW;
+  END;
+$_$;
+SELECT pg_c('f', 'prop_value_system_owner_insupd', 'Проверка наличия владельца системных свойств');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION prop_validation_valid_from() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
+$_$
+  BEGIN
+    RAISE EXCEPTION 'Bad valid_from date';
+  END;
+$_$;
+SELECT pg_c('f', 'prop_validation_valid_from', 'Проверка коректности даты начала действия');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION prop_value_check_method_fkeys() RETURNS TRIGGER STABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_plug ws.d_code;
+  BEGIN
+    IF NEW.code_real ~ ':' THEN
+      -- check plugin config
+      v_plug := split_part(NEW.code_real, ':', 1);
+      IF NOT EXISTS(SELECT 1 FROM wsd.prop_value WHERE code = 'ws.daemon.be.plugin.' || v_plug || '.lib') THEN
+        RAISE EXCEPTION 'Unknown plugin (%) requested by method (%)', v_plug, NEW.code;
+      END IF;
+    END IF;
+    -- check cache id
+    IF NOT EXISTS(SELECT 1 FROM wsd.prop_value WHERE pogc='cache' AND code = 'ws.plugin.cache.code' AND poid = NEW.cache_id) THEN
+      RAISE EXCEPTION 'Unknown cache id (%) requested by method (%)', NEW.cache_id, NEW.code;
+    END IF;
+    RETURN NEW;
+  END;
+$_$;
+SELECT pg_c('f', 'prop_value_method_fkeys', 'Проверка наличия в prop_value внешних ключей таблицы ws.method');

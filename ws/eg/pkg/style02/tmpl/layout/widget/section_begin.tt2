@@ -2,9 +2,9 @@
   description = 'тэг section begin'
 %]
 
-<section id="[% id %]">
-  <div class="page-header">
-    [% h(type = 1, text = header); %]
+<section>
+  <div class="page-header"[% id ? ' id="' _ id _ '"' : ''; %]>
+    [% h(type = 1, text = header, id=''); %]
   </div>
 
 [%

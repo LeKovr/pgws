@@ -8,13 +8,13 @@
   dts = api('ws.dt:5');
   facets = api('ws.facet', 'id' => 0);
 %]
-
+[% well_begin; %]
 <ul>
 [% FOR d IN data %]
 <li><a href='#[% d.code %]'>[% d.code %]</a> - [% d.anno %]</li>
 [% END %]
 </ul>
-
+[% well_end; %]
 <style type="text/css">
   a.name { text-decoration: none; }
   .baseTable th { width: 10%; }
@@ -22,7 +22,7 @@
 
 [%
 FOR d IN data;
-  tableform_begin(name = d.code, value = d.code);
+  tableform_begin(name = d.code, value = d.code, show_toplink = 1);
   tableform_row(name = l('Описание'), value = d.anno);
   IF d.is_list; cname = l('Массив'); ELSIF d.is_complex; cname = l('Структура'); ELSE; cname = l('Скаляр'); END;
   tableform_row(name = l('Конструктор'), value = cname);
@@ -43,7 +43,7 @@ FOR d IN data;
   END;
   tableform_row(name = l('SQL'), value = (d.is_sql ? l('Да'):l('Нет')));
   IF d.is_complex
-    %]<tr><th valign="top">[% l('Поля') %]: </th><td><table>[%
+    %]<tr><th valign="top">[% l('Поля') %]: </th><td>[%table_begin(class='table-striped table-bordered');
     parts = api('ws.dt_part', 'code' => d.code);
     FOR p IN parts;
       %]<tr><th>[% p.code %]</th><td><a href='#[% dts.${p.parent_code}.code %]'>[% dts.${p.parent_code}.code %]</a>[%
@@ -64,7 +64,7 @@ FOR d IN data;
       FOR f IN facet;
         %]<tr><th>[% facets.${f.facet_id}.anno %] </th><td>[% f.value %]</td></tr>[%
       END;
-      %]</table></td></tr>[%
+      table_end;%]</td></tr>[%
     END;
   END;
   tableform_end;

@@ -1,4 +1,4 @@
 [% META
   description = 'блок для разметки в строку'
 %]
-<div class='row'>
+<div class="row">

@@ -1,0 +1,21 @@
+[% META
+  description = 'События пользователя';
+  meta.todo.${template.name} = BLOCK %]
+   Список уведомлений для заданного пользователя
+  [% END;
+  account_id = page.args.0;
+  notifications = api( 'account.notify', id => account_id );
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = account_id, active_code=page.code;
+ # INCLUDE block/ev/new_notifications.tt2;
+
+  IF !notifications.size;
+    p(text = l('Список уведомлений пуст'));
+    STOP;
+  END;
+  table_begin(class='table-bordered table-striped table-hover');
+  tr(list = [l('Дата'), l('Событие')], use_th=1);
+  FOR n IN notifications;
+    tr(list=[n.created_at, n.event]);
+  END;
+  table_end;
+%]

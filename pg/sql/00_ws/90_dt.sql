@@ -21,24 +21,38 @@
 */
 
 /* ------------------------------------------------------------------------- */
-\set TYPES '''{text, numeric, integer, json, uuid, ws.d_emails, ws.d_id32a, ws.facet, ws.z_facet, ws.t_hashtable, ws.z_cache, ws.dt_part}''::text[]'
 
 SELECT ws.test('dt_check');
 
-SELECT ws.dt_parent_base_code(code), ws.dt_is_complex(code), ws.dt_code(code), ws.dt(code), array(select ws.dt_facet(code)) as dt_facet, array(select dt_tree::text from ws.dt_tree(code)) as dt_tree
-  FROM ws.dt
-  WHERE code = ANY(:TYPES)
-  ORDER BY code
-;
+\set FILE :TEST .inc
 
-SELECT array(select ws.dt_part(code)) as dt_part, ws.dt_parts(code)
-  FROM ws.dt
-  WHERE code = ANY(:TYPES)
-    AND is_complex = true
-  ORDER BY code
-;
+\set CODE text
+\i :FILE
+\set CODE numeric
+\i :FILE
+\set CODE integer
+\i :FILE
+\set CODE json
+\i :FILE
+\set CODE uuid
+\i :FILE
+\set CODE ws.d_emails
+\i :FILE
+\set CODE ws.d_id32a
+\i :FILE
+\set CODE ws.facet
+\i :FILE
+\set CODE ws.z_facet
+\i :FILE
+\set CODE ws.t_hashtable
+\i :FILE
+\set CODE ws.z_cache
+\i :FILE
+\set CODE ws.dt_part
+\i :FILE
 
-SELECT * FROM ws.dt_tree('ws.d_acls');
+-- TODO: не работает в pg 9.0
+-- SELECT * FROM ws.dt_tree('ws.d_acls') AS d_acls_tree;
 
 
 /* ------------------------------------------------------------------------- */

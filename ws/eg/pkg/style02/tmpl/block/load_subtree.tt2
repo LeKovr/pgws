@@ -1,0 +1,50 @@
+[%
+# формирование поддерева страниц, подчиненных заданной
+# Аргументы:
+# item - результат page_by_code
+# active_code - code активной страницы, такая же будет подсвечена
+# id - ID объекта
+# use_submenus - 1 (главное меню - подменю) или 0 (группировка подчиненных элементов на уровне предка)
+
+# Результат:
+# link
+
+  link = { href = item.req ? uri_mk(item.req) : '#', name = item.name, active = (item.code == active_code) ? 1 : 0};
+  uris2 = api('ws.page_childs', code => item.code, id => id); # есть ли подменю
+  items = [];
+  IF uris2;
+    FOR u2 IN uris2;
+      NEXT IF u2.req && !uri_allowed(u2);
+      item2 = { href = uri_mk(u2.req), name = u2.name, active = (u2.code == active_code) ? 1 : 0};
+      uris3 = api('ws.page_childs', code => u2.code, id => id); # есть ли группировка
+      has_group = 0;
+      items3 = [];
+      FOR u3 IN uris3;
+        NEXT IF !uri_allowed(u3);
+        item3 = { href = uri_mk(u3.req), name = u3.name, active = (u3.code == active_code) ? 1 : 0};
+        items3.push(item3);
+        has_group = 1;
+      END;  
+      IF has_group;
+        IF use_submenus;
+          item2.href = '#';
+          item2.class = 'dropdown-submenu';
+          item2.classUl = 'dropdown-menu';
+          item2.childs = items3;
+          items.push(item2);
+        ELSE;
+          item2.href = '';
+          item2.class = 'nav-header';
+          items.push(item2);
+          items = items.import(items3);
+        END;
+      ELSE;
+        items.push(item2);
+      END;
+    END;  
+  END;
+  IF items.size > 0;
+    link.childs = items;
+  END;
+  # RETURN link
+%]

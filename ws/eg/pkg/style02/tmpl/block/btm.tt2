@@ -1,0 +1,13 @@
+[%
+  FOREACH h IN meta.top_headers;
+    v = h.split(' ');
+    href = v.0;
+    NEXT IF temp.exists(href);
+    NEXT IF !h.search('\.js'); # подключили вверху
+    temp.$href = 1;
+    lng = v.1 ? " charset=\"$v.1\"" : '';
+    f=(h.search('\.css') ? '<link  id="switch_style" href=%-60s type="text/css" rel="stylesheet" />' : '<script src=%-60s type="text/javascript"'_ lng _'></script>') _ "\n";
+    FILTER format(f); '"' _ href _ '"'; END;
+  END;
+  FOREACH j IN meta.js; j _ "\n"; END;
+%]

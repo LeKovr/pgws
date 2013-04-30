@@ -2,29 +2,65 @@
   description = 'Пример блока вызова функции'
 %][% meta.head.api = 1
 %]
-<form id="form1" onsubmit="return false;">
-<div id="form1___err" style="color:red"></div>
-<table>
-<tr><td>a=</td><td>
-<select onchange="if (this.value != 0) { this.form.a.value = this.value }">
-<option value="0">by value:</option>
-<option value="-1">System level unhandled error (-1) </option>
-<option value="-2">System level error (no access) (-2) </option>
-<option value="-3">App level form error test (-3) </option>
-<option value="-4">Not found (app level error) (-4) </option>
-<option value="1">Just 1</option>
-</select>
-<input type="text" name="a" size="5" value="4">
-</td><td><div id="form1_a_err" style="color:red"></div></td></tr>
-<tr><td>b=</td><td><input type="text" name="b" size="5" value="3"></td><td><div id="form1_b_err" style="color:red"></div></td></tr>
-<tr ><td colspan=3><div id="form1_result" style="height:20px"></div></td></tr>
-</table>
+<form id="form1" onsubmit="return false;" class="form-horizontal well">
+  <fieldset>
+    <legend>API test:</legend>
+[%
+    div_begin(offset=2);
+      span(id='form1___err', class='red');
+    div_end;
+    controlGroup_begin(label = 'a=');
+      select(id='select', options=[{value=0,text='by value:'},
+	{value=-1,text='System level unhandled error (-1) '},
+	{value=-2,text='System level error (no access) (-2)'},
+	{value=-3,text='App level form error test (-3)'},
+	{value=-4,text='ot found (app level error) (-4)'},
+	{value=1,text='Just 1'}
+      ]); 
+      input(name='a', value=4);
+      span(id='form1_a_err', class='help-inline');
+    controlGroup_end;
+    controlGroup_begin(label = 'b=');
+      input(name='b',value=3);
+      span(id='form1_b_err', class='help-inline');
+    controlGroup_end;
+%]
+    <div class="form-actions">
+      [% btn(id='myB', onclick='$(\'#result1\').text(\'\'); $(\'#form1___err\').text(\'\'); api_form1(); return false;', name='Click');%]
+    </div>
+    [% alert_begin(id='form1_result'); alert_end; 
+      alert_begin(id='form1_status'); alert_end;
+    %]
+   </fieldset>
+</form>
+
+[% meta.js.${meta.js.size} = BLOCK %]
+   
 <script type="text/javascript">
 //<![CDATA[
+$('#form1_result').hide();
+$('#form1_status').hide();
 var form1ok = function(formid, res) {
+  $(formid + ' > fieldset > div.control-group').removeClass('error');
   $(formid + '_result').text( 'result: ' + res );
+  successAlertBlocks(formid);
 };
+var form1err = function(formid, res) {
+  var mess = '';
+  $(formid + ' > fieldset > div.control-group').removeClass('error');
+  $(res.result.error).each(function(i){
+    $(formid).find('[name="'+this.id+'"]').parents('div.control-group').addClass('error');
+    mess += '<p>' + this.message + '</p>';
+  });
+  errorAlertBlocks(formid);
+  $(formid + '_result').hide();
+}
+$('#select').change(function(){if (this.value != 0) { this.form.a.value = this.value }});
+  var option = {statusBlock: '#form1_status'};
+  var api_form1 = function(){
+    api_form('info.add','#form1',form1ok,form1err, option);
+  };
 //]]>
 </script>
-  <button id="myB" onClick="$('#result1').text(''); $('#form1___err').text(''); api_form('info.add','#form1',form1ok); return false;">Click</button>
-</form>
+[% END; # BLOCK
+%]

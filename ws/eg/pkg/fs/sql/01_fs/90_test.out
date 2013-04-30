@@ -1,0 +1,65 @@
+        test         
+---------------------
+  ***** fs_add *****
+
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+    file_add    
+----------------
+ test_file.json
+
+ id |   path    | size | csum |    name    |      ctype       
+----+-----------+------+------+------------+------------------
+ -1 | test/path |   34 | csum | test1.json | application/json
+
+                test                 
+-------------------------------------
+  ***** fs_overwrite_same_code *****
+
+    file_add    
+----------------
+ test_file.json
+
+           test            
+---------------------------
+  ***** fs_auto_code *****
+
+   file_add    
+---------------
+ -3/test2.json
+
+            test             
+-----------------------------
+  ***** test_file_list *****
+
+ id | size | csum | kind_code | created_by |    name    |    anno    | class_id | obj_id | folder_code |      code      | ext  | ver | is_ver_last |   folder_name    |                    req                    
+----+------+------+-----------+------------+------------+------------+----------+--------+-------------+----------------+------+-----+-------------+------------------+-------------------------------------------
+ -3 |   35 | csum | data      |          1 | test2.json | test_anno3 |        2 |      1 | test_folder | -3/test2.json  | json |   1 | t           | Тестовый каталог | fs/test/1/file/test_folder/-3/test2.json
+ -2 |   35 | csum | data      |          1 | test2.json | test_anno2 |        2 |      1 | test_folder | test_file.json | json |   2 | t           | Тестовый каталог | fs/test/1/file/test_folder/test_file.json
+
+ id |   path    | size | csum |    name    |      ctype       
+----+-----------+------+------+------------+------------------
+ -1 | test/path |   34 | csum | test1.json | application/json
+ -2 | test/path |   35 | csum | test2.json | application/json
+ -3 | test/path |   35 | csum | test2.json | application/json
+
+             test              
+-------------------------------
+  ***** test_file_delete *****
+
+ file_link_delete 
+------------------
+ t
+
+ id |     code      
+----+---------------
+ -3 | -3/test2.json
+
+ file_link_delete 
+------------------
+ t
+
+ id | code 
+----+------
+

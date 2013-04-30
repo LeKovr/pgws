@@ -1,11 +1,17 @@
 [% META
   description = 'Просмотр статей wiki';
-  meta.html_headers.push(
-     '/css/wiki/edit.css'
-  );
+  meta.todo.${template.name} = BLOCK %]
+   Этот текст будет виден в отладочном режиме в конце страницы перед журнальным выводом<br/>
+   Его назначение - фиксировать доработки конкретного шаблона.
+  [% END;
+
+
   meta.head.timepicker = 1;
   meta.head.autocomplete = 1;
   meta.head.formev = 1;
+  meta.head.highlight = 1;
+
+  PROCESS 'macro/tabs.tt2';
 
   group_id = page.args.shift;
   group_code = page.args.shift;
@@ -32,7 +38,12 @@
   END;
   IF !doc_id;
     src=l("Title: Заголовок\nTOC:   UnOrdered\n\nАннотация\n<!-- CUT -->\nТекст");
+    save_method = 'wiki.add';
+    save_name = l("Создать");
+    up_link = { href => '', name => code };
   ELSE;
+    save_method = 'doc.save';
+    save_name = l("Сохранить");
     can_do = api('acl:doc.save', id => doc_id);
     # TODO: реализовать вариант, когда редактировать можно только атрибуты
     IF !can_do;
@@ -42,15 +53,32 @@
     END;
     info = api('wiki.doc_info', id => doc_id);
     name_doc_up = api('wiki.doc_info', id => info.up_id);
-    resp.title = info.name;
+    resp.title =  info.name ? info.name : page.name;
+    up_link = { href => view_pathname, name => info.name };
+
     src = api('wiki.doc_src', id => doc_id);
   END;
+  # убрать из пути дубль ссылки на просмотр (страницы и раздела)
+  meta.nopath_doubles = 1;
+  IF code;
+    # добавить в путь ссылку на просмотр
+    meta.path_addon = [up_link];
+    # TODO: в этот массив будем помещать путь по родительским страницам до корня вики
+  END;
 %]
-<div id="accordion">
+<style>
+  .affix {
+    top: 0px;
+    min-width:780px;
+  };
+</style>
+
+<div id="main">
+</div>
+<div class="tabbable">
+  <div class="tab-content">
 [% IF doc_id %]
-  <div class="acc-panel">
-    <p class="acc-nav acc-attr">[% l('Атрибуты').replace('(.)','$1 ') %]</p>
-    <div class="acc-body container" id="p-attr">
+   <div class="tab-pane" id="p-attr">
     <div class="attrClass">
       <h2>[% l('Атрибуты') %]</h2>
       <form id="attr-form" action="js_required_but_not_available" onsubmit="return false;">
@@ -88,7 +116,8 @@
           </p>
           <p><label>[% l("Родительская статья") %] <span class="editable"><input type="text" id="autoc"  autocomplete="off" value="[% name_doc_up.name %]" class="edit hide"/>
           <span class="view"></span>
-          </span></p>
+          </span></label>
+          </p>
           <font style="float:left;"><label>[% l("Ключевые слова") %]:</label></font>
           <div id="keyword" style="float:left;">
             [%  FOREACH this = wiki_word_str; %]
@@ -109,13 +138,10 @@
       </form>
       </div>
       <h2>[% l('Файлы') %]</h2>
-      [% INCLUDE block/wiki/file_upload.tt2 %]
+      [% INCLUDE block/fs/file_upload.tt2 obj_id = doc_id, list_method = 'wiki.fs_files' %]
     </div>
-  </div>
 [% END %]
-  <div class="acc-panel">
-    <p class="acc-nav acc-edit">[% l('редактор').replace('(.)','$1 ') %]</p>
-    <div class="acc-body" id="p-edit">
+    <div class="tab-pane" id="p-edit">
       <form id="main-form" action="js_required_but_not_available" onsubmit="return false;">
         <input type="hidden" name="uri" value="[% req.prefix _ '/' _ group_code  %]">
         <input type="hidden" name="code" value="[% code %]">
@@ -123,19 +149,14 @@
         <input type="hidden" name="extended" value="1">
         <input type="hidden" name="id" value="[% doc_id %]">
         <input type="hidden" name="revision" value="[% info.revision %]">
-        <button id="btnSave0" onClick="return formSend('main', 'doc.save')">[% l("Сохранить") %]</button>
 [% ELSE %]
         <input type="hidden" name="id" value="[% group_id %]">
-        <button id="btnSave0" onClick="return formSend('main', 'wiki.add')">[% l("Создать") %]</button>
 [% END %]
+        <button id="btnSave0" onClick="return formSend('main', '[% save_method %]', true)">[% save_name %]</button>
         <button id="btnFormat0" onClick="return formSend('main', 'doc.format')">[% l("Предварительный просмотр") %]</button>
         <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view0" checked onClick="return toggleChk(this, 1)"></label>
-        <textarea name="src">[% src %]</textarea>
-[% IF doc_id %]
-        <button id="btnSave1" onClick="return formSend('main', 'doc.save')">[% l("Сохранить") %]</button>
-[% ELSE %]
-        <button id="btnSave1" onClick="return formSend('main', 'wiki.add')">[% l("Создать") %]</button>
-[% END %]
+        <textarea rows="10" name="src" class="span10">[% src %]</textarea>
+        <button id="btnSave0" onClick="return formSend('main', '[% save_method %]', true)">[% save_name %]</button>
         <button id="btnFormat1" onClick="return formSend('main', 'doc.format')">[% l("Предварительный просмотр") %]</button>
         <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view1" checked onClick="return toggleChk(this,0)"></label>
         <div id="errors" class="error alert alert-error"></div>
@@ -143,24 +164,85 @@
         <div id="main-form_src_err" class="error"></div>
         <div id="status" class='alert alert-info'></div>
       </form>
-    </div>
   </div>
-  <div class="acc-panel">
-    <p class="acc-nav acc-view">[% l('просмотр').replace('(.)','$1 ') %]</p>
-    <div class="acc-body" id="p-html"></div>
+    <div class="tab-pane" id="wikibody">
   </div>
-  <div class="acc-panel">
-    <p class="acc-nav acc-diff">[% l('изменения').replace('(.)','$1 ') %]</p>
-    <div class="acc-body" id="p-diff"><div></div></div>
+  <div class="tab-pane" id="p-diff"><pre id="diff-src" class="diff"></pre>
   </div>
-  <div class="acc-panel">
-    <p class="acc-nav acc-src">[% l('html').replace('(.)','$1 ') %]</p>
-    <div class="acc-body" id="p-src"><pre id="html-src"></pre></div>
+  <div class="tab-pane" id="p-src"><pre id="html-src" class="html"></pre>
   </div>
+ </div>
 </div>
+[% 
+INCLUDE "block/wiki/style_js.tt2";
+meta.js.${meta.js.size} = BLOCK %]
 
 <script type="text/javascript">
 //<![CDATA[
+
+var links = [[% IF doc_id %]['Атрибуты','p-attr'],[% END; %]['Редактор','p-edit'],['Просмотр','wikibody'],['Изменения','p-diff'],['HTML','p-src']];
+
+var html='<ul class ="nav nav-tabs" data-spy="affix" class="affix-top" data-offset-top="200">';
+var content='';
+var index = location.href.indexOf('#');
+$(links).each(function(i){
+  if(index<0 && i == 0){
+    html+='<li class="active"><a class="ajax active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+    $('#'+this[1]).addClass('active');
+  return;
+  }
+  if(index>=0){
+    if(this[1] == location.href.substring(index+1)){
+      html+='<li class="active"><a class="ajax active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+    $('#'+this[1]).addClass('active');
+      return;
+    }
+  }
+  html+='<li><a class="ajax" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+});
+html+='</ul>';
+$('#main').html(html);
+[% #// TODO: добавить вкладкам onClick="return formSend('main', '[% save_method % ]', false)"
+#// false - отключает переход на следующую вкладку при выставленном чекбоксе
+%]
+/* ------------------------------------------------------------------------- */
+// Управление вкладками
+
+window.PGWS.tabSelected = function(objActive){
+  $(".ajax").removeClass("active");
+  $(".ajax").parent('li').removeClass("active");
+  $(objActive).addClass("active");
+  $(objActive).parent('li').addClass("active");
+  $('.tab-content').find('.tab-pane').removeClass('active');
+  index = $(objActive).attr('href').indexOf('#');
+  $('#' + $(objActive).attr('href').substring(index+1)).addClass('active');
+ // renderTabs();
+};
+
+/* ------------------------------------------------------------------------- */
+// Инициализация вкладки
+
+if (window.PGWS === undefined) { window.PGWS = {}; }
+window.PGWS.page = {
+  titleSuffix: '[% resp.title _ " - " _ our_title %]',
+};
+
+window.PGWS.tabContentEvents = function(obj) {
+
+};
+
+/* ------------------------------------------------------------------------- */
+// Инициализация основной страницы
+
+
+$(document).ready(function(){
+   $('.ajax').ajaxUrl({
+    onSuccess:  window.PGWS.tabSelected,
+    titleSuffix: window.PGWS.page.titleSuffix,
+    classMenuItemActive:'.active'
+  });
+  window.PGWS.tabContentEvents('');
+});
 
 var msg_created = '[% l("Документ создан") %]';
 var msg_updated = '[% l("Документ изменен") %]';
@@ -208,8 +290,12 @@ var formOK = function(formid, res) {
     document.title = res.name;
     page_html = res.html;
     page_diff = res.diff;
+    $('#html-src').text(page_html).each(function(i, e) {hljs.highlightBlock(e, null)});
+    $('#diff-src').text(res.diff).each(function(i, e) {hljs.highlightBlock(e, null)});
+    $('#wikibody').html(page_html).each(function(i, e) {hljs.highlightBlock(e, null)});
+    PGWS.wikiStyle('wikibody');
     if ($('#is_view0').is(':checked')) {
-      $(activeItem).next().children("p.acc-nav").click();
+      $('.nav-tabs').find('.active').next().children("a.ajax").click();
       $('html, body').scrollTop(0);
     }
   }
@@ -237,18 +323,8 @@ var animation_complete = function(t) {
 
 var acl_wikisave = [% can_do %]; //права на сохранение
 
-$(document).ready(function(){
-  /* http://www.designchemical.com/blog/index.php/jquery/jquery-simple-horizontal-accordion/ */
-  [% IF doc_id; %]
-    activeItem = $("#accordion div.acc-panel:first");
-  [% ELSE %]
-    activeItem = $("#p-edit").parent();
-  [% END; %]
 
-  $(activeItem).addClass('active');
-
-  $("#accordion div.acc-panel p.acc-nav").click(function(){
-
+/*
     activeDiv=$(activeItem).children("div.acc-body");
 
     $(activeItem).animate({width: "15px"}, {duration:300, queue:false});
@@ -259,21 +335,23 @@ $(document).ready(function(){
     activeItem = $(this).parent();
 
     activeDiv=$(activeItem).children("div.acc-body");
-    if (activeDiv.attr('id') == 'p-html') {
-      activeDiv.html(page_html);
-    } else if (activeDiv.attr('id') == 'p-src') {
-      activeDiv.children("#html-src").text(page_html);
-    } else if (activeDiv.attr('id') == 'p-diff') {
-      activeDiv.children("div").html(page_diff);
+*/
+var renderTabs = function(){
+    if ($('.tab-pane').filter('.active').attr('id') == 'wikibody') {
+      $('.tab-pane').filter('.active').html(page_html);
+    } else if ($('.tab-pane').filter('.active').attr('id') == 'p-src') {
+      $('.tab-pane').filter('.active').children("#html-src").text(page_html);
+    } else if ($('.tab-pane').filter('.active').attr('id') == 'p-diff') {
+      $('.tab-pane').filter('.active').html(page_diff);
     }
-    activeDiv.show();
-  });
+  };
 
-  if (acl_wikisave){
+$(document).ready(function(){
+ if (acl_wikisave){
     $(".button_change").show();
   }
   if(!acl_wikisave){
-    $("#accordion").hide();
+    $("#main").hide();
   }
 });
 $(function() {
@@ -281,59 +359,152 @@ $(function() {
 });
 
 $(document).ready(function(){
-  monkeyPatchAutocomplete();
-  $( "#autoc" ).autocomplete({
+   $( "#autoc" ).typeahead({
     source: function( request, response ) {
       $.ajax({
         url: "[% req.prefix %]/_wiki.doc_by_name.json",
         dataType: "json",
         data: {
           id: "[% group_id %]",
-          string: request.term
+          string: request
         },
         success: function( data ) {
           if(typeof data.result.data != 'undefined'){
-            response( $.map( data.result.data, function( item ) {
-              return {
-                label: item.name,
-                value: item.name,
-                id: item.id
-              }
-            }));
+          if(data.result.data != null){
+	    var dataArray = new Array();
+	      $.map( data.result.data, function(item) {
+		var group = {
+		  id: item.id,
+		  name: item.name
+		};
+              dataArray.push(group);
+	      });
+	     response(dataArray);
+            }
           }
         }
       });
     },
-    minLength: 1,
-    select: function( event, ui ) {
-      $("#up_id").val(ui.item.id);
+    matcher: function (item) {
+      if (item.name.toLowerCase().indexOf(this.query.trim().toLowerCase()) != -1) {
+	  return true;
+	}
     },
+    sorter: function (items) {
+      return items.sort();
+    },
+    highlighter: function (item) {
+      var regex = new RegExp( '(' + this.query + ')', 'gi' );
+      label = item.name;
+      return label.replace( regex, "<strong>$1</strong>" );
+    },
+    items: 9999,
+    updater:function (item) {
+
+        //item = selected item
+        //do your stuff.
+
+        //dont forget to return the item to reflect them into input
+        return item;
+    }
   });
-  $( "#inputnewkey" ).autocomplete({
+  $( "#inputnewkey" ).typeahead({
     source: function( request, response ) {
       $.ajax({
         url: "[% req.prefix %]/_wiki.keyword_by_name.json",
         dataType: "json",
         data: {
           id: "[% group_id %]",
-          string: request.term
+          string: request
         },
         success: function( data ) {
-          if(typeof data.result.data != 'undefined' && data.result.data!= null){
-            response( $.map( data.result.data, function( item ) {
-              return {
-                label: item,
-                value: item
-              }
-            }));
+          if(typeof data.result.data != 'undefined'){
+          if(data.result.data != null){
+	    var dataArray = new Array();
+	      $.map( data.result.data, function(item) {
+		var group = {
+		  id: item,
+		  name: item
+		};
+              dataArray.push(group);
+	      });
+	     response(dataArray);
+            }
           }
         }
       });
     },
-    minLength: 1
+    matcher: function (item) {
+      if (item.id.toLowerCase().indexOf(this.query.trim().toLowerCase()) != -1) {
+	  return true;
+	}
+    },
+    sorter: function (items) {
+      return items.sort();
+    },
+    highlighter: function (item) {
+      var regex = new RegExp( '(' + this.query + ')', 'gi' );
+      label = item.id;
+      return label.replace( regex, "<strong>$1</strong>" );
+    },
+    items: 9999
   });
-  $(".attrClass").formEV({onSubmit:saveAttr});
+  /*********************************
+  ******formEV инициализация********
+  *********************************/
+  var hideText = function(c){
+    $(c).find('input').hide();
+  };
+  open_editable=1;
+  $(".attrClass").formEV({onSubmit:saveAttr,onViewReady:hideText});      
+  $(document).ready(function(){
+  if(open_editable){
+    $('.edit_on').click();
+  }
+  });
+  /********************************/
+  $(".nav-tabs").css("background-color",$("body").css("background-color"));
+  $.fn.typeahead.Constructor.prototype.render = function(items) {
+     var that = this;
+ 
+     items = $(items).map(function (i, item) {
+       i = $(that.options.item).attr('data-value', item.id).attr('data-label', item.name);
+       i.find('a').html(that.highlighter(item));
+       return i[0];
+     })
+ 
+     this.$menu.html(items);
+     return this;
+};
+$.fn.typeahead.Constructor.prototype.next = function (event) {
+  var active = this.$menu.find('.active').removeClass('active');
+  next = active.next();
+  if (!next.length) {
+    next = $(this.$menu.find('li')[0]);
+  }
+  next.addClass('active');
+  $(this.$element).val($(next).attr('data-label'));
+};
+$.fn.typeahead.Constructor.prototype.prev = function (event) {
+  var active = this.$menu.find('.active').removeClass('active');
+   prev = active.prev();
+   if (!prev.length) {
+    prev = this.$menu.find('li').last();
+   }
+  prev.addClass('active');
+  $(this.$element).val($(prev).attr('data-label'));
+};
+$.fn.typeahead.Constructor.prototype.select = function(e) {
+  var val = this.$menu.find('.active').attr('data-value');
+  $(this.$element).val(this.$menu.find('.active').text());
+  if($(this.$element).attr('id')=='autoc'){
+    $('#up_id').val(val);
+  }
+  this.hide();
+};
 });
 //]]>
 </script>
-
+[% END; # BLOCK 
+  INCLUDE "block/wiki/style_js.tt2";
+%]

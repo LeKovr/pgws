@@ -21,12 +21,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM ws.page_data             WHERE pkg = :'PKG';
-
-DELETE FROM ws.method                WHERE pkg = :'PKG';
-
-ALTER TABLE wsd.job DROP CONSTRAINT job_fk_status_id;
-ALTER TABLE wsd.job_todo DROP CONSTRAINT job_fk_status_id;
 
 DROP TRIGGER notify_oninsert ON wsd.job;
 DROP TRIGGER notify_onupdate ON wsd.job;
@@ -34,4 +28,7 @@ DROP TRIGGER notify_onupdate ON wsd.job;
 DROP TRIGGER handler_id_update_forbidden  ON wsd.job;
 DROP TRIGGER handler_id_update_forbidden  ON wsd.job_todo;
 
-SELECT cfg.prop_clean_pkg(:'PKG', TRUE);
+/* ------------------------------------------------------------------------- */
+SELECT cfg.prop_cleanup_pkg(ARRAY[job.const_job_group_prop()]);
+SELECT cfg.prop_cleanup_system_value_pkg(ARRAY['ws.daemon.log.syslog.job.(default,call,sid,acl,cache,validate)']);
+

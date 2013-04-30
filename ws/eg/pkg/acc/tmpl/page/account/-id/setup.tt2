@@ -1,0 +1,39 @@
+[% META
+  description = 'Страница пользователя';
+%]
+[%
+  team_id = page.args.0;
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = team_id, active_code=page.code;
+%]
+<form class="well form-inline span4 offset-16 custom-form">
+  <fieldset>
+    <legend>Изменить пароль</legend>
+      [% controlGroup_begin(label = 'Введите пароль');
+      input(class='input-xlarge', id='input01');
+      controlGroup_end; %]
+
+      [% controlGroup_begin(label = 'Повторите ввод пароля');
+      input(class='input-xlarge', id='input01');
+      controlGroup_end; %]
+
+      <div class="form-actions">
+        [% btn(type='submit', class='btn btn-primary', name='Сохранить'); %]
+      </div>
+  </fieldset>
+</form>
+
+<form class="well form-inline span4 offset-16 custom-form">
+  <fieldset>
+    <legend>Контакты</legend>
+
+  </fieldset>
+</form>
+
+<form class="well form-inline span4 offset-16 custom-form">
+  <fieldset>
+    <legend>Статус</legend>
+      [%controlGroup_begin;
+        select(options = [{text = 'Активен', selected = 1},{text = 'Отпуск'}]);
+     controlGroup_end; %]
+  </fieldset>
+</form>

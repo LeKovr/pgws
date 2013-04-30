@@ -1,4 +1,9 @@
-[%
+[% META
+  description = 'Встраиваемый блок входящих уведомлений';
+  meta.todo.${component.name} = BLOCK %]
+   Список последних COUNT сообщений текущего пользователя
+  [% END;
+
   count = api( 'ev.new_notifications_count', account_id => session.account_id );
 %]
 <div class="notifications-counter">

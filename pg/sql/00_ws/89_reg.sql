@@ -39,7 +39,7 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, is_i18n, args_e
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, args_exam) VALUES
    ('ws.page_tree',               2, 1, 2, 7, '')
   ,('ws.class',                   2, 1, 2, 5, '')
-  ,('ws.method_lookup',           2, 1, 2, 7, '')
+  ,('ws.method_lookup',           2, 1, 2, 7, 'code=page%&page=2&by=2&need_rc=1')
   ,('ws.class_id',                2, 1, 2, 2, 'code=system')
 ;
 
@@ -65,25 +65,23 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id) VALUES
 ;
 
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
-   ('system.status',              2, 1, 2, 2, pg_cs('system_status'))
-  ,('system.acl',                 2, 1, 2, 6, pg_cs('system_acl'))
-  ,('info.status',                2, 1, 2, 2, pg_cs('info_status'))
-  ,('info.acl',                   2, 1, 2, 6, pg_cs('info_acl'))
+  ('info.status',                2, 1, 2, 2, pg_cs('info_status'))
+, ('info.acl',                   2, 1, 2, 6, pg_cs('info_acl'))
 ;
 
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, arg_dt_code, rv_dt_code, name) VALUES
-   ('info.acl_check',      2, 1, 4, 3, 'acl:check',     dt_code('z_acl_check'), dt_code('d_acls'), 'Получение acl на объект')
-  ,('ws.uncache',          2, 1, 1, 2, 'cache:uncache', dt_code('z_uncache'),   dt_code('d_id'), 'Сброс кэша метода')
+   ('info.acl_check',      2, 1, 4, 3, 'acl:check',     pg_cs('z_acl_check'), pg_cs('d_acls'), 'Получение acl на объект')
+  ,('ws.uncache',          2, 1, 1, 2, 'cache:uncache', pg_cs('z_uncache'),   pg_cs('d_id'), 'Сброс кэша метода')
 /*
-  ,('ws.store_get',        1, 3, 1, 2, 'store:get',     dt_code('z_store_get'), dt_code('d_id'), 'Получение данных из файлового хранилища')
-  ,('ws.store_path',        1, 3, 1, 2, 'store:path',     dt_code('z_store_get'), dt_code('d_id'), 'Получение пути из файлового хранилища')
-  ,('ws.store_set',        1, 5, 1, 3, 'store:set',     dt_code('z_store_set'), dt_code('d_id'), 'Сохранение данных в файловом хранилище')
+  ,('ws.store_get',        1, 3, 1, 2, 'store:get',     pg_cs('z_store_get'), pg_cs('d_id'), 'Получение данных из файлового хранилища')
+  ,('ws.store_path',        1, 3, 1, 2, 'store:path',   pg_cs('z_store_get'), pg_cs('d_id'), 'Получение пути из файлового хранилища')
+  ,('ws.store_set',        1, 5, 1, 3, 'store:set',     pg_cs('z_store_set'), pg_cs('d_id'), 'Сохранение данных в файловом хранилище')
 */
 /*
   -- RESERVED
-  ,('ws.cache_reset1',     2, 1, 1, 2, 'System::Cache::reset',      false, dt_code('z_cache_reset'), dt_code('d_id32'), 'Сброс кэша по 1 ключу')
-  ,('ws.cache_reset2',     2, 1, 1, 2, 'System::Cache::reset',      false, dt_code('z_cache_reset'), dt_code('d_id32'), 'Сброс кэша по 2 ключам')
-  ,('ws.cache_reset_mask', 2, 1, 1, 2, 'System::Cache::reset_mask', false, dt_code('z_cache_reset'), dt_code('d_id32'), 'Сброс кэша по маске')
+  ,('ws.cache_reset1',     2, 1, 1, 2, 'System::Cache::reset',      false, pg_cs('z_cache_reset'), pg_cs('d_id32'), 'Сброс кэша по 1 ключу')
+  ,('ws.cache_reset2',     2, 1, 1, 2, 'System::Cache::reset',      false, pg_cs('z_cache_reset'), pg_cs('d_id32'), 'Сброс кэша по 2 ключам')
+  ,('ws.cache_reset_mask', 2, 1, 1, 2, 'System::Cache::reset_mask', false, pg_cs('z_cache_reset'), pg_cs('d_id32'), 'Сброс кэша по маске')
 */
 ;
 

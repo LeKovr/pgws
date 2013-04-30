@@ -21,9 +21,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-SET LOCAL search_path = job, ws, i18n_def, public;
-
-/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_pkg() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'job'::text
@@ -106,5 +103,12 @@ $_$
   SELECT 1
 $_$;
 SELECT pg_c('f', 'const_arg_type_none', 'ID типа неиспользуемого аргумента');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_job_group_prop() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'job'::TEXT;
+$_$;
+SELECT pg_c('f', 'const_job_group_prop', 'Константа: название группы владельцев свойств');
 
 /* ------------------------------------------------------------------------- */

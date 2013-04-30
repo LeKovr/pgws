@@ -1,0 +1,166 @@
+[%
+
+
+by = get.item('by');
+pageNo = get.item('page');
+codeParam = get.item('code');
+code = codeParam ? codeParam _ '%' : '' ;
+by = by ? by : 10;
+pageNo = pageNo ? pageNo : 0;
+pager = api('ws.method_lookup', by => by, pageNo => pageNo, need_rc=1, code => code);
+
+# вариант 1, формирование ссылок js
+options=[{value=5,text=5},{value=10,text=10},{value=20,text=20}];
+FOR o IN options;
+ IF o.value == by;
+  o.selected=1;
+ END;
+END;
+
+# вариант 2, формирование ссылок в tt2
+options2 = [];
+codeArg = codeParam ? "code=$codeParam&" : '';
+FOR o IN [5, 10, 20];
+  link = { href = uri_mk(page.req, codeArg _ 'by=' _ o), name = o };
+  IF o == by;
+    link.class = 'disabled';
+  END;
+  options2.push(link);
+END;
+
+%]
+<div class='form-horizontal'>  
+    [% 
+      controlGroup_begin(label='Пример автокомплита');
+      input(id='autoc', name='code', id='autoc',value=codeParam);
+      controlGroup_end;
+
+     # вариант 2     
+     uldoplist= ul(class='dropdown-menu', links= options2);
+     ul(class='nav nav-pills', links=[
+        {href='#', class='dropdown', classLink='dropdown-toggle', linkparam='data-toggle=\'dropdown\'', name='Количество строк <b class=\'caret\'></b>', content=uldoplist},
+      ]); 
+      # вариант 1
+      controlGroup_begin(label='Количество строк');
+      select(options = options, id='sel', class='span2');
+      btn(name='Показать',onclick='changeRows()');
+      controlGroup_end;
+
+      table_begin(class='table-bordered table-striped');
+      tr(list = ['Метод','Название'], use_th=1, thead=1);
+      FOR el IN pager.rows;
+        tr(list = [el.code, el.name]);      
+      END;
+     table_end(tbody = 1);
+     INCLUDE "block/$TMPL_LAYOUT/pager.tt2", pageNo = pageNo, count = pager.need_rc, by = by, hrefName = page.req _ '?code=' _ codeParam _ '&';
+     %]
+</div>
+[% 
+meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+//<![CDATA[
+var changeRows = function(){
+  window.location.href = '[% page.req %]' + '?by=' + $('#sel').val() + '&code=' + $('#autoc').val();
+}
+
+
+/*******************************************************************************/
+//АВТОКОМПЛИТ
+//Для кеширования результатов вызовов списка методов и детализации по методу
+  PWL_cache={method_li:{},method_detail:{}} ;;
+
+$(document).ready(function(){
+  var anchor;
+  //повесили обработчики на <a> которые будут сформированы
+  if (location.hash) {
+    // загрузка описания метода при открытии страницы
+    anchor = window.location.hash.slice(1); //hash to string (= "myanchor")
+    $("#autoc").val( anchor );
+    form_send();
+  } else {
+  }
+  //Опции для autocomplete
+  $( "#autoc" ).typeahead({
+    source: function( request, response ) {
+      $.ajax({
+        url: "[% req.prefix %]/_ws.method_lookup.json",
+        dataType: "json",
+        data: {
+          code: request + '%'
+        },
+        success: function( data ) {
+          if(typeof data.result.data != 'undefined'){
+	    var dataArray = new Array();
+            $.map( data.result.data, function(item) {
+               var group = {
+		  id: item.code,
+		  name: item.name
+		};
+              dataArray.push(group);
+            });
+            response(dataArray);
+          }
+        }
+      });
+    },
+    matcher: function (item) {
+      if (item.id.toLowerCase().indexOf(this.query.trim().toLowerCase()) != -1) {
+	  return true;
+	}
+    },
+    sorter: function (items) {
+      return items.sort();
+    },
+    highlighter: function (item) {
+      var regex = new RegExp( '(' + this.query + ')', 'gi' );
+      label = item.id;
+      return label.replace( regex, "<strong>$1</strong>" )  + ' - ' + item.name;
+    },
+    items: 9999
+  });
+});
+$.fn.typeahead.Constructor.prototype.render = function(items) {
+     var that = this
+ 
+     items = $(items).map(function (i, item) {
+       i = $(that.options.item).attr('data-value', item.id)
+       i.find('a').html(that.highlighter(item))
+       return i[0]
+     })
+ 
+     this.$menu.html(items)
+     return this
+};
+$.fn.typeahead.Constructor.prototype.next = function (event) {
+  var active = this.$menu.find('.active').removeClass('active');
+  next = active.next();
+  if (!next.length) {
+    next = $(this.$menu.find('li')[0]);
+  }
+  next.addClass('active');
+  $(this.$element).val($(next).attr('data-value'));
+};
+$.fn.typeahead.Constructor.prototype.prev = function (event) {
+  var active = this.$menu.find('.active').removeClass('active')
+   , prev = active.prev()
+   if (!prev.length) {
+    prev = this.$menu.find('li').last()
+   }
+  prev.addClass('active')
+  $(this.$element).val($(prev).attr('data-value'));
+};
+$.fn.typeahead.Constructor.prototype.select = function() {
+  this.hide();
+};
+$.fn.typeahead.Constructor.prototype.click = function(e) {
+  var active = this.$menu.find('.active').removeClass('active')
+  $(this.$element).val($(active).attr('data-value'));
+  this.hide();
+};
+var filtr = function(){
+  alert(123);
+};
+//]]>
+</script>
+[% END; # BLOCK
+%]

@@ -1,11 +1,9 @@
 [% META
   description = 'Pagination'
 %]
-
-
-    <div class="pagination [% class %]">
-      [% ul(links = links); %]
-      </div>
+  <div class="pagination[% class ? ' ' _ class :''; %]">
+    [% ul(links = links); %]
+  </div>
 [% #example
 #  pagination(
 #   links - сслыки формата виджета ul

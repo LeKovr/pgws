@@ -1,0 +1,68 @@
+[% META
+  description = 'Категории событий';
+  meta.todo.${template.name} = BLOCK %]
+   Список категорий с фильтром по группам категорий (ev.kind_goup) индивидуальной)<br/>
+  В каждой строке - ссылки на список событий и список подписанных ролей 
+  [% END;
+
+  groups = api( 'system.event_kind_group' );
+  group_list = [];
+  FOREACH g IN groups;
+    group_list.push({href = '#group-' _ g.id, name = g.name});
+  END;
+  
+  well_begin;
+    ul(links = group_list);
+  well_end;
+  
+  kinds = api('system.event_kind');
+  gi = 0;
+  FOR kind IN kinds;
+    IF gi != kind.group_id;
+      IF gi;
+        row_end;
+        section_end;
+      END;
+      section_begin(header = kind.group_name, id = 'group-' _ kind.group_id);
+        row_begin;
+      gi = kind.group_id;
+    END;
+    h(type = 2, id = 'kind-' _ kind.id, text = kind.id _ '. ' _ kind.name);
+    table_begin(class='table-bordered table-striped table-hover kind-list');
+      tr(list=[l('Описание'), kind.anno]);
+      tr(list=[l('Формат заголовка'), kind.name_fmt]);
+      tr(list=[l('Приоритет по умолчанию'), kind.def_prio]);
+      tr(list=[l('ID подписи'), kind.signature_id]);
+      s_name = kind.has_spec ? kind.spec_name : l('Нет');
+      tr(list=[l('Cпецификация'), s_name]);
+      s_name = kind.keep_days ? kind.keep_days : l('Нет архивации');
+      tr(list=[l('Срок хранения, дней'), s_name]);
+      roles = api( 'system.event_kind_role', id = kind.id );
+      l('<tr><td>Роли</td><td>');
+    FOR role IN roles;
+      IF loop.first;
+        table_begin(class='table-bordered table-striped table-hover');
+        tr(list = [ l('Роль'), l('Активна'), l('Приоритет'), 'Спецификация'], use_th = 1, thead = 1);
+      END;
+      on_name = role.is_on ? l('Да') : l('Нет');
+      s_name = kind.has_spec ? role.spec_id : l('N/A');
+      tr(list=[role.name, on_name, role.prio, s_name]);
+      IF loop.last;
+        table_end;
+      END;
+    END;
+    '</td></tr>';
+    table_end;
+
+  END;
+      IF gi;
+        row_end;
+        section_end;
+      END;
+%]
+<style type="text/css">
+table.kind-list td:first-child {
+  white-space: nowrap;
+  width: 20%;
+}
+</style>

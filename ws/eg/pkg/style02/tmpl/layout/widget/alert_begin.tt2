@@ -2,10 +2,11 @@
   description = 'блок сообщение начало'
 %]
 
-        <div class="alert [% IF type; 'alert-' _ type _ ''; END; %]">
+  <div class="alert[% IF type; ' alert-' _ type _ ''; END;%]"[% id ? ' id="' _ id _ '"': '';%]>
 
 [%#example
 #  alert_begin(
 #    type - css класс [block, warning, error]
+#    id - id-шник элемента
 #  );
 %]

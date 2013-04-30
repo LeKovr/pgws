@@ -24,43 +24,82 @@
 CREATE OR REPLACE FUNCTION object_acl(a_class_id d_id, a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
-    r_session   wsd.session;
-    v_acl_id    ws.d_acl;
+    r_session acc.session_info;
+    v_method_link ws.d_sub;
+    v_method_object_team ws.d_sub;
+    v_link_id acc.d_link;
+    v_object_team_id ws.d_id;
+    v_account_team_id ws.d_id;
+    v_role_ids ws.d_ida;
+    v_team_link_id  ws.d_id32 := acc.const_team_link_id_other(); -- любой объект - чужой команды
   BEGIN
-    -- текущая роль пользователя
+    RAISE DEBUG 'object_acl(%, %, %)', a_class_id, a_id, a__sid;
     SELECT INTO r_session
       *
-      FROM wsd.session
-      WHERE sid = a__sid
-        AND deleted_at IS NULL
+      FROM acc.sid_info_internal(a__sid)
     ;
     IF NOT FOUND THEN
-      RETURN QUERY
-        SELECT acl_id::ws.d_acl
-          FROM wsd.role_acl
-          WHERE role_id = acc.const_role_id_guest()
-            AND class_id = a_class_id
-            AND object_id = a_id
-      ;
+      -- не авторизован
+      v_role_ids := ARRAY[acc.const_role_id_guest()]::ws.d_ida;
     ELSE
-      RETURN QUERY
-        SELECT acl_id::ws.d_acl
-          FROM wsd.role_acl
-          WHERE role_id IN (r_session.role_id, acc.const_role_id_user())
-            AND class_id = a_class_id
-            AND object_id = a_id
-      ;
-      -- TODO: поддержка отношений объекта и группы пользователя
-      RETURN QUERY
-        SELECT acl_id::ws.d_acl
-          FROM wsd.object_class_role ocr
-            JOIN wsd.class_role cr ON cr.id = ocr.class_role_id AND cr.class_id = a_class_id AND cr.obj_id = a_id
-            JOIN wsd.class_role_acl cra ON cra.class_role_id = cr.id
-          WHERE ocr.class_id = ws.class_id('account')
-            AND ocr.obj_id = r_session.account_id
-      ;
+      v_role_ids := ARRAY[r_session.role_id]::ws.d_ida; -- id_noteam уже тут
+      IF r_session.team_id IS NOT NULL THEN
+        -- добавить acc.const_role_id_login()
+        v_role_ids := v_role_ids || acc.const_role_id_login();
+
+        -- посчитать team_link_id
+        v_account_team_id := r_session.team_id;
+        RAISE DEBUG 'USER TEAM = %', v_account_team_id;
+        SELECT INTO v_method_object_team code_real FROM ws.method_by_code(ws.class_code(a_class_id) || '.team_link_id');
+        IF FOUND THEN
+          -- team_link_id получаем сразу, без определения team_id
+          EXECUTE 
+            ws.sprintf('SELECT %s($1, $2)', v_method_object_team)
+            INTO v_team_link_id
+            USING a_id, v_account_team_id
+          ;
+        ELSE
+          SELECT INTO v_method_object_team code_real FROM ws.method_by_code(ws.class_code(a_class_id) || '.team_id');
+          IF NOT FOUND THEN
+            -- не найден метод расчета связи
+            RAISE EXCEPTION '%', ws.error_str(acc.const_error_class(), a_class_id::text);
+          END IF;
+          -- team_link считаем по object.team()
+          EXECUTE 
+            ws.sprintf('SELECT %s($1)', v_method_object_team)
+            INTO v_object_team_id
+            USING a_id
+          ;
+          v_team_link_id := acc.team_team_link_id(v_object_team_id, v_account_team_id);
+        END IF;
+      END IF;
     END IF;
-    RETURN;
+
+    RAISE DEBUG 'USER ROLES = %', v_role_ids;
+    RAISE DEBUG 'TEAM LINK ID = %', v_team_link_id;
+
+    -- считаем link_id
+    SELECT INTO v_method_link code_real FROM ws.method_by_code(ws.class_code(a_class_id) || '.link_id');
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Class link function %.link() not found', ws.class_code(a_class_id);
+    END IF;
+
+    EXECUTE
+      ws.sprintf('SELECT %s($1, $2)', v_method_link)
+      INTO v_link_id
+      USING a_id, a__sid
+    ;
+    RAISE DEBUG 'LINK ID = %', v_link_id;
+    RETURN QUERY
+      SELECT
+        acl_id::ws.d_acl
+        FROM wsd.permission_acl p
+          JOIN wsd.role_permission rp USING (perm_id)
+        WHERE p.class_id = a_class_id
+          AND p.link_id = v_link_id 
+          AND p.team_link_id = v_team_link_id
+          AND rp.role_id = ANY (v_role_ids)
+    ;
   END;
 $_$;
 SELECT pg_c('f', 'object_acl', 'Получить уровень доступа пользователя сессии a_sid на экземпляр a_id класса a_class_id');

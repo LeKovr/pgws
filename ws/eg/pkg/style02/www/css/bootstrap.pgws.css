@@ -1,5 +1,5 @@
-@import "/css/external/bootstrap.css";
-
+/* @import "/css/external/bootstrap.css"; */
+/*
 html, body, input, select {
   font-size: 0.9em;
   font-family: Tahoma, Helvetica;
@@ -20,9 +20,8 @@ h1.title {
   margin:3px;
   border-bottom: none;
 }
-
 h1 img {
-  vertical-align: middle;/*was -8px;*/
+  vertical-align: middle;
   margin-right: 5px;
 }
 
@@ -42,4 +41,29 @@ h3 {
 }
 .navbar .brand {
   font-size: 0.9em;
+}
+*/
+
+#content {
+  min-height: 400px;
+}
+.red{
+ color:	#B94A48;
+}
+.typeahead {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* wiki */
+a.footnote {
+  font-size: 75%;
+  vertical-align: super;
+}
+
+a.external {
+    background-position: 0% 60%;
+    background-repeat: no-repeat;
+    padding-left: 12px;
+    background-image: url(/img/wiki/external.png);
 }
