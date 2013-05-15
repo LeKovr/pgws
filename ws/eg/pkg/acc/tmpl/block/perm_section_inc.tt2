@@ -1,0 +1,21 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = "Блок разрешений";
+
+  perm_list = [];
+  FOREACH p IN permissions;
+    url = uri_mk(uri(code = 'api.perm').req, '', p.id);
+    perm_list.push({name => p.name, href => url});
+  END;
+  
+  section_begin(header = l('Разрешения'), id = 'permissions');
+    IF perm_list.size > 0;
+      row_begin;
+        well_begin;
+          ul(links = perm_list);
+        well_end;
+      row_end;
+    END;
+  section_end;
+%]

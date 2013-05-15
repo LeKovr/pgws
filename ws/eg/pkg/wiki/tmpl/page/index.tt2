@@ -32,11 +32,17 @@
   src = api('wiki.doc_src', id => doc_id);
   article = api('doc.format', uri => req.prefix _ '/' _ group_code, code => code, src => src, extended => 1, id => doc_id);
 %]
-<div id="wikibody">
+<div id="wikibody" class='wholepage'>
 [%  article.html; %]
 </div>
 [%
-  INCLUDE "block/$TMPL_LAYOUT/wiki/btn_menu.tt2";
+  # leftList = [{name = 'test'},{name = 'test2'}];
+  rigthList = [
+    {href = '#', name = l('Версия документа: [_1] от [_2]', info.revision, info.updated_at)},
+    {href = '#', name = l('Автор') _ ': ' _ info.updated_by_name },
+    {href = uri_mk(edit_uri.req), name = l('Редактировать')}
+  ];
+  small_navbar(leftList = leftList,rigthList = rigthList);
   INCLUDE "block/wiki/style_js.tt2";
 
   meta.js.${meta.js.size} = BLOCK %]

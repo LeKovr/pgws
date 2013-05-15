@@ -100,6 +100,7 @@ CREATE TABLE wsd.account_contact (
   account_id      INTEGER       NOT NULL REFERENCES wsd.account
 , contact_type_id INTEGER       NOT NULL REFERENCES acc.account_contact_type
 , value           TEXT
+, created_at      TIMESTAMP(0)
 , verified_at     TIMESTAMP(0)
 , deleted_at      TIMESTAMP(0)
 , CONSTRAINT account_contact_pkey PRIMARY KEY (account_id, contact_type_id, value)
@@ -108,6 +109,7 @@ SELECT pg_c('r', 'wsd.account_contact', 'Контакты пользовател
 , pg_c('c', 'wsd.account_contact.account_id',      'd_id,     ID пользователя')
 , pg_c('c', 'wsd.account_contact.contact_type_id', 'd_id32,   ID типа контакта')
 , pg_c('c', 'wsd.account_contact.value',           'd_string, Значение контакта')
+, pg_c('c', 'wsd.account_contact.created_at',      'd_stamp,  Момент создания')
 , pg_c('c', 'wsd.account_contact.verified_at',     'd_stamp,  Момент подтверждения')
 , pg_c('c', 'wsd.account_contact.deleted_at',      'd_stamp,  Момент удаления')
 ;

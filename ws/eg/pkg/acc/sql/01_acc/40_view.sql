@@ -137,6 +137,19 @@ SELECT pg_c('v', 'team_attr', 'Атрибуты команды')
 ;
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW role_info AS SELECT
+  r.id
+, (r.team_id IS NOT NULL AND r.id != acc.const_role_id_login()) AS is_team_only
+, r.name
+, r.anno
+, r.team_id
+, t.name AS team_name
+  FROM wsd.role r
+    LEFT JOIN wsd.team t ON t.id = r.team_id
+;
+SELECT pg_c('v', 'role_info', 'Информация по ролям');
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW role_attr AS SELECT
   r.id
 , (r.team_id IS NOT NULL AND r.id != acc.const_role_id_login()) AS is_team_only
@@ -172,4 +185,50 @@ CREATE OR REPLACE VIEW perm_info AS SELECT
    JOIN wsd.permission p ON (pa.perm_id = p.id)
   ORDER BY pa.perm_id, r.id, pa.class_id, team_link_id, link_id
 ;
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW permission_attr AS SELECT
+  p.*
+, t.name AS team_name
+  FROM wsd.permission p
+    LEFT JOIN wsd.team t ON t.id = p.team_id
+  ORDER BY p.id
+;
+SELECT pg_c('v', 'permission_attr', 'Атрибуты разрешений');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW permission_acl_attr AS SELECT
+  pa.perm_id AS id
+, p.name
+, ws.class_code(pa.class_id) AS class_code
+, (ws.class(pa.class_id)).name AS class_name
+, pa.team_link_id
+, acc.team_link_name(team_link_id) AS team_link
+, pa.link_id
+, acc.class_link_name(pa.class_id, pa.link_id) AS class_link
+, pa.acl_id
+, (ws.class_acl(pa.class_id, acl_id)).name AS acl_name
+  FROM wsd.permission_acl pa 
+    JOIN wsd.permission p ON p.id = pa.perm_id
+  ORDER BY class_name, acl_id, team_link_id, link_id, name
+;
+SELECT pg_c('v', 'permission_acl_attr', 'Описание разрешений');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW account_contact AS SELECT
+  act.name
+, ac.*
+  FROM wsd.account_contact ac
+    JOIN acc.account_contact_type act ON ac.contact_type_id = act.id
+  WHERE ac.deleted_at IS NULL
+  ORDER BY account_id, name, created_at
+;
+SELECT pg_c('v', 'account_contact', 'Контакты пользователя');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW account_contact_type_attr AS SELECT
+  *
+  FROM acc.account_contact_type
+;
+SELECT pg_c('v', 'account_contact_type_attr', 'Типы контактов пользователя');
+
 /* ------------------------------------------------------------------------- */

@@ -189,3 +189,17 @@ $_$;
 SELECT pg_c('f', 'const_account_contact_email_id()', 'Константа: ID типа контакта email');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_email_validation() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'Y0005'::TEXT
+$_$;
+SELECT pg_c('f', 'const_error_email_validation', 'Константа: Код ошибки валидации email');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_mobile_phone_validation() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'Y0006'::TEXT
+$_$;
+SELECT pg_c('f', 'const_error_mobile_phone_validation', 'Константа: Код ошибки валидации мобильного телефона');
+
+/* ------------------------------------------------------------------------- */

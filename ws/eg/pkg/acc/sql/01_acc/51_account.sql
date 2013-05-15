@@ -269,7 +269,7 @@ $_$;
 SELECT pg_c('f', 'account_permission', 'Разрешения пользователя');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION account_contact_add(a_id d_id, a_type_id d_id32, a_value d_string) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION account_contact_add(a_id d_id, a_type_id d_id32, a_value d_string) RETURNS BOOLEAN VOLATILE LANGUAGE 'plpgsql' AS
 $_$
 -- a_id:      ID Пользователя
 -- a_type_id: ID типа контакта
@@ -277,11 +277,26 @@ $_$
   DECLARE
     v_rows INTEGER;
   BEGIN
+
+    SELECT INTO v_rows
+      count(1)
+      FROM wsd.account_contact
+      WHERE account_id = $1
+        AND value = $3
+        AND contact_type_id = $2
+        AND deleted_at IS NULL
+    ;
+
+    IF v_rows > 0 THEN
+      RETURN FALSE;
+    END IF;
+
     SELECT INTO v_rows
       count(1)
       FROM wsd.account_contact
       WHERE account_id = $1
         AND contact_type_id = $2
+        AND deleted_at IS NULL
     ;
 
     IF v_rows > 0 THEN
@@ -289,31 +304,41 @@ $_$
         deleted_at = now()
         WHERE account_id = $1
           AND contact_type_id = $2
+          AND deleted_at IS NULL
       ;
     END IF;
 
-    INSERT INTO wsd.account_contact (account_id, contact_type_id, value) VALUES
-      ($1, $2, $3);
+    INSERT INTO wsd.account_contact (account_id, contact_type_id, value, created_at) VALUES
+      ($1, $2, $3, NOW());
 
-    RETURN 'Add new contact (type_id=' || $2 || ', value=' || $3 || ')';
+    RETURN TRUE;
   END
 $_$;
 SELECT pg_c('f', 'account_contact_add', 'Добавление контактов пользователя');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION account_contact_view(a_id d_id, a_type_id d_id32) RETURNS TEXT STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION account_contact_view(a_id d_id, a_all BOOLEAN DEFAULT TRUE) RETURNS SETOF acc.account_contact STABLE LANGUAGE 'sql' AS
 $_$
--- a_id:      ID Пользователя
--- a_type_id: ID типа контакта
-    SELECT value
-      FROM wsd.account_contact
+-- a_id:       ID Пользователя
+-- a_verified: Только подтвержденые или все
+    SELECT *
+      FROM acc.account_contact
       WHERE account_id = $1
-        AND contact_type_id = $2
-        AND verified_at IS NOT NULL
-        AND deleted_at IS NULL
+        AND ((verified_at IS NOT NULL AND $2 = FALSE) OR ($2 = TRUE))
     ;
 $_$;
 SELECT pg_c('f', 'account_contact_view', 'Просмотр контактов пользователя');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION account_contact_type_attr(a_id d_id32 DEFAULT NULL) RETURNS SETOF acc.account_contact_type_attr STABLE LANGUAGE 'sql' AS
+$_$
+-- a_id:      ID типа контакта
+    SELECT *
+      FROM acc.account_contact_type_attr
+      WHERE COALESCE($1, id) = id
+    ;
+$_$;
+SELECT pg_c('f', 'account_contact_type_attr', 'Просмотр типов контактов');
 
 /* ------------------------------------------------------------------------- */
 

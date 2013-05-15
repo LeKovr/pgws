@@ -4,13 +4,14 @@
 
 <section>
   <div class="page-header"[% id ? ' id="' _ id _ '"' : ''; %]>
-    [% h(type = 1, text = header, id=''); %]
+    [% h(type = type ? type : 1, text = header, id=''); %]
   </div>
 
 [%
 #example
 #  section_begin(
 #    id - id-шник элемента
+#    type - тип заголовка
 #    header - заголовок
 #  );
 %]

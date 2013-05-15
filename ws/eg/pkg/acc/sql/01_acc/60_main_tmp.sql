@@ -21,7 +21,7 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION account_contact_insupd_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION account_contact_add_verified_at() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
   BEGIN
     NEW.verified_at = now();
@@ -29,6 +29,6 @@ $_$
     RETURN NEW;
   END;
 $_$;
-SELECT pg_c('f', 'account_contact_insupd_trigger', 'Установка даты подтверждения контакта');
+SELECT pg_c('f', 'account_contact_add_verified_at', 'Установка даты подтверждения контакта');
 
 /* ------------------------------------------------------------------------- */

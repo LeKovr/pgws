@@ -466,7 +466,7 @@ sub _call_db {
     # Postgresql adds prefix "ERROR" in locale which set per database or server config
     # While we does not know how to set it per session, we have to change postgresql.conf or database with
     # lc_messages = 'en_US.utf8'
-    if ($@ =~ /ERROR:  (\[.+\]) /) {
+    if ($@ =~ /ERROR:\s+(\[.+\])(\s|\n|$)/) {
       # got errors
       my $e = PGWS::Utils::json_in($1);
 

@@ -23,15 +23,15 @@
 /* ------------------------------------------------------------------------- */
 DROP TABLE wsd.job_cron;
 DROP TABLE wsd.job_dust;
-DROP TABLE wsd.job_past;
+DROP TABLE wsd.job_past CASCADE;
 DROP TABLE wsd.job_todo;
-DROP TABLE wsd.job;
+DROP TABLE wsd.job CASCADE;
 
 /* ------------------------------------------------------------------------- */
 DROP SEQUENCE wsd.job_seq;
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_drop_pkg(ARRAY[job.const_job_group_prop()]);
+SELECT cfg.prop_drop_pkg(ARRAY['job.const_job_group_prop']);
 
 
 

@@ -35,6 +35,8 @@ $_$
   , ('api.smd',         $1,        2, 1, $3 + 3,    $2 || '/smd$',      'apidoc/smd',     'Методы API')
   , ('api.smd1',        $1,        1, 2, $3 + 4,    $2 || '/smd1$',     'apidoc/smd1',    'Методы API (JS)')
   , ('api.xsd',         $1,        2, 1, $3 + 5,    $2 || '/xsd$',      'apidoc/xsd',     'Типы данных')
+  , ('api.perm',        $1,        2, 1, $3 + 6,    $2 || '/perm$',     'apidoc/perm',    'Разрешения')
+  , ('api.role',        $1,        2, 1, $3 + 7,    $2 || '/role$',     'apidoc/role',    'Роли')
   , ('api.class.single','api.class',  2, 1,         NULL, $2 || '/class/:i$', 'apidoc/class', 'Описание класса')
  ;
 $_$;

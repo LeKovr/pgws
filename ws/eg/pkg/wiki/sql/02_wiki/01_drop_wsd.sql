@@ -22,9 +22,9 @@
 
 /* ------------------------------------------------------------------------- */
 
-DROP TABLE wsd.doc_keyword;
-DROP TABLE wsd.doc_diff;
-DROP TABLE wsd.doc;
+DROP TABLE wsd.doc_keyword CASCADE;
+DROP TABLE wsd.doc_diff CASCADE;
+DROP TABLE wsd.doc CASCADE;
 DROP TABLE wsd.doc_group;
 
 DROP SEQUENCE wsd.doc_id_seq;

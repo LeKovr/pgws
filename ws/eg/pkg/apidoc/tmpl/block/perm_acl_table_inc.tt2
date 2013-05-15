@@ -1,0 +1,36 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Блок таблицы описания разрешения';
+
+  last_acl_name = '';
+  table_begin(class='table-bordered table-striped table-hover');
+  columns = [];
+  IF class; columns.push(l("Класс"));       END;
+  columns = columns.merge([l("Уровень доступа"), l("Команда"), l("Объект")]);
+  IF perm;  columns.push(l("Разрешение"));  END;
+  tr(list = columns, th = 1, thead = 1);
+  FOR a IN acl;
+    columns = [];
+    IF class;
+      href = uri_mk(uri(code => 'api.class').req, '', a.class_code);
+      columns.push("<a href='$href'>$a.class_name</a>");
+    END;
+    ref_id = a.class_code _ '-perm-acl-' _ a.acl_id;
+    href = uri_mk(uri(code = 'api.class').req, '', ref_id);
+    acl_name = a.acl_id _ '. ' _ a.acl_name;
+    acl_name = "<a href='$href' id='$ref_id'>$acl_name</a>";
+    IF class || acl_name != last_acl_name;
+      last_acl_name = acl_name;
+    ELSE;
+      acl_name = '';
+    END;
+    columns = columns.merge([acl_name, a.team_link, a.class_link]);
+    IF perm;
+      href = uri_mk(uri(code => 'api.perm').req, '', a.id);
+      columns.push("<a href='$href'>$a.name</a>");
+    END;
+    tr(list = columns); 
+  END;
+  table_end(tbody = 1);
+%]

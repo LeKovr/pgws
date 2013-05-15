@@ -46,8 +46,8 @@ CREATE OR REPLACE FUNCTION validation_email_trigger() RETURNS TRIGGER IMMUTABLE 
 $_$
   BEGIN
 
-    IF NEW.value !~ E'(?:^$|^[^ ]+@[^ ]+\.[^ ]{2,6}$)' THEN
-      RAISE EXCEPTION 'Email % is not valid', NEW.value;
+    IF NEW.value !~ E'(?:^$|^[^ ]+@[^ ]+\\.[^ ]{2,6}$)' THEN
+      RAISE EXCEPTION '%', ws.perror_str(acc.const_error_email_validation(), 'value', NEW.value);
     END IF;
 
     RETURN NEW;
@@ -60,8 +60,8 @@ CREATE OR REPLACE FUNCTION validation_mobile_phone_trigger() RETURNS TRIGGER IMM
 $_$
   BEGIN
 
-    IF NEW.value !~ E'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$' THEN
-      RAISE EXCEPTION 'Mobile phone % is not valid', NEW.value;
+    IF NEW.value !~ E'^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}$' THEN
+      RAISE EXCEPTION '%', ws.perror_str(acc.const_error_mobile_phone_validation(), 'value', NEW.value);
     END IF;
 
     RETURN NEW;

@@ -22,15 +22,15 @@
 
 /* ------------------------------------------------------------------------- */
 
-DROP TABLE wsd.session;
+DROP TABLE wsd.session CASCADE;
 DROP TABLE wsd.account_contact;
-DROP TABLE wsd.account_team;
-DROP TABLE wsd.account;
-DROP TABLE wsd.role_permission;
-DROP TABLE wsd.permission_acl;
-DROP TABLE wsd.permission;
-DROP TABLE wsd.role;
-DROP TABLE wsd.team;
+DROP TABLE wsd.account_team CASCADE;
+DROP TABLE wsd.account CASCADE;
+DROP TABLE wsd.role_permission CASCADE;
+DROP TABLE wsd.permission_acl CASCADE;
+DROP TABLE wsd.permission CASCADE;
+DROP TABLE wsd.role CASCADE;
+DROP TABLE wsd.team CASCADE;
 
 /* ------------------------------------------------------------------------- */
 
@@ -42,5 +42,5 @@ DROP SEQUENCE wsd.permission_id_seq;
 
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_drop_pkg(ARRAY[acc.const_team_group_prop(),acc.const_account_group_prop()]);
+SELECT cfg.prop_drop_pkg(ARRAY['acc.const_team_group_prop','acc.const_account_group_prop']);
 

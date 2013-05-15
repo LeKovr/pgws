@@ -70,135 +70,148 @@
   .affix {
     top: 0px;
     min-width:780px;
-  };
+  }
+  span .view{
+   padding-top: 5px;
+   display: inline-block;
+  }
 </style>
 
-<div id="main">
-</div>
-<div class="tabbable">
-  <div class="tab-content">
-[% IF doc_id %]
-   <div class="tab-pane" id="p-attr">
-    <div class="attrClass">
-      <h2>[% l('Атрибуты') %]</h2>
-      <form id="attr-form" action="js_required_but_not_available" onsubmit="return false;">
-        <input type="hidden" name="_sid" value="[% session.sid %]"/>
-        <input type="hidden" name="id" value="[% doc_id %]"/>
-        <input type="hidden" id="up_id" name="up_id" value="[% info.up_id %]"/>
-        <div id="div_attr">
-          <p><label>[% l("Текущий статус") %]
-          <span class="editable">
-          <select id="status_id" name="status_id" class="edit hide">
-            [% FOREACH s IN doc_class_status; %]
-              [% IF s.id == info.status_id; %]
-                <option value="[% s.id %]" selected="selected">[% s.name %]</option>
-              [% ELSE; %]
-                <option value="[% s.id %]">[% s.name %]</option>
-              [% END; %]
-            [% END; %]
-          </select>
-          <span class="view"></span>
-          </span>
-          </label></p>
-          <p><label>[% l("Следующий статус") %] <span class="editable"><select id="nextStatus" name="status_next_id" class="edit hide">
-            [% FOREACH s IN doc_class_status; %]
-              [% IF s.id == info.status_next_id; %]
-                <option value="[% s.id %]" selected="selected">[% s.name %]</option>
-              [% ELSE; %]
-                <option value="[% s.id %]">[% s.name %]</option>
-              [% END; %]
-            [% END; %]
-            </select><span class="view"></span></span> от
-            <span class="editable">
-            <input type="text" size="17" id="date" name="status_next_at" value="[% info.status_next_at %]" class="edit hide"/>
-            <span class="view"></span>
-            </span></label>
-          </p>
-          <p><label>[% l("Родительская статья") %] <span class="editable"><input type="text" id="autoc"  autocomplete="off" value="[% name_doc_up.name %]" class="edit hide"/>
-          <span class="view"></span>
-          </span></label>
-          </p>
-          <font style="float:left;"><label>[% l("Ключевые слова") %]:</label></font>
-          <div id="keyword" style="float:left;">
-            [%  FOREACH this = wiki_word_str; %]
-              <div style='float:left;margin-left:5px;margin-right:5px;'>[% this %]<input type='hidden' name='keywords' value='[% this %]'/>&nbsp;<a href='#' onClick='delThis(this)' class="edit hide close" title="Удалить">&times;</a></div>
-            [%  END; %]
-          </div>
-          <div class="div_button">
-            <span class="editable"><input type="text" id="inputnewkey" style="float:left;" autocomplete="off" class="edit hide"/></span>
-            <button onclick="addWord()" class="edit hide">[% l("Добавить новое ключевое слово") %]</button>
-          </div>
-        </div>
+[%
+div_begin(id='main');
+div_end;
+
+div_begin(class='tabbable');
+  div_begin(class='tab-content');
+   IF doc_id;
+     div_begin(class='tab-pane', id='p-attr');
+       div_begin(class='attrClass');
+         form_begin(id='attr-form', action='js_required_but_not_available', onsubmit='return false;', class='form-horizontal well');
+          fieldset_begin(name='Атрибуты');
+          input(type='hidden', name='_sid', value=session.sid);
+          input(type='hidden', name='id', value=doc_id); 
+          input(type='hidden', name='up_id', id='up_id', value=info.up_id);
+           div_begin(id='div_attr');
+              controlGroup_begin(label = l("Текущий статус"));
+                options=[];
+                FOREACH s IN doc_class_status;
+                  IF s.id == info.status_id; 
+                   options.push(value=s.id, selected = 1, text= s.name);
+                  ELSE; 
+                   options.push(value=s.id, text= s.name);
+                  END; 
+                 END; 
+                span(class='editable', text=''_ select(options=options, id='status_id', name='status_id', class='edit hide') _ span(class='view'));
+           controlGroup_end;
+           controlGroup_begin(label = l("Следующий статус")); 
+            options=[];
+            FOREACH s IN doc_class_status; 
+               IF s.id == info.status_next_id; 
+                options.push(value=s.id, selected = 1, text= s.name);
+               ELSE; 
+                options.push(value=s.id, text= s.name);
+               END; 
+             END; 
+            span(class='editable', text='' _ select(options=options, id='nextStatus', name='status_next_id', class='edit hide') _ span(class='view'));
+            l("от");
+            span(class='editable',text='' _ input(id='date', name='status_next_at', value=info.status_next_at, class='edit hide') _ span(class='view'));
+            controlGroup_end;
+            controlGroup_begin(label = l("Родительская статья"));
+            span(class='editable', text='' _ input(id='autoc', value=name_doc_up.name, class='edit hide') _ span(class='view'));
+          controlGroup_end;
+          controlGroup_begin(label = l("Ключевые слова")); 
+          div_begin(id='keyword', size=7);
+             FOREACH this = wiki_word_str;
+              div_begin(style='float:left;margin-left:5px;margin-right:5px;padding-top:5px;');
+                this;
+                input(type='hidden', name='keywords', value=this);
+               l("&nbsp;");
+               %]<a href='#' onClick='delThis(this); return false;' class="edit hide close" title="Удалить">&times;</a>
+            [% div_end;
+             END; 
+            div_end;
+            div_begin(class='div_button');
+            span(class='editable', text=input(id='inputnewkey', class='edit hide span1'));
+            btn(onclick='addWord()', class='edit hide', name=l("Добавить новое ключевое слово"));
+          div_end;
+          controlGroup_end;
+        div_end;%]
         <br/><br/>
-        <div class="buttons">
-          <input type="button" class="view edit_on" value="[% l("Изменить") %]" />
-          <input type="button" class="edit save hide" value="[% l("Сохранить") %]"/>
-          <input type="button" class="edit reset hide" value="[% l("Отмена") %]"/>
-        </div>
-      </form>
-      </div>
-      <h2>[% l('Файлы') %]</h2>
-      [% INCLUDE block/fs/file_upload.tt2 obj_id = doc_id, list_method = 'wiki.fs_files' %]
-    </div>
-[% END %]
-    <div class="tab-pane" id="p-edit">
-      <form id="main-form" action="js_required_but_not_available" onsubmit="return false;">
-        <input type="hidden" name="uri" value="[% req.prefix _ '/' _ group_code  %]">
-        <input type="hidden" name="code" value="[% code %]">
-[% IF doc_id %]
-        <input type="hidden" name="extended" value="1">
-        <input type="hidden" name="id" value="[% doc_id %]">
-        <input type="hidden" name="revision" value="[% info.revision %]">
-[% ELSE %]
-        <input type="hidden" name="id" value="[% group_id %]">
-[% END %]
-        <button id="btnSave0" onClick="return formSend('main', '[% save_method %]', true)">[% save_name %]</button>
-        <button id="btnFormat0" onClick="return formSend('main', 'doc.format')">[% l("Предварительный просмотр") %]</button>
-        <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view0" checked onClick="return toggleChk(this, 1)"></label>
-        <textarea rows="10" name="src" class="span10">[% src %]</textarea>
-        <button id="btnSave0" onClick="return formSend('main', '[% save_method %]', true)">[% save_name %]</button>
-        <button id="btnFormat1" onClick="return formSend('main', 'doc.format')">[% l("Предварительный просмотр") %]</button>
-        <label>[% l("Перейти на вкладку предпросмотра") %] <input type="checkbox" id="is_view1" checked onClick="return toggleChk(this,0)"></label>
-        <div id="errors" class="error alert alert-error"></div>
-        <div id="main-form__err" class="error"></div>
-        <div id="main-form_src_err" class="error"></div>
-        <div id="status" class='alert alert-info'></div>
-      </form>
-  </div>
-    <div class="tab-pane" id="wikibody">
-  </div>
-  <div class="tab-pane" id="p-diff"><pre id="diff-src" class="diff"></pre>
-  </div>
-  <div class="tab-pane" id="p-src"><pre id="html-src" class="html"></pre>
-  </div>
- </div>
-</div>
-[% 
+        [% div_begin(class='buttons form-actions');
+	  btn(class='view edit_on', name=l("Изменить")); 
+          btn(class='edit save hide', name=l("Сохранить"));
+          btn(class='edit reset hide', name=l("Отмена"));
+        div_end;
+      fieldset_end;
+      form_end; 
+      div_end;
+      fieldset_begin(name='Файлы');
+         INCLUDE block/fs/file_upload.tt2 obj_id = doc_id, list_method = 'wiki.fs_files'
+      fieadset_end;
+  div_end;   
+  END;
+    div_begin(class='tab-pane', id='p-edit');
+    form_begin(id='main-form', action='js_required_but_not_available', onsubmit='return false;'); 
+          input(type='hidden', name='uri', value=req.prefix _ '/' _ group_code); 
+          input(type='hidden', name='code', value=code);
+ IF doc_id; 
+          input(type='hidden', name='extended', value=1);
+          input(type='hidden', name='id', value=doc_id);
+          input(type='hidden', name='revision', value=info.revision);
+ ELSE; 
+        input(type='hidden', name='id', value=group_id);
+ END;
+        input(rows=10, name='src', class='span10', value=src); 
+      form_end; 
+  div_end;
+  div_begin(class='tab-pane', id='wikibody');
+  div_end;
+  div_begin(class='tab-pane', id='p-diff');%]
+    <pre id="diff-src" class="diff"></pre>
+  [% div_end;
+  div_begin(class='tab-pane', id='p-src');%]
+    <pre id="html-src" class="html"></pre>
+  [% div_end;
+ div_end;
+ alert_begin(type='error error', id='errors'); alert_end; 
+ div_begin(id='main-form__err', class='error');div_end;
+ div_begin(id='main-form_src_err', class='error');div_end;
+ alert_begin(type='info', id='status'); alert_end;
+div_end;
+ 
 INCLUDE "block/wiki/style_js.tt2";
 meta.js.${meta.js.size} = BLOCK %]
-
+<style>
+  .saveTab{
+    font-weight:bold;
+  }
+</style>
 <script type="text/javascript">
 //<![CDATA[
 
-var links = [[% IF doc_id %]['Атрибуты','p-attr'],[% END; %]['Редактор','p-edit'],['Просмотр','wikibody'],['Изменения','p-diff'],['HTML','p-src']];
+var links = [[% IF doc_id %]['Атрибуты','p-attr'],[% END; %]['Редактор','p-edit'],['Просмотр','wikibody','review'],['Изменения','p-diff','review'],['HTML','p-src','review'],['[% save_name %]','','saveTab']];
 
 var html='<ul class ="nav nav-tabs" data-spy="affix" class="affix-top" data-offset-top="200">';
 var content='';
 var index = location.href.indexOf('#');
 $(links).each(function(i){
+  var saveClass='';
+  if (typeof(this[2]) != "undefined"){
+    saveClass = ' '+this[2];
+  };
   if(index<0 && i == 0){
-    html+='<li class="active"><a class="ajax active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+    html+='<li class="active'+saveClass+'"><a class="'+(saveClass.length>0 ? '' : 'ajax ')+'active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
     $('#'+this[1]).addClass('active');
   return;
   }
   if(index>=0){
     if(this[1] == location.href.substring(index+1)){
-      html+='<li class="active"><a class="ajax active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+      html+='<li class="active'+saveClass+'"><a class="'+(saveClass.length>0 ? '' : 'ajax ')+'active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
     $('#'+this[1]).addClass('active');
       return;
     }
   }
-  html+='<li><a class="ajax" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+  html+='<li'+(saveClass.length>0 ? ' class='+saveClass : '')+'><a '+(saveClass.length>0 ? '' : 'class="ajax"')+' href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
 });
 html+='</ul>';
 $('#main').html(html);
@@ -207,8 +220,9 @@ $('#main').html(html);
 %]
 /* ------------------------------------------------------------------------- */
 // Управление вкладками
-
+var wikiChanged = 0 ;
 window.PGWS.tabSelected = function(objActive){
+if(!$(objActive).parent().hasClass("saveTab")){
   $(".ajax").removeClass("active");
   $(".ajax").parent('li').removeClass("active");
   $(objActive).addClass("active");
@@ -216,7 +230,13 @@ window.PGWS.tabSelected = function(objActive){
   $('.tab-content').find('.tab-pane').removeClass('active');
   index = $(objActive).attr('href').indexOf('#');
   $('#' + $(objActive).attr('href').substring(index+1)).addClass('active');
- // renderTabs();
+  if(wikiChanged){
+      formSend('main', 'doc.format');
+      wikiChanged = 0
+    }
+  }else{
+    formSend('main', '[% save_method %]', true);
+  }
 };
 
 /* ------------------------------------------------------------------------- */
@@ -234,14 +254,28 @@ window.PGWS.tabContentEvents = function(obj) {
 /* ------------------------------------------------------------------------- */
 // Инициализация основной страницы
 
-
-$(document).ready(function(){
-   $('.ajax').ajaxUrl({
+var initAjaxUrl = function(){
+  $('.ajax').ajaxUrl({
     onSuccess:  window.PGWS.tabSelected,
     titleSuffix: window.PGWS.page.titleSuffix,
     classMenuItemActive:'.active'
   });
+};
+
+$(document).ready(function(){
+  initAjaxUrl();
   window.PGWS.tabContentEvents('');
+  $('textarea[name=src]').bind('input',function(){ 
+    wikiChanged = 1; 
+    $('.review').removeClass('disabled');
+    $('.saveTab').removeClass('disabled');
+    $('.review a').addClass('ajax');
+    $('.saveTab a').addClass('ajax');
+    initAjaxUrl();
+  });
+  $('.review').addClass('disabled');
+  $('.saveTab').addClass('disabled');
+  $('.disabled').find('a').click(function(e){return false;});
 });
 
 var msg_created = '[% l("Документ создан") %]';
@@ -258,11 +292,15 @@ function toggleChk(b,idx) {
   return true;
 }
 
-function formSend(id, action) {
+function formSend(id, action, t) {
   $('#status').text('');
   $('div.error').text('');
   var form_id = '#' + id + '-form';
-  api_form(action, form_id, formOK, formErr);
+  if (t){
+    api_form(action, form_id, formOK2, formErr);
+  }else{
+    api_form(action, form_id, formOK, formErr);
+  }
   return false;
 };
 function delThis(l){        //функция для удаления слова из ключевой строки
@@ -277,7 +315,10 @@ function addWord(){       //добавляем новое слово в ключ
 };
 
 function constructorDivKeyWord(param){
-  return "<div style='float:left;margin-left:5px;margin-right:5px;'>"+param+"<input type=\"hidden\" name=\"keywords\" value=\""+param+"\"/>&nbsp;<a href='#' onClick='delThis(this)' class='edit hide close' title='Удалить' style='display:inline;'>&times;</a></div>";
+  return "<div style='float:left;margin-left:5px;margin-right:5px;padding-top:5px;'>"+param+"<input type=\"hidden\" name=\"keywords\" value=\""+param+"\"/>&nbsp;<a href='#' onClick='delThis(this); return false;' class='edit hide close' title='Удалить' style='display:inline;'>&times;</a></div>";
+};
+var formOK2 = function(formid, res) {
+  window.location.href = '[% view_pathname %]';
 };
 var formOK = function(formid, res) {
   if (typeof res == 'number') {
@@ -324,18 +365,6 @@ var animation_complete = function(t) {
 var acl_wikisave = [% can_do %]; //права на сохранение
 
 
-/*
-    activeDiv=$(activeItem).children("div.acc-body");
-
-    $(activeItem).animate({width: "15px"}, {duration:300, queue:false});
-    $(this).parent().animate({width: "92%"}, {duration:300, queue:false, complete: animation_complete});
-
-    activeDiv.hide();
-
-    activeItem = $(this).parent();
-
-    activeDiv=$(activeItem).children("div.acc-body");
-*/
 var renderTabs = function(){
     if ($('.tab-pane').filter('.active').attr('id') == 'wikibody') {
       $('.tab-pane').filter('.active').html(page_html);

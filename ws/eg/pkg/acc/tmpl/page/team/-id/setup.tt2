@@ -1,22 +1,21 @@
 [% META
   description = 'Страница компании';
-  
+
   team_id = page.args.0;
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;	
+  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;
+%][%
+
+  row_begin;
+  
+  %]<div class='well form-inline span4 offset-16 custom-form'>[%
+    %]<form><legend>Статус</legend>[%
+    controlGroup_begin(label = 'Текущий статус:');
+      select(disabled = 1, options = [{text = 'Активен', selected = 1},{text = 'В отпуске'}]); 
+    controlGroup_end;
+
+    btn(type='submit', class='disabled', name='Сохранить');
+
+    %]</form>[%
+  div_end;
+row_end;
 %]
-
-<form class="well form-inline span4 offset-16 custom-form">
-  <fieldset>
-    <legend>Контакты</legend>
-
-  </fieldset>
-</form>
-
-<form class="well form-inline span4 offset-16 custom-form">
-  <fieldset>
-    <legend>Статус</legend>
-      [%controlGroup_begin;
-        select(options = [{text = 'Активен', selected = 1},{text = 'Отпуск'}]);
-      controlGroup_end;	%]
-  </fieldset>
-</form>

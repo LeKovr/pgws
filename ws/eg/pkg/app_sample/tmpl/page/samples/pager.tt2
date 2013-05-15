@@ -7,7 +7,7 @@ codeParam = get.item('code');
 code = codeParam ? codeParam _ '%' : '' ;
 by = by ? by : 10;
 pageNo = pageNo ? pageNo : 0;
-pager = api('ws.method_lookup', by => by, pageNo => pageNo, need_rc=1, code => code);
+pager = api('ws.method_lookup', by => by, page => pageNo, need_rc=1, code => code);
 
 # вариант 1, формирование ссылок js
 options=[{value=5,text=5},{value=10,text=10},{value=20,text=20}];

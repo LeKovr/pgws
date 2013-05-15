@@ -33,7 +33,7 @@ sql - Каталог SQL кода
 
   init:   [1-8]?_*.sql, 9?_*.sql
   make:   1[4-9]_*.sql, [3-6]?_*.sql, 9?_*.sql
-  drop:   00_*.sql
+  drop:   00_*.sql, 02_*.sql
   erase:  0?_*.sql
 
 sql/upd код обновления версий

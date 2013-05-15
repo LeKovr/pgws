@@ -351,7 +351,7 @@ EOF
   else
 #    echo "*** Errors found"
 #    grep ERROR $LOGFILE || echo "    None."
-    [ -s "$BLD/errors.diff" ] && { echo "*** Diff:" ; cat "$BLD/errors.diff" ; }
+    [ -s "$BLD/errors.diff" ] && { echo "*** Diff:" ; cat "$BLD/errors.diff" ; exit 1 ; }
   fi
 
 }
@@ -466,7 +466,7 @@ case "$cmd" in
     db_run init "[1-8]?_*.sql" $src "$pkg"
     ;;
   drop)
-    db_run drop "00_*.sql" $src "$pkg"
+    db_run drop "00_*.sql 02_*.sql" $src "$pkg"
     ;;
   erase)
     echo "!!!WARNING!!! Erase will drop persistent data"

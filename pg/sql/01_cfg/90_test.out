@@ -1,127 +1,83 @@
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+             test             
+------------------------------
+  ***** prop_value_edit *****
+
+ prop_value_edit 
+-----------------
+ t
+
+ prop_value_edit 
+-----------------
+ t
+
+ prop_value_edit 
+-----------------
+ t
+
+ pogc | poid |      code       | valid_from | value 
+------+------+-----------------+------------+-------
+ test |    1 | test.code.one   | 2000-01-01 | one
+ test |    1 | test.code.two   | 2000-01-01 | two
+ test |    1 | test.code.three | 2000-01-01 | three
+
              test              
 -------------------------------
   ***** prop_attr_system *****
 
-        code        | pkg | pogc_list | is_mask | def_value |             name              | value_fmt | anno | has_log | pogc | poid | owner_name | valid_from |           value           
---------------------+-----+-----------+---------+-----------+-------------------------------+-----------+------+---------+------+------+------------+------------+---------------------------
- ws.daemon.db.sql.0 | cfg | {db}      | t       |           | SQL настройки соединения с БД |           |      | f       | db   |    1 | БД         | 2000-01-01 | SET datestyle TO 'German'
+     code      |   pkg    | pogc_list | is_mask | def_value |           name            | value_fmt | anno | has_log | pogc | poid |      owner_name       | valid_from | value 
+---------------+----------+-----------+---------+-----------+---------------------------+-----------+------+---------+------+------+-----------------------+------------+-------
+ test.code.one | i18n_def | {test}    | f       |           | Первое свойство для теста |           |      | f       | test |    1 | Владелец для свойства | 2000-01-01 | one
 
           test          
 ------------------------
   ***** prop_info *****
 
-        code         | pkg | pogc_list | is_mask | def_value |             name              | value_fmt | anno | has_log 
----------------------+-----+-----------+---------+-----------+-------------------------------+-----------+------+---------
- ws.daemon.db.sql.:i | cfg | {db}      | t       |           | SQL настройки соединения с БД |           |      | f
+     code      |   pkg    | pogc_list | is_mask | def_value |           name            | value_fmt | anno | has_log 
+---------------+----------+-----------+---------+-----------+---------------------------+-----------+------+---------
+ test.code.one | i18n_def | {test}    | f       |           | Первое свойство для теста |           |      | f
 
              test             
 ------------------------------
   ***** prop_owner_attr *****
 
- pogc  | poid | sort |     name      | anno | is_id_required | pog_sort | pog_name 
--------+------+------+---------------+------+----------------+----------+----------
- cache |    4 |    4 | Данные сессий |      | f              |        6 | Кэш
+ pogc | poid | sort |         name          | anno | is_id_required | pog_sort |     pog_name     
+------+------+------+-----------------------+------+----------------+----------+------------------
+ test |    1 |    1 | Владелец для свойства |      | f              |        1 | Группа для теста
 
              test             
 ------------------------------
   ***** prop_value_list *****
 
-          code          |                                                  value                                                  | valid_from 
-------------------------+---------------------------------------------------------------------------------------------------------+------------
- FE.def.acl             | info.acl_check                                                                                          | 2000-01-01
- FE.def.code            | ws.page_by_code                                                                                         | 2000-01-01
- FE.def.login           | account.login                                                                                           | 2000-01-01
- FE.def.logout          | account.logout                                                                                          | 2000-01-01
- FE.def.sid             | account.sid_info                                                                                        | 2000-01-01
- FE.def.uri             | ws.page_by_uri                                                                                          | 2000-01-01
- FE.error_500           | /error/                                                                                                 | 2000-01-01
- FE.sid_arg             |                                                                                                         | 2000-01-01
- FE.site_is_hidden      | 1                                                                                                       | 2000-01-01
- FE.tmpl.css.allowed    | amelia, cerulean, cosmo, cyborg, journal, readable, simplex, slate, spacelab, spruce, superhero, united | 2000-01-01
- FE.tmpl.css.cookie     | PGWS_css                                                                                                | 2000-01-01
- FE.tmpl.css.default    | default                                                                                                 | 2000-01-01
- FE.tmpl.error          | app_sample/error                                                                                        | 2000-01-01
- FE.tmpl.ext            | .tt2                                                                                                    | 2000-01-01
- FE.tmpl.jobs           | job/                                                                                                    | 2000-01-01
- FE.tmpl.layout_default | style02                                                                                                 | 2000-01-01
- FE.tmpl.pages          | page/                                                                                                   | 2000-01-01
- FE.tmpl.skin_default   | default                                                                                                 | 2000-01-01
+  code   | value | valid_from 
+---------+-------+------------
+ T.one   | one   | 2000-01-01
+ T.three | three | 2000-01-01
+ T.two   | two   | 2000-01-01
 
-                 code                 | value | valid_from 
---------------------------------------+-------+------------
- ws.daemon.log.debug.default.acl      | 3     | 2000-01-01
- ws.daemon.log.debug.default.cache    | 3     | 2000-01-01
- ws.daemon.log.debug.default.call     | 3     | 2000-01-01
- ws.daemon.log.debug.default.default  | 3     | 2000-01-01
- ws.daemon.log.debug.default.sid      | 3     | 2000-01-01
- ws.daemon.log.debug.default.validate | 3     | 2000-01-01
- ws.daemon.log.debug.get.acl          | 3     | 2000-01-01
- ws.daemon.log.debug.get.cache        | 3     | 2000-01-01
- ws.daemon.log.debug.get.call         | 3     | 2000-01-01
- ws.daemon.log.debug.get.default      | 3     | 2000-01-01
- ws.daemon.log.debug.get.sid          | 3     | 2000-01-01
- ws.daemon.log.debug.get.validate     | 3     | 2000-01-01
- ws.daemon.log.debug.post.acl         | 3     | 2000-01-01
- ws.daemon.log.debug.post.cache       | 3     | 2000-01-01
- ws.daemon.log.debug.post.call        | 3     | 2000-01-01
- ws.daemon.log.debug.post.default     | 3     | 2000-01-01
- ws.daemon.log.debug.post.sid         | 3     | 2000-01-01
- ws.daemon.log.debug.post.validate    | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.acl         | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.cache       | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.call        | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.default     | 5     | 2000-01-01
- ws.daemon.log.debug.tmpl.sid         | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.validate    | 3     | 2000-01-01
+      code       | value | valid_from 
+-----------------+-------+------------
+ test.code.one   | one   | 2000-01-01
+ test.code.three | three | 2000-01-01
+ test.code.two   | two   | 2000-01-01
 
                 test                
 ------------------------------------
   ***** prop_group_value_list *****
 
-    code    |           value           | valid_from 
-------------+---------------------------+------------
- DB.1.sql.0 | SET datestyle TO 'German' | 2000-01-01
- DB.1.sql.1 | SET time zone local       | 2000-01-01
+   code    | value | valid_from 
+-----------+-------+------------
+ T.1.one   | one   | 2000-01-01
+ T.1.three | three | 2000-01-01
+ T.1.two   | two   | 2000-01-01
 
-                 code                 | value | valid_from 
---------------------------------------+-------+------------
- ws.daemon.log.debug.default.acl      | 3     | 2000-01-01
- ws.daemon.log.debug.default.cache    | 3     | 2000-01-01
- ws.daemon.log.debug.default.call     | 3     | 2000-01-01
- ws.daemon.log.debug.default.default  | 3     | 2000-01-01
- ws.daemon.log.debug.default.sid      | 3     | 2000-01-01
- ws.daemon.log.debug.default.validate | 3     | 2000-01-01
- ws.daemon.log.debug.get.acl          | 3     | 2000-01-01
- ws.daemon.log.debug.get.cache        | 3     | 2000-01-01
- ws.daemon.log.debug.get.call         | 3     | 2000-01-01
- ws.daemon.log.debug.get.default      | 3     | 2000-01-01
- ws.daemon.log.debug.get.sid          | 3     | 2000-01-01
- ws.daemon.log.debug.get.validate     | 3     | 2000-01-01
- ws.daemon.log.debug.post.acl         | 3     | 2000-01-01
- ws.daemon.log.debug.post.cache       | 3     | 2000-01-01
- ws.daemon.log.debug.post.call        | 3     | 2000-01-01
- ws.daemon.log.debug.post.default     | 3     | 2000-01-01
- ws.daemon.log.debug.post.sid         | 3     | 2000-01-01
- ws.daemon.log.debug.post.validate    | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.acl         | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.cache       | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.call        | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.default     | 5     | 2000-01-01
- ws.daemon.log.debug.tmpl.sid         | 3     | 2000-01-01
- ws.daemon.log.debug.tmpl.validate    | 3     | 2000-01-01
-
-             test             
-------------------------------
-  ***** prop_value_edit *****
-
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
- prop_value_edit 
------------------
- t
-
- pogc | poid |   code    | valid_from |   value    
-------+------+-----------+------------+------------
- test |    1 | test.code | 2000-01-01 | test_value
+      code       | value | valid_from 
+-----------------+-------+------------
+ test.code.one   | one   | 2000-01-01
+ test.code.three | three | 2000-01-01
+ test.code.two   | two   | 2000-01-01
 

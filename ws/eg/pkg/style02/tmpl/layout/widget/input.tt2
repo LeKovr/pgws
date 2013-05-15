@@ -21,7 +21,8 @@
     rows="[% rows; %]" 
     [% IF disabled %] disabled="disabled"[% END; 
     IF onclick; " onclick='$onclick'"; END;
-    id ? ' id="' _ id _ '"':'';%]>
+    id ? ' id="' _ id _ '"':'';
+    IF name;  ' name="' _ name _ '"'; END;%]>
     [% value %]
     </textarea>
   [% END; %]

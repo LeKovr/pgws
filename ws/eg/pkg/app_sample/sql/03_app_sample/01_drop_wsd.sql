@@ -23,7 +23,7 @@
 \set TID acc.const_team_class_id()      -- team class id
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_clean_pkg(:'PKG', TRUE);
+SELECT cfg.prop_drop_pkg(ARRAY['acc.const_team_group_prop','acc.const_account_group_prop']);
 
 
 /* ------------------------------------------------------------------------- */

@@ -1,0 +1,10 @@
+[% META
+  description = 'тэг form'
+%]
+
+<form [%
+  IF id; ' id="' _ id _ '"'; END;
+  IF action; ' action="' _ action _ '"'; END;
+  IF onsubmit; ' onsubmit="' _ onsubmit _ '"'; END;
+  IF class; ' class="' _ class _ '"'; END;
+%]>

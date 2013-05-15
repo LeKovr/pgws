@@ -22,7 +22,7 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE TRIGGER add_verified_date BEFORE INSERT OR UPDATE ON wsd.account_contact
-  FOR EACH ROW EXECUTE PROCEDURE account_contact_insupd_trigger()
+  FOR EACH ROW EXECUTE PROCEDURE account_contact_add_verified_at()
 ;
 
 /* ------------------------------------------------------------------------- */

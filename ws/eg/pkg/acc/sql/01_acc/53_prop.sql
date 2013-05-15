@@ -39,6 +39,15 @@ $_$;
 SELECT pg_c('f', 'prop_attr_account_isv', 'Атрибуты служебных свойств пользователя');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION prop_account_isv(a_id INTEGER, a_code TEXT DEFAULT NULL) RETURNS SETOF t_hashtable STABLE LANGUAGE 'sql' AS
+$_$
+-- a_poid: код владельца свойств
+-- a_code: код свойства
+  SELECT code, value FROM cfg.prop_value_list(acc.const_account_group_prop(), $1, 'isv.' || $2, false)
+$_$;
+SELECT pg_c('f', 'prop_account_isv', 'Значения служебных свойств пользователя');
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION prop_attr_team_abp(a_id INTEGER, a_code TEXT DEFAULT NULL) RETURNS SETOF cfg.prop_attr STABLE LANGUAGE 'sql' AS
 $_$
 -- a_poid: код владельца свойств

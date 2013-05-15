@@ -1,0 +1,27 @@
+[% META
+  description = 'Подписки на уведомления для заданной роли';
+  meta.todo.${component.name} = BLOCK %]
+Подписки на уведомления для заданной роли ROLE_ID
+  [% END;
+
+  # role_id передан в аргументах
+#  signups = api( 'ev.role_signup_list', role_id => role_id );
+#  event_kinds = api( 'ev.kind_list' );
+#  event_kinds_by_id = api( 'ev.kind_list:5' );
+
+    kind_roles = api('system.role_signup', id = role_id);
+  
+    FOR row IN kind_roles;
+      IF loop.first;
+        table_begin(class='table-bordered table-striped table-hover');
+        tr(list = [ l('Группа'), l('Событие'), l('Активна'), l('Спецификация')], use_th = 1, thead = 1);
+      END;
+      is_on = row.is_on ? l('Да') : l('Нет');
+      url = uri_mk(uri(code = 'info.notice').req, '', 'kind-' _ row.id);
+      tr(list = [row.group_name, "<a href='$url'>$row.name</a>", is_on, row.spec_id]);
+      IF loop.last;
+        table_end(tbody=1);
+      END;
+    END;
+%]
+

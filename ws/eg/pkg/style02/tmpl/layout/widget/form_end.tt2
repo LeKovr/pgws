@@ -1,0 +1,5 @@
+[% META
+  description = 'тэг form'
+%]
+
+</form>

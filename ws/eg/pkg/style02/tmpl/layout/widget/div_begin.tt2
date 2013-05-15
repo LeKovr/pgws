@@ -16,6 +16,7 @@
   <div[% 
     cl ? ' class="' _ cl _ '"' : '';
     id ? ' id="' _ id _ '"' : '';
+    style ? ' style="' _ style _ '"' : '';
   %]>
 [%#example
 #  div_begin(

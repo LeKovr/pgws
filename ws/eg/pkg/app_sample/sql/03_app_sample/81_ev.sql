@@ -26,7 +26,7 @@
 \set TID ws.class_id('team')
 
 INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-  ('info.notice',             'group.info',         1,    3, 2,   'info/notice$',             'ev/kind/index',      'Категории событий')
+  ('info.notice',             'group.info.devel',   1,    3, 20,  'info/notice$',             'ev/kind/index',      'Категории событий')
 , ('account.id.event',        'account.id',         :AID, 2, 1,   'account/:i/news$',         'ev/event/account',   'Уведомления')
 , ('account.id.event.id',     'account.id',         :AID, 2, NULL,'account/:i/news/:i$',      'ev/event/id-item',   'Подробности')
 , ('account.id.setup.signup', 'group.account.setup',:AID, 2, 4,   'account/:i/setup/signup$', 'ev/signup/account',  'Подписки')

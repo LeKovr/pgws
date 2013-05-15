@@ -31,10 +31,10 @@ DELETE FROM cfg.prop       WHERE pkg = :'PKG';
 
 /* ------------------------------------------------------------------------- */
 DROP TABLE wsd.event_notify_spec;
-DROP TABLE wsd.event_notify;
-DROP TABLE wsd.event_signup;
+DROP TABLE wsd.event_notify CASCADE;
+DROP TABLE wsd.event_signup CASCADE;
 DROP TABLE wsd.event_signup_profile;
-DROP TABLE wsd.event_role_signup;
+DROP TABLE wsd.event_role_signup CASCADE;
 DROP TABLE wsd.event_spec;
 DROP TABLE wsd.event;
 DROP SEQUENCE wsd.event_seq;

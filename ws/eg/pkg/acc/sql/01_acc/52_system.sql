@@ -61,3 +61,64 @@ $_$;
 
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION system_permission_view() RETURNS SETOF acc.permission_attr STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT *
+    FROM acc.permission_attr 
+  ;
+$_$;
+SELECT pg_c('f', 'system_permission_view', 'Просмотр разрешений');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION system_permission_role(id d_id DEFAULT NULL) RETURNS SETOF acc.role_info STABLE LANGUAGE 'sql' AS
+$_$
+-- id: Идентификатор разрешения 
+  SELECT *
+    FROM acc.role_info
+    WHERE id IN (SELECT role_id FROM wsd.role_permission WHERE perm_id = $1)
+  ;
+$_$;
+SELECT pg_c('f', 'system_permission_role', 'Роли относящиеся к разрешению');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION system_permission_acl(id d_id DEFAULT NULL) RETURNS SETOF acc.permission_acl_attr STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT *
+    FROM acc.permission_acl_attr 
+    WHERE id = $1
+  ;
+$_$;
+SELECT pg_c('f', 'system_permission_acl', 'Описание разрешения');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION system_class_acl(id d_code DEFAULT NULL) RETURNS SETOF acc.permission_acl_attr STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT *
+    FROM acc.permission_acl_attr 
+    WHERE class_code = $1
+  ;
+$_$;
+SELECT pg_c('f', 'system_class_acl', 'Описание уровней доступа класса');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION system_role() RETURNS SETOF acc.role_info STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT *
+    FROM acc.role_info
+    ORDER BY team_id ASC NULLS FIRST, id
+  ;
+$_$;
+SELECT pg_c('f', 'system_role', 'Описание ролей');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION system_role_permission(id d_id) RETURNS SETOF acc.permission_attr STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT *
+    FROM acc.permission_attr
+    WHERE id IN (SELECT perm_id FROM wsd.role_permission WHERE role_id = $1)
+    ORDER BY id
+  ;
+$_$;
+SELECT pg_c('f', 'system_role_permission', 'Описание разрешений относящихся к роли');
+
+/* ------------------------------------------------------------------------- */

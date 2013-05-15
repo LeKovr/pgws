@@ -44,7 +44,7 @@ h3 {
 }
 */
 
-#content {
+#content, .wholepage {
   min-height: 400px;
 }
 .red{

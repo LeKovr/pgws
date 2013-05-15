@@ -1,0 +1,49 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'Описание ролей';
+
+  PROCESS 'macro/tableform.tt2';
+  roles = api('system.role', sort_type = 'team');
+
+  role_list = [];
+  last_team = 0;
+  FOREACH r IN roles;
+    IF last_team != r.team_id ;
+      team_name = r.team_id ? r.team_name : l("Общие");
+      href = uri_mk(page.req, '', "team$r.team_id");
+      role_list.push({class => "nav-header", name => team_name, href => href});
+      last_team = r.team_id;
+    END;
+    href = uri_mk(page.req, '', r.id);
+    name = r.id _ '. ' _ r.name;
+    role_list.push({href => href, name => name});
+  END;
+  href = '';
+
+  section_begin(header = l("Роли"));
+    row_begin;
+      well_begin;
+        ul(class = 'nav nav-list', links = role_list);
+      well_end;
+    row_end;
+  section_end;
+  
+  last_team = 0;
+  FOREACH r IN roles;
+    IF last_team != r.team_id ;
+      team_name = r.team_id ? r.team_name : l("Общие");
+      h(type = 2, text = team_name, id = "team$r.team_id");
+      last_team = r.team_id;
+    END;
+    h(type = 3, text = r.id _ '. ' _ r.name, href = "#$r.id", id = r.id);
+    permissions = api('system.role_permission', id = r.id);
+    INCLUDE "block/acc/perm_section_inc.tt2", permissions = permissions, type = 4, id = '', href = '';
+
+    section_begin(header = l('Подписки'), id = 'signups', type = 4);
+      row_begin;
+        INCLUDE "block/ev/system_role_signup.tt2", role_id = r.id, team_id = r.team_id, kind_roles = kind_roles;
+      row_end;
+    section_end;
+  END;
+%]

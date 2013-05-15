@@ -1,0 +1,13 @@
+[% META
+  description = 'тэг fieldset begin'
+%]
+
+<fieldset>
+  <legend>[% name %]</legend>
+
+[%
+#example
+#  fieldset_begin(
+#    name - название у группы элементов
+#  );
+%]

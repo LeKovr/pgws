@@ -37,5 +37,10 @@ MACRO alert_begin   INCLUDE "$mcBase/alert_begin.tt2";
 MACRO alert_end   INCLUDE "$mcBase/alert_end.tt2";
 MACRO container_begin   INCLUDE "$mcBase/container_begin.tt2";
 MACRO container_end   INCLUDE "$mcBase/container_end.tt2";
+MACRO small_navbar   INCLUDE "$mcBase/small_navbar.tt2";
+MACRO form_begin   INCLUDE "$mcBase/form_begin.tt2";
+MACRO form_end   INCLUDE "$mcBase/form_end.tt2";
+MACRO fieldset_begin   INCLUDE "$mcBase/fieldset_begin.tt2";
+MACRO fieldset_end   INCLUDE "$mcBase/fieldset_end.tt2";
 %]
 

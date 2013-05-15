@@ -1,0 +1,36 @@
+<div class="navbar" >
+  <div class="navbar-inner" style="min-height: 10px;height: 20px;font-size:10px;">
+     <ui class="nav pull-left" >
+      [% FOR ll IN leftList; %]
+      [% IF ll.href && ll.href != '#' ; %]
+	<li>
+      [% END; %]
+	<a [% ll.href ? ' href='_ ll.href _ '' : 'href="#"'  %]  class="brand" style="font-size:10px;padding: 0px 10px">
+	  [% ll.name %]
+	</a>
+      [% IF ll.href && ll.href != '#' ; %]
+	</li>
+      [% END; %]
+	[% IF !loop.last(); %]
+	  <li class="divider-vertical"  style="height: 20px;"></li>
+	[% END; %]	  
+      [% END; %]
+    </ui>
+    <ui class="nav pull-right" >
+      [% FOR l IN rigthList; %]
+      [% IF l.href && l.href != '#' ; %]
+	<li>
+      [% END; %]
+	<a [% l.href ? ' href='_ l.href _ '' : 'href="#"'  %]  class="brand" style="font-size:10px;padding: 0px 10px">
+	  [% l.name %]
+	</a>
+      [% IF l.href && l.href != '#' ; %]
+	</li>
+      [% END; %]
+	[% IF !loop.last(); %]
+	  <li class="divider-vertical"  style="height: 20px;"></li>
+	[% END; %]	  
+      [% END; %]
+    </ui>
+  </div>
+</div>

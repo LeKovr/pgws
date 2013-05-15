@@ -32,6 +32,12 @@
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
   ('system.status',              2, 1, 2, 2, pg_cs('system_status'))
 , ('system.acl',                 2, 1, 2, 6, pg_cs('system_acl'))
+, ('system.role',                2, 1, 2, 7, pg_cs('system_role'))
+, ('system.role_permission',     2, 1, 2, 7, pg_cs('system_role_permission'))
+, ('system.permission_view',     2, 1, 2, 7, pg_cs('system_permission_view'))
+, ('system.permission_role',     2, 1, 2, 7, pg_cs('system_permission_role'))
+, ('system.permission_acl',      2, 1, 2, 7, pg_cs('system_permission_acl'))
+, ('system.class_acl',           2, 1, 2, 7, pg_cs('system_class_acl'))
 ;
 
 
@@ -65,8 +71,13 @@ INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real) V
 , ('account.team',       :AID, 1, 4, 7, 'acc.account_team')
 , ('account.permission', :AID, 1, 4, 7, 'acc.account_permission')
 , ('account.lookup',        2, 1, 4, 7, 'acc.account_lookup')
+, ('account.contact.view',:AID,1, 4, 7, 'acc.account_contact_view')
+, ('account.contact.type',  2, 1, 4, 7, 'acc.account_contact_type_attr')
 ;
 
+INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, is_write, code_real) VALUES
+  ('account.contact.add',:AID, 1, 1, 2, TRUE, 'acc.account_contact_add')
+;
 /* ------------------------------------------------------------------------- */
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
   ('account.fs_files', :AID, 2, 4, 7, 'acc.fs_files')
@@ -81,6 +92,24 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, r
   ('account.fs_files_add',     :AID, 4, 1, 3, true, ws.const_realm_upload(), 'acc.fs_files_add')
 , ('team.fs_files_add',        :AID, 4, 1, 3, true, ws.const_realm_upload(), 'acc.team_fs_files_add')
 ;
+
+INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
+  ('system.prop_attr',          1,    3, 4, 7, 'cfg.prop_attr_system')
+, ('system.prop_owner_attr',    1,    3, 4, 7, 'cfg.prop_owner_attr')
+, ('system.prop_history',       1,    3, 4, 7, 'cfg.prop_history')
+, ('account.prop_abp_attr',     :AID, 2, 4, 7, 'acc.prop_attr_account_abp')
+, ('account.prop_isv_attr',     :AID, 2, 4, 7, 'acc.prop_attr_account_isv')
+, ('account.prop_isv',          :AID, 2, 4, 4, 'acc.prop_account_isv')
+, ('team.prop_abp_attr',        :TID, 2, 4, 7, 'acc.prop_attr_team_abp')
+, ('team.prop_isv_attr',        :TID, 2, 4, 7, 'acc.prop_attr_team_isv')
+
+, ('team.prop_isv_value',       :TID, 2, 3, 3, 'acc.prop_attr_team_isv')
+, ('account.prop_isv_value',    :TID, 2, 3, 3, 'acc.prop_attr_account_isv')
+
+, ('account.prop_history',      :AID, 2, 4, 7, 'acc.prop_history_account')
+, ('team.prop_history',         :TID, 2, 4, 7, 'acc.prop_history_team')
+;
+
 /*
 INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, is_write, code_real) VALUES
   ('account.role_add',       :AID, 6, 1, 2, true, 'acc.account_team_add')
@@ -94,10 +123,12 @@ INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, is_write, co
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.error (code, id_count, message) VALUES
-  (acc.const_error_password(),  0, 'неправильный пароль')
-, (acc.const_error_login(),     0, 'неизвестный логин')
-, (acc.const_error_status(),    1, 'статус пользователя (%s) не допускает авторизацию')
-, (acc.const_error_class(),     0, 'ошибка определения уровня доступа класса (%s)')
+  (acc.const_error_password(),                0, 'неправильный пароль')
+, (acc.const_error_login(),                   0, 'неизвестный логин')
+, (acc.const_error_status(),                  1, 'статус пользователя (%s) не допускает авторизацию')
+, (acc.const_error_class(),                   0, 'ошибка определения уровня доступа класса (%s)')
+, (acc.const_error_email_validation(),        0, 'введите корректный email')
+, (acc.const_error_mobile_phone_validation(), 0, 'введите корректный номер телефона')
 ;
 
 INSERT INTO job.handler (id, code, def_prio, arg_date_type, dust_days, is_sql, name) VALUES

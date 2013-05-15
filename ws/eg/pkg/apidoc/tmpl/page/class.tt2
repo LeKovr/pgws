@@ -51,6 +51,10 @@ FOR d IN data;
   st_rows = api('ws.class_status:7', 'class_id' => d.id);
   acl_rows = api('ws.class_acl:7', 'class_id' => d.id);
 
+  h(type=3, text = l("Уровни доступа"), href = '#' _ d.code _ '-acl', id = d.code _ '-acl');
+  acl = api('system.class_acl', id => d.code);
+  INCLUDE "block/apidoc/perm_acl_table_inc.tt2", perm = 1, class = 0;
+
   h(type=3, text='<a name=' _ d.code _ '-action class="name" href="#' _ d.code _ '-action">Акции</a>');
   li = [];
   FOR r IN ca_rows;

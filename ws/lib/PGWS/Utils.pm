@@ -90,6 +90,7 @@ sub data_get {
   if ($path =~ /\.json($|\.)/) {
     my $json = new JSON;
     $json->relaxed(1);
+    utf8::decode($data);
     $data = $json->decode($data);
   }
   return $data;
@@ -312,6 +313,24 @@ sub hashtree_go {
     $walked .= ".$tag";
   }
   return $node;
+}
+
+#----------------------------------------------------------------------
+# сортировка массива хэшей
+sub hashlist_sort {
+  my ($list, $keys, $opts) = @_;
+  if (!$keys) { $keys = ['sort']; }
+  my @ret = sort {
+    foreach my $k (@$keys) {
+      # сортировка по нескольким ключам (список - массив @$keys)
+      # TODO: в $opts->{$k} указать вид сортировки:
+      # строковая - default
+      # обратная строковая (sort {$b cmp $a})
+      # числовая - (sort {$a <=> $b})
+      $a->{$k} cmp $b->{$k} and last;
+    }
+  } @$list;
+  return (wantarray)?@ret:\@ret;
 }
 
 #----------------------------------------------------------------------

@@ -21,7 +21,7 @@
         edit_page = uri(code => edit_page_code, id => row.code _ '-' _ pogc_poid);
       END;
 
-      link = row.has_log ? "<a href=" _ uri_mk(edit_page.req) _ ">[LOG/EDIT]</a>" : '[EDIT]';
+      link = row.has_log ? "<a href=" _ uri_mk(edit_page.req) _ ">[LOG/EDIT]</a>" : "<a href=" _ uri_mk(edit_page.req) _ ">[EDIT]</a>";
 
       suffix = row.code.remove('^ws\.daemon\.(' _ row.pogc _ '\.)?');
       IF !row.name; 

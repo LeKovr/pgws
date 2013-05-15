@@ -12,9 +12,9 @@
   c = '';
 
   INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = acc_id, active_code=page.code;
-  
+
   section_begin(header = 'Информация о пользователе', id = 'acc_info');
-  
+
   rows = api('account.prop_abp_attr', 'id' => acc_id);
   table_begin(class='table-bordered table-striped table-hover form');
     FOR row IN rows;
@@ -26,8 +26,11 @@
       tr(list = [row.name, row_value]);
     END;
     tr(list = [l('Дата регистрации'), acc_profile.created_at]);
-  table_end;
-  
+  table_end; 
+  section_end();
+
+  section_begin(header = 'Контакты пользователя', id = 'acc_contact');
+    INCLUDE 'block/acc/account_contact.tt2', id = acc_id, all = 'f';
   section_end();
 
   section_begin(header = 'Роли пользователя в командах', id = 'acc_role');
@@ -42,6 +45,7 @@
   END;
   table_end;
   section_end();
+
 %]
 <style type="text/css">
 table.form td:first-child {

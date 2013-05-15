@@ -1,0 +1,45 @@
+[% META
+  description = 'Встраиваемый блок редактирования параметров';
+  
+  IF prop != 'system';
+    rows = api(method, 'id' => id, 'code' => code);
+  ELSE;
+    rows = api(method, 'pogc' => pogc, 'poid' => poid, 'code' => code);
+  END;
+  
+  USE dumper(indent=1, pad="  "); '<!-- ' _ dumper.dump(rows) _ ' -->';
+
+  section_begin(header = 'Журнал значений', id = 'value_history');
+    row_begin;
+      table_begin(class='table-bordered table-striped table-hover');
+        c='';
+        tr(list = [l('Активно с'), l('Значение')], use_th=1, thead = 1);
+        FOR row IN rows;
+          IF row.valid_from != c;
+            col1 = "<a name='$row.valid_from' href='#$row.valid_from'>$row.valid_from</a>"; c=row.valid_from;
+          ELSE;
+            col1 = row.valid_from;
+          END;
+          tr(list = [row.valid_from, row.value]);
+        END;
+        IF !rows.size;
+          tr(list = ['-', l('Значение поля не имеет истории изменений')]);
+        END;
+      table_end;
+    row_end;
+  section_end;
+rows='';
+  section_begin(header = 'Изменение значения', id = 'edit_value');
+    row_begin;
+      div_begin(class='form-horizontal');
+        %]<form>[%
+          controlGroup_begin(label = l('Новое значение'));
+            input(class='input-small', id='valid_from', disabled=1, param=l('Дата начала'));
+            input(class='input-xlarge', id='value', disabled=1, param=l('Значение'));
+            btn(type='submit', class='disabled', name='Сохранить', disabled=1);
+          controlGroup_end;
+        %]</form>[%
+      div_end;
+    row_end;
+  section_end;
+%]

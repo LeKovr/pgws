@@ -1,0 +1,6 @@
+[% META
+  description = 'тэг fieldset end'
+%]
+
+</fieldset>
+

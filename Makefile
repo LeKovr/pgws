@@ -22,7 +22,7 @@ PROCESS_PREFIX     ?= pgws-dev
 SRV_DEBUG          ?= 1
 
 TM_CMD             ?= 
-PACKAGES           ?= apidoc fs job acc ev wiki app_sample i18n style01
+PACKAGES           ?= fs job acc apidoc ev wiki app_sample i18n style01
 
 NGINX_CFG_DIR       = nginx
 
@@ -30,14 +30,21 @@ define HELP
   Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
   PGWS - Postgresql WebServices.
 
-  Install into upper dir:
-    make install
+  This makefile has the following general targets:
 
-  Check if all requirements are satisfied:
-    make test
 
-  Drop DB objects and any generated files:
-    make uninstall
+install      - Install project files into upper dir
+test         - Check if all requirements are satisfied:
+uninstall    - Erase any PGWS DB objects and any generated files:
+
+install-db   - DB create, init, init pkg, clean cache
+uninstall-db - stop services if needed, erase any PGWS DB objects
+drop-db      - Drop DB objects exclude persistent data (wsd.*)
+
+start        - Start all services, install-db if needed
+stop         - Stop all services
+
+rebuild      - drop-db, then start
 
 endef
 export HELP
@@ -249,7 +256,6 @@ for p in pgws var conf  ; do grep -E "^$$p" .gitignore > /dev/null || echo "$$p/
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
-
 installcomplete:
 	@echo "*** $@ ***"
 
@@ -257,7 +263,6 @@ uninstallcomplete:
 	@echo "*** $@ ***"
 
 # ------------------------------------------------------------------------------
-
 clean:
 	@echo "*** $@ ***"
 	rm -rf .install .usage ; \
@@ -267,13 +272,63 @@ pushd $(PGWS_ROOT) > /dev/null ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
+install-db:
+	@echo "*** $@ ***"
+	pushd $(PGWS_ROOT) > /dev/null ; \
+{ [ -f var/.build.pgws ] || ./pgws.sh db create ; } && \
+{ [ -f var/.build.pgws ] || ./pgws.sh db init ; } && \
+{ [ -f var/.build.pkg ] || ./pgws.sh db init pkg ; } && \
+./pgws.sh cache clear && \
+popd > /dev/null && exit 0 ; \
+exit 1
 
-uninstall-db:
+# ------------------------------------------------------------------------------
+uninstall-db: stop
+	@echo "*** $@ ***"
+	pushd $(PGWS_ROOT) > /dev/null ; \
+{ [ -f var/.build.pkg ] && ./pgws.sh db drop pkg ; } && \
+{ [ -f var/.build.pgws ] && ./pgws.sh db erase_force ; } && \
+popd > /dev/null && exit 0 ; \
+exit 1
+
+# ------------------------------------------------------------------------------
+drop-db: stop
 	@echo "*** $@ ***"
 	pushd $(PGWS_ROOT) > /dev/null ; \
 [ -f var/.build.pkg ] && ./pgws.sh db drop pkg ; \
 [ -f var/.build.pgws ] && ./pgws.sh db drop ; \
 popd > /dev/null
+
+# ------------------------------------------------------------------------------
+
+dump-db:
+	@echo "*** $@ ***"
+	pushd $(PGWS_ROOT) > /dev/null ; \
+./pgws.sh db dump ; \
+popd > /dev/null
+
+# ------------------------------------------------------------------------------
+
+start: install-db
+	@echo "*** $@ ***"
+	pushd $(PGWS_ROOT) > /dev/null ; \
+./pgws.sh fcgi start ; \
+sleep 2 ; \
+./pgws.sh job start ; \
+./pgws.sh tm start ; \
+popd > /dev/null
+
+# ------------------------------------------------------------------------------
+
+stop:
+	@echo "*** $@ ***"
+	pushd $(PGWS_ROOT) > /dev/null ; \
+./pgws.sh tm stop ; \
+./pgws.sh job stop ; \
+./pgws.sh fcgi stop ; \
+popd > /dev/null
+
+rebuild: drop-db start
 
 # ------------------------------------------------------------------------------
 

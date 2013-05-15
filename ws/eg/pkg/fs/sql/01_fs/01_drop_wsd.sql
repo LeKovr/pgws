@@ -22,8 +22,8 @@
 
 /* ------------------------------------------------------------------------- */
 
-DROP TABLE wsd.file_link;
-DROP TABLE wsd.file;
+DROP TABLE wsd.file_link CASCADE;
+DROP TABLE wsd.file CASCADE;
 DROP SEQUENCE wsd.file_id_seq;
 
 /* ------------------------------------------------------------------------- */

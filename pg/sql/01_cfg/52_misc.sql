@@ -28,7 +28,7 @@ $_$
     v_item TEXT;
   BEGIN
 
-    FOREACH v_item IN ARRAY $1 LOOP
+    FOR v_item IN (SELECT u.a FROM UNNEST ($1) as u(a)) LOOP
       DELETE FROM cfg.prop WHERE v_item = ANY(pogc_list) AND array_length(pogc_list, 1) = 1;
       UPDATE cfg.prop SET pogc_list = ws.array_remove(pogc_list::text[], v_item) WHERE v_item = ANY(pogc_list);
     END LOOP;
@@ -48,7 +48,7 @@ $_$
     v_item TEXT;
   BEGIN
 
-    FOREACH v_item IN ARRAY $1 LOOP
+    FOR v_item IN (SELECT u.a FROM UNNEST ($1) as u(a)) LOOP
       DELETE FROM cfg.prop WHERE code = v_item;
       DELETE FROM wsd.prop_value WHERE code ~ ws.mask2regexp(v_item::TEXT);
     END LOOP;
