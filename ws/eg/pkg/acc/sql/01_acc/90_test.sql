@@ -82,3 +82,5 @@ SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.a
 SELECT  status_id,login,name,is_psw_plain,is_ip_checked FROM wsd.account where name = 'registration';
 
 /* ------------------------------------------------------------------------- */
+SELECT acc.account_password_change(-1, 'Test111', 'Test111');
+SELECT psw FROM wsd.account WHERE id=-1;

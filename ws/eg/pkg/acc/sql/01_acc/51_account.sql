@@ -390,3 +390,46 @@ $_$;
 SELECT ws.pg_c('f', 'account_lookup', 'Поиск пользователя по имени');
 
 /* ------------------------------------------------------------------------- */
+
+CREATE OR REPLACE FUNCTION password_validation(password text, param_name text) RETURNS BOOLEAN VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+-- password:      пароль, который будет валидирован
+-- param_name:	  контрол для отображения ошибки
+  BEGIN
+
+    IF $1 !~ '^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{4,15}$' THEN
+      RAISE EXCEPTION '%', ws.perror_str(acc.const_error_password_validation(), $2);      
+    END IF;
+
+    RETURN TRUE;  
+    
+  END
+$_$;
+SELECT pg_c('f', 'password_validation', 'Валидация пароля');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION account_password_change(a_id ws.d_id, a_psw_1 text, a_psw_2 text) RETURNS BOOLEAN VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+-- a_id:      ID Пользователя
+-- a_psw_1:   Новый пароль
+-- a_psw_2:   Повторное значение пароля
+  BEGIN
+
+    IF acc.password_validation($2, 'psw_1') THEN
+
+      IF $2 != $3 THEN
+        RAISE EXCEPTION '%', ws.error_str(acc.const_error_passwords_match());
+      END IF;
+
+      UPDATE wsd.account SET
+        psw = $2
+        WHERE id = $1;
+    END IF;
+    
+    RETURN TRUE;  
+    
+  END
+$_$;
+SELECT pg_c('f', 'account_password_change', 'Смена пароля пользователю');
+
+/* ------------------------------------------------------------------------- */

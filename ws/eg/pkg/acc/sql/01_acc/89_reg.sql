@@ -77,6 +77,7 @@ INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real) V
 
 INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, is_write, code_real) VALUES
   ('account.contact.add',:AID, 1, 1, 2, TRUE, 'acc.account_contact_add')
+, ('account.password.change',:AID, 1, 4, 2, TRUE, 'acc.account_password_change' )
 ;
 /* ------------------------------------------------------------------------- */
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
@@ -129,6 +130,8 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
 , (acc.const_error_class(),                   0, 'ошибка определения уровня доступа класса (%s)')
 , (acc.const_error_email_validation(),        0, 'введите корректный email')
 , (acc.const_error_mobile_phone_validation(), 0, 'введите корректный номер телефона')
+, (acc.const_error_passwords_match(),         0, 'введенные пароли не совпадают')
+, (acc.const_error_password_validation(),     0, 'пароль должен содержать строчные и прописные латинские буквы и цифры')
 ;
 
 INSERT INTO job.handler (id, code, def_prio, arg_date_type, dust_days, is_sql, name) VALUES

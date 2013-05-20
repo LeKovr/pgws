@@ -203,3 +203,17 @@ $_$;
 SELECT pg_c('f', 'const_error_mobile_phone_validation', 'Константа: Код ошибки валидации мобильного телефона');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_passwords_match() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'Y0007'::TEXT
+$_$;
+SELECT pg_c('f', 'const_error_passwords_match', 'Константа: Код ошибки ввода повторного пароля');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_password_validation() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'Y0008'::TEXT
+$_$;
+SELECT pg_c('f', 'const_error_password_validation', 'Константа: Код ошибки валидации пароля');
+
+/* ------------------------------------------------------------------------- */
