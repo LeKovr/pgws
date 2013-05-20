@@ -46,7 +46,7 @@
       div_end;
 
       controlGroup_begin(label = 'Введите пароль');
-      input(type='hidden' , name = 'id', value = '2');
+      input(type='hidden' , name = 'id', value = acc_id);
       input(class='input-xlarge', name='psw_1');
       span(id='form2_psw_1_err', class='help-inline');
       controlGroup_end;
@@ -56,7 +56,7 @@
       span(id='form2_psw_2_err', class='help-inline');
       controlGroup_end;
 
-      btn(id='send' onclick='psw_change(); return false;', class='btn-primary', name='Сохранить');
+      btn(id='send' onclick='$(\'#result1\').text(\'\');$(\'#form2___err\').text(\'\');psw_change(); return false;', class='btn-primary', name='Сохранить');
       alert_begin(id='form2_result');alert_end;
       alert_begin(id='form2_status');alert_end;
     %]</fieldset>
