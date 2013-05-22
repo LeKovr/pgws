@@ -131,10 +131,14 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
 , (acc.const_error_email_validation(),        0, 'введите корректный email')
 , (acc.const_error_mobile_phone_validation(), 0, 'введите корректный номер телефона')
 , (acc.const_error_passwords_match(),         0, 'введенные пароли не совпадают')
-, (acc.const_error_password_validation(),     0, 'пароль должен содержать строчные и прописные латинские буквы и цифры')
 ;
 
 INSERT INTO job.handler (id, code, def_prio, arg_date_type, dust_days, is_sql, name) VALUES
   (4, 'mailtest', 20, 2, 31, false, 'Тест API')
 ;
 --   ,('Y0051', 0, 'Указанный логин уже занят.  Выберите другой логин')
+
+/* ------------------------------------------------------------------------- */
+UPDATE ws.dt_facet
+  SET anno='прописные и строчные латинские буквы и цифры'
+  WHERE code='acc.d_password';
