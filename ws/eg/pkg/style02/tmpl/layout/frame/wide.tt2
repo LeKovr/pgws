@@ -1,0 +1,3 @@
+[% META
+  description = 'Основной контент страницы - на всю ширину'
+%][% INCLUDE "frame/default.tt2" %]

@@ -23,8 +23,7 @@
 \set TID acc.const_team_class_id()      -- team class id
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_drop_pkg(ARRAY['acc.const_team_group_prop','acc.const_account_group_prop']);
-
+SELECT cfg.prop_drop_value(ARRAY[acc.const_team_group_prop(),acc.const_account_group_prop()]);
 
 /* ------------------------------------------------------------------------- */
 -- удаление временных тестовых данных

@@ -31,9 +31,8 @@ INSERT INTO cfg.prop_group (pogc, sort, name, is_system) VALUES
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO cfg.prop (code, pogc_list, def_value, name, anno, has_log) VALUES
-  ('abp.name',        ARRAY[:AG,:TG],   '',    'Имя',                     'Имя, которое публикуется на сайте',                     TRUE)
-, ('abp.person.sex',  ARRAY[:AG],       '',    'Пол',                     'Необходмио для корректного обращения в сообщениях',     FALSE)
-, ('abp.geo.city',    ARRAY[:AG,:TG],   '',    'Город',                   'Город местонахождения',                                 TRUE)
+  ('abp.name.short',  ARRAY[:AG,:TG],   '',    'Имя',                     'Имя, которое публикуется на сайте',                     TRUE)
+, ('abp.person.gender',ARRAY[:AG],      '',    'Пол',                     'Необходмио для корректного обращения в сообщениях',     FALSE)
 , ('abp.anno',        ARRAY[:TG],       '',    'Описание',                'Описание команды',                                      TRUE)
 , ('isv.show.email',  ARRAY[:AG,:TG],   'all', 'Кому показывать email',   'Варианты: (all, register, into_team)',                  FALSE)
 , ('isv.show.phone',  ARRAY[:AG,:TG],   'all', 'Кому показывать телефон', 'Варианты: (all, register, into_team)',                  FALSE)

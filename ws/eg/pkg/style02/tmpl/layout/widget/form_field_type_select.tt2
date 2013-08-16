@@ -1,0 +1,21 @@
+[% META
+  description = 'Список';
+  IF !name_field.defined; name_field = 'name'; END;
+  IF !id_field.defined; id_field = 'id'; END;
+  dis = disable ? ' disabled' : '';
+%]<select id="[% fieldid %]" name="[% IF fieldname; fieldname; ELSE; fieldid; END %]" class="textField [% fieldclass %]" [% IF widthfield %] style="width: [% widthfield %]" [% END; dis ; %]>[%
+  IF blank_id.defined;
+    %]<option value="[% blank_id %]">[% blank_name %]</option>[%
+  END;
+  IF option;
+    FOREACH o = option;
+      n = loop.count - 1;
+			FOREACH d = disabled;
+				IF (n+1) == d; idisabled = 1 ; END;
+			END;
+			IF key == o.item(id_field); selected = loop.count; END;
+      %]<option value="[% o.item(id_field) %]" [% IF selected == n+1 %] selected="selected"[% END %] [% IF idisabled == 1 %] disabled="disabled"[% END %]>[% IF add_id; o.item(id_field) _ '. '; END; o.item(name_field) %]</option>[%
+      idisabled = 0;
+	  END;
+	END;
+  %]</select>

@@ -30,6 +30,6 @@ SELECT pg_c('f', 'const_error_forbidden', 'Константа: ошибка до
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_notfound() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 'Y0021'::ws.d_errcode
+  SELECT 'Y0022'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_notfound', 'Константа: ошибка поиска уровня приложения');

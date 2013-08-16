@@ -1,0 +1,77 @@
+[% META
+  description = 'Стандартный шаблон страницы';
+IF layout_head;
+    # заголовок страницы -------------------------------------------------------------------
+    IF !resp.title; resp.title = page.name; END;
+%]<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="[% session.lang %]" xmlns="http://www.w3.org/1999/xhtml" lang="[% session.lang %]">
+<head>
+<title>[% resp.prefix; IF resp.prefix; ' - '; END; resp.title _ ' - ' _ PROJECT_TITLE %]</title>
+<meta http-equiv="Content-Type" content="[% resp.ctype %]; [% resp.enc %]" />
+[%
+  INCLUDE "inc/head.tt2";
+%]
+</head>
+<body [% IF meta.spy_scroll; 'data-spy="scroll" data-target="' _ meta.spy_scroll _'"'; END; %]>
+<div class="row" id="top"><!-- start header -->
+  <div class="span2">
+    <a href="/"><img src="[% PROJECT_LOGO %]" alt="[% PROJECT_ANNO %]" /></a>
+  </div>
+  <div class="span7">
+    <h1 class="title">[% resp.title %]</h1>
+  </div>
+  <div class="span3 pull-right">
+  [%
+  # <!-- menu point -->
+  IF session.sid;
+    %]<small>[% 
+      l('Пользователь: [_1]', session.account_name) %]<br />[% 
+      l('Команда: [_1]', session.team_name) %]<br />[% 
+      l('Роль: [_1]', session.role_name) 
+    %]</small>[%
+  END;
+  %]
+  </div>
+</div><!-- end header -->
+[%
+  navbar_begin;
+    div_begin(class="nav-collapse");
+      meta.page_menu_used = 0; INCLUDE "inc/top_menu.tt2";
+    div_end;
+    %]<ul class="nav pull-right" id="main-menu-right">[%
+      IF session.sid; uc = 'logout'; ic = 'off'; ELSE; uc = 'login'; ic = 'user'; END;
+      u = uri(code => uc);
+      PROCESS "inc/style_set.tt2";
+      %]
+      <li class="dropdown"><a class="dropdown-toggle" href="#" data-toggle="dropdown"><i class="icon-eye-open"></i></a>
+        [% ul(class='dropdown-menu set_style',links = styles); %] 
+      </li>
+      [% #us = uri(code => 'api.style'); %]
+      [% #<li><a href="[% uri_mk(us.req) % ]" title="[% us.name % ]"><i class="icon-eye-open"></i></a></li> %]
+        <li><a href="[% uri_mk(u.req) %]" title="[% u.name %]"><i class="icon-[% ic %]"></i></a></li>
+    </ul>
+    </div></div>  [%
+    # navbar_end; - это два предыдущих и следующий div
+    IF page.code != 'main';
+      INCLUDE "inc/page_path.tt2";
+    END;
+    div_end;
+  IF resp.frame == 'default';
+    container_begin(id='content');
+      row_begin;
+        div_begin(size = 10, offset = 1);
+  END;
+
+ELSE;
+  # подвал страницы -------------------------------------------------------------------
+  IF resp.frame == 'default';
+        div_end;
+      row_end;
+    container_end;
+  END;
+  IF debug; INCLUDE "inc/debug.tt2"; END;
+  INCLUDE "inc/btm.tt2";
+    
+%]</body></html>[% 
+END;
+%]

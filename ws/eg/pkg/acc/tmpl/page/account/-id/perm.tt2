@@ -20,7 +20,7 @@
     teams_opt.push(opt);
   END;
 
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = account_id, active_code = page.code;
+  INCLUDE "inc/page_siblings.tt2", code = 'account.id', id = account_id, active_code = page.code;
   
   row_begin;
     div_begin(class='form-horizontal');
@@ -28,12 +28,12 @@
         IF teams_opt.size > 1;
           controlGroup_begin(label = l('Команда'));
             select(options = teams_opt, id='team_id', class='span3');
-            btn(name='Выбрать',onclick='changeRows()');
+            btn(name='Выбрать',onclick='PGWS.changeRows()');
         ELSE;
           controlGroup_begin();
         END;
         %]<label class="checkbox">[%
-          input (type='checkbox', value='option1', id='optionsCheckbox', onclick="changeHide()");
+          input (type='checkbox', value='option1', id='optionsCheckbox', onclick="PGWS.changeHide()");
           l("Показать отключенные");
         %]</label>[%
         controlGroup_end;
@@ -43,7 +43,7 @@
 
   permissions = api('account.permission', 'id' => account_id, 'team_id' => team_id);
   
-  table_begin(class='table-bordered table-striped table-hover');
+  table_begin();
     tr(list = [l("Названиe")], use_th=1, thead = 1);
     FOREACH perm IN permissions;
       enabled = perm.is_enabled ? '' : 'muted hide';
@@ -54,10 +54,10 @@
 meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
-var changeRows = function(){
+PGWS.changeRows = function(){
   window.location.href = '[% page.req %]' + '?team_id=' + $('#team_id').val();
 };
-var changeHide = function(){
+PGWS.changeHide = function(){
   $("tr.muted").toggle();
 }
 $(document).ready(function(){

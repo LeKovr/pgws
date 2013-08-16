@@ -30,6 +30,7 @@ ELSE; %]
   <button type="[% type %]" class="btn[%class ? ' ' _ class : ''; %]"[% 
     IF id; ' id="' _ id _ '"'; END; 
     IF onclick; ' onClick="' _ onclick _ '"'; END; 
+    IF disabled; ' disabled="disabled"'; END;
   %]>[% name %]</button>
 [% END; %]
 

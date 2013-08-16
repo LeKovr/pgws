@@ -68,18 +68,6 @@ SELECT CASE WHEN $1 = 0 THEN NULL ELSE TIMESTAMPTZ 'epoch' + $1 * INTERVAL '1 se
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.epoch2timestamp(a_epoch INTEGER DEFAULT 0) RETURNS TIMESTAMP IMMUTABLE LANGUAGE 'sql' AS
-$_$
-SELECT CASE
-  WHEN $1 = 0 THEN NULL
-  ELSE timezone(
-    (SELECT setting FROM pg_settings WHERE name = 'TimeZone')
-    , (TIMESTAMPTZ 'epoch' + $1 * INTERVAL '1 second')::timestamptz
-    )
-END;
-$_$;
-
-/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.min(a TIMESTAMP, b TIMESTAMP) RETURNS TIMESTAMP IMMUTABLE LANGUAGE 'sql' AS
 $_$
 SELECT CASE WHEN $1 < $2 THEN $1 ELSE $2 END;
@@ -98,9 +86,41 @@ SELECT array_agg(x) FROM unnest($1) x WHERE x <> $2;
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.stamp2xml(a TIMESTAMP) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION ws.stamp2xml(
+  a_stamp      TIMESTAMP
+, a_msk_offset INTERVAL DEFAULT '0 HOURS'::INTERVAL
+) RETURNS TEXT
+  IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
-SELECT to_char($1, E'YYYY-MM-DD"T"HH24:MI:SS+04:00');
+/*
+   -- a_stamp:      метка времени
+   -- a_msk_offset: (опционально) смещение относительно московского времени
+
+   Возвращает метку времени в виде текста для использования в XML-документах (для выгрузки на ООС):
+   YYYY-MM-DD"T"HH24:MI:SS+04:00
+
+   "+04:00" -- смещение относительно UTC
+
+*/
+  DECLARE
+    v_msk_utc_offset    INTERVAL := '+4 HOURS';
+    v_utc_offset        INTERVAL := v_msk_utc_offset + a_msk_offset;
+    v_utc_offset_hh24mi TEXT;
+    v_stamp_xml         TEXT;
+  BEGIN
+    -- если бы TO_CHAR(INTERVAL, 'HH:MI') можно было нормально использовать
+    -- для отрицательных значений INTERVAL, все было бы гораздо проще.
+    v_utc_offset_hh24mi :=
+      CASE WHEN v_utc_offset  >= '0 HOURS'::INTERVAL THEN '+' ELSE '-' END
+      || LPAD(ABS(DATE_PART('HOURS', v_utc_offset))::TEXT, 2, '0')
+      || ':'
+      || TO_CHAR(v_utc_offset, 'MI')
+    ;
+    SELECT INTO v_stamp_xml
+      TO_CHAR(a_stamp + a_msk_offset, 'YYYY-MM-DD"T"HH24:MI:SS') || v_utc_offset_hh24mi
+    ;
+    RETURN v_stamp_xml;
+  END;
 $_$;
 
 /* ------------------------------------------------------------------------- */
@@ -153,3 +173,5 @@ $_$
   END;
 $_$;
 SELECT pg_c('f', 'mask2format', 'Сформировать строку формата по шаблону');
+
+/* ------------------------------------------------------------------------- */

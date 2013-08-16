@@ -2,7 +2,7 @@
   # Страницы примеров
   parent_page = uri(code => 'samples');
   IF uri_allowed(parent_page);
-    PROCESS "block/$TMPL_LAYOUT/load_subtree.tt2", item = parent_page, use_submenus = 0;
+    PROCESS "inc/load_subtree.tt2", item = parent_page, use_submenus = 0;
     div_begin(size=4, offset=3);
       well_begin;
         ul(class = 'nav nav-list', links = link.childs);

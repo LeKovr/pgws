@@ -208,7 +208,7 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.method_del_trigger() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION method_del_trigger() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     v_arr TEXT;
@@ -262,3 +262,27 @@ $_$
   END;
 $_$;
 
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION ref_op_register_trigger() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_code      ws.d_code;
+    v_item_code ws.d_string;
+    v_op        ws.d_codei;
+    v_now       ws.d_stamp := now();
+  BEGIN
+    v_code := TG_ARGV[0];
+    v_op := TG_OP;
+    IF v_op = ws.const_ref_op_delete() THEN
+      v_item_code := OLD.id;
+    ELSIF v_op = ws.const_ref_op_insert() OR TG_ARGV[1] IS NOT DISTINCT FROM TG_ARGV[2] THEN
+      v_item_code := NEW.id;
+    ELSE
+      PERFORM ws.ref_op_register(v_code, OLD.id, v_now, ws.const_ref_op_delete());
+      PERFORM ws.ref_op_register(v_code, NEW.id, v_now, ws.const_ref_op_insert());
+      RETURN NULL;
+    END IF;
+    PERFORM ws.ref_op_register(v_code, v_item_code, v_now, v_op);
+    RETURN NULL;
+  END;
+$_$;

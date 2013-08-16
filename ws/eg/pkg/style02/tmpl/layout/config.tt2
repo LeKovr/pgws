@@ -1,0 +1,19 @@
+[% META
+  description = 'Глобальные настройки'
+%][%
+  TMPL_LAYOUT       = resp.layout;
+  TMPL_UI_THEME     = 'external/ui/smoothness';
+  BASE_LAYOUT       = 'style01';
+  PAGE_ROWS_CHOICES = [20, 60, 100];
+
+  PROJECT_LOGO      = "/img/$BASE_LAYOUT/pgws-logo.png";
+  PROJECT_ICO       = "/img/$BASE_LAYOUT/favicon.ico";
+  PROJECT_ANNO      = "PGWS. Postgresql WebServices";
+  PROJECT_TITLE     = l("PGWS");
+
+  LAYOUT_SKINS      = ['dark', 'united'];
+
+  # эти виджеты используютcя на всех страницах
+  PROCESS "macro/base.tt2";
+
+%]

@@ -71,6 +71,7 @@ INSERT INTO class (id, up_id, id_count, is_ext, sort, code, name) VALUES
 INSERT INTO class_status (class_id, id, sort, name) VALUES
   (:TID, 1, '01', 'Активна')
 , (:TID, 2, '02', 'Заблокирована')
+, (:TID, 3, '03', 'Удалена')
 ;
 /* ------------------------------------------------------------------------- */
 INSERT INTO class_action (class_id, id, sort, name) VALUES

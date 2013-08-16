@@ -1,0 +1,50 @@
+<form id="form2" onsubmit="return false"><legend>Изменить пароль</legend>
+    <fieldset>[%
+      div_begin(offset=2);
+        span(id='form2___err', class='red form2err');
+      div_end;
+
+      IF acc_id == session.account_id;
+        controlGroup_begin(label = 'Свой пароль');
+        input(type='password', name='psw_old');
+        span(id='form2_psw_old_err', class='help-inline');
+        controlGroup_end;
+      END;
+      
+      controlGroup_begin(label = 'Введите пароль');
+      input(type='hidden' , name = 'id', value = acc_id);
+      input(type='password', name='psw_new');
+      span(id='form2_psw_new_err', class='help-inline');
+      controlGroup_end;
+
+      controlGroup_begin(label = 'Повторите ввод пароля');
+      input(type='password', name='psw_new_repeat');
+      span(id='form2_psw_new_repeat_err', class='help-inline');
+      controlGroup_end;
+
+      btn(id='send' onclick='return PGWS.psw_change();', class='btn-primary', name='Сохранить');
+      alert_begin(id='form2_result');alert_end;
+      alert_begin(id='form2_status');alert_end;
+    %]</fieldset>
+    </form>
+[% meta.js.${meta.js.size} = BLOCK %]
+
+<script type="text/javascript">
+//<![CDATA[
+
+  PGWS.psw_change = function(){
+    $('#form2___err').text('');
+    var formOptions = {statusBlock: '#form2_status'};
+    [% IF acc_id == session.account_id; %]
+      api_form('account.password.change.own','#form2',PGWS.form1ok, PGWS.form1err, formOptions);
+    [% ELSE; %]
+      api_form('account.password.change', '#form2', PGWS.form1ok, PGWS.form1err, formOptions);
+    [% END; %]
+
+    return false;
+  };
+
+//]]>
+</script>
+[% END; # BLOCK
+%]

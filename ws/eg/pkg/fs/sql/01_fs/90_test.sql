@@ -65,10 +65,11 @@ SELECT id
 , folder_name
 , req
   FROM fs.file_list(:CLASS, :'FCODE', :OBJ)
+  ORDER BY id DESC
 ;
 
 -- в wsd.file - три файла
-SELECT id, path, size, csum, name, ctype from wsd.file WHERE id IN (-1, -2, -3);
+SELECT id, path, size, csum, name, ctype from wsd.file WHERE id IN (-1, -2, -3) ORDER BY id DESC;
 
 /* ------------------------------------------------------------------------- */
 SELECT ws.test('test_file_delete');

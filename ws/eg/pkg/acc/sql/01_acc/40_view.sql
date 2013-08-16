@@ -37,15 +37,13 @@ CREATE OR REPLACE VIEW account_attr AS SELECT
   a.* 
 , a.created_at::date AS registration_date 
 , ws.class_status_name('account', a.status_id) AS status_name
-, cfg.prop_value(acc.const_account_group_prop(), a.id, 'abp.person.sex') AS sex
-, cfg.prop_value(acc.const_account_group_prop(), a.id, 'abp.geo.city') AS city
+, cfg.prop_value(acc.const_account_group_prop(), a.id, 'abp.person.gender') AS gender
   FROM wsd.account a
 ;
 SELECT pg_c('v', 'account_attr', 'Атрибуты учетной записи')
 , pg_c('c', 'account_attr.registration_date', 'Дата регистрации пользователя')
 , pg_c('c', 'account_attr.status_name',       'Название статуса')
-, pg_c('c', 'account_attr.sex',               'Пол')
-, pg_c('c', 'account_attr.city',              'Город')
+, pg_c('c', 'account_attr.gender',            'Пол')
 ;
 
 /* ------------------------------------------------------------------------- */
@@ -57,8 +55,7 @@ CREATE OR REPLACE VIEW account_attr_info AS SELECT
 , r.name AS role_name
 , t.name AS team_name
 , ws.class_status_name('account', a.status_id) AS status_name
-, cfg.prop_value(acc.const_account_group_prop(), a.id, 'abp.person.sex') AS sex
-, cfg.prop_value(acc.const_account_group_prop(), a.id, 'abp.geo.city') AS city
+, cfg.prop_value(acc.const_account_group_prop(), a.id, 'abp.person.gender') AS gender
   FROM wsd.account a
     JOIN wsd.account_team ar ON (a.id = ar.account_id)
     JOIN wsd.role r ON (r.id = ar.role_id)
@@ -68,8 +65,7 @@ CREATE OR REPLACE VIEW account_attr_info AS SELECT
 SELECT pg_c('v', 'account_attr_info', 'Атрибуты учетной записи')
 , pg_c('c', 'account_attr_info.registration_date', 'Дата регистрации пользователя')
 , pg_c('c', 'account_attr_info.status_name',       'Название статуса')
-, pg_c('c', 'account_attr_info.sex',               'Пол')
-, pg_c('c', 'account_attr_info.city',              'Город')
+, pg_c('c', 'account_attr_info.gender',            'Пол')
 ;
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW session_info AS SELECT
@@ -126,14 +122,12 @@ CREATE OR REPLACE VIEW team_attr AS SELECT
 , t.created_at::date AS registration_date
 , ws.class_status_name('team', t.status_id) AS status_name
 , cfg.prop_value(acc.const_team_group_prop(), t.id, 'abp.anno') AS anno
-, cfg.prop_value(acc.const_team_group_prop(), t.id, 'abp.geo.city') AS city
   FROM wsd.team t
 ;
 SELECT pg_c('v', 'team_attr', 'Атрибуты команды')
 , pg_c('c', 'team_attr.registration_date',  'Дата регистрации команды')
 , pg_c('c', 'team_attr.status_name',        'Название статуса')
 , pg_c('c', 'team_attr.anno',               'Описание')
-, pg_c('c', 'team_attr.city',               'Город')
 ;
 
 /* ------------------------------------------------------------------------- */

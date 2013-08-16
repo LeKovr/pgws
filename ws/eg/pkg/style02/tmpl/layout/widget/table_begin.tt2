@@ -1,13 +1,14 @@
 [% META
   description = 'таблица';
 
-  '<table class="table';
+  '<table class="table table-bordered table-striped table-hover';
   class ? ' ' _ class : '';
-  '">';
+  '"';alt ? ' alt="' _ alt _ '"' : '';'>';
   "\n";
   
 # example
 #  table(
 #    class - дополнительный класс
+#     alt
 #  ); 
 %]

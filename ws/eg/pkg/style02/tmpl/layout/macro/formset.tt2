@@ -1,0 +1,10 @@
+[% META
+  description = 'Макросы набора форм';
+
+MACRO formset_line INCLUDE "widget/formset_line.tt2";
+MACRO formset_begin INCLUDE "widget/formset_begin.tt2";
+MACRO formset_end INCLUDE "widget/formset_end.tt2";
+MACRO formset_field_begin INCLUDE "widget/formset_field_begin.tt2";
+MACRO formset_field_end INCLUDE "widget/formset_field_end.tt2";
+
+%]

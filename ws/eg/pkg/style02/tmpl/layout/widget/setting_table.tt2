@@ -1,0 +1,32 @@
+[% 
+  # Управление настройками таблицы
+%]
+      <ul class="nav pull-right grid-settings" data-grid="baseTable">
+	<li class="dropdown">
+	  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+	    <i class="icon-black icon-cog"></i>
+	  </a>
+	  <ul class="dropdown-menu">
+	   <li>
+	<h6>Управление колонками таблицы</h6>
+      </li>
+      <li class="divider"></li>
+      <li>
+	<label>
+	  <input class="col-trigger" type="checkbox"  data-column="view">
+	  Просмотр
+	</label>
+      </li>
+      <li>
+	<label>
+	  <input class="col-trigger" type="checkbox"  data-column="seton">
+	  Включено
+	</label>
+      </li>
+      <li>
+	<label>
+	  <input class="row-trigger" type="checkbox" checked="checked">
+	  Все поля
+	</label>
+      </li>
+      </ul>

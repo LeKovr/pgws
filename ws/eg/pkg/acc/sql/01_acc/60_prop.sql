@@ -66,9 +66,9 @@ SELECT pg_c('f', 'prop_value_team_owner_insupd', 'Проверка наличи�
 CREATE OR REPLACE FUNCTION prop_copy_value_account_insupd() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   BEGIN
-    IF NEW.code = 'abp.name' THEN
+    IF NEW.code = 'abp.name.short' THEN
       UPDATE wsd.account SET
-          name = cfg.prop_value(acc.const_account_group_prop(), NEW.poid, 'abp.name')
+          name = cfg.prop_value(acc.const_account_group_prop(), NEW.poid, 'abp.name.short')
         WHERE id = NEW.poid
       ;
     END IF;
@@ -82,9 +82,9 @@ SELECT pg_c('f', 'prop_copy_value_account_insupd', 'Копирование ак�
 CREATE OR REPLACE FUNCTION prop_copy_value_team_insupd() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   BEGIN
-    IF NEW.code = 'abp.name' THEN
+    IF NEW.code = 'abp.name.short' THEN
       UPDATE wsd.team SET
-          name = cfg.prop_value(acc.const_team_group_prop(), NEW.poid, 'abp.name')
+          name = cfg.prop_value(acc.const_team_group_prop(), NEW.poid, 'abp.name.short')
         WHERE id = NEW.poid
       ;
     END IF;

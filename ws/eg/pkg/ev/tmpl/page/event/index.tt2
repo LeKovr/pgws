@@ -8,7 +8,7 @@
 
   notifications = api( 'ev.news_info' );
   team_id = page.args.0;
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = team_id, active_code=page.code;
+  INCLUDE "inc/page_siblings.tt2", code = 'account.id', id = team_id, active_code=page.code;
 	INCLUDE block/ev/new_notifications.tt2
 %]
 <table>

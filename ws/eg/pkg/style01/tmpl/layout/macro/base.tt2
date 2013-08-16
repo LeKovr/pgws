@@ -1,0 +1,44 @@
+[% META
+  description = 'список виджетов';
+
+MACRO ul   INCLUDE "widget/ul.tt2";
+MACRO h   INCLUDE "widget/h.tt2";
+MACRO sub_begin   INCLUDE "widget/sub_begin.tt2";
+MACRO sub_end   INCLUDE "widget/sub_end.tt2";
+MACRO navbar_begin   INCLUDE "widget/navbar_begin.tt2";
+MACRO navbar_end   INCLUDE "widget/navbar_end.tt2";
+MACRO input   INCLUDE "widget/input.tt2";
+MACRO btn   INCLUDE "widget/btn.tt2";
+MACRO table_begin   INCLUDE "widget/table_begin.tt2";
+MACRO table_end   INCLUDE "widget/table_end.tt2";
+MACRO tr   INCLUDE "widget/tr.tt2";
+MACRO select   INCLUDE "widget/select.tt2";
+MACRO section_begin   INCLUDE "widget/section_begin.tt2";
+MACRO section_end   INCLUDE "widget/section_end.tt2";
+MACRO row_begin   INCLUDE "widget/row_begin.tt2";
+MACRO row_end   INCLUDE "widget/row_end.tt2";
+MACRO div_begin   INCLUDE "widget/div_begin.tt2";
+MACRO div_end   INCLUDE "widget/div_end.tt2";
+MACRO well_begin   INCLUDE "widget/well_begin.tt2";
+MACRO well_end   INCLUDE "widget/well_end.tt2";
+MACRO controlGroup_begin   INCLUDE "widget/controlGroup_begin.tt2";
+MACRO controlGroup_end   INCLUDE "widget/controlGroup_end.tt2";
+MACRO p   INCLUDE "widget/p.tt2";
+MACRO span   INCLUDE "widget/span.tt2";
+MACRO pagination   INCLUDE "widget/pagination.tt2";
+MACRO breadcrumb   INCLUDE "widget/breadcrumb.tt2";
+MACRO navtabs   INCLUDE "widget/navtabs.tt2";
+MACRO label   INCLUDE "widget/label.tt2";
+MACRO badge   INCLUDE "widget/badge.tt2";
+MACRO progress   INCLUDE "widget/progress.tt2";
+MACRO alert_begin   INCLUDE "widget/alert_begin.tt2";
+MACRO alert_end   INCLUDE "widget/alert_end.tt2";
+MACRO container_begin   INCLUDE "widget/container_begin.tt2";
+MACRO container_end   INCLUDE "widget/container_end.tt2";
+MACRO small_navbar   INCLUDE "widget/small_navbar.tt2";
+MACRO form_begin   INCLUDE "widget/form_begin.tt2";
+MACRO form_end   INCLUDE "widget/form_end.tt2";
+MACRO fieldset_begin   INCLUDE "widget/fieldset_begin.tt2";
+MACRO fieldset_end   INCLUDE "widget/fieldset_end.tt2";
+%]
+

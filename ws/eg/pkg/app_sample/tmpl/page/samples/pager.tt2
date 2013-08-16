@@ -19,9 +19,10 @@ END;
 
 # вариант 2, формирование ссылок в tt2
 options2 = [];
-codeArg = codeParam ? "code=$codeParam&" : '';
+codeArg = codeParam ? { code => codeParam } : {};
 FOR o IN [5, 10, 20];
-  link = { href = uri_mk(page.req, codeArg _ 'by=' _ o), name = o };
+  codeArg.by = o;
+  link = { href = uri_mk(page.req, codeArg), name = o };
   IF o == by;
     link.class = 'disabled';
   END;
@@ -43,7 +44,7 @@ END;
       # вариант 1
       controlGroup_begin(label='Количество строк');
       select(options = options, id='sel', class='span2');
-      btn(name='Показать',onclick='changeRows()');
+      btn(name='Показать',onclick='PGWS.changeRows()');
       controlGroup_end;
 
       table_begin(class='table-bordered table-striped');
@@ -52,14 +53,14 @@ END;
         tr(list = [el.code, el.name]);      
       END;
      table_end(tbody = 1);
-     INCLUDE "block/$TMPL_LAYOUT/pager.tt2", pageNo = pageNo, count = pager.need_rc, by = by, hrefName = page.req _ '?code=' _ codeParam _ '&';
+     INCLUDE "inc/pager.tt2", pageNo = pageNo, count = pager.need_rc, by = by, hrefName = page.req _ '?code=' _ codeParam _ '&';
      %]
 </div>
 [% 
 meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
-var changeRows = function(){
+PGWS.changeRows = function(){
   window.location.href = '[% page.req %]' + '?by=' + $('#sel').val() + '&code=' + $('#autoc').val();
 }
 
@@ -156,9 +157,6 @@ $.fn.typeahead.Constructor.prototype.click = function(e) {
   var active = this.$menu.find('.active').removeClass('active')
   $(this.$element).val($(active).attr('data-value'));
   this.hide();
-};
-var filtr = function(){
-  alert(123);
 };
 //]]>
 </script>

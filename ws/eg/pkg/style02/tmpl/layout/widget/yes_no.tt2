@@ -1,0 +1,11 @@
+[% META
+  description = 'радио блок для тендеров (ДА НЕТ)'
+%]
+
+<label for="[% name %]-yes" style="display: inline;">
+  <input id="[% name %]-yes" type="radio" name="[% name %]" value="1" [% value ? 'checked' : '' %] [% disabled %] autocomplete = "off">Да 
+</label>
+  
+<label for="[% name %]-no" style="display: inline;">
+  <input id="[% name %]-no" type="radio" name="[% name %]" value="0" [% value ? '' : 'checked' %] [% disabled %] autocomplete = "off">Нет 
+</label>

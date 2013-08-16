@@ -1,0 +1,50 @@
+[% META
+  description = 'Встраиваемый блок таблицы параметров';
+  meta.todo.${component.name} = BLOCK %]
+   TODO: INLINE редактирование параметров без истории, иконка ссылки на историю/редактирование параметров с историей
+  [% END;
+  IF prop != 'system';
+    rows = api(method, 'id' => id);
+  ELSE;
+    rows = api(method, 'pogc' => pogc, 'poid' => poid);
+  END;
+  USE dumper(indent=1, pad="  "); '<!-- ' _ dumper.dump(rows) _ ' -->';
+
+  table_begin();
+    FOR row IN rows;
+
+      date = row.has_log ? row.valid_from : '-';
+
+      IF prop != 'system';
+        edit_page = api('ws.page_by_code', 'code' => edit_page_code, 'id' => id, 'id1' => row.code);
+      ELSE;
+        edit_page = uri(code => edit_page_code, id => row.code _ '-' _ pogc_poid);
+      END;
+
+      link = row.has_log ? "<a href=" _ uri_mk(edit_page.req) _ ">[LOG/EDIT]</a>" : "<a href=" _ uri_mk(edit_page.req) _ ">[EDIT]</a>";
+
+      suffix = row.code.remove('^ws\.daemon\.(' _ row.pogc _ '\.)?');
+      IF !row.name; 
+        name = suffix; suffix='';
+      ELSE;
+        name = row.name;
+        IF !row.is_mask; suffix =''; END;
+      END;
+      col1 = l('<a title="[_2]" id="[_2]" href="#[_2]">[_1]</a> [_3]', name, row.code, suffix);
+
+      IF loop.first;
+        tr(list = [ l('Параметр'), l('Значение'), l('Активно&nbsp;c'), ''], use_th = 1, thead = 1);
+      END;
+
+      IF row.value.defined;
+        row_class = '';
+        row_value = row.value;
+      ELSE;
+        row_class = 'muted';
+        row_value = row.def_value;
+      END;
+
+      tr(list = [col1, row_value, date, link], class = row_class);
+    END;
+  table_end;
+%]

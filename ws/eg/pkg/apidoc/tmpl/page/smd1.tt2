@@ -4,12 +4,12 @@
   description = 'Методы и их описание c использованием JS';
 
   IF get.code;
-    resp.skin = 'blank';
+    resp.frame = 'blank';
     INCLUDE block/apidoc/smd_table.tt2;
     RETURN;
   END;
   IF get.li;
-    resp.skin = 'blank';
+    resp.frame = 'blank';
     INCLUDE block/apidoc/smd_li.tt2;
     RETURN;
   END;
@@ -21,13 +21,18 @@
 <form id="form1" onsubmit="return false;">
   [% l('Имя метода:') %]
   <input type="text" id="autoc" name="code" autocomplete="off" data-provide="typeahead">
-  <button id="myB" onClick="form_send();">[% l('Найти') %]</button>
+  <button id="myB" onClick="PGWS.form_send();">[% l('Найти') %]</button>
 </form>
 <div id="form_smd"></div>
 
 [% meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
+if (PGWS.var === undefined) { PGWS.var = {}; }
+
+PGWS.var.smd1 = {
+
+};
   //Для кеширования результатов вызовов списка методов и детализации по методу
   PWL_cache={method_li:{},method_detail:{}} ;;
 //]]>
@@ -36,19 +41,18 @@
 <script type="text/javascript">
 $(document).ready(function(){
   var anchor;
-  $('#autoc').bind('keyup',checkAvailability);
+  $('#autoc').bind('keyup',PGWS.checkAvailability);
   //повесили обработчики на <a> которые будут сформированы
-  $("#form_smd"+" ul li a").live("click",myclick);
+  $("#form_smd"+" ul li a").live("click",PGWS.myclick);
   if (location.hash) {
     // загрузка описания метода при открытии страницы
     anchor = window.location.hash.slice(1); //hash to string (= "myanchor")
     $("#autoc").val( anchor );
-//    checkAvailability();
-    form_send();
+    PGWS.form_send();
   } else {
   }
   
-  checkAvailability();
+  PGWS.checkAvailability();
 
   //Опции для autocomplete
 
@@ -131,33 +135,33 @@ $.fn.typeahead.Constructor.prototype.click = function(e) {
   this.hide();
   $('#myB').click();
 };
-function show_method_li(method){
+PGWS.show_method_li = function(method){
   var div_id=method.replace(/\./g,"_");
   var key = method+'%';
   if (PWL_cache.method_li[key]){
     $('#form_smd').html(PWL_cache.method_li[key]) ;
-    show_method_detail(method);
+    PGWS.show_method_detail(method);
   } else {
-    $('#form_smd').load('[% uri_mk(pg.req, 'li=') %]'+key,cb_method_li);
+    $('#form_smd').load('[% uri_mk(pg.req, 'li=') %]'+key,PGWS.cb_method_li);
   }
 }
 
-function checkAvailability() {
+PGWS.checkAvailability = function() {
   var autoc=$('#autoc').val().replace(/ .*$/,'');
   $('#myB').text(autoc==''?"[% l('Показать все') %]":"[% l('Найти') %]");
   location.href=document.URL.replace(/#.*$/,"")+(autoc?'#'+autoc:'#');
 //  location.href=document.URL.replace(/#.+$/,"")+(autoc?autoc:'');
 };
 
-function form_send(value,data) {
+PGWS.form_send = function(value,data) {
   var par,nameid,method;
   method=value?data:$('#autoc').val();
   method=method.replace(/ .*$/,'');
   $('#autoc').val(method);
-  show_method_li(method);
+  PGWS.show_method_li(method);
   return false;
 };
-function cb_method_detail(data,status,XMLHttpRequest){
+PGWS.cb_method_detail = function(data,status,XMLHttpRequest){
   var div_id,method;
   method=$('#autoc').val();
   div_id=method.replace(/\./g,"_");
@@ -166,22 +170,22 @@ function cb_method_detail(data,status,XMLHttpRequest){
   }
 }
 
-function cb_method_li(data,status){
+PGWS.cb_method_li = function(data,status){
   var div_id,method;
   method=$('#autoc').val();
   div_id=method.replace(/\./g,"_");
   PWL_cache.method_li[method+'%']=data;
-  show_method_detail(method);
+  PGWS.show_method_detail(method);
 }
-function show_method_detail(method) {
+PGWS.show_method_detail = function(method) {
   var div_id=method.replace(/\./g,"_");
-  checkAvailability();
+  PGWS.checkAvailability();
   try {
     if (method){
       if (PWL_cache.method_detail[method]){
         $('#'+div_id).html(PWL_cache.method_detail[method]);
       } else {
-        $('#'+div_id).load('[% uri_mk(pg.req, 'code=') %]'+method,cb_method_detail);
+        $('#'+div_id).load('[% uri_mk(pg.req, 'code=') %]'+method,PGWS.cb_method_detail);
       }
     }
   } catch (e) {
@@ -190,15 +194,15 @@ function show_method_detail(method) {
   }
 }
 
-function myclick() {
+PGWS.myclick = function() {
   var cnt,method,div_id;
   method=$(this).text();
   div_id=method.replace(/\./g,"_");
   $('#autoc').val(method);
-  checkAvailability();
+  PGWS.checkAvailability();
   cnt=$('#'+div_id).children().size();
   if (cnt==0){
-     show_method_detail(method);
+     PGWS.show_method_detail(method);
   } else {
     $('#'+div_id).empty();
   }

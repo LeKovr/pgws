@@ -17,11 +17,11 @@ msgstr ""
 "Language: en\n"
 
 #. (status, note)
-#: pkg/app_sample/tmpl/page/error.tt2:1
+#: pkg/app_common/tmpl/page/error.tt2:1
 msgid "%1. %2"
 msgstr ""
 
-#: pkg/app_sample/tmpl/page/error.tt2:1
+#: pkg/app_common/tmpl/page/error.tt2:1
 msgid "403. Необходима авторизация"
 msgstr ""
 
@@ -145,7 +145,7 @@ msgstr "Base type"
 msgid "В рамках этого раздела доступны"
 msgstr ""
 
-#: pkg/app_sample/tmpl/page/error.tt2:1
+#: pkg/app_common/tmpl/page/error.tt2:1
 msgid "Ваша учетная запись имеет недостаточно прав для просмотра этой страницы."
 msgstr ""
 
@@ -203,7 +203,7 @@ msgstr ""
 msgid "Загрузить файл"
 msgstr ""
 
-#: pkg/app_sample/tmpl/page/blank.tt2:1
+#: pkg/app_common/tmpl/page/blank.tt2:1
 msgid "Извините, мы пока не готовы показать содержимое этой страницы"
 msgstr "Sorry, we are not ready to show this page yet"
 
@@ -272,7 +272,7 @@ msgstr "Find"
 msgid "Настройки"
 msgstr ""
 
-#: pkg/app_sample/tmpl/page/error.tt2:1
+#: pkg/app_common/tmpl/page/error.tt2:1
 msgid "Недопустимый метод"
 msgstr "Incorrect request method"
 
@@ -404,7 +404,7 @@ msgstr ""
 msgid "Сервис"
 msgstr "Service"
 
-#: pkg/app_sample/tmpl/page/error.tt2:1
+#: pkg/app_common/tmpl/page/error.tt2:1
 msgid "Сервис недоступен"
 msgstr "Service unavailable"
 
@@ -451,7 +451,7 @@ msgstr ""
 msgid "Статус"
 msgstr "Status"
 
-#: pkg/app_sample/tmpl/page/error.tt2:1
+#: pkg/app_common/tmpl/page/error.tt2:1
 msgid "Страница не найдена"
 msgstr "Page not found"
 
@@ -515,7 +515,7 @@ msgstr "Result format"
 msgid "Шаблон"
 msgstr "Template"
 
-#: pkg/app_sample/tmpl/page/error.tt2:1
+#: pkg/app_common/tmpl/page/error.tt2:1
 msgid "Эта страница доступна только для авторизованных пользователей."
 msgstr ""
 

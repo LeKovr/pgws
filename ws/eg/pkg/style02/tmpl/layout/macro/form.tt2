@@ -1,0 +1,21 @@
+[% META
+  description = 'Макросы форм';
+  meta.macro_form = 1;
+
+MACRO formset_field_begin INCLUDE "widget/formset_field_begin.tt2";
+MACRO formset_field_end INCLUDE "widget/formset_field_end.tt2";
+MACRO form_field_help   INCLUDE "widget/form_field_help.tt2";
+
+MACRO form_text   INCLUDE "widget/form_text.tt2";
+MACRO form_text_fio   INCLUDE "widget/form_text_fio.tt2";
+MACRO form_select   INCLUDE "widget/form_select.tt2";
+MACRO form_submit   INCLUDE "widget/form_submit.tt2";
+MACRO form_radioset   INCLUDE "widget/form_radioset.tt2";
+MACRO form_textarea   INCLUDE "widget/form_textarea.tt2";
+MACRO form_checkbox   INCLUDE "widget/form_checkbox.tt2";
+MACRO form_text_inn   INCLUDE "widget/form_text_inn.tt2";
+MACRO form_country   INCLUDE "widget/form_country.tt2";
+MACRO form_address   INCLUDE "widget/form_address.tt2";
+MACRO form_date   INCLUDE "widget/form_date.tt2";
+MACRO form_timestamp   INCLUDE "widget/form_timestamp.tt2";
+%]

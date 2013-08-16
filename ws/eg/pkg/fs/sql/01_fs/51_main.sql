@@ -185,19 +185,19 @@ $_$
   DECLARE
     r_folder fs.folder;
     v_file_id INTEGER;
-    v_code            d_string; -- d_code;
+    v_code            ws.d_string; -- d_code;
     r ws.t_hashtable;
   BEGIN
     r_folder := fs.folder(a_class_id, a_folder_code);
     v_file_id := NEXTVAL('wsd.file_id_seq');
-    v_code := COALESCE(a_file_code, v_file_id || '/' || fs.name2uri(a_name));
+    v_code := COALESCE(a_code, v_file_id || '_' || fs.name2uri(a_name));
 
     r.id := v_file_id::TEXT;
     r.name := 'apidata/' -- TODO: move to wsd.prop_value
       || ws.class_code(a_class_id) || '/'
       || a_obj_id::TEXT || '/'
       || a_folder_code || '/'
-      || v_file_id || '_' || v_code
+      || v_code
     ;
     RETURN r;
   END

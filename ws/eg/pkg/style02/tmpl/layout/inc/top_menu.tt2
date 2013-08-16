@@ -1,0 +1,22 @@
+[%
+ u = api('ws.page_by_code', code => 'main', id => id);
+links = [
+#  { href = uri_mk(u.req), name = u.name, active = (u.code == page.code) ? 1 : 0},
+];
+  
+uris = api('ws.page_childs', code => 'main', id => id); # горизонтальное меню
+FOR u IN uris;
+  NEXT IF !uri_allowed(u);
+  PROCESS "inc/load_subtree.tt2", item = u, active_code = page.code, use_submenus = 1;
+  IF link.childs;
+    link.href = '#';
+    link.class = 'dropdown';
+    link.classLink = 'dropdown-toggle';
+    link.classUl = 'dropdown-menu';
+    link.name = link.name _ '<b class="caret"></b>';
+    link.linkparam = 'data-toggle="dropdown"';
+  END;
+  links.push(link);
+END; 
+  ul(class='nav', links = links);
+%]

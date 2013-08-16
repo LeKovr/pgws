@@ -157,7 +157,7 @@ $_$
 --          name ~* $1
           lower(name) LIKE lower($1 ||'%')  -- CREATE INDEX tbl_col_text_pattern_ops_idx2 ON wsd.team(lower(name) text_pattern_ops);
           AND NOT id IN (acc.const_team_id_system(), acc.const_team_id_admin())
-        ORDER BY name, city
+        ORDER BY name
         OFFSET $2 * $3
         LIMIT NULLIF($3, 0)
     ;
@@ -247,9 +247,14 @@ $_$;
 SELECT pg_c('f', 'team_account_del', 'Удаление пользователя из команды');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_team_link_id(a_account_team_id d_id, a_object_team_id d_id) RETURNS d_link IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION team_team_link_id(a_object_team_id d_id, a_account_team_id d_id) RETURNS d_link IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT CASE WHEN $1 = $2 THEN acc.const_team_link_id_owner() ELSE acc.const_team_link_id_other() END;
+  SELECT 
+    CASE 
+      WHEN $1 = $2 THEN acc.const_team_link_id_owner() 
+      WHEN $1 = acc.const_team_id_system() THEN acc.const_team_link_id_system()
+      ELSE acc.const_team_link_id_other() 
+    END;
 $_$;
 SELECT pg_c('f', 'team_team_link_id', 'Связь команды пользователя с заданной командой');
 

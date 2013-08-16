@@ -65,9 +65,9 @@ SELECT acc.team_role_del(:TEAM, (SELECT id FROM wsd.role WHERE team_id = :TEAM a
 
 SELECT team_id, name, anno FROM wsd.role WHERE team_id = :TEAM;
 
-SELECT id, status_id, name, status_name, anno, city FROM acc.team_by_name('System');
-SELECT id, status_id, name, status_name, anno, city FROM acc.team_profile(:TEAM);
-SELECT id, status_id, name, status_name FROM acc.team_account_attr(:TEAM);
+SELECT id, status_id, name, status_name, anno FROM acc.team_by_name('System');
+SELECT id, status_id, name, status_name, anno FROM acc.team_profile(:TEAM);
+SELECT id, status_id, name, status_name FROM acc.team_account_attr(:TEAM) order by id;
 SELECT * FROM acc.account_team(6);
 --SELECT acc.account_team_add(2, 2, 2);
 --SELECT * FROM wsd.account_team WHERE account_id = 2 AND role_id = 2 AND team_id = 2

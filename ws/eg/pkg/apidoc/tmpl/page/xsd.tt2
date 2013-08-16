@@ -43,7 +43,7 @@ FOR d IN data;
   END;
   tableform_row(name = l('SQL'), value = (d.is_sql ? l('Да'):l('Нет')));
   IF d.is_complex
-    %]<tr><th valign="top">[% l('Поля') %]: </th><td>[%table_begin(class='table-striped table-bordered');
+    %]<tr><th valign="top">[% l('Поля') %]: </th><td>[%table_begin();
     parts = api('ws.dt_part', 'code' => d.code);
     FOR p IN parts;
       %]<tr><th>[% p.code %]</th><td><a href='#[% dts.${p.parent_code}.code %]'>[% dts.${p.parent_code}.code %]</a>[%

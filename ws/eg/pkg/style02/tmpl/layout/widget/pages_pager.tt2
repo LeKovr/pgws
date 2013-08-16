@@ -1,0 +1,10 @@
+[% META
+  description = 'Виджет: Вывод пэйджера';
+
+  # Пример вызова
+  # pages_pager(count = 365);
+
+# ===========================================================================
+
+  INCLUDE "inc/pager.tt2", pageNo = pager.current, count = count, by = pager.by, hrefName = pager.href;
+%]

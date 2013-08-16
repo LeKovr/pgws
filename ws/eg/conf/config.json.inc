@@ -17,6 +17,8 @@
 
     "FE_COOKIE_MASK": "=FE_COOKIE==([\\w+/]+)==",
 
+    "FE_LAYOUTS": "=FE_LAYOUTS=",
+
     "FE_CACHE_MODE": 3,
     "FE_CACHE_TTL": 5,
 

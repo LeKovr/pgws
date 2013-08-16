@@ -26,7 +26,7 @@ CREATE DOMAIN d_pg_argnames AS text[];    -- pg_catalog.pg_proc.proargnames
 
 /* ------------------------------------------------------------------------- */
 CREATE TYPE t_pg_object AS ENUM ('h', 'r', 'v', 'c', 't', 'd', 'f', 'a', 's'); -- see pg_comment
-CREATE TYPE t_pkg_op AS ENUM ('init', 'make', 'drop', 'erase'); -- see 50_pkg.sql
+CREATE TYPE t_pkg_op AS ENUM ('init', 'make', 'drop', 'erase', 'done'); -- see 50_pkg.sql
 
 /* ------------------------------------------------------------------------- */
 CREATE TYPE t_pg_proc_info AS (
@@ -543,4 +543,16 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $_$;
 SELECT pg_c('f', 'pg_cast', 'Приведение значения к заданному типу');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION ws.epoch2timestamp(a_epoch INTEGER DEFAULT 0) RETURNS TIMESTAMP IMMUTABLE LANGUAGE 'sql' AS
+$_$
+SELECT CASE
+  WHEN $1 = 0 THEN NULL
+  ELSE timezone(
+    (SELECT setting FROM pg_settings WHERE name = 'TimeZone')
+    , (TIMESTAMPTZ 'epoch' + $1 * INTERVAL '1 second')::timestamptz
+    )
+END;
+$_$;
 

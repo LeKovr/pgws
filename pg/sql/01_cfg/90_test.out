@@ -22,8 +22,8 @@ INSERT 0 1
  pogc | poid |      code       | valid_from | value 
 ------+------+-----------------+------------+-------
  test |    1 | test.code.one   | 2000-01-01 | one
- test |    1 | test.code.two   | 2000-01-01 | two
  test |    1 | test.code.three | 2000-01-01 | three
+ test |    1 | test.code.two   | 2000-01-01 | two
 
              test              
 -------------------------------
@@ -80,4 +80,12 @@ INSERT 0 1
  test.code.one   | one   | 2000-01-01
  test.code.three | three | 2000-01-01
  test.code.two   | two   | 2000-01-01
+
+ prop_cleanup_by_code 
+----------------------
+ 
+
+ prop_cleanup_without_value 
+----------------------------
+ 
 

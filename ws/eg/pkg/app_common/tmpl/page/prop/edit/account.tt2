@@ -1,0 +1,12 @@
+[% META
+  description = 'Редактирование настроек пользователя'
+%][%
+  acc_id = page.args.0;
+  code = page.args.1;
+
+  INCLUDE "inc/page_siblings.tt2", code = 'account.id', id = acc_id, active_code = page.code;
+
+  INCLUDE 'block/app_common/prop_edit.tt2', id = acc_id, method = 'account.prop_history';
+ 
+%]
+

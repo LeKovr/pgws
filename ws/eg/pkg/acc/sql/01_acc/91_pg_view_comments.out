@@ -2,10 +2,10 @@
 -----------------------------------
   ***** acc.pg_view_comments *****
 
-       rel        |       code        |   rel_src   |  rel_src_col   | status_id |                                                  anno                                                  
-------------------+-------------------+-------------+----------------+-----------+--------------------------------------------------------------------------------------------------------
- acc.account_attr | city              |             |                |         3 | cfg.prop_value(acc.const_account_group_prop()(a.id)::ws.d_id('abp.geo.city'::text)::cfg.d_prop_code)
+       rel        |       code        |   rel_src   |  rel_src_col   | status_id |                                                   anno                                                    
+------------------+-------------------+-------------+----------------+-----------+-----------------------------------------------------------------------------------------------------------
  acc.account_attr | created_at        | wsd.account | created_at     |         1 | d_stamp,  Момент регистрации
+ acc.account_attr | gender            |             |                |         3 | cfg.prop_value(acc.const_account_group_prop()(a.id)::ws.d_id('abp.person.gender'::text)::cfg.d_prop_code)
  acc.account_attr | id                | wsd.account | id             |         1 | d_id,     ID пользователя
  acc.account_attr | is_ip_checked     | wsd.account | is_ip_checked  |         1 | IP проверять при валидации сессии
  acc.account_attr | is_psw_plain      | wsd.account | is_psw_plain   |         1 | Пароль хранить незашифрованным
@@ -14,7 +14,6 @@
  acc.account_attr | psw               | wsd.account | psw            |         1 | d_string, Пароль
  acc.account_attr | psw_updated_at    | wsd.account | psw_updated_at |         1 | d_stamp   Момент изменения пароля
  acc.account_attr | registration_date |             |                |         3 | (a.created_at)::date
- acc.account_attr | sex               |             |                |         3 | cfg.prop_value(acc.const_account_group_prop()(a.id)::ws.d_id('abp.person.sex'::text)::cfg.d_prop_code)
  acc.account_attr | status_id         | wsd.account | status_id      |         1 | d_id32,   ID статуса
  acc.account_attr | status_name       |             |                |         3 | ws.class_status_name(('account'::text)::ws.d_code(a.status_id)::ws.d_id32)
  acc.account_attr | updated_at        | wsd.account | updated_at     |         1 | d_stamp,  Момент обновления записи

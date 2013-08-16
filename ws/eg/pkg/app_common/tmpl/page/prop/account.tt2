@@ -1,0 +1,19 @@
+[% META
+  description = 'Справочник настроек пользователя';
+
+  acc_id = page.args.0;
+
+  INCLUDE "inc/page_siblings.tt2", code = 'account.id', id = acc_id, active_code = page.code;
+
+  section_begin(header = l('Данные пользователя'), id = 'abp');
+    row_begin;
+      INCLUDE 'block/app_common/prop.tt2', id = acc_id, method = 'account.prop_abp_attr', edit_page_code = 'account.id.prop.edit';
+    row_end;
+  section_end;
+
+  section_begin(header = l('Параметры работы в системе'), id = 'isv');
+    row_begin;
+      INCLUDE 'block/app_common/prop.tt2', id = acc_id, method = 'account.prop_isv_attr', edit_page_code = 'account.id.prop.edit';
+    row_end;
+  section_end;
+%]

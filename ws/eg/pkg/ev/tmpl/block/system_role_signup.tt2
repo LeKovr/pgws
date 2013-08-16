@@ -13,7 +13,7 @@
   
     FOR row IN kind_roles;
       IF loop.first;
-        table_begin(class='table-bordered table-striped table-hover');
+        table_begin();
         tr(list = [ l('Группа'), l('Событие'), l('Активна'), l('Спецификация')], use_th = 1, thead = 1);
       END;
       is_on = row.is_on ? l('Да') : l('Нет');

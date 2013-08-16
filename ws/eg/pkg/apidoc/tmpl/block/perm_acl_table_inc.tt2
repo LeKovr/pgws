@@ -4,7 +4,7 @@
   description = 'Блок таблицы описания разрешения';
 
   last_acl_name = '';
-  table_begin(class='table-bordered table-striped table-hover');
+  table_begin();
   columns = [];
   IF class; columns.push(l("Класс"));       END;
   columns = columns.merge([l("Уровень доступа"), l("Команда"), l("Объект")]);

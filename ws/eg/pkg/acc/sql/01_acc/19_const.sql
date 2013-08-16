@@ -9,6 +9,13 @@
 /*** CLASS ***/
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_system_class_id() RETURNS ws.d_class IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 1::ws.d_class;
+$_$;
+SELECT pg_c('f', 'const_system_class_id', 'Константа: ID класса system');
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_class_id() RETURNS ws.d_class IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 15::ws.d_class;
@@ -90,6 +97,13 @@ $_$
 $_$;
 SELECT pg_c('f', 'const_team_link_id_other', 'Константа: Уровень связи чужой команды');
 
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_team_link_id_system() RETURNS acc.d_link IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 3::acc.d_link;
+$_$;
+SELECT pg_c('f', 'const_team_link_id_system', 'Константа: Уровень связи системной команды');
+
 /*** TEAM ***/
 
 /* ------------------------------------------------------------------------- */
@@ -135,30 +149,30 @@ SELECT pg_c('f', 'const_role_id_login', 'Константа: ID роли авт�
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_password() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 'Y0301'::TEXT
+  SELECT ('Y' || acc.const_class_id() || '01')::TEXT
 $_$;
 SELECT pg_c('f', 'const_error_password', 'Константа: Код ошибки авторизации с неправильным паролем');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_login() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 'Y0302'::TEXT
+  SELECT ('Y' || acc.const_class_id() || '02')::TEXT
 $_$;
 SELECT pg_c('f', 'const_error_login', 'Константа: Код ошибки авторизации с неизвестным логином');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_status() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 'Y0303'::TEXT
+  SELECT ('Y' || acc.const_class_id() || '03')::TEXT
 $_$;
 SELECT pg_c('f', 'const_error_status', 'Константа: Код ошибки авторизации с недопустимым статусом');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_class() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 'Y0304'::TEXT
+  SELECT ('Y' || acc.const_class_id() || '04')::TEXT
 $_$;
-SELECT pg_c('f', 'const_error_status', 'Константа: Код ошибки определения уровня доступа класса');
+SELECT pg_c('f', 'const_error_class', 'Константа: Код ошибки определения уровня доступа класса');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_team_group_prop() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
@@ -191,22 +205,43 @@ SELECT pg_c('f', 'const_account_contact_email_id()', 'Константа: ID т�
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_email_validation() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 'Y0005'::TEXT
+  SELECT 'Y' || acc.const_class_id() || '05'::TEXT
 $_$;
 SELECT pg_c('f', 'const_error_email_validation', 'Константа: Код ошибки валидации email');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_mobile_phone_validation() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 'Y0006'::TEXT
+  SELECT 'Y' || acc.const_class_id() || '06'::TEXT
 $_$;
 SELECT pg_c('f', 'const_error_mobile_phone_validation', 'Константа: Код ошибки валидации мобильного телефона');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_passwords_match() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
-  SELECT 'Y0007'::TEXT
+  SELECT 'Y' || acc.const_class_id() || '07'::TEXT
 $_$;
 SELECT pg_c('f', 'const_error_passwords_match', 'Константа: Код ошибки ввода повторного пароля');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_badsid() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$ 
+  SELECT ('Y' || acc.const_class_id() || '08')::TEXT
+$_$;
+SELECT pg_c('f', 'const_error_badsid', 'Некорректный sid');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_team_admin_id() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
+$_$ 
+  SELECT 2
+$_$;
+SELECT pg_c('f', 'const_team_admin_id', 'ID команды администраторов системы');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_team_system_id() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
+$_$ 
+  SELECT 1
+$_$;
+SELECT pg_c('f', 'const_team_system_id', 'ID системных команд');
 
 /* ------------------------------------------------------------------------- */

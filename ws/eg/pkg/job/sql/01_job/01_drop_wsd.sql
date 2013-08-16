@@ -31,7 +31,7 @@ DROP TABLE wsd.job CASCADE;
 DROP SEQUENCE wsd.job_seq;
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_drop_pkg(ARRAY['job.const_job_group_prop']);
+SELECT cfg.prop_drop_value(ARRAY[job.const_job_group_prop()]);
 
 
 

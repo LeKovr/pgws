@@ -22,6 +22,6 @@
 
 /* ------------------------------------------------------------------------- */
 
-INSERT INTO ws.pkg_required_by(code, required_by) VALUES
-  ('ws', 'i18n') -- тут pg_cs() не подходит
+INSERT INTO ws.pkg_required_by(code) VALUES
+  ('ws')
 ;

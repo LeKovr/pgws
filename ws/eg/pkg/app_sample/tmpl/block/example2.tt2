@@ -12,7 +12,7 @@
     controlGroup_end;
     %]
     <div class="form-actions">
-      [% btn(id='send', onclick='form2send();', name='Get class'); %]
+      [% btn(id='send', onclick='PGWS.form2send();', name='Get class'); %]
     </div>
   </fieldset>
   [% 
@@ -26,20 +26,23 @@
   
 <script type="text/javascript">
 //<![CDATA[
+if (PGWS.var === undefined) { PGWS.var = {}; }
+
+PGWS.var.example2 = {
+  option2 : {statusBlock: '#form2_status'},
+  cname: ''
+};
 $('#form2_result').hide();
 $('#form2_status').hide();
-var option2 = {statusBlock: '#form2_status'};
-function form2send() {
+PGWS.form2send = function() {
 $('#form2 > fieldset > div.control-group').removeClass('error');
   $('#form2_result').html('&nbsp;');
   $('#form2___err').text('');
-  api_form('ws.class:7','#form2', form2ok, form2err, option2);
+  api_form('ws.class:7','#form2', PGWS.form2ok, PGWS.form2err, PGWS.var.example2.option2);
   return false;
 };
 
-var cname;
-
-var form2err = function(formid, res) {
+PGWS.form2err = function(formid, res) {
   $(formid + ' > fieldset > div.control-group').addClass('error');
   var mess = '';
   $(res.result.error).each(function(i){
@@ -50,19 +53,19 @@ var form2err = function(formid, res) {
   $(formid + '_result').hide();
 }
 
-var form2ok = function(formid, res) {
+PGWS.form2ok = function(formid, res) {
   $(formid + '_result').html( l('[% l('Найден класс "[_1]"') %]', res[0].name) );
   cid = res[0].code;
-  cname = res[0].name;
+  PGWS.var.example2.cname = res[0].name;
   par = {
     code: 'api.class',
     id: res[0].id
   };
-  api('ws.page_by_code', formid, form2ok1 ,par);
+  api('ws.page_by_code', formid, PGWS.form2ok1 ,par);
 };
 
-var form2ok1 = function(formid, res) {
-  $(formid + '_result').html( '<a href="[% req.prefix %]/'+res.req+'[% session.sid_arg%]'+ '#'+cid+'">'+cname+'</a>');
+PGWS.form2ok1 = function(formid, res) {
+  $(formid + '_result').html( '<a href="[% req.prefix %]/'+res.req+'[% session.sid_arg%]'+ '#'+cid+'">'+PGWS.var.example2.cname+'</a>');
   successAlertBlocks(formid);
 };
 

@@ -1,0 +1,15 @@
+[% META
+  description = 'Виджет: Настройка пэйджера';
+
+  # Пример вызова
+  # pager_setup(steps = [20, 40, 60], hrefName = page.req _ '?');
+
+# ===========================================================================
+
+pager.steps = steps ? steps : pager.steps;
+pager.href = hrefName ? hrefName : pager.href;
+pager.by = by ? by : pager.by;
+pager.by = get.by ? get.by : pager.steps.first;
+pager.current = pageNo ? pageNo : pager.current;
+pager.current = get.page ? get.page : pager.current;
+%]

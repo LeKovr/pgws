@@ -3,7 +3,7 @@
 # This file is part of PGWS - Postgresql WebServices.
   description = 'Описание классов';
 
-  resp.skin = 'wide'; # страница на всю ширину
+  resp.frame = 'wide'; # страница на всю ширину
   PROCESS 'macro/tableform.tt2';
   class_id = page.args.0 || 0;
   data = api('ws.class:7', id => class_id);
@@ -51,9 +51,12 @@ FOR d IN data;
   st_rows = api('ws.class_status:7', 'class_id' => d.id);
   acl_rows = api('ws.class_acl:7', 'class_id' => d.id);
 
-  h(type=3, text = l("Уровни доступа"), href = '#' _ d.code _ '-acl', id = d.code _ '-acl');
-  acl = api('system.class_acl', id => d.code);
-  INCLUDE "block/apidoc/perm_acl_table_inc.tt2", perm = 1, class = 0;
+  
+  IF api('acl:system.class_permission_acl', code => d.code);
+    acl = api('system.class_permission_acl', code => d.code);
+    h(type=3, text = l("Уровни доступа"), href = '#' _ d.code _ '-acl', id = d.code _ '-acl');
+    INCLUDE "block/apidoc/perm_acl_table_inc.tt2", acl = acl, erm = 1, class = 0;
+  END;
 
   h(type=3, text='<a name=' _ d.code _ '-action class="name" href="#' _ d.code _ '-action">Акции</a>');
   li = [];
@@ -73,7 +76,7 @@ FOR d IN data;
       END;
     END;
     h(type=4,text='<a name=' _ d.code _ '-action-' _ ra.id _ ' class="name"  href="#' _ d.code _ '-action-' _ ra.id _ '">' _ d.id _ '.' _ ra.id _ '. ' _ ra.name _ '</a>');
-    table_begin(class = 'table-striped table-bordered');
+    table_begin();
     td=[];
     widthL=['25%'];
     td.push('Уровень доступа \ Статус');

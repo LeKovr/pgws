@@ -25,7 +25,7 @@ CREATE OR REPLACE FUNCTION prop_attr_account_abp(a_id INTEGER, a_code TEXT DEFAU
 $_$
 -- a_poid: код владельца свойств
 -- a_code: код свойства
-  SELECT * FROM cfg.prop_attr(acc.const_account_group_prop(), $1, $2) WHERE code ~ E'^abp\\.[\\w\\.]+$'
+  SELECT * FROM cfg.prop_attr(acc.const_account_group_prop(), $1, 'abp.' || $2) WHERE code ~ E'^abp\\.[\\w\\.]+$'
 $_$;
 SELECT pg_c('f', 'prop_attr_account_abp', 'Атрибуты открытых свойств пользователя');
 
@@ -34,7 +34,7 @@ CREATE OR REPLACE FUNCTION prop_attr_account_isv(a_id INTEGER, a_code TEXT DEFAU
 $_$
 -- a_poid: код владельца свойств
 -- a_code: код свойства
-  SELECT * FROM cfg.prop_attr(acc.const_account_group_prop(), $1, $2) WHERE code ~ E'^isv\\.[\\w\\.]+$'
+  SELECT * FROM cfg.prop_attr(acc.const_account_group_prop(), $1, 'isv.' || $2) WHERE code ~ E'^isv\\.[\\w\\.]+$'
 $_$;
 SELECT pg_c('f', 'prop_attr_account_isv', 'Атрибуты служебных свойств пользователя');
 
@@ -52,7 +52,7 @@ CREATE OR REPLACE FUNCTION prop_attr_team_abp(a_id INTEGER, a_code TEXT DEFAULT 
 $_$
 -- a_poid: код владельца свойств
 -- a_code: код свойства
-  SELECT * FROM cfg.prop_attr(acc.const_team_group_prop(), $1, $2) WHERE code ~ E'^abp\\.[\\w\\.]+$'
+  SELECT * FROM cfg.prop_attr(acc.const_team_group_prop(), $1, 'abp.' || $2) WHERE code ~ E'^abp\\.[\\w\\.]+$'
 $_$;
 SELECT pg_c('f', 'prop_attr_team_abp', 'Атрибуты открытых свойств команды');
 
@@ -61,7 +61,7 @@ CREATE OR REPLACE FUNCTION prop_attr_team_isv(a_id INTEGER, a_code TEXT DEFAULT 
 $_$
 -- a_poid: код владельца свойств
 -- a_code: код свойства
-  SELECT * FROM cfg.prop_attr(acc.const_team_group_prop(), $1, $2) WHERE code ~ E'^isv\\.[\\w\\.]+$'
+  SELECT * FROM cfg.prop_attr(acc.const_team_group_prop(), $1, 'isv.' || $2) WHERE code ~ E'^isv\\.[\\w\\.]+$'
 $_$;
 SELECT pg_c('f', 'prop_attr_team_isv', 'Атрибуты служебных свойств команды');
 

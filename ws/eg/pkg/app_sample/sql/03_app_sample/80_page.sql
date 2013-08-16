@@ -19,6 +19,12 @@
 
     Регистрация страниц сайта
 */
+--page.up_code
+\set UPC 'group.info.devel'
+--page.sort
+\set SRT 11
+--page.uri
+\set URI 'info/devel/site'
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
@@ -32,4 +38,10 @@ INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, 
  ('api.style',          'group.info', 2, 1, NULL, 'info/style$',      :'PKG' || '/style_set', 'Стиль интерфейса')
 ;
 */
-SELECT ws.register_pages_apidoc('group.info.devel', 'info/devel/site', 11);
+
+/* ------------------------------------------------------------------------- */
+SELECT ws.register_pages_apidoc(:'UPC', 2, 1, :'URI', :SRT);
+INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
+  ('api.perm', :'UPC', 2, 1, :SRT + 6, :'URI' || '/perm$', 'acc/apidoc/perm',    'Разрешения')
+, ('api.role', :'UPC', 2, 1, :SRT + 7, :'URI' || '/role$', 'acc/apidoc/role',    'Роли')
+;

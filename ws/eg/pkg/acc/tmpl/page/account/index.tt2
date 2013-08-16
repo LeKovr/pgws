@@ -42,7 +42,7 @@
     ]); 
   
   
-    table_begin(class='table-bordered table-striped');
+    table_begin();
         tr(list = ['Имя', 'Команда', 'Город', 'Статус', 'Дата регистрации'], use_th=1, thead=1);
       FOREACH a IN accounts.rows;
         href = uri_mk(uri(code => 'account.id', id => a.id).req);
@@ -50,7 +50,7 @@
         tr(list=["<a href='$href'>$a.name</a>", "<a href='$team_href'>$a.team_name</a>", a.city, a.status_name, a.registration_date]);
       END;
     table_end(tbody=1);
-    INCLUDE "block/$TMPL_LAYOUT/pager.tt2", pageNo = pageNo, count = accounts.need_rc, by = by, hrefName = page.req _ '?name=' _ name _ '&';
+    INCLUDE "inc/pager.tt2", pageNo = pageNo, count = accounts.need_rc, by = by, hrefName = page.req _ '?name=' _ name _ '&';
   ELSE;
     alert_begin(class="block");
     p(text=l("По заданным параметрам поиска пользователь не найден"));

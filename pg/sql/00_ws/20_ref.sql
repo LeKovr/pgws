@@ -17,42 +17,41 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Справочники
 */
--- 20_ref.sql - Справочники
-/* ------------------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE ref (
-  id         ws.d_id32 PRIMARY KEY
-, class_id   d_class  NOT NULL REFERENCES class
-, name       TEXT NOT NULL
-, code       ws.d_code
-, updated_at ws.d_stamp NOT NULL DEFAULT '2010-01-01'
+CREATE TABLE ref_data (
+  code            d_code PRIMARY KEY
+, is_dt_vary      bool NOT NULL DEFAULT FALSE
+, acls            d_acls
+, method_code     d_code
+, acls_upd        d_acls DEFAULT ws.const_ref_acls_internal()
+, method_code_upd d_code
+, pkg             d_code  NOT NULL
 );
-SELECT pg_c('r', 'ref', 'Справочник')
-, pg_c('c', 'ref.id',         'ID')
-, pg_c('c', 'ref.name',       'Название')
-, pg_c('c', 'ref.code',       'Метод доступа')
-, pg_c('c', 'ref.updated_at', 'Момент последнего изменения')
+SELECT pg_c('r', 'ref_data',            'Данные справочников')
+, pg_c('c', 'ref_data.code',            'Код')
+, pg_c('c', 'ref_data.is_dt_vary',      'Тип структуры справочника не совпадает с i18n_def.ref_item')
+, pg_c('c', 'ref_data.acls',            'Список ACL чтения (если есть ограничения)')
+, pg_c('c', 'ref_data.method_code',     'Код метода доступа к справочнику')
+, pg_c('c', 'ref_data.acls_upd',        'Список ACL изменения (если разрешена)')
+, pg_c('c', 'ref_data.method_code_upd', 'Код метода изменения справочника')
+, pg_c('c', 'ref_data.pkg',             'Пакет, создавший справочник')
 ;
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE ref_item (
-  ref_id     ws.d_id32 REFERENCES ref
-, id         ws.d_id32 NOT NULL
-, sort       ws.d_sort
-, name       text NOT NULL
-, group_id   ws.d_id32 NOT NULL DEFAULT 1
-, deleted_at ws.d_stamp
-, CONSTRAINT ref_item_pkey PRIMARY KEY (ref_id, id)
+CREATE TABLE ref_item_data (
+  code        ws.d_code REFERENCES ref_data ON DELETE CASCADE
+, item_code   TEXT 
+, group_id    ws.d_id32 NOT NULL DEFAULT 1
+, code_addon  TEXT
+, CONSTRAINT  ref_item_data_pkey PRIMARY KEY (code, item_code)
 );
-SELECT pg_c('r', 'ref_item', 'Позиция справочника')
-, pg_c('c', 'ref_item.ref_id',     'ID справочника')
-, pg_c('c', 'ref_item.id',         'ID позиции')
-, pg_c('c', 'ref_item.sort',       'Порядок сортировки')
-, pg_c('c', 'ref_item.name',       'Название')
-, pg_c('c', 'ref_item.group_id',   'Внутренний ID группы')
-, pg_c('c', 'ref_item.deleted_at', 'Момент удаления')
+SELECT pg_c('r', 'ref_item_data', 'Позиция справочника')
+, pg_c('c', 'ref_item_data.code',        'Код справочника')
+, pg_c('c', 'ref_item_data.item_code',   'Код позиции')
+, pg_c('c', 'ref_item_data.group_id',    'Внутренний ID группы')
+, pg_c('c', 'ref_item_data.code_addon',  'Дополнительный код (опция)')
 ;
 
-/* ------------------------------------------------------------------------- */

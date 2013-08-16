@@ -20,7 +20,7 @@
       </div>
     </fieldset>
     <div class="single btn">
-      <button  onClick="return formSend('main', 'account.login')">[% l("Войти") %]</button>
+      <button  onClick="return PGWS.formSend('main', 'account.login')">[% l("Войти") %]</button>
     </div>
     <div id="status"></div>
     <div id="errors" class="error"></div>
@@ -31,16 +31,15 @@
 [% meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
-
-function formSend(id, action) {
+PGWS.formSend = function(id, action) {
   $('#status').text('');
   $('#main-form___err').text('');
   var form_id = '#' + id + '-form';
-  api_form(action, form_id, formOK);
+  api_form(action, form_id, PGWS.formOK, PGWS.formError);
   return false;
 };
 
-var formOK = function(formid, res) {
+PGWS.formOK = function(formid, res) {
   $('#status').html('[% l("Добро пожаловать") %]' + ', ' + res.account_name);
 [%
   IF page.code == 'login';
@@ -49,8 +48,10 @@ var formOK = function(formid, res) {
 %]
 window.location.pathname = '[% root_href %]';
 [% ELSE; %]window.location.reload(true);[% END; %]
-
 };
+PGWS.formError = function(formid, res){
+  $('#errors').html(res.result.error[0].message);
+}
 
 //]]>
 </script>

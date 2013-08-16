@@ -44,3 +44,43 @@ SELECT pg_c('r', 'i18n_def.error_message', 'Сообщение об ошибке
 ;
 
 /* ------------------------------------------------------------------------- */
+CREATE TABLE i18n_def.ref_name (
+  code       d_code  PRIMARY KEY REFERENCES ref_data ON DELETE CASCADE
+, name       text    NOT NULL
+, anno       text    
+, synced_at  ws.d_stamp
+);
+SELECT pg_c('r', 'i18n_def.ref_name', 'Локализованное название справочника')
+, pg_c('c', 'i18n_def.ref_name.code', 'Код')
+, pg_c('c', 'i18n_def.ref_name.name', 'Название')
+, pg_c('c', 'i18n_def.ref_name.anno', 'Аннотация')
+, pg_c('c', 'i18n_def.ref_name.synced_at', 'Момент последней синхронизации')
+;
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE i18n_def.ref_item_name (
+  code      ws.d_code 
+, item_code TEXT
+, sort      ws.d_sort
+, name      text    NOT NULL
+, anno      TEXT
+, CONSTRAINT  ref_item_name_pkey PRIMARY KEY (code, item_code)
+, CONSTRAINT  ref_item_name_fkey_ref_data FOREIGN KEY (code, item_code) REFERENCES ref_item_data(code, item_code) ON DELETE CASCADE
+);
+
+SELECT pg_c('r', 'i18n_def.ref_item_name', 'Локализованное название позиции справочника')
+, pg_c('c', 'i18n_def.ref_item_name.code',      'Код справочника')
+, pg_c('c', 'i18n_def.ref_item_name.item_code', 'Код позиции')
+, pg_c('c', 'i18n_def.ref_item_name.sort',      'Порядок сортировки')
+, pg_c('c', 'i18n_def.ref_item_name.name',      'Название')
+, pg_c('c', 'i18n_def.ref_item_name.anno',      'Аннотация')
+;
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE i18n_def.timezone_name (
+  code     TEXT PRIMARY KEY
+, sort     d_sort 
+, name     text     NOT NULL
+);
+SELECT pg_c('r', 'i18n_def.timezone_name', 'Название часового пояса');
+/* ------------------------------------------------------------------------- */

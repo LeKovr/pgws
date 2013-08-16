@@ -40,7 +40,7 @@ $_$
 $_$;
 
 -- статус в начале
-SELECT * FROM ws.dt WHERE code in ('bigint', 'ws.d_lang', 'ws.d_string');
+SELECT * FROM ws.dt WHERE code in ('bigint', 'ws.d_string');
 
 INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real,args_exam, name) VALUES
    ('ws.dt_debug',2, 1, 2, 3,ws.pg_cs('dt_debug'), '', 'Test autodelete');
@@ -48,11 +48,11 @@ INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real,ar
 SELECT * FROM ws.method WHERE code IN ('ws.dt_debug');
 
 -- после авторегистрации
-SELECT * FROM ws.dt WHERE code in ('bigint', 'ws.d_lang', 'ws.d_string');
+SELECT * FROM ws.dt WHERE code in ('bigint', 'ws.d_string', 'ws.d_lang');
 
 DELETE FROM ws.method WHERE code IN ('ws.dt_debug');
 
 -- после автоудаления
 SELECT * FROM ws.method WHERE code IN ('ws.dt_debug');
-SELECT * FROM ws.dt WHERE code in ('bigint', 'ws.d_lang', 'ws.d_string');
+SELECT * FROM ws.dt WHERE code in ('bigint', 'ws.d_string');
 

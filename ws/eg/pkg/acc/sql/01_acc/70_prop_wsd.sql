@@ -35,14 +35,14 @@ CREATE TRIGGER check_team_owner_insupd BEFORE INSERT OR UPDATE ON wsd.prop_value
 ;
 
 /* ------------------------------------------------------------------------- */
-CREATE TRIGGER value_copy_into_account AFTER INSERT OR UPDATE ON wsd.prop_value
+CREATE TRIGGER value_copy_into_team AFTER INSERT OR UPDATE ON wsd.prop_value
   FOR EACH ROW
   WHEN (NEW.pogc IN (acc.const_team_group_prop()))
   EXECUTE PROCEDURE acc.prop_copy_value_team_insupd()
 ;
 
 /* ------------------------------------------------------------------------- */
-CREATE TRIGGER value_copy_into_team AFTER INSERT OR UPDATE ON wsd.prop_value
+CREATE TRIGGER value_copy_into_account AFTER INSERT OR UPDATE ON wsd.prop_value
   FOR EACH ROW
   WHEN (NEW.pogc IN (acc.const_account_group_prop()))
   EXECUTE PROCEDURE acc.prop_copy_value_account_insupd()

@@ -1,0 +1,37 @@
+            test            
+----------------------------
+  ***** generate_team *****
+
+CREATE TABLE
+INSERT 0 6
+INSERT 0 3
+ generate_team 
+---------------
+ TEST
+
+ ?column? 
+----------
+        8
+
+ ?column? 
+----------
+ t
+
+ ?column? 
+----------
+ f
+
+ drop_generated_team 
+---------------------
+ t
+
+ ?column? 
+----------
+ t
+
+ ?column? 
+----------
+ t
+
+DELETE 6
+DROP TABLE

@@ -28,8 +28,9 @@
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO team_link(id, name) VALUES
-  (const_team_link_id_owner(), 'Свой')
-, (const_team_link_id_other(), 'Чужой')
+  (const_team_link_id_owner(),   'Свой')
+, (const_team_link_id_other(),   'Чужой')
+, (const_team_link_id_system(),  'Система')
 ;
 
 /* ------------------------------------------------------------------------- */

@@ -1,3 +1,0 @@
-[% META
-  description = 'Основной контент страницы - на всю ширину'
-%][% INCLUDE "layout/$TMPL_LAYOUT/default.tt2" %]

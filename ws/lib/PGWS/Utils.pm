@@ -111,7 +111,7 @@ sub data_sha1 {
 # файл существует и не старше заданного числа секунд
 sub data_is_actual {
   my ($path, $ttl) = @_;
-  if ($ttl and -f $path) {
+  if ($ttl and -s $path) {
     return 1 if $ttl == -1;
     my $mtime = stat($path)->mtime;
     return (time() - $mtime <= $ttl);
@@ -220,6 +220,9 @@ sub uri_mk {
   my ($proto, $prefix, $sid, $name, $args, $anchor) = @_;
   $name ||= '';
   my $s = $sid;
+  if (ref($args) eq 'HASH') {
+    $args = join '&', map { join '=', $_, uri_escape_utf8($args->{$_})} sort keys %$args;
+  }
   if ($args) {
     $s = ($sid?$sid.'&':'').$args;
   }
@@ -337,7 +340,7 @@ sub hashlist_sort {
 # Имя файла для кэша URI
 sub uri_cache_name {
   my ($path, $args) = @_;
-  $path .= '/';
+  $path .= '/' unless ($path =~ /\/$/);
   if (%$args) {
     my $name = join '&', map { $args->{$_} } sort keys %$args;
     $path .= sha1_hex($name).'.html';

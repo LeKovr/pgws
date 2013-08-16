@@ -57,10 +57,6 @@ INSERT 0 1
 -----------------
  t
 
- prop_value_edit 
------------------
- t
-
  status_id |  login   |     name     | is_psw_plain | is_ip_checked 
 -----------+----------+--------------+--------------+---------------
          1 | reg_test | registration | t            | t
@@ -72,4 +68,12 @@ INSERT 0 1
    psw   
 ---------
  Test111
+
+ account_password_change_own 
+-----------------------------
+ t
+
+   psw   
+---------
+ Test222
 

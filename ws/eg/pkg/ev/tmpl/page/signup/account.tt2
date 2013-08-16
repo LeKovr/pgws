@@ -22,7 +22,7 @@
     teams_opt.push(opt);
   END;
 
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = account_id, active_code = page.code;
+  INCLUDE "inc/page_siblings.tt2", code = 'account.id', id = account_id, active_code = page.code;
 
   IF teams_opt.size > 1;
   row_begin;
@@ -40,7 +40,7 @@
   signups = api( 'account.signup', id => account_id, team_id => team_id );
    FOR row IN signups;
       IF loop.first;
-        table_begin(class='table-bordered table-striped table-hover');
+        table_begin();
         tr(list = [ l('Группа'), l('Событие'), l('Активна'), l('Персональная'), l('Спецификация'), l('Изменить')], use_th = 1, thead = 1);
       END;
       is_on = row.is_on ? l('Да') : l('Нет');

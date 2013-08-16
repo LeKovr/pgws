@@ -1,0 +1,30 @@
+[% META
+  description = 'Виджет: Вывод списка разбивки по страницам';
+
+  # Пример вызова
+  # pages_list();
+
+# ===========================================================================
+
+# Формируем список
+options = [];
+FOR o IN pager.steps; 
+  link = { href = uri_mk(pager.href, by => o), name = o };
+  IF o == pager.by;
+    link.class = 'disabled';
+  END;
+  options.push(link);
+END;
+
+# Выводим выпадающий список
+uldoplist= ul(class='dropdown-menu', links= options);
+ul(class='nav nav-pills', links=[
+  { href='#'
+  , class='dropdown'
+  , classLink='dropdown-toggle'
+  , linkparam='data-toggle=\'dropdown\''
+  , name='Количество строк <b class=\'caret\'></b>'
+  , content=uldoplist},
+]); 
+
+%]

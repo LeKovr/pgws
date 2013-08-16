@@ -1,0 +1,40 @@
+[% META
+# Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
+# This file is part of PGWS - Postgresql WebServices.
+  description = 'подготовка массива styles';
+ 
+  # для использования на всех страницах - включено глобально в style02/tmpl/inc/head.tt2
+  meta.head.cookie = 1;
+
+  styles = [
+      {name = l('Стандартный'), active = (resp.css.current == 'default' ? 1:0), href = '#'},
+      {class = 'divider'},
+  ];
+  FOR s IN LAYOUT_SKINS;
+    IF resp.css.current == s;
+     styles.push({ name = s.ucfirst, rel = s, active = 1, href = '#'});
+     styles.0.active = 0;
+    ELSE;
+      styles.push({ name = s.ucfirst, rel = s, href = '#'});
+    END;
+  END;
+
+
+  meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+$(document).ready(function(){
+  $('.set_style > li > a').each(function(i, element){
+    element.onclick = function(){
+      var rel = $(this).attr('rel');
+      this.href = window.location.href;
+      if (rel !== undefined) {
+        $.cookie('[% resp.css.cookie %]', rel, { expires: 7, path: '/' });
+      } else {
+        $.removeCookie('[% resp.css.cookie %]', { path: '/' });
+      }
+    };
+  });
+});
+</script>
+[% END; # BLOCK
+%]

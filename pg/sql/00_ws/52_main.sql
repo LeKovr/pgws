@@ -25,7 +25,7 @@ CREATE OR REPLACE FUNCTION page_group_name(a_id d_id32) RETURNS TEXT STABLE STRI
 $_$
   SELECT name FROM page_group WHERE id = $1;
 $_$;
-SELECT pg_c('f', 'page_group_name', 'Название группы страниц');
+SELECT pg_c('f', 'page_group_name', 'Название группы страниц', $_$Функция требует SEARCH_PATH$_$);
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_by_uri(a_uri TEXT DEFAULT '') RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
@@ -36,7 +36,7 @@ $_$
     , ws.page_group_name(group_id)
     FROM page WHERE $1 ~* ('^' || uri_re) ORDER BY uri_re DESC LIMIT 1;
 $_$;
-SELECT pg_c('f', 'page_by_uri', 'Атрибуты страницы по uri');
+SELECT pg_c('f', 'page_by_uri', 'Атрибуты страницы по uri', $_$Функция требует SEARCH_PATH$_$);
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_by_code(a_code TEXT, a_id TEXT DEFAULT NULL
@@ -49,7 +49,7 @@ $_$
     , ws.page_group_name(group_id)
     FROM page WHERE code LIKE $1 ORDER BY sort;
 $_$;
-SELECT pg_c('f', 'page_by_code', 'Атрибуты страницы  по маске кода и идентификаторам');
+SELECT pg_c('f', 'page_by_code', 'Атрибуты страницы  по маске кода и идентификаторам', $_$Функция требует SEARCH_PATH$_$);
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_by_action(a_class_id d_class DEFAULT 0, a_action_id d_id32 DEFAULT 0, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS SETOF t_page_info STABLE LANGUAGE 'sql' AS
@@ -60,7 +60,7 @@ $_$
     , ws.page_group_name(group_id)
     FROM page WHERE $1 IN (class_id, 0) AND $2 IN (action_id, 0) ORDER BY code;
 $_$;
-SELECT pg_c('f', 'page_by_action', 'Атрибуты страницы  по акции и идентификаторам');
+SELECT pg_c('f', 'page_by_action', 'Атрибуты страницы  по акции и идентификаторам', $_$Функция требует SEARCH_PATH$_$);
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_path(a_code TEXT DEFAULT NULL, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS SETOF t_page_info STABLE LANGUAGE 'plpgsql' AS
@@ -84,7 +84,7 @@ $_$
     RETURN;
   END;
 $_$;
-SELECT pg_c('f', 'page_path', 'Атрибуты страниц пути от заданной до корневой');
+SELECT pg_c('f', 'page_path', 'Атрибуты страниц пути от заданной до корневой', $_$Функция требует SEARCH_PATH$_$);
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.is_ids_enough(a_class_id ws.d_class, a_id TEXT DEFAULT NULL, a_id1 TEXT DEFAULT NULL, a_id2 TEXT DEFAULT NULL) RETURNS BOOL STABLE LANGUAGE 'plpgsql' AS
@@ -112,7 +112,7 @@ $_$
     , ws.page_group_name(group_id)
     FROM page WHERE sort IS NOT NULL AND up_code IS NOT DISTINCT FROM $1 AND ws.is_ids_enough(class_id, COALESCE(id_fixed::text,$2), $3, $4) ORDER BY group_id, sort, code;
 $_$;
-SELECT pg_c('f', 'page_childs', 'Атрибуты страниц, имеющих предком заданную');
+SELECT pg_c('f', 'page_childs', 'Атрибуты страниц, имеющих предком заданную', $_$Функция требует SEARCH_PATH$_$);
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_tree(a_code TEXT DEFAULT NULL) RETURNS SETOF t_hashtable STABLE LANGUAGE 'sql' AS
@@ -142,6 +142,13 @@ $_$
 --  SELECT * FROM ws.method WHERE code LIKE $1 ORDER BY 2,3,1;
 $_$;
 SELECT pg_c('f', 'method_by_code', 'Атрибуты метода по коду');
+
+/* ------------------------------------------------------------------------- */
+-- служебная ф-я для внутренних вызовов
+CREATE OR REPLACE FUNCTION method_code_real(a_code d_code) RETURNS ws.d_sub STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT code_real FROM ws.method WHERE code = $1;
+$_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION method_by_action(a_class_id d_class DEFAULT 0, a_action_id d_id32 DEFAULT 0) RETURNS SETOF method STABLE LANGUAGE 'sql' AS
@@ -223,38 +230,31 @@ $_$
 $_$;
 SELECT pg_c('f', 'error_info', 'Описание ошибки');
 
-
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ref(a_id d_id32, a_item_id d_id32 DEFAULT 0, a_group_id d_id32 DEFAULT 0, a_active_only BOOL DEFAULT TRUE) RETURNS SETOF ref_item STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION error_message_parse(a_code d_errcode, a_param TEXT[]) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_code: Код ошибки
+  -- a_param:  Строка с параметрами
   DECLARE
-    v_code TEXT;
+    v_error_text TEXT;
+    v_param_count INTEGER;
+    v_query_arg TEXT = '';
+    v_i INTEGER = 1;
+    v_join_mes TEXT;
+    v_result TEXT;
   BEGIN
-  RETURN QUERY
-    SELECT *
-    FROM ws.ref_item
-    WHERE ref_id = a_id
-      AND a_item_id IN (id, 0)
-      AND a_group_id IN (group_id, 0)
-      AND (NOT a_active_only OR deleted_at IS NULL)
-      ORDER BY sort
-  ;
-  IF NOT FOUND THEN
-    SELECT INTO v_code code FROM ws.ref WHERE id = a_id;
-    IF NOT FOUND THEN
-      RAISE EXCEPTION '%', ws.e_nodata();
-    END IF;
-    RETURN QUERY EXECUTE 'SELECT * FROM ' || v_code || '($1, $2, $3)' USING a_id, a_item_id, a_group_id;
-  END IF;
-  RETURN;
+    SELECT message INTO v_error_text FROM ws.error_info($1);
+    SELECT INTO v_param_count array_length($2, 1);
+
+    WHILE v_param_count >= v_i LOOP
+      v_query_arg = v_query_arg || ', ' || '''' || $2[v_i] || '''';
+      v_i = v_i+1;
+    END LOOP;
+
+    v_join_mes = 'SELECT ws.sprintf(' || '''' || v_error_text || '''' || v_query_arg || ');';
+
+    execute v_join_mes INTO v_result;
+    RETURN v_result;
   END;
 $_$;
-SELECT pg_c('f', 'ref', 'Значение из справочника ws.ref');
-/* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ref_info(a_id d_id32) RETURNS SETOF ref STABLE LANGUAGE 'sql' AS
-$_$
-  SELECT * FROM ws.ref WHERE id = $1;
-$_$;
-SELECT pg_c('f', 'ref_info', 'Атрибуты справочника');
-
-/* ------------------------------------------------------------------------- */
+SELECT ws.pg_c('f', 'error_message_parse', 'Получение текста ошибки с параметрами');

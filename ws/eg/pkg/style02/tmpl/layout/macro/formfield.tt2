@@ -1,0 +1,19 @@
+[% META
+  description = 'Макросы форм';
+
+MACRO form_field_help   INCLUDE "widget/form_field_help.tt2";
+MACRO form_field_error  INCLUDE "widget/form_field_error.tt2";
+MACRO form_submit_line  INCLUDE "widget/form_submit_line.tt2";
+MACRO form_submit_line_arrow_button  INCLUDE "widget/form_submit_line_arrow_button.tt2";
+MACRO form_field_type_hidden INCLUDE "widget/form_field_type_hidden.tt2";
+MACRO form_field_type_date INCLUDE "widget/form_field_type_date.tt2";
+MACRO form_field_type_date2 INCLUDE "widget/form_field_type_date2.tt2";
+MACRO form_field_type_text INCLUDE "widget/form_field_type_text.tt2";
+MACRO form_field_type_checkbox INCLUDE "widget/form_field_type_checkbox.tt2";
+MACRO form_field_type_textarea INCLUDE "widget/form_field_type_textarea.tt2";
+MACRO form_field_type_radiobutton INCLUDE "widget/form_field_type_radiobutton.tt2";
+MACRO form_field_type_select INCLUDE "widget/form_field_type_select.tt2";
+MACRO yes_no INCLUDE "widget/yes_no.tt2";
+MACRO setting_table INCLUDE "widget/setting_table.tt2";
+
+%]

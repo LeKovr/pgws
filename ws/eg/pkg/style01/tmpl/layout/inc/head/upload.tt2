@@ -1,0 +1,18 @@
+[%
+  meta.top_headers.push(
+    "/js/external/ui/jquery.ui.core.js"
+    "/js/external/ui/jquery.ui.widget.js"
+    "/js/external/ui/jquery.ui.progressbar.js"
+
+    "/css/$TMPL_UI_THEME/jquery-ui.css"
+    "/css/$TMPL_UI_THEME/jquery.ui.theme.css"
+    "/css/$BASE_LAYOUT/jquery-ui.theme.pgws.css"
+    "/js/external/addon/jquery.form.js"
+    "/css/$BASE_LAYOUT/jquery-ui.upload.pgws.css"
+    "/js/$BASE_LAYOUT/pgws-upload.jquery.js"
+    "/js/external/core/jquery.fileupload.js"
+    "/css/external/jquery.fileupload-ui.css"
+    "/js/external/core/bootbox.js"
+  );
+
+%]

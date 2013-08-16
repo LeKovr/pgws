@@ -25,7 +25,7 @@
     upload_aggregate_form_field   _size   "$upload_file_size";
 
     # Pass matching fields from client to backend
-    upload_pass_form_field        "^(anno|sid|id)$";
+    upload_pass_form_field        "^(anno|code|sid|id)$";
 
     # в случае возникновения этих ошибок файлы будут удалены
     upload_cleanup 400 404 405 413 499 500-505;

@@ -13,7 +13,7 @@
     controlGroup_end;
     %]
     <div class="form-actions">
-      [% btn(type='submit', name='Get page',id = "myB3", onclick="return form3send()"); %]
+      [% btn(type='submit', name='Get page',id = "myB3", onclick="return PGWS.form3send()"); %]
       </div>
   </fieldset>
   [%
@@ -25,19 +25,23 @@
 meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
+if (PGWS.var === undefined) { PGWS.var = {}; }
+PGWS.var.example3 = {
+  option3 : {statusBlock: '#form3_status'}
+};
 $('#form3_result').hide();
 $('#form3_status').hide();
-var option3 = {statusBlock: '#form3_status'};
-function form3send() {
+
+PGWS.form3send = function() {
   $('#form3_result').text('&nbsp;');
-  api_form('ws.page_by_code', '#form3', form3ok, form3err, option3);
+  api_form('ws.page_by_code', '#form3', PGWS.form3ok, PGWS.form3err, PGWS.var.example3.option3);
   return false;
 };
-var form3ok = function(formid, res) {
+PGWS.form3ok = function(formid, res) {
   $(formid + '_result').html( '<a href="[% req.prefix %]/'+res.req+'[% session.sid_arg %]">'+res.name+'</a>');
   successAlertBlocks(formid);
 };
-var form3err = function(formid, res) {
+PGWS.form3err = function(formid, res) {
   var mess = '';
   $(res.result.error).each(function(i){
     mess += '<p>' + this.message + '</p>';

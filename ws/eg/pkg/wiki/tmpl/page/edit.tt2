@@ -126,13 +126,13 @@ div_begin(class='tabbable');
                 this;
                 input(type='hidden', name='keywords', value=this);
                l("&nbsp;");
-               %]<a href='#' onClick='delThis(this); return false;' class="edit hide close" title="Удалить">&times;</a>
+               %]<a href='#' onClick='PGWS.delThis(this); return false;' class="edit hide close" title="Удалить">&times;</a>
             [% div_end;
              END; 
             div_end;
             div_begin(class='div_button');
             span(class='editable', text=input(id='inputnewkey', class='edit hide span1'));
-            btn(onclick='addWord()', class='edit hide', name=l("Добавить новое ключевое слово"));
+            btn(onclick='PGWS.addWord()', class='edit hide', name=l("Добавить новое ключевое слово"));
           div_end;
           controlGroup_end;
         div_end;%]
@@ -189,151 +189,155 @@ meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
 
-var links = [[% IF doc_id %]['Атрибуты','p-attr'],[% END; %]['Редактор','p-edit'],['Просмотр','wikibody','review'],['Изменения','p-diff','review'],['HTML','p-src','review'],['[% save_name %]','','saveTab']];
+if (PGWS.var === undefined) { PGWS.var = {}; }
 
-var html='<ul class ="nav nav-tabs" data-spy="affix" class="affix-top" data-offset-top="200">';
-var content='';
-var index = location.href.indexOf('#');
-$(links).each(function(i){
+PGWS.var.edit = {
+    links : [[% IF doc_id %]['Атрибуты','p-attr'],[% END; %]['Редактор','p-edit'],['Просмотр','wikibody','review'],['Изменения','p-diff','review'],['HTML','p-src','review'],['[% save_name %]','','saveTab']],
+    html: '<ul class ="nav nav-tabs" data-spy="affix" class="affix-top">',
+    index: location.href.indexOf('#'),
+    wikiChanged: 0,
+    msg_created : '[% l("Документ создан") %]',
+    msg_updated : '[% l("Документ изменен") %]',
+    view_name  	: '[% l("Актуальная версия") %]',
+    view_path   : '[% view_pathname %]',
+    page_html   : '[% l("нет данных") %]',
+    page_diff   : '[% l("нет данных") %]',
+    acl_wikisave : [% can_do %], //права на сохранение
+    open_editable : 1
+};
+
+
+$(PGWS.var.edit.links).each(function(i){
   var saveClass='';
   if (typeof(this[2]) != "undefined"){
     saveClass = ' '+this[2];
   };
-  if(index<0 && i == 0){
-    html+='<li class="active'+saveClass+'"><a class="'+(saveClass.length>0 ? '' : 'ajax ')+'active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+  if(PGWS.var.edit.index<0 && i == 0){
+    PGWS.var.edit.html+='<li class="active'+saveClass+'"><a class="'+(saveClass.length>0 ? '' : 'ajax ')+'active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
     $('#'+this[1]).addClass('active');
   return;
   }
-  if(index>=0){
-    if(this[1] == location.href.substring(index+1)){
-      html+='<li class="active'+saveClass+'"><a class="'+(saveClass.length>0 ? '' : 'ajax ')+'active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+  if(PGWS.var.edit.index>=0){
+    if(this[1] == location.href.substring(PGWS.var.edit.index+1)){
+      PGWS.var.edit.html+='<li class="active'+saveClass+'"><a class="'+(saveClass.length>0 ? '' : 'ajax ')+'active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
     $('#'+this[1]).addClass('active');
       return;
     }
   }
-  html+='<li'+(saveClass.length>0 ? ' class='+saveClass : '')+'><a '+(saveClass.length>0 ? '' : 'class="ajax"')+' href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+  PGWS.var.edit.html+='<li'+(saveClass.length>0 ? ' class='+saveClass : '')+'><a '+(saveClass.length>0 ? '' : 'class="ajax"')+' href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
 });
-html+='</ul>';
-$('#main').html(html);
-[% #// TODO: добавить вкладкам onClick="return formSend('main', '[% save_method % ]', false)"
+PGWS.var.edit.html+='</ul>';
+$('#main').html(PGWS.var.edit.html);
+[% #// TODO: добавить вкладкам onClick="return PGWS.formSend('main', '[% save_method % ]', false)"
 #// false - отключает переход на следующую вкладку при выставленном чекбоксе
 %]
 /* ------------------------------------------------------------------------- */
 // Управление вкладками
-var wikiChanged = 0 ;
-window.PGWS.tabSelected = function(objActive){
+PGWS.tabSelected = function(objActive){
 if(!$(objActive).parent().hasClass("saveTab")){
   $(".ajax").removeClass("active");
   $(".ajax").parent('li').removeClass("active");
   $(objActive).addClass("active");
   $(objActive).parent('li').addClass("active");
   $('.tab-content').find('.tab-pane').removeClass('active');
-  index = $(objActive).attr('href').indexOf('#');
-  $('#' + $(objActive).attr('href').substring(index+1)).addClass('active');
-  if(wikiChanged){
-      formSend('main', 'doc.format');
-      wikiChanged = 0
+  PGWS.var.edit.index = $(objActive).attr('href').indexOf('#');
+  $('#' + $(objActive).attr('href').substring(PGWS.var.edit.index+1)).addClass('active');
+  if(PGWS.var.edit.wikiChanged){
+      PGWS.formSend('main', 'doc.format');
+      PGWS.var.edit.wikiChanged = 0
     }
   }else{
-    formSend('main', '[% save_method %]', true);
+    PGWS.formSend('main', '[% save_method %]', true);
   }
 };
 
 /* ------------------------------------------------------------------------- */
 // Инициализация вкладки
 
-if (window.PGWS === undefined) { window.PGWS = {}; }
-window.PGWS.page = {
+PGWS.page = {
   titleSuffix: '[% resp.title _ " - " _ our_title %]',
 };
-
-window.PGWS.tabContentEvents = function(obj) {
-
-};
-
 /* ------------------------------------------------------------------------- */
 // Инициализация основной страницы
 
-var initAjaxUrl = function(){
+PGWS.initAjaxUrl = function(){
   $('.ajax').ajaxUrl({
-    onSuccess:  window.PGWS.tabSelected,
-    titleSuffix: window.PGWS.page.titleSuffix,
+    onSuccess:  PGWS.tabSelected,
+    titleSuffix: PGWS.page.titleSuffix,
     classMenuItemActive:'.active'
   });
 };
 
 $(document).ready(function(){
-  initAjaxUrl();
-  window.PGWS.tabContentEvents('');
+
+  $('.nav-tabs').affix({
+    offset: $('.nav-tabs').position()
+  });
+
+  PGWS.initAjaxUrl();
   $('textarea[name=src]').bind('input',function(){ 
-    wikiChanged = 1; 
+    PGWS.var.edit.wikiChanged = 1; 
     $('.review').removeClass('disabled');
     $('.saveTab').removeClass('disabled');
     $('.review a').addClass('ajax');
     $('.saveTab a').addClass('ajax');
-    initAjaxUrl();
+    PGWS.initAjaxUrl();
   });
   $('.review').addClass('disabled');
   $('.saveTab').addClass('disabled');
   $('.disabled').find('a').click(function(e){return false;});
 });
 
-var msg_created = '[% l("Документ создан") %]';
-var msg_updated = '[% l("Документ изменен") %]';
-var view_name   = '[% l("Актуальная версия") %]';
-var view_path   = '[% view_pathname %]';
 
-var page_html   = '[% l("нет данных") %]';
-var page_diff   = '[% l("нет данных") %]';
 
-function toggleChk(b,idx) {
+PGWS.toggleChk = function(b,idx) {
   c=$("#is_view" + idx);
   c.attr("checked", $(b).attr("checked"));
   return true;
-}
+};
 
-function formSend(id, action, t) {
+PGWS.formSend = function(id, action, t) {
   $('#status').text('');
   $('div.error').text('');
   var form_id = '#' + id + '-form';
   if (t){
-    api_form(action, form_id, formOK2, formErr);
+    api_form(action, form_id, PGWS.formOK2, PGWS.formErr);
   }else{
-    api_form(action, form_id, formOK, formErr);
+    api_form(action, form_id, PGWS.formOK, PGWS.formErr);
   }
   return false;
 };
-function delThis(l){        //функция для удаления слова из ключевой строки
+PGWS.delThis = function(l){        //функция для удаления слова из ключевой строки
   $(l).parent().remove();
 };
-function addWord(){       //добавляем новое слово в ключевую строку
+PGWS.addWord = function(){       //добавляем новое слово в ключевую строку
   obj =  $("#inputnewkey");
   if($(obj).val().trim().length>0){
-    $("#keyword").html($("#keyword").html()+constructorDivKeyWord($(obj).val()));
+    $("#keyword").html($("#keyword").html()+PGWS.constructorDivKeyWord($(obj).val()));
     $(obj).val("")
   }
 };
 
-function constructorDivKeyWord(param){
-  return "<div style='float:left;margin-left:5px;margin-right:5px;padding-top:5px;'>"+param+"<input type=\"hidden\" name=\"keywords\" value=\""+param+"\"/>&nbsp;<a href='#' onClick='delThis(this); return false;' class='edit hide close' title='Удалить' style='display:inline;'>&times;</a></div>";
+PGWS.constructorDivKeyWord = function(param){
+  return "<div style='float:left;margin-left:5px;margin-right:5px;padding-top:5px;'>"+param+"<input type=\"hidden\" name=\"keywords\" value=\""+param+"\"/>&nbsp;<a href='#' onClick='PGWS.delThis(this); return false;' class='edit hide close' title='Удалить' style='display:inline;'>&times;</a></div>";
 };
-var formOK2 = function(formid, res) {
+PGWS.formOK2 = function(formid, res) {
   window.location.href = '[% view_pathname %]';
 };
-var formOK = function(formid, res) {
+PGWS.formOK = function(formid, res) {
   if (typeof res == 'number') {
     // redirect to view page
-    var m = (res == 1)?msg_created:msg_updated;
+    var m = (res == 1)?PGWS.var.edit.msg_created:PGWS.var.edit.msg_updated;
     $('#status').text(m);
-    // window.location.pathname = view_path;
+    // window.location.pathname = PGWS.var.edit.view_path;
     window.location.reload(false);
   } else {
     document.title = res.name;
-    page_html = res.html;
+    PGWS.var.edit.page_html = res.html;
     page_diff = res.diff;
-    $('#html-src').text(page_html).each(function(i, e) {hljs.highlightBlock(e, null)});
+    $('#html-src').text(PGWS.var.edit.page_html).each(function(i, e) {hljs.highlightBlock(e, null)});
     $('#diff-src').text(res.diff).each(function(i, e) {hljs.highlightBlock(e, null)});
-    $('#wikibody').html(page_html).each(function(i, e) {hljs.highlightBlock(e, null)});
+    $('#wikibody').html(PGWS.var.edit.page_html).each(function(i, e) {hljs.highlightBlock(e, null)});
     PGWS.wikiStyle('wikibody');
     if ($('#is_view0').is(':checked')) {
       $('.nav-tabs').find('.active').next().children("a.ajax").click();
@@ -342,44 +346,26 @@ var formOK = function(formid, res) {
   }
 };
 
-var saveAttr = function(container, cbSaveSuccess, cbFormDisable, cbFormEnable) {
+PGWS.saveAttr = function(container, cbSaveSuccess, cbFormDisable, cbFormEnable) {
   api_form( 'wiki.doc_update_attr',  '#attr-form',  function(){
     cbFormEnable(container);
     cbSaveSuccess(container);
   });
 };
 
-var formErr = function(formid, res) {
+PGWS.formErr = function(formid, res) {
   if (res.result && res.result.error) {
     $('#errors').text(res.result.error[0].message);
   }
-$('#status').html('<a href="' + view_path + '">'+ view_name +'</a>');
+$('#status').html('<a href="' + PGWS.var.edit.view_path + '">'+ PGWS.var.edit.view_name +'</a>');
   $('html, body').scrollTop($("#errors").offset().top);
 };
 
-var animation_complete = function(t) {
-  new_height = $(activeItem).children("div.acc-body").height();
-  $("#accordion>div.acc-panel>p.acc-nav").height(new_height > 400?new_height:400 + 10);
-}
-
-var acl_wikisave = [% can_do %]; //права на сохранение
-
-
-var renderTabs = function(){
-    if ($('.tab-pane').filter('.active').attr('id') == 'wikibody') {
-      $('.tab-pane').filter('.active').html(page_html);
-    } else if ($('.tab-pane').filter('.active').attr('id') == 'p-src') {
-      $('.tab-pane').filter('.active').children("#html-src").text(page_html);
-    } else if ($('.tab-pane').filter('.active').attr('id') == 'p-diff') {
-      $('.tab-pane').filter('.active').html(page_diff);
-    }
-  };
-
 $(document).ready(function(){
- if (acl_wikisave){
+ if (PGWS.var.edit.acl_wikisave){
     $(".button_change").show();
   }
-  if(!acl_wikisave){
+  if(!PGWS.var.edit.acl_wikisave){
     $("#main").hide();
   }
 });
@@ -481,13 +467,12 @@ $(document).ready(function(){
   /*********************************
   ******formEV инициализация********
   *********************************/
-  var hideText = function(c){
+  PGWS.hideText = function(c){
     $(c).find('input').hide();
   };
-  open_editable=1;
-  $(".attrClass").formEV({onSubmit:saveAttr,onViewReady:hideText});      
+  $(".attrClass").formEV({onSubmit:PGWS.saveAttr,onViewReady:PGWS.hideText});      
   $(document).ready(function(){
-  if(open_editable){
+  if(PGWS.var.edit.open_editable){
     $('.edit_on').click();
   }
   });

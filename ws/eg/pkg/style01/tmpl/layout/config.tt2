@@ -1,0 +1,17 @@
+[% META
+  description = 'Глобальные настройки'
+%][%
+
+  TMPL_LAYOUT       = 'style01';
+  TMPL_UI_THEME     = 'external/ui/smoothness';
+  BASE_LAYOUT       = 'style01';
+
+  PROJECT_LOGO      = "/img/$TMPL_LAYOUT/pgws-logo.png";
+  PROJECT_ANNO      = "PGWS. Postgresql WebServices";
+  PROJECT_TITLE     = l("PGWS");
+
+  # IF session.sid
+    # для тестов layout покажем авторизованным другой вариант
+    # resp.layout = 'grey';
+  # END
+%]

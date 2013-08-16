@@ -40,7 +40,7 @@ SELECT pg_c('r', 'compile_errors', 'Буфер хранения ошибок н�
 CREATE TABLE pkg_log (
   id          d_id PRIMARY KEY
 , code        d_code NOT NULL DEFAULT 'ws'
-, ver         TEXT NOT NULL DEFAULT '000'
+, schemas     name[] NOT NULL
 , op          t_pkg_op
 , log_name    TEXT
 , user_name   TEXT
@@ -53,7 +53,7 @@ CREATE TABLE pkg_log (
 SELECT pg_c('r', 'pkg_log', 'Журнал изменений пакетов PGWS')
 , pg_c('c', 'pkg_log.id',         'ID изменения')
 , pg_c('c', 'pkg_log.code',       'Код пакета')
-, pg_c('c', 'pkg_log.ver',        'Версия пакета (reserved)')
+, pg_c('c', 'pkg_log.schemas',    'Список схем, созданных пакетом')
 , pg_c('c', 'pkg_log.op',         'Код операции (init, drop, erase, make)')
 , pg_c('c', 'pkg_log.log_name',   '$LOGNAME из сессии пользователя в ОС')
 , pg_c('c', 'pkg_log.user_name',  '$USERNAME из сессии пользователя в ОС')
@@ -70,7 +70,7 @@ ALTER TABLE pkg_log ALTER COLUMN id SET DEFAULT NEXTVAL('pkg_id_seq');
 CREATE TABLE pkg (
   id          d_id NOT NULL UNIQUE
 , code        d_code PRIMARY KEY -- для REFERENCES
-, ver         TEXT
+, schemas     name[]
 , op          t_pkg_op
 , log_name    TEXT
 , user_name   TEXT
@@ -82,7 +82,7 @@ CREATE TABLE pkg (
 SELECT pg_c('r', 'pkg', 'Актуальные (последние) изменения пакетов PGWS')
 , pg_c('c', 'pkg.id',         'ID изменения')
 , pg_c('c', 'pkg.code',       'Код пакета')
-, pg_c('c', 'pkg.ver',        'Версия пакета (reserved)')
+, pg_c('c', 'pkg.schemas',    'Список схем, созданных пакетом')
 , pg_c('c', 'pkg.op',         'Код крайней операции (init, drop, erase, make)')
 , pg_c('c', 'pkg.log_name',   '$LOGNAME из сессии пользователя в ОС')
 , pg_c('c', 'pkg.user_name',  '$USERNAME из сессии пользователя в ОС')

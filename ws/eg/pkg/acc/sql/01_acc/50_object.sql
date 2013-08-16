@@ -91,7 +91,7 @@ $_$
     ;
     RAISE DEBUG 'LINK ID = %', v_link_id;
     RETURN QUERY
-      SELECT
+      SELECT DISTINCT
         acl_id::ws.d_acl
         FROM wsd.permission_acl p
           JOIN wsd.role_permission rp USING (perm_id)

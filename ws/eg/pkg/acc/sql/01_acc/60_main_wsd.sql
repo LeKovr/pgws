@@ -56,16 +56,16 @@ $_$;
 SELECT pg_c('f', 'validation_email_trigger', 'Проверка валидности email');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION validation_mobile_phone_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION validation_phone_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
   BEGIN
 
-    IF NEW.value !~ E'^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}$' THEN
+    IF NEW.value !~ E'^((8|\\+7)[\\- ]?)?(\\(?\\d{3,5}\\)?[\\- ]?)?[\\d\\- ]{5,10}$' THEN
       RAISE EXCEPTION '%', ws.perror_str(acc.const_error_mobile_phone_validation(), 'value', NEW.value);
     END IF;
 
     RETURN NEW;
   END;
 $_$;
-SELECT pg_c('f', 'validation_mobile_phone_trigger', 'Проверка валидности мобильного телефона');
+SELECT pg_c('f', 'validation_phone_trigger', 'Проверка валидности номера телефона');
 

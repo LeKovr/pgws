@@ -1,0 +1,13 @@
+[% META
+  description = 'Пагинация на странице';
+  
+  # Пример вызова
+  # PROCESS 'macro/pages.tt2';
+
+PROCESS "widget/pages_define.tt2";
+MACRO pages_setup(hrefName, steps) INCLUDE "widget/pages_setup.tt2";
+MACRO pages_list INCLUDE "widget/pages_list.tt2";
+# TODO: Перевести все страницы на использование макроса
+MACRO pages_pager(count) INCLUDE "widget/pages_pager.tt2";
+
+%]

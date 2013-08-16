@@ -2,7 +2,7 @@
   description = 'Страница пользователя';
 
   acc_id = page.args.0;
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = acc_id, active_code=page.code;
+  INCLUDE "inc/page_siblings.tt2", code = 'account.id', id = acc_id, active_code=page.code;
 %][%
   meta.head.api = 1;
 
@@ -29,7 +29,7 @@
       span(id='form1_value_err', class='help-inline');   
     controlGroup_end;
 
-    btn(id='send', onclick='return contact_add()', class='btn-primary', name='Сохранить');
+    btn(id='send', onclick='return PGWS.contact_add()', class='btn-primary', name='Сохранить');
 
     alert_begin(id='form1_result');alert_end;
     alert_begin(id='form1_status'); alert_end;
@@ -38,29 +38,8 @@
   INCLUDE 'block/acc/account_contact.tt2', id = acc_id, all = 't';
   div_end;
 
-  %]<div class='well form-horizontal'>[%
-    %]<form id="form2" onsubmit="return false"><legend>Изменить пароль</legend>
-    <fieldset>[%
-      div_begin(offset=2);
-        span(id='form2___err', class='red form2err');
-      div_end;
-
-      controlGroup_begin(label = 'Введите пароль');
-      input(type='hidden' , name = 'id', value = acc_id);
-      input(class='input-xlarge', name='psw_1');
-      span(id='form2_psw_1_err', class='help-inline');
-      controlGroup_end;
-
-      controlGroup_begin(label = 'Повторите ввод пароля');
-      input(class='input-xlarge', name='psw_2');
-      span(id='form2_psw_2_err', class='help-inline');
-      controlGroup_end;
-
-      btn(id='send' onclick='return psw_change();', class='btn-primary', name='Сохранить');
-      alert_begin(id='form2_result');alert_end;
-      alert_begin(id='form2_status');alert_end;
-    %]</fieldset>
-    </form>[%
+  %]<div class='well form-horizontal'> [%
+    INCLUDE block/acc/psw_change.tt2;
   div_end;
 
   %]<div class='well form-horizontal'>[%
@@ -81,7 +60,6 @@ row_end;
 
 <script type="text/javascript">
 //<![CDATA[
-
 $(document).ready(function(){
   $('#form1_result').hide();
   $('#form1_status').hide();
@@ -90,37 +68,34 @@ $(document).ready(function(){
   $('#select').change(function(){if (this.value != 0) { this.form.a.value = this.value }});
 });
 
-var form1ok = function(formid, res) {
+PGWS.form1ok = function(formid, res) {
   $(formid + ' > fieldset > div.control-group').removeClass('error');
   $(formid + '_result').text( 'result: ' + res );
-  successAlertBlocks(formid);
+  PGWS.successAlertBlocks(formid);
 };
 
-var form1err = function(formid, res) {
+PGWS.form1err = function(formid, res) {
   var mess = '';
   $(formid + ' > fieldset > div.control-group').removeClass('error');
-  $(res.result.error).each(function(i){
-    $(formid).find('[name="'+this.id+'"]').parents('div.control-group').addClass('error');
-    mess += '<p>' + this.message + '</p>';
-  });
-  errorAlertBlocks(formid);
+  if (res.error) {
+    $(formid + '_status').text( res.error.message );
+  } else {
+    $(res.result.error).each(function(i){
+      $(formid).find('[name="'+this.id+'"]').parents('div.control-group').addClass('error');
+      mess += '<p>' + this.message + '</p>';
+    });
+  }
+  PGWS.errorAlertBlocks(formid);
   $(formid + '_result').hide();
 }
 
-var contact_add = function(){
+PGWS.contact_add = function(){
   var formOptions = {statusBlock: '#form1_status'};
-  api_form('account.contact.add','#form1', form1ok, form1err, formOptions);
+  api_form('account.contact.add','#form1', PGWS.form1ok, PGWS.form1err, formOptions);
   return false;
 };
 
-var psw_change = function(){
-  $('#form2___err').text('');
-  var formOptions = {statusBlock: '#form2_status'};
-  api_form('account.password.change','#form2', form1ok, form1err, formOptions);
-  return false;
-};
-
-var successAlertBlocks = function(formid){
+PGWS.successAlertBlocks = function(formid){
     $(formid + '_result').removeClass('alert-error');
     $(formid + '_result').addClass('alert-success');
     $(formid + '_result').show();
@@ -128,7 +103,7 @@ var successAlertBlocks = function(formid){
     $(formid + '_status').addClass('alert-success');
     $(formid + '_status').show();
 };
-var errorAlertBlocks = function(formid){
+PGWS.errorAlertBlocks = function(formid){
     $(formid + '_result').removeClass('alert-success');
     $(formid + '_result').addClass('alert-error');
     $(formid + '_result').show();

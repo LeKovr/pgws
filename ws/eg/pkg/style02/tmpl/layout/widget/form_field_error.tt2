@@ -1,0 +1,5 @@
+[% META
+  description = 'Область вывода ошибки валидации значения'
+%]<div class="error">
+  <div id="[% form %]_[% field %]_err" class="error_msg"></div>
+</div>

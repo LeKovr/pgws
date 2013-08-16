@@ -1,0 +1,6 @@
+[% META
+  description = 'Завершение формы для страницы с группой форм'
+%]
+	<div id="[% form %]___err" class="error_msg"></div>
+	</form>
+</div>

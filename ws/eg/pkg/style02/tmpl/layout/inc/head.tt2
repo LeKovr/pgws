@@ -1,0 +1,42 @@
+[%
+  meta.top_headers = [];
+  %]
+[%
+  master_css = session.css_tag # пользователь авторизован и задал скин в настройках
+    ? "/css/pgws/skin/${session.css_tag}.css"
+    : '/css/pgws_skin.css'
+  ;
+  meta.top_headers.push(
+    "$master_css"
+    "/js/external/core/bootstrap.js"
+   );
+  meta.head.jquery = 1;
+  # для переключения стилей на любой странице
+  meta.head.cookie = 1;
+
+  INCLUDE "inc/head_deps.tt2";
+
+%]
+<link href="[% PROJECT_ICO %]"     rel="shortcut icon" />
+<script type="text/javascript">
+//<![CDATA[
+  if (window.PGWS === undefined) { window.PGWS = {}; }
+//]]>
+</script>
+[%
+  FOREACH i IN meta.head;
+    INCLUDE "inc/head/${i.key}.tt2";
+  END;
+  x=meta.top_headers.import(meta.html_headers);
+  FOREACH h IN meta.top_headers;
+    v = h.split(' ');
+    href = v.0;
+    NEXT IF temp.exists(href);
+    NEXT IF h.search('\.js'); # подключаем внизу
+    temp.$href = 1;
+    lng = v.1 ? " charset=\"$v.1\"" : '';
+    f=(h.search('\.css') ? '<link href=%-60s type="text/css" rel="stylesheet" />' : '<script src=%-60s type="text/javascript"'_ lng _'></script>') _ "\n";
+    FILTER format(f); '"' _ href _ '"'; END;
+  END;
+
+%]

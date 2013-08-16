@@ -34,8 +34,10 @@ foreach my $name (@ARGV) {
     $value = $cfg->{'ACTIVE'}{'DB_CONNECT'};
     $value =~ s/dbi:pg://i;
     $value =~ s/;/ /g;
-  } else {
+  } elsif ($name eq 'DAEMON_USER' or $name eq 'PACKAGES') {
     $value = $cfg->{'SHELL'}{$name};
+  } else {
+    $value = $cfg->{'ACTIVE'}{$name};
   }
   print "$value\n";
 }

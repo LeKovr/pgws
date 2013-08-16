@@ -10,9 +10,9 @@
   
   members = api('team.account_attr', 'id' => team_id);
   
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;
+  INCLUDE "inc/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;
 
-  table_begin(class='table-bordered table-striped');
+  table_begin();
     tr(list = ['Сотрудник', 'Роль', 'Статус', 'Последнее посещение'], use_th=1);
     %]<tbody>[%
     FOR account IN members;

@@ -63,7 +63,7 @@ SELECT acc.team_account_del(:TEAM, :ACC);
 /* ------------------------------------------------------------------------- */
 -- Пример регистрации клиента!
 -- Регистрация проводится в два этапа: 
--- 1 этап это вставка в таблицу acc.account, без заполнения полей name, city, sex...
+-- 1 этап это вставка в таблицу acc.account, без заполнения полей name, city, gender...
 -- 2 этап это добавление значений свойств в wsd.prop_value
 -- Примечание: регистрация команды проводится по аналогичному алгоритму.
 
@@ -74,13 +74,15 @@ INSERT INTO wsd.account (login, psw) VALUES ('reg_test', '111111');
 -- end: first step
 
 -- begin: second step
-SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.account WHERE login = 'reg_test'), 'abp.name', 'registration');
-SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.account WHERE login = 'reg_test'), 'abp.geo.city', 'city_reg');
-SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.account WHERE login = 'reg_test'), 'abp.person.sex', 'male');
+SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.account WHERE login = 'reg_test'), 'abp.name.short', 'registration');
+SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.account WHERE login = 'reg_test'), 'abp.person.gender', 'male');
 -- end: second step
 
 SELECT  status_id,login,name,is_psw_plain,is_ip_checked FROM wsd.account where name = 'registration';
 
 /* ------------------------------------------------------------------------- */
 SELECT acc.account_password_change(-1, 'Test111', 'Test111');
+SELECT psw FROM wsd.account WHERE id=-1;
+
+SELECT acc.account_password_change_own(-1, 'Test111', 'Test222', 'Test222');
 SELECT psw FROM wsd.account WHERE id=-1;

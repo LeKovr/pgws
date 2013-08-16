@@ -457,5 +457,33 @@ $_$
     WHERE is_active
   ;
 $_$;
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION progress (a__sid d_sid, a_id d_id) RETURNS t_hashtable STABLE LANGUAGE 'plpgsql' AS
+$_$
+  DECLARE
+    v_i INTEGER;
+    r ws.t_hashtable;
+  BEGIN
+    SELECT INTO r.id
+      status_id
+      FROM wsd.job
+      WHERE id = a_id
+        AND created_by = - a__sid::integer
+    ;
+    IF NOT FOUND THEN
+      RETURN r;
+    ELSIF r.id = '12' THEN
+      SELECT INTO r.name
+        regexp_replace(exit_text,'(^FCGI.+error:|at lib/PGWS.+$)','','g')
+        FROM job.srv_error
+        WHERE job_id = a_id
+      ;
+    ELSIF r.id = '10' THEN
+        r.name := 'Ok';
+    END IF;
+    RETURN r;
+  END;
+$_$;
 
+SELECT pg_c('f', 'progress', 'Атрибуты выполнения задачи диспетчером JOB');
 /* ------------------------------------------------------------------------- */

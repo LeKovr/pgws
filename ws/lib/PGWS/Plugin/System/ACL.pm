@@ -41,13 +41,20 @@ sub check {
   my $class = $self->class_list->{$class_id};
 
   my @ids;
+  my $res = {};
   # выбрать только те id, которые нужны для идентификации экземпляра
   if ($class->{'id_count'}) {
     for my $i (0..$class->{'id_count'} - 1) {
-      push @ids, shift @ids_all;
+      my $id = shift @ids_all;
+      unless (defined($id)) {
+        # нет id => нет объекта
+        $res->{'result'} = { 'data' => 0 };
+        $meta->stage_out;
+        return $res;
+      }
+      push @ids, $id;
     }
   }
-  my $res = {};
 
   # получить статус экземпляра (class_status)
   my $tag = $class->{'code'}.$self->dbc->config('be.def_suffix.status');

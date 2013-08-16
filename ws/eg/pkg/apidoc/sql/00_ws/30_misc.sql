@@ -22,23 +22,39 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.register_pages_apidoc(
-  a_menu_parent ws.d_code -- код страницы-предка
-, a_link_prefix ws.d_path -- префик адресов страниц
-, a_menu_sort ws.d_sort DEFAULT NULL -- сортировка в списке страниц
-) RETURNS VOID LANGUAGE 'sql' AS
+  a_menu_parent ws.d_code
+, a_class_id ws.d_class
+, a_action_id ws.d_id32
+, a_link_prefix ws.d_path
+, a_menu_sort ws.d_sort DEFAULT NULL
+, a_is_api_used BOOLEAN DEFAULT TRUE
+) RETURNS VOID LANGUAGE 'plpgsql' AS
 $_$
+-- a_class_id: ID класса
+-- a_action_id: ID акции
+-- a_menu_parent: код страницы-предка
+-- a_link_prefix: префикc адресов страниц
+-- a_menu_sort: сортировка в списке страниц
+-- a_is_api_used: использовать API
+BEGIN
+
   INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
   /*  ($1,             ,           2, 1, $3,   NULL,               NULL,             'Описание API')
   ,*/ 
-    ('api.map',         $1,        2, 1, $3 + 1,    $2 || '/pagemap$',  'apidoc/pagemap', 'Карта сайта')
-  , ('api.class',       $1,        2, 1, $3 + 2,    $2 || '/class$',    'apidoc/class',   'Классы объектов')
-  , ('api.smd',         $1,        2, 1, $3 + 3,    $2 || '/smd$',      'apidoc/smd',     'Методы API')
-  , ('api.smd1',        $1,        1, 2, $3 + 4,    $2 || '/smd1$',     'apidoc/smd1',    'Методы API (JS)')
-  , ('api.xsd',         $1,        2, 1, $3 + 5,    $2 || '/xsd$',      'apidoc/xsd',     'Типы данных')
-  , ('api.perm',        $1,        2, 1, $3 + 6,    $2 || '/perm$',     'apidoc/perm',    'Разрешения')
-  , ('api.role',        $1,        2, 1, $3 + 7,    $2 || '/role$',     'apidoc/role',    'Роли')
-  , ('api.class.single','api.class',  2, 1,         NULL, $2 || '/class/:i$', 'apidoc/class', 'Описание класса')
+    ('api.map',   a_menu_parent,  a_class_id, a_action_id, a_menu_sort + 1, a_link_prefix || '/pagemap$',  'apidoc/pagemap', 'Карта сайта')
+  , ('api.class', a_menu_parent,  a_class_id, a_action_id, a_menu_sort + 2, a_link_prefix || '/class$',    'apidoc/class',   'Классы объектов')
+  , ('api.smd',   a_menu_parent,  a_class_id, a_action_id, a_menu_sort + 3, a_link_prefix || '/smd$',      'apidoc/smd',     'Методы API')
+  , ('api.xsd',   a_menu_parent,  a_class_id, a_action_id, a_menu_sort + 5, a_link_prefix || '/xsd$',      'apidoc/xsd',     'Типы данных')
+  , ('api.class.single', 'api.class',  a_class_id, a_action_id,       NULL, a_link_prefix || '/class/:i$', 'apidoc/class', 'Описание класса')
  ;
+
+  IF a_is_api_used THEN
+    -- эта страница работает только при доступном API
+    INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
+      ('api.smd1',a_menu_parent,  a_class_id, a_action_id, a_menu_sort + 4, a_link_prefix || '/smd1$',     'apidoc/smd1',   'Методы API (JS)')
+    ;
+  END IF;
+END;
 $_$;
 
 /*

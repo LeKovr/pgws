@@ -47,6 +47,12 @@ EOF
 
 cmd=$1
 
+TM_CMD=$(perl $PGWS_ROOT/$PGWS/$PGWS_WS/bin/json2var.pl TM_CMD < $PGWS_ROOT/config.json)
+
+if [[ ! "$TM_CMD" ]] ; then
+  echo "  Service does not configured. Skipping."
+  exit
+fi
 case "$cmd" in
   (start|status|check|restart|reload|stop)
     pgws_run_perl $PGWS/$PGWS_WS/bin/tmd.pl "$@"

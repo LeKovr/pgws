@@ -45,14 +45,14 @@
       {href='#', class='dropdown', classLink='dropdown-toggle', linkparam='data-toggle=\'dropdown\'', name='Количество строк <b class=\'caret\'></b>', content=uldoplist},
     ]); 
   
-    table_begin(class='table-bordered table-striped');
+    table_begin();
       tr(list = ['Название', 'Город', 'Статус', 'Дата регистрации'], use_th=1, thead=1);
       FOREACH t IN teams.rows;
         href = uri_mk(uri(code => 'team.id', id => t.id).req);
         tr(list=["<a href='$href'>$t.name</a>", t.city, t.status_name, t.registration_date]);
       END;
     table_end(tbody=1);
-    INCLUDE "block/$TMPL_LAYOUT/pager.tt2", pageNo = pageNo, count = teams.need_rc, by = by, hrefName = page.req _ '?name=' _ name _ '&';
+    INCLUDE "inc/pager.tt2", pageNo = pageNo, count = teams.need_rc, by = by, hrefName = page.req _ '?name=' _ name _ '&';
   ELSE;
     alert_begin(class="block");
     p(text=l("По заданным параметрам поиска команда не найдена"));

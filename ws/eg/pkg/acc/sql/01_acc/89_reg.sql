@@ -21,6 +21,9 @@
 */
 
 /* ------------------------------------------------------------------------- */
+\set IID ws.const_info_class_id()
+\set SID acc.const_system_class_id()
+
 \set AID acc.const_class_id()       -- account class id
 \set TID acc.const_team_class_id()  -- team class id
 \set RID acc.const_role_class_id()  -- role class id
@@ -30,54 +33,63 @@
 -- INSERT INTO dt (parent_code, code, anno) VALUES (dt_code('ws.d_id32'), pg_cs('d_link'), 'Связь с объектом');
 
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
-  ('system.status',              2, 1, 2, 2, pg_cs('system_status'))
-, ('system.acl',                 2, 1, 2, 6, pg_cs('system_acl'))
-, ('system.role',                2, 1, 2, 7, pg_cs('system_role'))
-, ('system.role_permission',     2, 1, 2, 7, pg_cs('system_role_permission'))
-, ('system.permission_view',     2, 1, 2, 7, pg_cs('system_permission_view'))
-, ('system.permission_role',     2, 1, 2, 7, pg_cs('system_permission_role'))
-, ('system.permission_acl',      2, 1, 2, 7, pg_cs('system_permission_acl'))
-, ('system.class_acl',           2, 1, 2, 7, pg_cs('system_class_acl'))
+  ('system.status',              :IID, 1, 2, 2, pg_cs('system_status'))
+, ('system.acl',                 :IID, 1, 2, 6, pg_cs('system_acl'))
+, ('system.team_link_id',        :IID, 1, 3, 2, pg_cs('system_team_link_id'))
+, ('system.link_id',             :IID, 1, 3, 2, pg_cs('system_link_id'))
+, ('system.role',                :IID, 1, 2, 7, pg_cs('system_role'))
+, ('system.role_permission',     :IID, 1, 2, 7, pg_cs('system_role_permission'))
+, ('system.permission_view',     :IID, 1, 2, 7, pg_cs('system_permission_view'))
+, ('system.permission_role',     :IID, 1, 2, 7, pg_cs('system_permission_role'))
+, ('system.permission_acl',      :IID, 1, 2, 7, pg_cs('system_permission_acl'))
+, ('system.class_permission_acl',:IID, 1, 2, 7, pg_cs('system_class_permission_acl'))
+;
+
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, args_exam) VALUES
+  ('system.ref',                 :SID, 1, 2, 7, 'ws.ref', 'code=' || ws.const_ref_code_timezone())
+, ('system.ref_item',            :SID, 1, 2, 7, 'ws.ref_item', 'code=' || ws.const_ref_code_timezone())
+, ('system.ref_log',             :SID, 1, 2, 7, 'ws.ref_log', 'code=' || ws.const_ref_code_timezone())
 ;
 
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, code_real) VALUES
-  ('account.sid_info',        2, 1, 3, 3, true, 'acc.sid_info')
-, ('account.login',           1, 8, 1, 3, true, 'acc.login')
-, ('account.logout',          1, 2, 1, 2, true, 'acc.logout')
+  ('account.sid_info',        :IID, 1, 3, 3, TRUE, 'acc.sid_info')
+, ('account.login',           :SID, 8, 1, 3, TRUE, 'acc.login')
+, ('account.logout',          :SID, 2, 1, 2, TRUE, 'acc.logout')
 ;
 
 INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
   ('team.profile',     :TID, 1, 3, 3, 'acc.team_profile')
-, ('team.status',         2, 1, 3, 2, 'acc.team_status')
-, ('team.acl',            2, 1, 3, 6, 'acc.team_acl')
-, ('team.team_link_id',   2, 1, 3, 2, 'acc.team_team_link_id')
-, ('team.link_id',        2, 1, 3, 2, 'acc.team_link_id')
-, ('team.by_name',        2, 1, 3, 7, 'acc.team_by_name')
+, ('team.status',      :IID, 1, 3, 2, 'acc.team_status')
+, ('team.acl',         :IID, 1, 3, 6, 'acc.team_acl')
+, ('team.team_link_id',:IID, 1, 3, 2, 'acc.team_team_link_id')
+, ('team.link_id',     :IID, 1, 3, 2, 'acc.team_link_id')
+, ('team.by_name',     :IID, 1, 3, 7, 'acc.team_by_name')
 , ('team.account_attr',:TID, 1, 3, 7, 'acc.team_account_attr')
 , ('team.role',        :TID, 1, 3, 7, 'acc.team_role')
 , ('team.role_number', :TID, 1, 3, 7, 'acc.team_role_number')
 , ('team.permission',  :TID, 1, 3, 7, 'acc.team_permission')
 , ('team.role_members',:TID, 1, 3, 7, 'acc.team_role_members')
-, ('team.lookup',         2, 1, 3, 7, 'acc.team_lookup')
+, ('team.lookup',      :IID, 1, 3, 7, 'acc.team_lookup')
 ;
 
 INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
-  ('account.status',        2, 1, 3, 2, 'acc.account_status')
-, ('account.acl',           2, 1, 3, 6, 'acc.account_acl')
-, ('account.link_id',       2, 1, 3, 2, 'acc.account_link_id')
-, ('account.team_link_id',  2, 1, 3, 2, 'acc.account_team_link_id')
+  ('account.status',      :IID, 1, 3, 2, 'acc.account_status')
+, ('account.acl',         :IID, 1, 3, 6, 'acc.account_acl')
+, ('account.link_id',     :IID, 1, 3, 2, 'acc.account_link_id')
+, ('account.team_link_id',:IID, 1, 3, 2, 'acc.account_team_link_id')
 , ('account.profile',    :AID, 1, 3, 3, 'acc.account_profile')
 , ('account.team',       :AID, 1, 4, 7, 'acc.account_team')
 , ('account.permission', :AID, 1, 4, 7, 'acc.account_permission')
-, ('account.lookup',        2, 1, 4, 7, 'acc.account_lookup')
+, ('account.lookup',     :IID, 1, 4, 7, 'acc.account_lookup')
 , ('account.contact.view',:AID,1, 4, 7, 'acc.account_contact_view')
-, ('account.contact.type',  2, 1, 4, 7, 'acc.account_contact_type_attr')
+, ('account.contact.type',:IID, 1, 4, 7, 'acc.account_contact_type_attr')
 ;
 
 INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, is_write, code_real) VALUES
-  ('account.contact.add',:AID, 1, 1, 2, TRUE, 'acc.account_contact_add')
-, ('account.password.change',:AID, 1, 4, 2, TRUE, 'acc.account_password_change' )
+  ('account.contact.add',         :AID, 1, 1, 2, TRUE, 'acc.account_contact_add')
+, ('account.password.change',     :AID, 3, 1, 2, TRUE, 'acc.account_password_change' )
+, ('account.password.change.own', :AID, 4, 1, 2, TRUE, 'acc.account_password_change_own')
 ;
 /* ------------------------------------------------------------------------- */
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
@@ -91,13 +103,13 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, c
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, realm_code, code_real) VALUES
   ('account.fs_files_add',     :AID, 4, 1, 3, true, ws.const_realm_upload(), 'acc.fs_files_add')
-, ('team.fs_files_add',        :AID, 4, 1, 3, true, ws.const_realm_upload(), 'acc.team_fs_files_add')
+, ('team.fs_files_add',        :TID, 4, 1, 3, true, ws.const_realm_upload(), 'acc.team_fs_files_add')
 ;
 
 INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
-  ('system.prop_attr',          1,    3, 4, 7, 'cfg.prop_attr_system')
-, ('system.prop_owner_attr',    1,    3, 4, 7, 'cfg.prop_owner_attr')
-, ('system.prop_history',       1,    3, 4, 7, 'cfg.prop_history')
+  ('system.prop_attr',          :SID, 3, 4, 7, 'cfg.prop_attr_system')
+, ('system.prop_owner_attr',    :SID, 3, 4, 7, 'cfg.prop_owner_attr')
+, ('system.prop_history',       :SID, 3, 4, 7, 'cfg.prop_history')
 , ('account.prop_abp_attr',     :AID, 2, 4, 7, 'acc.prop_attr_account_abp')
 , ('account.prop_isv_attr',     :AID, 2, 4, 7, 'acc.prop_attr_account_isv')
 , ('account.prop_isv',          :AID, 2, 4, 4, 'acc.prop_account_isv')
@@ -105,10 +117,12 @@ INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VAL
 , ('team.prop_isv_attr',        :TID, 2, 4, 7, 'acc.prop_attr_team_isv')
 
 , ('team.prop_isv_value',       :TID, 2, 3, 3, 'acc.prop_attr_team_isv')
-, ('account.prop_isv_value',    :TID, 2, 3, 3, 'acc.prop_attr_account_isv')
+, ('account.prop_isv_value',    :AID, 2, 3, 3, 'acc.prop_attr_account_isv')
 
 , ('account.prop_history',      :AID, 2, 4, 7, 'acc.prop_history_account')
 , ('team.prop_history',         :TID, 2, 4, 7, 'acc.prop_history_team')
+
+, ('info.prop_def_value',       :SID, 2, 4, 2, 'cfg.prop_default_value')
 ;
 
 /*
@@ -131,6 +145,7 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
 , (acc.const_error_email_validation(),        0, 'введите корректный email')
 , (acc.const_error_mobile_phone_validation(), 0, 'введите корректный номер телефона')
 , (acc.const_error_passwords_match(),         0, 'введенные пароли не совпадают')
+, (acc.const_error_badsid(),                  0, 'ошибка аутентификации')
 ;
 
 INSERT INTO job.handler (id, code, def_prio, arg_date_type, dust_days, is_sql, name) VALUES

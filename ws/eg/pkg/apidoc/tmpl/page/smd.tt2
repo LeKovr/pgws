@@ -2,7 +2,7 @@
 # Copyright (c) 2010, 2012 Tender.Pro http://tender.pro.
 # This file is part of PGWS - Postgresql WebServices.
   description = 'Описание методов';
-resp.skin = 'wide';
+  resp.frame = 'wide';
   PROCESS 'macro/tableform.tt2';
   data = api('ws.method_lookup', 'code' => '%');
   classes = api('ws.class');
@@ -33,7 +33,7 @@ END;
   .baseTable th { width: 10%; }
 .affix { top: 10px; }
 </style>
-<div class="span9">
+<div class="span8">
 [%
 mtd_current = 0;
 class_id_pre = 0;
@@ -63,14 +63,14 @@ END
 [% meta.js.${meta.js.size} = BLOCK %]
 <script>
 // https://github.com/twitter/bootstrap/issues/6350
-function affixWidth(selector) {
+PGWS.affixWidth = function(selector) {
   // ensure the affix element maintains it width
   var affix = $(selector);
   var width = affix.width();
   affix.width(width);
 }
 $(document).ready(function () {
-  affixWidth('.affixed');
+  PGWS.affixWidth('.affixed');
 });
 </script>
 [% END;

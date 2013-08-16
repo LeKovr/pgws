@@ -30,11 +30,11 @@ INSERT INTO method ( code, class_id, action_id, cache_id, rvf_id, args_exam, cod
 
 , ('team.role_signup',      :TID, 2,  1,  7, 'id=1', pg_cs('signup_by_team_role_id'))
 , ('team.signup',           :TID, 2,  1,  7, 'id=1', pg_cs('signup_by_team_kind_id'))
-, ('system.role_signup',    1,    1,  1,  7, 'id=1', pg_cs('signup_by_role_id'))
+, ('system.role_signup',    1,    3,  1,  7, 'id=1', pg_cs('signup_by_role_id'))
 
 , ('system.event_kind',     1,    3,  1,  7,  '',       pg_cs('kind'))
 , ('system.event_kind_role',     1,    3,  1,  7,  '',  pg_cs('role_signup_by_kind_id'))
-, ('system.event_kind_group',    2,    1,  1,  7,  '',  pg_cs('kind_group'))
+, ('system.event_kind_group',    1,    3,  1,  7,  '',  pg_cs('kind_group'))
 ;
 /*
 , ('ev.role_signup_list',       2, 1,  1,      7,  'role_id=1',  'Список подписок роли' )

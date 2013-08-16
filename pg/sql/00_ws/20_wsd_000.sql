@@ -22,7 +22,24 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE SCHEMA wsd;
-COMMENT ON SCHEMA wsd IS 'WebService (PGWS) data';
+COMMENT ON SCHEMA wsd IS 'WebService (PGWS) realtime Data';
+
+/* ------------------------------------------------------------------------- */
+CREATE TABLE wsd.ref_update (
+  code        TEXT
+, item_code   TEXT
+, lang        TEXT -- DEFAULT ws.const_lang_default() -- 'def'
+, op          TEXT NOT NULL
+, updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+, CONSTRAINT ref_update_pkey PRIMARY KEY (code, item_code, lang)
+);
+SELECT pg_c('r', 'wsd.ref_update', 'Обновления позиций справочников')
+, pg_c('c', 'wsd.ref_update.code',        'Код справочника')
+, pg_c('c', 'wsd.ref_update.item_code',   'Код позиции')
+, pg_c('c', 'wsd.ref_update.lang',        'Языковая схема справочника')
+, pg_c('c', 'wsd.ref_update.op',          'Код произведенного изменения')
+, pg_c('c', 'wsd.ref_update.updated_at',  'Момент времени измененния')
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.pkg_script_protected (
@@ -63,25 +80,29 @@ CREATE TABLE wsd.pkg_default_protected (
 , wsd_col     text NOT NULL
 , func        name
 , is_active   bool NOT NULL DEFAULT FALSE
-, schema      name -- NOT NULL только для 2й схемы пакета
+, schema      name NOT NULL DEFAULT 'ws' -- только для 1й схемы пакета ws
 , CONSTRAINT pkg_default_protected_pkey PRIMARY KEY (pkg, wsd_rel, wsd_col)
 );
 
 /* ------------------------------------------------------------------------- */
-/* TODO - контролировать триггерами на INSERT
-INSERT INTO wsd.pkg_fkey_protected (pkg, wsd_rel, wsd_col, rel) VALUES
-  ('ws', 'pkg_script_protected', 'pkg',         'ws.pkg')
-, ('ws', 'pkg_fkey_protected',   'pkg',         'ws.pkg')
-, ('ws', 'pkg_fkey_required_by', 'required_by', 'ws.pkg')
-, ('ws', 'pkg_fkey_required_by', 'pkg,required_by', 'ws.pkg_required_by')
-;
+/*
+-- TODO - контролировать триггерами на INSERT
+ INSERT INTO wsd.pkg_fkey_protected (pkg, wsd_rel, wsd_col, rel) VALUES
+  ('ws', 'pkg_script_protected', 'pkg',         'ws.pkg')     -- мешает удалению пакета при drop
+, ('ws', 'pkg_fkey_protected',   'pkg',         'ws.pkg')     -- мешает удалению пакета при drop
+, ('ws', 'pkg_fkey_required_by', 'required_by', 'ws.pkg')     --мешает сборке
+, ('ws', 'pkg_fkey_required_by', 'pkg,required_by', 'ws.pkg_required_by') -- мешает сборке
+ ;
 */
 
 INSERT INTO wsd.pkg_default_protected (pkg, wsd_rel, wsd_col, func) VALUES
   ('ws', 'pkg_script_protected',  'pkg',          'ws.pg_cs()')
 , ('ws', 'pkg_script_protected',  'schema',       'ws.pg_cs()')
 , ('ws', 'pkg_default_protected', 'pkg',          'ws.pg_cs()')
+, ('ws', 'pkg_default_protected', 'schema',       'ws.pg_cs()')
 , ('ws', 'pkg_fkey_protected',    'pkg',          'ws.pg_cs()')
+, ('ws', 'pkg_fkey_protected',    'schema',       'ws.pg_cs()')
 , ('ws', 'pkg_fkey_required_by',  'required_by',  'ws.pg_cs()')
+, ('ws', 'ref_update',            'lang',         'ws.const_lang_default()')
 ;
 /* ------------------------------------------------------------------------- */

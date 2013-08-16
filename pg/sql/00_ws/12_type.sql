@@ -99,7 +99,7 @@ SELECT pg_c('d','d_code', 'Имя переменной');
 CREATE DOMAIN d_code_arg AS TEXT CHECK (VALUE ~ E'^[a-z\\d_][a-z\\d\\.\\-_]*$') ;
 SELECT pg_c('d','d_code_arg', 'Имя аргумента');
 
-CREATE DOMAIN d_codei AS TEXT CHECK (VALUE ~ E'^[a-z\\d][a-z\\d\\.\\-_A-Z]*$') ;
+CREATE DOMAIN d_codei AS TEXT CHECK (VALUE ~ E'^[a-z\\dA-Z][a-z\\d\\.\\-_A-Z]*$') ; -- TODO: ~* валит тест 91_all_facets
 SELECT pg_c('d','d_codei', 'Имя переменной в любом регистре');
 
 CREATE DOMAIN d_code_like AS TEXT CHECK (VALUE ~ E'^[a-z\\d\\.\\-_\\%]+$');

@@ -10,13 +10,13 @@
   [% END;
 
   team_id = page.args.0;
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code = page.code;  
+  INCLUDE "inc/page_siblings.tt2", code = 'team.id', id = team_id, active_code = page.code;  
 
   kind_roles = api('team.signup', id = team_id);
   
     FOR row IN kind_roles;
       IF loop.first;
-        table_begin(class='table-bordered table-striped table-hover');
+        table_begin();
         tr(list = [ l('Группа'), l('Событие'), l('Роль'), l('Активна'), l('Спецификация')], use_th = 1, thead = 1);
       END;
       href = uri_mk(uri(code => 'team.id.setup.role.id', id => team_id, id1 => row.id).req);

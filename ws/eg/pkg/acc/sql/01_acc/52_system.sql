@@ -28,6 +28,7 @@ $_$;
 SELECT pg_c('f', 'system_status', 'Статус системы');
 
 /* ------------------------------------------------------------------------- */
+/*
 CREATE OR REPLACE FUNCTION system_acl(a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
@@ -51,7 +52,31 @@ $_$
   END
 $_$;
 SELECT pg_c('f', 'system_acl', 'ACL sid для системы');
+*/
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION system_acl(a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT * FROM acc.object_acl(acc.const_system_class_id(), 0, $1);
+$_$;
+SELECT pg_c('f', 'system_acl', 'ACL к системе',$_$
+    link_id: всегда "свой"
+    team_link_id: всегда "чужой"
+$_$);
 
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION system_link_id(a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS d_link STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT acc.const_link_id_owner();
+$_$;
+SELECT pg_c('f', 'system_link_id', 'Связь пользователя с системой (Свой)');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION system_team_link_id(a_id d_id, a_team_id d_id) RETURNS d_link STABLE LANGUAGE 'sql' AS
+$_$
+-- TODO: определить текущую команду пользователя
+  SELECT acc.const_team_link_id_other()
+$_$;
+SELECT pg_c('f', 'system_team_link_id', 'Связь команды пользователя с командой учетной записи');
 /* ------------------------------------------------------------------------- */
 -- вернуть описание сервера, отвечающего за экземпляр текущего класса
 CREATE OR REPLACE FUNCTION system_server() RETURNS SETOF server STABLE LANGUAGE 'sql' AS
@@ -91,14 +116,14 @@ $_$;
 SELECT pg_c('f', 'system_permission_acl', 'Описание разрешения');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION system_class_acl(id d_code DEFAULT NULL) RETURNS SETOF acc.permission_acl_attr STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION system_class_permission_acl(id d_code DEFAULT NULL) RETURNS SETOF acc.permission_acl_attr STABLE LANGUAGE 'sql' AS
 $_$
   SELECT *
     FROM acc.permission_acl_attr 
     WHERE class_code = $1
   ;
 $_$;
-SELECT pg_c('f', 'system_class_acl', 'Описание уровней доступа класса');
+SELECT pg_c('f', 'system_class_permission_acl', 'Описание уровней доступа класса');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION system_role() RETURNS SETOF acc.role_info STABLE LANGUAGE 'sql' AS

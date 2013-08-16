@@ -30,6 +30,13 @@ $_$;
 SELECT pg_c('f', 'const_kind_code_any', 'Файл любого формата');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_kind_code_data() RETURNS d_code IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'data'::ws.d_code
+$_$;
+SELECT pg_c('f', 'const_kind_code_data', 'Файл с данными (xml, json)');
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_folder_code_default() RETURNS d_code IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'files'::ws.d_code 

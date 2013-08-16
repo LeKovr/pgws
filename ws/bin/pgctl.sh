@@ -42,8 +42,7 @@ db_help() {
 
     doc  - make docs for schema SRC (Default: ws)
     dump - dump schema SRC (Default: all)
-
-    restore KEY - restore schema(s) from dbdump-KEY.tar.gz
+    restore - restore dump from SRC
 
     SRC  - pgws|pkg. Default: pgws
     PKG  - dirname(s) from SRC. Default: "$PGWS_PKG" (if SRC=pgws) or "$PGWS_APP_PKG"
@@ -158,19 +157,17 @@ db_run() {
   local file_mask=$1 ; shift
   local src=$1 ; shift
   local pkg=$@
+  local use_flag
 
   [[ "$src" ]] || src="pgws"
   if [ "$src" == "pgws" ] ; then
     src=$PGWS
-    [[ "$pkg" != "" ]] || pkg=$PGWS_PKG
+    [[ "$pkg" != "" ]] || { pkg=$PGWS_PKG ; use_flag=1 ; }
   else
     [[ "$src" == "pkg" ]] || pkg="$src $pkg"
     src=$PGWS_APP
-    [[ "$pkg" ]] || pkg=$PGWS_APP_PKG
+    [[ "$pkg" ]] || { pkg=$PGWS_APP_PKG ; use_flag=1 ; }
   fi
-
-  # TODO
-  local ver="000"
 
   cat <<EOF
   DB Source:   $src
@@ -220,13 +217,13 @@ EOF
       echo -n "$pn: "
       echo "\\qecho '-- ******* Package: $pn --'" >> $BLD/build.sql
       echo "\\set PKG $pn" >> $BLD/build.sql
-      echo "\\set VER $ver" >> $BLD/build.sql
-      if [[ "$pn" != "ws" || "$run_op" != "init" ]] ; then
-        # начало выполнения операции (не вызывается только для init пакета ws)
-        echo "SELECT ws.pkg_op_before('$run_op', '$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
-      fi
     fi
+    echo "\\set SCH $sn" >> $BLD/build.sql
     echo "\\qecho '-- ------- Schema: $sn'" >> $BLD/build.sql
+    if [[ "$pn:$sn" != "ws:ws" || "$run_op" != "init" ]] ; then
+      # начало выполнения операции (не вызывается только для init пакета ws)
+      echo "SELECT ws.pkg_op_before('$run_op', '$pn', '$sn', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+    fi
 
     [ -d "$BLD/$bd" ] || mkdir $BLD/$bd
     echo -n > $BLD/errors.diff
@@ -238,24 +235,31 @@ EOF
         n=$(basename $f)
 #        echo "Found: $s/$f"
         echo "Processing file: $s/$f" >> $LOGFILE
-        local csum=$(perl -I$PGWS_ROOT/lib -MPGWS::Utils -e "print PGWS::Utils::data_sha1('$f');")
-        # вариант с заменой 1го вхождения + поддержка plperl
-        $AWK_BIN "{ print gensub(/(\\\$_\\\$)($| +#?)/, \"\\\1\\\2 /* $pn:$sn:\" FILENAME \" / \" FNR \" */ \",\"g\")};" $f > $BLD/$bd/$n
-        # вариант без удаления прошлых комментариев
-        # awk "{gsub(/\\\$_\\\$(\$| #?)/, \"/* $pn:$sn:$n / \" FNR \" */ \$_\$ /* $pn:$sn:$n / \" FNR \" */ \")}; 1" $f > $BLD/$bd/$n
-        # вариант с удалением прошлых комментариев
-        # awk "{gsub(/(\/\* .+ \/ [0-9]+ \*\/ )?\\\$_\\\$( \/\* .+ \/ [0-9]+ \*\/)?/, \"/* $pn:$sn:$n / \" FNR \" */ \$_\$ /* $pn:$sn:$n / \" FNR \" */ \")}; 1" $f > $BLD/$bd/$n
-        # настройка serach_path для init и make
+        local csum=""
+        if test $f -nt $BLD/$bd/$n ; then
+          # $f is newer than $BLD/$bd/$n
+
+          csum=$(perl -I$PGWS_ROOT/lib -MPGWS::Utils -e "print PGWS::Utils::data_sha1('$f');")
+          echo "\\qecho '----- ($csum) $pn:$sn:$n -----'">> $BLD/build.sql
+          # вариант с заменой 1го вхождения + поддержка plperl
+          $AWK_BIN "{ print gensub(/(\\\$_\\\$)($| +#?)/, \"\\\1\\\2 /* $pn:$sn:\" FILENAME \" / \" FNR \" */ \",\"g\")};" $f > $BLD/$bd/$n
+          # вариант без удаления прошлых комментариев
+          # awk "{gsub(/\\\$_\\\$(\$| #?)/, \"/* $pn:$sn:$n / \" FNR \" */ \$_\$ /* $pn:$sn:$n / \" FNR \" */ \")}; 1" $f > $BLD/$bd/$n
+          # вариант с удалением прошлых комментариев
+          # awk "{gsub(/(\/\* .+ \/ [0-9]+ \*\/ )?\\\$_\\\$( \/\* .+ \/ [0-9]+ \*\/)?/, \"/* $pn:$sn:$n / \" FNR \" */ \$_\$ /* $pn:$sn:$n / \" FNR \" */ \")}; 1" $f > $BLD/$bd/$n
+        fi
+        # настройка search_path для init и make
         if [[ ! "$search_set" ]] && [[ "$n" > "12_00" ]]; then
-          echo "SET LOCAL search_path = $sn, ws, i18n_def, public;" >> $BLD/build.sql
+          # echo "SET LOCAL search_path = $sn, ws, i18n_def, public;" >> $BLD/build.sql
+          echo "DO \$_\$ BEGIN IF (SELECT count(1) FROM pg_namespace WHERE nspname = '$sn') > 0 THEN SET search_path = $sn, ws, i18n_def, public; ELSE SET search_path = ws, i18n_def, public; END IF; END; \$_\$;" >> $BLD/build.sql
           search_set=1
         fi
-        echo "\\qecho '----- ($csum) $pn:$sn:$n -----'">> $BLD/build.sql
 
         local db_csum=""
         local skip_file=""
         if [[ "$n" =~ .+_wsd_[0-9]{3}\.sql ]]; then  # old bash: ${X%_wsd_[0-9][0-9][0-9].sql}
           # protected script
+          [[ "$csum" == "" ]] && csum=$(perl -I$PGWS_ROOT/lib -MPGWS::Utils -e "print PGWS::Utils::data_sha1('$f');") # "
           local db_csum=$(file_protected_csum $pn $sn $n)
           if [[ "$db_csum" ]]; then
             if [[ "$db_csum" != "$csum" ]]; then
@@ -307,9 +311,9 @@ EOF
 
     [[ -f "$BLD/keep_sql" ]] || echo "\! rm -rf $bd" >> $BLD/build.sql
 
-    # завершение выполнения операции (не вызывается только для drop/erase пакета ws)
-    [[ "$p" != "$p_pre" ]] && ( [[ "$pn" != "ws" ]] || [[ ! "$op_is_del" ]] ) \
-      && echo "SELECT ws.pkg_op_after('$run_op', '$pn', '$ver', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
+    # завершение выполнения операции (не вызывается только для drop/erase схемы ws пакета ws)
+    ( [[ "$pn:$sn" != "ws:ws" ]] || [[ ! "$op_is_del" ]] ) \
+      && echo "SELECT ws.pkg_op_after('$run_op', '$pn', '$sn', '$LOGNAME', '$USERNAME', '$SSH_CLIENT');" >> $BLD/build.sql
     p_pre=$p
     echo .
   done
@@ -344,14 +348,15 @@ EOF
     else
       local flagfile=${flag}.pkg
     fi
-    [[ "$run_op" == "init" ]] && touch $flagfile
-    [[ "$op_is_del" ]] && [ -f $flagfile ] && rm $flagfile
+    [[ "$run_op" == "init" ]] && [[ "$use_flag" ]] && touch $flagfile
+    [[ "$op_is_del" ]] && [ -f $flagfile ] && [[ "$use_flag" ]] && rm $flagfile
     echo "Complete"
     [[ "$op_is_del" ]] || echo "Default system password: $PSW_DEFAULT"
   else
 #    echo "*** Errors found"
 #    grep ERROR $LOGFILE || echo "    None."
-    [ -s "$BLD/errors.diff" ] && { echo "*** Diff:" ; cat "$BLD/errors.diff" ; exit 1 ; }
+    [ -s "$BLD/errors.diff" ] && { echo "*** Diff:" ; cat "$BLD/errors.diff" ; }
+    exit 1
   fi
 
 }
@@ -359,37 +364,42 @@ EOF
 # ------------------------------------------------------------------------------
 db_dump() {
   local schema=$1
+  local format=$2
   [[ "$schema" ]] || schema="all"
-  local file=$BLD/dump-$schema.sql
+  [[ "$format" == "t" ]] || format="p --inserts -O"
+  local ext=".tar"
+  [[ "$format" == "t" ]] || ext=".sql"
+  local key=$(date "+%y%m%d_%H%M")
+  local file=$PGWS_ROOT/var/dump-$schema-$key$ext
   [ -f $file ] && rm -f $file
   local schema_arg="-n $schema"
   [[ "$schema" == "all" ]] && schema_arg=""
-  ${PG_BINDIR}pg_dump -F p -f $file $schema_arg -O --inserts --no-tablespaces -E UTF-8 "$CONN";
-  echo "Dump of $schema schema(s) saved to $file"
-}
-
-# ------------------------------------------------------------------------------
-db_dumpdata() {
-  local key=$(date "+%y%m%d_%H%M")
-  local file=$PGWS_ROOT/var/dbdump-$key.tar
-  echo "Dumping *_data to $file.gz..."
-  [ -f $file.gz ] && { echo "File exists. Aborting" ; exit ; }
-  ${PG_BINDIR}pg_dump -F t -f $file -n "*_data" -E UTF-8 "$CONN"
+  echo "  Dumping  $file .."
+  ${PG_BINDIR}pg_dump -F $format -f $file $schema_arg --no-tablespaces -E UTF-8 "$CONN";
+  echo "  Gzipping $file.gz .."
   gzip -9 $file
-  echo "Dump complete."
+  echo "  Dump of $schema schema(s) complete"
 }
 
 # ------------------------------------------------------------------------------
-db_restoredata() {
+db_restore() {
   local key=$1
-  local file=$PGWS_ROOT/var/dbdump-$key.tar
+  local file=$PGWS_ROOT/var/$key
+
+  [ -f "$file" ] || { echo "Error: Dump file $file not found. " ; exit 1 ; }
+
   db_show_logfile
 
+  [[ "$key" != ${key%.gz} ]] && { gunzip $file ; file=${file%.gz} ; }
   # [ -L $file.gz ] && { filegz=$(readlink $file.gz); file=${filegz%.gz} ; }
-  echo "Restoring *_data from $file.gz..."
-  [ -f $file ] || gunzip $file.gz
-  ${PG_BINDIR}pg_restore -d "$CONN" --single-transaction $file > $LOGFILE 2>&1
-  RETVAL=$?
+  echo "Restoring schema from $file.."
+  if [[ "$file" != ${file%.tar} ]] ; then
+    ${PG_BINDIR}pg_restore -d "$CONN" --single-transaction -O $file > $LOGFILE 2>&1
+    RETVAL=$?
+  else
+    ${PG_BINDIR}psql -X -P footer=off -d "$CONN" -f $file > $LOGFILE 2>&1
+    RETVAL=$?
+  fi
   if [[ $RETVAL -eq 0 ]] ; then
     echo "Restore complete."
   else
@@ -487,7 +497,10 @@ case "$cmd" in
     db_doc $src
     ;;
   dump)
-    db_dump $src
+    db_dump $src $@
+    ;;
+  restore)
+    db_restore $src $@
     ;;
   create)
     db_create

@@ -23,8 +23,8 @@
 
 /* ------------------------------------------------------------------------- */
     INSERT INTO wsd.team(id, status_id) VALUES
-      (1, acc.const_team_status_id_active())
-    , (2, acc.const_team_status_id_active())
+      (acc.const_team_system_id(), acc.const_team_status_id_active())
+    , (acc.const_team_admin_id(),  acc.const_team_status_id_active())
     , (3, acc.const_team_status_id_active())
     , (4, acc.const_team_status_id_active())
     ;
@@ -50,6 +50,10 @@
     , (2, 2,  'Администрирование команд')
     , (3, 2,  'Модерация статей пользователей')
     , (4, 2,  'Модерация статей системных вики')
+
+    , (5, 1,  'Авторизация')
+    , (6, 1,  'Авторизованное чтение')
+    , (7, 1,  'Системное чтение')
     ;
     
     INSERT INTO wsd.permission(id, name) VALUES
@@ -72,6 +76,12 @@
     SELECT setval('wsd.permission_id_seq', (SELECT max(id) FROM wsd.permission));
 
 /* ------------------------------------------------------------------------- */
+INSERT INTO wsd.role_permission(role_id, perm_id) VALUES
+  (1, 5)
+, (2, 6)
+, (3, 6)
+;
+
 INSERT INTO wsd.role_permission(role_id, perm_id)
   SELECT 1, a FROM unnest(ARRAY[10, 20, 30]) a   UNION
   SELECT 2, a FROM unnest(ARRAY[10, 11, 13, 20, 30]) a UNION
@@ -79,7 +89,8 @@ INSERT INTO wsd.role_permission(role_id, perm_id)
   SELECT 5, a FROM unnest(ARRAY[32, 33]) a   UNION
   SELECT 6, a FROM unnest(ARRAY[34]) a   UNION
   SELECT 8, a FROM unnest(ARRAY[14, 21, 22]) a   UNION
-  SELECT 9, a FROM unnest(ARRAY[1, 2, 3, 4]) a  
+  SELECT 9, a FROM unnest(ARRAY[1, 2, 3, 4]) a UNION
+  SELECT a, 7 FROM unnest(ARRAY[9, 10]) a  
 ;
  
     -- права доступа к статьям вики определяются по правам группы статей
@@ -91,6 +102,10 @@ INSERT INTO wsd.role_permission(role_id, perm_id)
 
     , (3, ws.class_id('wiki'),    2, 2, 5)
     , (4, ws.class_id('wiki'),    2, 1, 5)
+
+    , (5,  ws.class_id('system'),     1, 2, 1)
+    , (6,  ws.class_id('system'),     1, 2, 2)
+    , (7,  ws.class_id('system'),     1, 2, 3)
 
     , (10,  ws.class_id('account'), 2, 2, 1)
     , (10,  ws.class_id('account'), 2, 1, 1)
@@ -147,11 +162,6 @@ INSERT INTO wsd.role_permission(role_id, perm_id)
     , (8, 4, 8, TRUE)
     ;
 
-/* Настройки подписок EV*/
-INSERT INTO  wsd.event_signup (account_id, role_id, kind_id, spec_id, is_on, prio) values 
-  (8, 8, 2, 0, false, 1) -- user 8 отменил подписку
-, (7, 3, 1, 0, true,  1) -- user 7 включил подписку
-;
 
 SELECT wiki.doc_create_acc(1, wiki.id_by_code('help'), '', TRUE, wiki.name_by_code('help'), $__$
 ### Стартовая страница справки пользователя

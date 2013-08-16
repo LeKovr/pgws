@@ -2,7 +2,7 @@
   description = 'Встраиваемый блок таблицы контактов';
 
   rows = api('account.contact.view', id => id, all => all);
-  table_begin(class='table-bordered table-striped table-hover form');
+  table_begin(class='form');
     FOR row IN rows;
       IF row.verified_at == NULL;
         row_verified = 'не подтвержден';

@@ -6,10 +6,14 @@ ROOT_DEFAULT        = /home/data/sampleapp
 WWW_HOST_DEFAULT    = pgws.local
 FCGI_SOCKET_DEFAULT = back.test.local:9001
 FE_COOKIE_DEFAULT   = PGWS_SID
+FE_LAYOUTS_DEFAULT  = style02 style01
+FE_SKIN_DEFAULT     = light
 
 WWW_HOST           ?= $(WWW_HOST_DEFAULT)
 FCGI_SOCKET        ?= $(FCGI_SOCKET_DEFAULT)
 FE_COOKIE          ?= $(FE_COOKIE_DEFAULT)
+FE_LAYOUTS         ?= $(FE_LAYOUTS_DEFAULT)
+FE_SKIN            ?= $(FE_SKIN_DEFAULT)
 
 PGWS_ROOT          ?= $(shell dirname $$PWD)
 FILE_STORE_ROOT    ?= $(PGWS_ROOT)/data
@@ -22,7 +26,7 @@ PROCESS_PREFIX     ?= pgws-dev
 SRV_DEBUG          ?= 1
 
 TM_CMD             ?= 
-PACKAGES           ?= fs job acc apidoc ev wiki app_sample i18n style01
+PACKAGES           ?= fs job acc apidoc ev wiki app_sample app_common i18n style02
 
 NGINX_CFG_DIR       = nginx
 
@@ -58,6 +62,7 @@ usage: help
 
 install: test data var pkg lib lib-pkg ctl setups tmpl conf installcomplete
 conf: psw-conf nginx-conf master-conf
+restart: stop start
 
 # ------------------------------------------------------------------------------
 
@@ -126,16 +131,10 @@ tmpl:
 PD=$$(ls pkg/) ; \
 for p in $$PD ; do if [ -d $(PGWS_ROOT)/pkg/$$p ] && [ -d $(PGWS_ROOT)/pkg/$$p/tmpl ] ; then \
 pushd $(PGWS_ROOT)/pkg/$$p/tmpl ; \
-for d in * ; do if [[ "$$d" == "config.tt2" ]] ; then \
-  [ -e $(PGWS_ROOT)/var/tmpl/$$p.tt2 ] || ln -s ../../pkg/$$p/tmpl/$$d $(PGWS_ROOT)/var/tmpl/$$p.tt2 ; \
-  elif [[ "$$d" == "macro" ]] ; then \
-  [ -d $(PGWS_ROOT)/var/tmpl/$$d ] || mkdir -p $(PGWS_ROOT)/var/tmpl/$$d ; \
-for n in $$d/*.tt2 ; do \
-  [ -e $(PGWS_ROOT)/var/tmpl/$$n ] || ln -s ../../../pkg/$$p/tmpl/$$n $(PGWS_ROOT)/var/tmpl/$$n ; \
-done else \
+for d in * ; do \
   [ -d $(PGWS_ROOT)/var/tmpl/$$d ] || mkdir -p $(PGWS_ROOT)/var/tmpl/$$d ; \
   [ -e $(PGWS_ROOT)/var/tmpl/$$d/$$p ] || ln -s ../../../pkg/$$p/tmpl/$$d $(PGWS_ROOT)/var/tmpl/$$d/$$p ; \
-fi ; done ; \
+done ; \
 popd > /dev/null ; \
 fi ; \
 if [ -d $(PGWS_ROOT)/pkg/$$p ] && [ -d $(PGWS_ROOT)/pkg/$$p/www ] ; then \
@@ -151,7 +150,19 @@ done ; \
 popd > /dev/null ; \
 fi ; \
 done ; \
-popd > /dev/null
+popd > /dev/null ; \
+for l in $(FE_LAYOUTS) ; do \
+if [ -f $(PGWS_ROOT)/var/www/css/$$l/skin/$(FE_SKIN).css ] ; then \
+[ -d $(PGWS_ROOT)/var/www/css/pgws ] || mkdir $(PGWS_ROOT)/var/www/css/pgws ; \
+pushd $(PGWS_ROOT)/var/www/css/pgws > /dev/null ; \
+[ -L skin.css ] && rm skin.css ; \
+[ -L skin ] && rm skin ; \
+ln -s ../$$l/skin skin ; \
+ln -s skin/$(FE_SKIN).css skin.css ; \
+fi ; \
+break ; done
+
+# only first from FE_LAYOUTS used
 
 # ------------------------------------------------------------------------------
 
@@ -219,6 +230,11 @@ p=$$(cat var/build/psw_upload) ; f=pgws-upload.conf ; \
   -e "s|=FILE_STORE_ROOT=|$(FILE_STORE_ROOT)|g" \
   -e "s|=FILE_URI=|$(FILE_URI)|g" \
   pgws/ws/eg/conf/$${f}.inc > $(NGINX_CFG_DIR)/$$f ; \
+f=pgws-cache.conf ; \
+[ -e $(NGINX_CFG_DIR)/$$f ] || sed \
+  -e "s|=FILE_STORE_ROOT=|$(FILE_STORE_ROOT)|g" \
+  -e "s|=FILE_URI=|$(FILE_URI)|g" \
+  pgws/ws/eg/conf/$${f}.inc > $(NGINX_CFG_DIR)/$$f ; \
 popd > /dev/null
 
 #      sed -e "s|$(ROOT_DEFAULT)|$$PWD|g;s|$(WWW_HOST_DEFAULT)|$(WWW_HOST)|g;s|$(FCGI_SOCKET_DEFAULT)|$(FCGI_SOCKET)|g" $$f > $(NGINX_CFG_DIR)/$$bnf ; \
@@ -241,6 +257,7 @@ if [ ! -f config.json ] ; then \
     -e "s|=SRV_DEBUG=|$(SRV_DEBUG)|" \
     -e "s|=TM_CMD=|$(TM_CMD)|" \
     -e "s|=FE_COOKIE=|$(FE_COOKIE)|" \
+    -e "s|=FE_LAYOUTS=|$(FE_LAYOUTS)|" \
     -e "s|=PACKAGES=|$(PACKAGES)|" \
     pgws/ws/eg/conf/config.json.inc > config.json ; \
 fi ; \
@@ -267,7 +284,9 @@ clean:
 	@echo "*** $@ ***"
 	rm -rf .install .usage ; \
 pushd $(PGWS_ROOT) > /dev/null ; \
-[ -f var/run/*.pid ] && ./pgws.sh fcgi stop ; \
+[ -f var/run/*-tm.pid ] && ./pgws.sh tm stop ; \
+[ -f var/run/*-job.pid ] && ./pgws.sh job stop ; \
+[ -f var/run/*-fcgi.pid ] && ./pgws.sh fcgi stop ; \
 [ -d var ] && for p in var/{build,cache,ctl,log,run,tmpl,tmpc}/* ; do rm -rf $$p ; done ; \
 popd > /dev/null
 
@@ -286,8 +305,8 @@ exit 1
 uninstall-db: stop
 	@echo "*** $@ ***"
 	pushd $(PGWS_ROOT) > /dev/null ; \
-{ [ -f var/.build.pkg ] && ./pgws.sh db drop pkg ; } && \
-{ [ -f var/.build.pgws ] && ./pgws.sh db erase_force ; } && \
+{ [ -f var/.build.pkg ] && ./pgws.sh db drop pkg || [ ! -f var/.build.pkg ] ; } && \
+{ [ -f var/.build.pgws ] && ./pgws.sh db erase_force || [ ! -f var/.build.pgws ] ; } && \
 popd > /dev/null && exit 0 ; \
 exit 1
 
@@ -295,8 +314,8 @@ exit 1
 drop-db: stop
 	@echo "*** $@ ***"
 	pushd $(PGWS_ROOT) > /dev/null ; \
-[ -f var/.build.pkg ] && ./pgws.sh db drop pkg ; \
-[ -f var/.build.pgws ] && ./pgws.sh db drop ; \
+{ [ -f var/.build.pkg ] && ./pgws.sh db drop pkg || [ ! -f var/.build.pkg ] ; } && \
+{ [ -f var/.build.pgws ] && ./pgws.sh db drop || [ ! -f var/.build.pgws ] ; } && \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
@@ -312,6 +331,7 @@ popd > /dev/null
 start: install-db
 	@echo "*** $@ ***"
 	pushd $(PGWS_ROOT) > /dev/null ; \
+./pgws.sh cache clear ; \
 ./pgws.sh fcgi start ; \
 sleep 2 ; \
 ./pgws.sh job start ; \
@@ -323,12 +343,14 @@ popd > /dev/null
 stop:
 	@echo "*** $@ ***"
 	pushd $(PGWS_ROOT) > /dev/null ; \
-./pgws.sh tm stop ; \
-./pgws.sh job stop ; \
-./pgws.sh fcgi stop ; \
+[ -f var/run/*-tm.pid ] && ./pgws.sh tm stop ; \
+[ -f var/run/*-job.pid ] && ./pgws.sh job stop ; \
+[ -f var/run/*-fcgi.pid ] && ./pgws.sh fcgi stop ; \
 popd > /dev/null
 
 rebuild: drop-db start
+
+reinstall: uninstall-db start
 
 # ------------------------------------------------------------------------------
 

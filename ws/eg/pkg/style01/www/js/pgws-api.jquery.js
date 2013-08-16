@@ -65,6 +65,36 @@ $.fn.serializeObject = function(formId) {
       o[this.name] = this.value || '';
     }
   });
+  // Пересылаем значение checkbox, даже если он не отмечен
+  // Т.к. в этом случае простой сабмит не отправляет ничего,
+  // а мы хотим получить на сервер значение 0 для checkbox-а без галочки
+  // TODO: this.find('input[type=checkbox]:not(:checked):not(:disabled)').map(
+  $(formId + ' input[type=checkbox]:not(:checked):not(:disabled)').map(
+    function() {
+      o[this.name] = 0
+    }
+  );
+  if (o['_id']) {
+    // TODO: иногда id не попадает в сериализацию
+    o['id'] = o['_id']; delete o['_id'];
+  }
+  if (!o['_join']) {
+    // обычный вариант, без сборки массивов
+    return o;
+  }
+  // при наличии поля _join производится сериализация массивов
+  var pref = o['_join']; delete o['_join']; // or software error
+  var fields = o[pref + '._field'].split(' '); delete o[pref + '._field'];
+  var index = o[pref + '._index']; delete o[pref + '._index'];
+  // ---- вариант для хэша массивов
+  for(var x = 0; x < o[index].length; x++) {
+    for(var y = 0; y < fields.length; y++) {
+      var key = [pref, o[index][x], fields[y]].join('.');
+      var z = o[key]; delete o[key];
+      if (!x) o[fields[y]] = [];
+      o[fields[y]].push(z);
+    }
+ }
   return o;
 };
 
@@ -72,6 +102,7 @@ var api_input_enable = function(formId) {
   $.each($(formId)[0].elements, function(k, v) {
     if ($(this).hasClass('tmpPGWSDisabled')) $(this).removeAttr('disabled').removeClass('tmpPGWSDisabled');
   });
+  $('.fileinput-button').removeClass('disabled'); //disabled для кнопки Выбора файлы, т.к. она span
 }
 
 var api = function(mtd, formId, cb, vparams, cb_er, ena, options){
@@ -115,12 +146,16 @@ var api = function(mtd, formId, cb, vparams, cb_er, ena, options){
         for ( var i = 0, len = response.result.error.length; i < len; ++i ){
           var t = formId + '_' + response.result.error[i].id + '_err';
           $(t).text(response.result.error[i].message);
+	  $(formId + ' > div.control-group').addClass('error');
         }
         $(options.statusBlock).text(options.formErrorMsg);
         if (cb_er) { cb_er(formId, response);}
       } else {
         $(options.statusBlock).text(options.successMsg);
-        if (cb) { cb(formId, response.result.data);}
+        $(formId + ' > div.control-group').removeClass('error');
+        if (cb) { 
+	  cb(formId, response.result.data);
+	}
       }
     },
     error:        function(response){
@@ -145,12 +180,14 @@ var api_form = function(action, formId, onSuccesse, onError, options){
     formErrorMsg: 'Form error(s)',
     reqErrorMsg: 'Request error',
     successMsg: 'OK',
-    processMsg: 'In process...'
+    processMsg: 'In process...',
+    ena: true
   }, options);
 
   var params = $(formId).serializeObject();
   $.each($(formId)[0].elements, function(k, v) {
     if ($(this).attr('disabled') !== 'disabled') $(this).addClass('tmpPGWSDisabled').attr('disabled','disabled');
   });
-  api(action, formId, onSuccesse, params, onError, true, options);
+  $('.fileinput-button').addClass('disabled');//disabled для кнопки Выбора файлы, т.к. она span
+  api(action, formId, onSuccesse, params, onError, options.ena, options);
 };

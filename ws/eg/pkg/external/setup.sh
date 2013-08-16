@@ -1,19 +1,28 @@
 
+# run only when www does not exists
+[ -d www ] && exit
+
 fetch() {
 cat <<-EOF
-LeKovr-jQuery-Form-3.14.zip https://nodeload.github.com/LeKovr/form/zip/3.14
-LeKovr-formEV-v0.3.zip https://nodeload.github.com/LeKovr/formEV/zip/v0.3
-trentrichardson-jQuery-Timepicker-Addon-v1.0.5-0.zip http://nodeload.github.com/trentrichardson/jQuery-Timepicker-Addon/zip/v1.0.5
-jquery-ui-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-1.8.22.zip
-jquery-ui-themes-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-themes-1.8.22.zip
+LeKovr-jQuery-Form-3.14.zip https://codeload.github.com/LeKovr/form/zip/3.14
+LeKovr-formEV-v0.3.zip https://codeload.github.com/LeKovr/formEV/zip/v0.3
+trentrichardson-jQuery-Timepicker-Addon-v1.0.5-0.zip https://codeload.github.com/trentrichardson/jQuery-Timepicker-Addon/zip/v1.0.5
+#jquery-ui-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-1.8.22.zip
+jquery-ui-1.10.3.zip http://jqueryui.com/resources/download/jquery-ui-1.10.3.zip
+#jquery-ui-themes-1.8.22.zip http://jquery-ui.googlecode.com/files/jquery-ui-themes-1.8.22.zip
+jquery-ui-themes-1.10.3.zip http://jqueryui.com/resources/download/jquery-ui-themes-1.10.3.zip
 jquery-1.7.2.min.js http://code.jquery.com/jquery-1.7.2.min.js
 jquery-1.7.2.js http://code.jquery.com/jquery-1.7.2.js 
 jquery.json-2.3.min.js http://jquery-json.googlecode.com/files/jquery.json-2.3.min.js
 jquery.json-2.3.js http://jquery-json.googlecode.com/files/jquery.json-2.3.js
-jquery-cookie-1.3.1.zip https://nodeload.github.com/carhartl/jquery-cookie/zip/v1.3.1
-bootstrap-2.3.1.zip https://github.com/twitter/bootstrap/archive/v2.3.1.zip
+jquery-cookie-1.3.1.zip https://codeload.github.com/carhartl/jquery-cookie/zip/v1.3.1
+bootstrap-2.3.1.zip https://github.com/twbs/bootstrap/archive/v2.3.1.zip
 bootswatch-2.3.1.zip https://github.com/thomaspark/bootswatch/archive/v2.3.1.zip
 highlight.zip http://softwaremaniacs.org/soft/highlight/download/ "bash.js=on&css.js=on&diff.js=on&xml.js=on&http.js=on&ini.js=on&json.js=on&javascript.js=on&perl.js=on&sql.js=on&markdown.js=on&nginx.js=on"  
+bootbox.js https://github.com/makeusabrew/bootbox/releases/v3.3.0/1140/bootbox.js
+jquery.fileupload-8.4.2.zip https://github.com/blueimp/jQuery-File-Upload/archive/8.4.2.zip
+bootstrap-datepicker.zip https://codeload.github.com/eternicode/bootstrap-datepicker/legacy.zip/v1.0.1
+bootstrap-timepicker.zip https://codeload.github.com/tarruda/bootstrap-datetimepicker/zip/master
 EOF
 }
 
@@ -28,7 +37,7 @@ mk_ln() {
   local up="../../.."
   [[ "${dest/\/*\/}" == "${dest/\/.}" ]] || up="../../../.."
   [ -d ../www/$dest ] || mkdir -p ../www/$dest
-  [ -e ../www/$dest/$src ] || ln -s $up/src/$src ../www/$dest/$src
+  [ -e ../www/$dest/$src ] || cp -pr $src ../www/$dest/$src
 }
 
 mk_lnd() {
@@ -37,13 +46,9 @@ mk_lnd() {
   local dir=$3
   local name=$4
   [[ "$name" ]] || name=$src
-  local up="../.."
-  [[ "$dest" == "${dest/\/}" ]] || up="../../.."
-  # js/core/minified
-  [[ "$dest" != "${dest/\/*\/}" ]] && up="../../../.."
 
   [ -d ../www/$dest ] || mkdir -p ../www/$dest
-  [ -e ../www/$dest/$name ] || ln -s $up/src/$dir$src ../www/$dest/$name
+  [ -e ../www/$dest/$name ] || cp -pr $dir$src ../www/$dest/$name
 }
 
 for d in $DIR $WWW $WWW_skin ; do
@@ -54,8 +59,9 @@ pushd $DIR > /dev/null
 
 echo "Fetch..."
 fetch | while read dest src post; do
-[[ "$post" ]] && post="-d \"$post\""
- [ -e $dest ] || curl -L -k -R $post -o $dest $src
+  [[ $dest != ${dest###} ]] && continue
+  [[ "$post" ]] && post="-d \"$post\""
+  [ -e $dest ] || curl -L -k -R $post -o $dest $src
 done
 
 echo "Make src..."
@@ -65,7 +71,7 @@ for s in * ; do
     [ -e $s.done ] && continue
     unzip $s -d ../src/ && touch $s.done
   else
-    [ -e ../src/$s ] || cp -p $s ../src/
+    [ -e ../src/$s ] || cp -pr $s ../src/
   fi
 done
 
@@ -97,7 +103,7 @@ for s in * ; do
       echo "jquery.formEV setup"
       mk_lnd jquery.formev.js js/addon $s/
       ;;
-    bootstrap-*)
+    bootstrap-2.*)
       echo "bootstrap setup"
       mk_lnd bootstrap.js js/core $s/docs/assets/js/
       mk_lnd bootstrap.min.js js/core/minified $s/docs/assets/js/
@@ -110,6 +116,22 @@ for s in * ; do
     jquery-cookie-*)
       echo "jquery cookie setup"
       mk_lnd jquery.cookie.js js/core $s/
+      ;;
+    jQuery-File-Upload*)
+      echo "Fileupload setup"
+      mk_lnd jquery.fileupload.js js/core $s/js/
+      mk_lnd jquery.fileupload-ui.css css $s/css/
+      ;;
+    eternicode-bootstrap-datepicker*)
+      echo "bootstrap-datepicker setup"
+      mk_lnd bootstrap-datepicker.js js/core $s/js/
+      mk_lnd bootstrap-datepicker.ru.js js/core $s/js/locales/
+      mk_lnd datepicker.css css $s/css/
+      ;;
+    bootstrap-datetimepicker*)
+      echo "bootstrap-timepicker setup"
+      mk_lnd bootstrap-datetimepicker.min.js js/core $s/build/js/
+      mk_lnd bootstrap-datetimepicker.min.css css $s/build/css/
       ;;
     bootswatch-*)
       echo "bootswatch skins setup"

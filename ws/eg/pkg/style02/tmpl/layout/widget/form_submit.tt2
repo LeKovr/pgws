@@ -1,0 +1,34 @@
+[% META
+  description = 'Строка формы с кнопкой отправки'
+%]<div class="formLine [% class %]">
+
+		<div class="lineDivider"></div>
+		[% IF warn %]
+		<div class="warnNote" [% IF widthwarn %] style="width: [% widthwarn %]" [% END %]>
+			<div class="warnStar">*</div> - [% warn %]
+		</div>
+		[% END %]
+		<div class="formButtons"  style="[% IF widthformbtn %] width: [% widthformbtn %] [% END %] [% IF paddingformbtn %] padding: [% paddingformbtn %] [% END %]">
+			<div class="btn">
+			  <div class="btnHolder">
+				<button id="[% id %]" [% param %] type="submit">[% name %] [% IF image %] <img src="[% S %]/[% image %]" width="[% imagewidth %]" height="[% imageheight %]" alt="" /> [% END %]</button>
+			  </div>
+			</div>
+		</div>
+
+	</div>
+
+[%# example
+	form_submit(
+		class = 'w-auto',
+		warn = l('Обязательные поля'),
+		id = 'now-send',
+		param = 'disabled="disabled"',
+		name = l('Далее'),
+		image ='',
+		imagewidth = '6px',
+		imageheight = '15px',
+		widthwarn = '',
+		widthformbtn ='',
+		paddingformbtn = ''
+	); %]

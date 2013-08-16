@@ -3,7 +3,7 @@
 # This file is part of PGWS - Postgresql WebServices.
   description = 'Примеры разметки страниц';
 
-  resp.skin = 'wide'; # страница на всю ширину
+  resp.frame = 'wide'; # страница на всю ширину
 
 %]
 
@@ -46,7 +46,6 @@
 
     
 [%  
-PROCESS 'macro/base.tt2'; 
 container_begin;
 # Masthead
 # ==================================================
@@ -192,7 +191,7 @@ section_end;
 # Buttons
 # ==================================================
  section_begin(header = 'Buttons', id = 'buttons'); 
-	table_begin(class='table-bordered table-striped');
+	table_begin();
 	%] <thead> [%
 	  tr(use_th=1, list = ['Button', 'Large Button', 'Small Button', 'Disabled Button', 'Button with Icon', 'Split Button']);
 	%] </thead> [%
@@ -296,7 +295,7 @@ section_end;
 # Tables
 # ==================================================
  section_begin(header = 'Tables', id = 'tables');
-    table_begin(class='table-bordered table-striped table-hover');
+    table_begin();
       tr(list = ['#','First Name','Last Name','UserName'], use_th=1 thead=1);
       tr(list = [1,'Mark','Otto','@mdo']);;
       tr(list = [2,'Jacob','Thornton','@fat']);

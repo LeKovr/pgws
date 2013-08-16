@@ -60,6 +60,7 @@ sub prefix  { $_[0]->{'prefix'}   }
 sub accept  { $_[0]->{'accept'}   }
 sub cookie  { $_[0]->{'cookie'}   }
 sub params  { $_[0]->{'params'}   }
+sub server_name { $_[0]->{'server_name'} }
 
 #----------------------------------------------------------------------
 
@@ -83,6 +84,7 @@ sub new {
   $self->{'type'} ||= $ENV{'CONTENT_TYPE'};
   $self->{'method'} ||= $ENV{'REQUEST_METHOD'};
   $self->{'accept'} ||= $ENV{'HTTP_ACCEPT'} || '';
+  $self->{'server_name'} ||= $ENV{'SERVER_NAME'} || '';
   $S = $self;
 
   $self->{'encode_utf'} = $ENV{'FCGI_ROLE'}?1:0;
@@ -178,6 +180,7 @@ sub header {
     #}
     $resp{'-X_Accel_Redirect'} = $file_def->{'path'};
     $resp{'-Last_Modified'} = $last_modified;
+    print STDERR Dumper(\%resp);
   }
   $self->{'_q'}->no_cache(1); # запрет на локальное кеширование без валидации на сервере
   print $self->{'_q'}->header(%resp);

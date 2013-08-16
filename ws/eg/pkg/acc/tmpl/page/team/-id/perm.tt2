@@ -7,7 +7,7 @@
   meta.html_headers.push('/css/acc/common.css');
 
   team_id = page.args.0;
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;
+  INCLUDE "inc/page_siblings.tt2", code = 'team.id', id = team_id, active_code=page.code;
   
   roles = api('team.role', id => team_id);
   permissions = api('team.permission', id => team_id);
@@ -17,7 +17,7 @@
     role_permissions.push(rps);
   END;
   section_begin(header => l("Разрешения"), id => 'perm');
-    table_begin(class='table-bordered table-striped table-hover');
+    table_begin();
       %]<thead>[%
         h = [l("Разрешение/Роль")];
         FOREACH r IN roles;

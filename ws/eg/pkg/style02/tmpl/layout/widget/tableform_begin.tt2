@@ -2,6 +2,6 @@
   description = 'Начало таблицы с парами имя_значение';
   IF show_toplink ; '<div align="right"><a href="#top">[TOP]</a></div>'; END;
   h(type=2,text='<a name=' _ name _ ' class="name" href="#' _ name _ '">'_ value _ '</a>'); 
-  table_begin(class='table-striped table-bordered');
+  table_begin();
 %]
 

@@ -100,7 +100,7 @@ CREATE TABLE wsd.account_contact (
   account_id      INTEGER       NOT NULL REFERENCES wsd.account
 , contact_type_id INTEGER       NOT NULL REFERENCES acc.account_contact_type
 , value           TEXT
-, created_at      TIMESTAMP(0)
+, created_at      TIMESTAMP(0)  DEFAULT CURRENT_TIMESTAMP
 , verified_at     TIMESTAMP(0)
 , deleted_at      TIMESTAMP(0)
 , CONSTRAINT account_contact_pkey PRIMARY KEY (account_id, contact_type_id, value)
@@ -155,7 +155,7 @@ CREATE TABLE wsd.permission (
   id            INTEGER   NOT NULL PRIMARY KEY
 , team_id       INTEGER       NULL REFERENCES wsd.team
 , name          TEXT      NOT NULL
-, pkg           TEXT      NOT NULL DEFAULT ws.pg_cs() 
+, pkg           TEXT      NOT NULL 
 );
 SELECT pg_c('r', 'wsd.permission', 'Разрешение')
 , pg_c('c', 'wsd.permission.id',      'd_id,     ID разрешения')
@@ -166,6 +166,10 @@ SELECT pg_c('r', 'wsd.permission', 'Разрешение')
 
 CREATE SEQUENCE wsd.permission_id_seq;
 ALTER TABLE wsd.permission ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.permission_id_seq');
+
+INSERT INTO wsd.pkg_default_protected (pkg, schema, wsd_rel, wsd_col, func) VALUES
+  ('acc', 'acc', 'permission', 'pkg', 'ws.pg_pkg()')
+;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.role_permission (
@@ -183,7 +187,7 @@ CREATE TABLE wsd.permission_acl (
   perm_id       INTEGER    NOT NULL
 , class_id      INTEGER    NOT NULL
 , link_id       INTEGER    NOT NULL
-, team_link_id  INTEGER    NOT NULL REFERENCES acc.team_link
+, team_link_id  INTEGER    NOT NULL REFERENCES acc.team_link ON DELETE CASCADE
 , acl_id        INTEGER    NOT NULL
 , CONSTRAINT permission_acl_pkey PRIMARY KEY (perm_id, class_id, link_id, team_link_id, acl_id)
 );

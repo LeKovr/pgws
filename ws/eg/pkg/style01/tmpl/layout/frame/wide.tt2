@@ -1,0 +1,4 @@
+[% META
+  description = 'Фрейм страницы на всю ширину экрана';
+  INCLUDE "layout/$resp.layout/default.tt2";
+%]

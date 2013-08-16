@@ -1,13 +1,18 @@
+<div class="tabBlock navbar">
+<div class="navbar-inner">
+<ul class='nav nav-pills' style="width:92%">
 [%
-PROCESS 'macro/base.tt2';
-  linksUI=[];
-  FOR u IN meta.page_tabs;
-    act = IF u.code == page.code; 1; END;
-    linksUI.push(active = act, name = u.name, linkparam=' tag=' _ loop.count, href=uri_mk(u.req));
-  END;
-
- navtabs(links=linksUI);
+    FOR u IN meta.page_tabs;
+      %]<li class="[% IF u.code == page.code; ' active'; END %]">
+          <a href="[% uri_mk(u.req) %]" class="ajax[% IF u.code == page.code; ' active'; END %]" tag="[% loop.count %]">[% u.name %]</a>
+          <span class="tab-statwrap"><span data-tab="" class="tab-stat success" style="display:block;"></span></span>
+        </li>[%
+    END;
 %]
+</ul>
+  [% append_to_menu; %]
+</div>
+</div>
 <div id="error"></div>
 [%
   FOR u IN meta.page_tabs;

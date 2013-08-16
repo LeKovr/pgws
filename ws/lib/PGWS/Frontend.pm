@@ -55,6 +55,8 @@ use constant CACHE_STORE        => ($ENV{PGWS_FE_CACHE_STORE_DIR} || 'www-cache'
 use constant CACHE_MODE         => ($ENV{PGWS_FE_CACHE_MODE} || 0);  # 0 - Nope, 1 - R, 2 - W, 3 - RW
 use constant CACHE_TTL          => ($ENV{PGWS_FE_CACHE_TTL} || 0);   # 0 - Nope, -1 - Forever, else - given seconds
 
+use constant LAYOUTS             => ($ENV{PGWS_FE_LAYOUTS});
+
 use Locale::Maketext::Simple('Path' => ROOT.'/var/i18n');
 
 
@@ -67,6 +69,7 @@ sub template  { $_[0]->{'template'} }
 
 sub dbc       { $_[0]->{'_dbc'} }
 sub const     { $_[0]->{'_const'} }
+sub layout    { $_[0]->{'_layout'} }
 
 use Data::Dumper;
 #----------------------------------------------------------------------
@@ -75,19 +78,20 @@ sub new {
   my ($class, $cfg) = @_;
   my $self = $cfg ? { %{$cfg} } : {};
   bless $self, $class;
-
+print STDERR '>>>',;
   my $dbc =  $self->{'_dbc'} = PGWS::DBConfig->new({
     'pogc' => POGC
   , 'poid' => $self->{'frontend_poid'}
   , 'data_set' => 1
   });
-  my $layout  = $dbc->config('fe.tmpl.layout_default'),
-  my $ext     = $dbc->config('fe.tmpl.ext');
-
+  my $ext      = $dbc->config('fe.tmpl.ext');
+  my @layouts  = split /\s+/,(LAYOUTS);
+  my @includes = map { ROOT.'var/tmpl/layout/'.$_ } @layouts;
+  $self->{'_layout'} = $layouts[0];
   my %template_config = (
-    INCLUDE_PATH  => ROOT.'var/tmpl',
+    INCLUDE_PATH  => [ @includes, ROOT.'var/tmpl' ],
     COMPILE_DIR   => ROOT.'var/tmpc',
-    PRE_PROCESS   => $layout.$ext,
+    PRE_PROCESS   => 'config'.$ext,
     %{$dbc->config('fe.tt2')}
   );
   $self->{'template'} = Template->new(%template_config);
@@ -229,7 +233,7 @@ sub process_job {
     my $out = '';
     $self->template->process($jobs.$call.$ext, $vars, \$out) or $status = '500 '.$self->template->error();
     $resp = $vars->{'resp'};
-    $meta->dump($vars);
+    $meta->dump({ 'vars' => $vars, 'out' => $out});
   }
   $meta->debug('request status: %s', $status);
   $meta->dump({'resp' => $resp});
@@ -250,8 +254,8 @@ sub process_get {
   my $css = $self->load_cookie($req, 'css');
   my $resp = {
     post_uri => $req->prefix, # TODO: для CGI реализовать подмену api_cgi => /cgi-bin/pwl.pl
-    layout   => $dbc->config('fe.tmpl.layout_default'),
-    skin     => $dbc->config('fe.tmpl.skin_default'),
+    layout   => $self->layout,
+    frame    => $dbc->config('fe.tmpl.frame_default'),
     css      => $css,
     enc      => $meta->charset,
     ctype    => 'text/html',
@@ -266,7 +270,7 @@ sub process_get {
     my $file_def = $vars->{'meta'}{'redirect_file'};
     my $path = $file_def->{'path'}; # TODO: or die
     $meta->debug('Send responce from cache: '.$path);
-    $file_def->{'path'} = join '/', FILE_URI, CACHE_STORE, $path;
+    $file_def->{'path'} = join '/', FILE_URI, CACHE_STORE, $req->server_name . $path;
     $req->header($resp->{'ctype'}.'; '.$meta->charset, "200 OK", $file_def);
     return;
   }
@@ -312,7 +316,7 @@ sub process_get {
 
   $req->header($resp->{'ctype'}.'; '.$meta->charset, "$status $note");
 
-  $file = 'layout/'.$resp->{'layout'}.'/'.$resp->{'skin'}.$ext;
+  $file = 'frame/'.$resp->{'frame'}.$ext;
   $vars->{'layout_head'} = 1;
   $self->template->process($file, $vars, \$top) or die 'error processing header ('.$file.'): '.$self->template->error();
   $req->print($top, $body);
@@ -323,10 +327,18 @@ sub process_get {
 
   $self->template->process($file, $vars, \$btm) or die 'error processing footer ('.$file.'): '.$self->template->error();
   $req->print($btm);
-  if ((CACHE_MODE & 2) == 2 and !$vars->{'session'}{'sid'}) { $self->response_cache($vars, $meta, $top, $body, $btm); }
+  if ($status eq '200' and (CACHE_MODE & 2) == 2 and !$vars->{'session'}{'sid'}) { 
+    $self->response_cache($vars, $meta, $top, $body, $btm); 
+  }
   $meta->debugN('get', 'exit after %s with %i hits and %i db calls', $meta->elapsed, $meta->stat_hit, $meta->stat_db);
 }
 
+#----------------------------------------------------------------------
+# Файл кэша страницы
+sub _response_cache_prefix {
+  my $server = shift;
+  return join '/', FILE_STORE_PATH, CACHE_STORE, $server;
+}
 
 #----------------------------------------------------------------------
 # Сохранить страницу в кэше
@@ -334,7 +346,7 @@ sub response_cache {
   my ($self, $vars, $meta, @content) = @_;
   my $path = PGWS::Utils::uri_cache_name($vars->{'page'}{'req'}, $vars->{'get'});
   $meta->debug('Going to set cache: '.$path);
-  PGWS::Utils::data_set(join ("\n", @content), join '/', FILE_STORE_PATH, CACHE_STORE.$path);
+  PGWS::Utils::data_set(join ('', @content), _response_cache_prefix($vars->{'server_name'}).$path);
 }
 
 #----------------------------------------------------------------------
@@ -343,7 +355,7 @@ sub response_cached {
   my ($self, $vars, $meta) = @_;
   my $found = 0;
   my $path = PGWS::Utils::uri_cache_name($vars->{'page'}{'req'}, $vars->{'get'});
-  my $path_abs =join '/', FILE_STORE_PATH, CACHE_STORE.$path;
+  my $path_abs = _response_cache_prefix($vars->{'server_name'}).$path;
   $meta->debug('Going to get cache: '.$path);
   if (PGWS::Utils::data_is_actual($path_abs, CACHE_TTL)) {
     $vars->{'meta'}{'redirect_file'} = {
@@ -387,7 +399,7 @@ sub response {
     }
     $acl = $self->acl($ws, $errors, $meta, $session, $page, $params);
     # TODO: убрать "добавление префикса для всех кроме главной"
-    $page->{'req'} = $req->prefix.'/'.$page->{'req'} if($page and $page->{'req'});
+    $page->{'req'} = $req->prefix.'/'.$page->{'req'}; ## if($page); ## and $page->{'req'});
     $page->{'is_hidden'} ||= $dbc->config('fe.site_is_hidden'); # закрываем незакрытое если весь сайт закрыт (не production)
   }
   my $stg_args = $have_sid_arg?"$sid_name=$sid":'';
@@ -408,6 +420,7 @@ sub response {
     'debug'       => DEBUG_IFACE ? $meta->debug_level : 0,
     'session'     => $session,
     'resp'        => $resp,
+    'server_name' => $req->server_name,
     %{$self->tmpl_vars($ws, $errors, $meta, $req->proto, $req->prefix, $stg_args, $dbc->config('fe.def.code'))}
   };
   unless ($req->method eq 'GET' or $req->method eq 'HEAD') {
@@ -415,7 +428,13 @@ sub response {
   } elsif (!$page or !$page->{'tmpl'} or (defined($acl) and $acl == 0)) {
     return ('404', 'Not Found', $vars);
   } elsif ($session->{'sid_error'}) {
-    return ('409', 'Conflict', $vars); #
+    # некорректный идентификатор сессии
+    if ($sid_name and $session->{'sid_error'} eq 'sid') {
+      # TODO: redirect на тот же url, но без sid
+      # my $u = PGWS::Utils::uri_mk($req->proto, $req->prefix, undef, $req->uri, $params);
+    } else {
+        return ('409', 'Conflict', $vars); #
+    }
   } elsif (!$acl) {
     return ('403', 'Forbidden', $vars); # необходимость авторизации определяется по !$acl
   } elsif (!$sid and ((CACHE_MODE & 1) == 1) and $self->response_cached($vars, $meta)) {
@@ -541,16 +560,6 @@ sub load_cookie {
 
   my $data = $dbc->config('fe.tmpl.'.$tag);
   my $user_data = $req->fetch_cook($data->{'cookie'}.'=([\\w]+)');
-  my @allowed = split /,\s*/, $data->{'allowed'};
-  my $current = $data->{'default'};
-  if ($user_data) {
-    foreach my $t (@allowed) {
-      if ($user_data eq $t) { $current = $t; last; }
-    }
-  }
-  $data->{'allowed_list'} = \@allowed;
-  $data->{'current'} = $current;
-  #$data->{'user'} = $user_data;
   #print STDERR '===',Dumper($data);
   return $data;
 }

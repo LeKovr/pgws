@@ -106,3 +106,57 @@ $_$;
 SELECT pg_c('f', 'const_realm_upload'      , 'область вызова методов загрузки файлов');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_info_class_id() RETURNS ws.d_class IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 2::ws.d_class;
+$_$;
+SELECT pg_c('f', 'const_info_class_id', 'Константа: ID класса info');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_ref_op_insert() RETURNS d_codei IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'INSERT'::ws.d_codei;
+$_$;
+SELECT pg_c('f', 'const_ref_op_insert', 'Константа: Код операции добавления позиции справочника');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_ref_op_update() RETURNS d_codei IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'UPDATE'::ws.d_codei;
+$_$;
+SELECT pg_c('f', 'const_ref_op_update', 'Константа: Код операции обновления позиции справочника');
+/* ------------------------------------------------------------------------- */
+
+CREATE OR REPLACE FUNCTION const_ref_op_delete() RETURNS d_codei IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'DELETE'::ws.d_codei;
+$_$;
+SELECT pg_c('f', 'const_ref_op_delete', 'Константа: Код операции удаления позиции справочника');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_update_timestamp() RETURNS timestamp IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT '2000-01-01'::timestamp;
+$_$;
+SELECT pg_c('f', 'const_min_timestamp', 'Константа: начальный timestamp изменений данных');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_ref_acls_internal() RETURNS d_acls IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT ARRAY[-1]::ws.d_acls;
+$_$;
+SELECT pg_c('f', 'const_ref_acls_internal', 'Константа: внутренний ACL обновления справочника');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_ref_code_timezone() RETURNS d_code IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'timezone'::ws.d_code;
+$_$;
+SELECT pg_c('f', 'const_ref_code_timezone', 'Константа: Код справочника часовых поясов');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_lang_default() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 'ru'::TEXT;
+$_$;
+SELECT pg_c('f', 'const_lang_default', 'Константа: Код языка по умолчанию');

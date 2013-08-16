@@ -21,7 +21,7 @@
 /* ------------------------------------------------------------------------- */
 
 CREATE TABLE class_link (
-  class_id   d_class  NOT NULL REFERENCES class
+  class_id   d_class  NOT NULL REFERENCES class ON DELETE CASCADE
 , id         d_id32   NOT NULL
 , name       d_string NOT NULL
 , CONSTRAINT class_link_pkey PRIMARY KEY (class_id, id)

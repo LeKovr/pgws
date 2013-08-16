@@ -28,7 +28,7 @@
       gi = kind.group_id;
     END;
     h(type = 2, id = 'kind-' _ kind.id, text = kind.id _ '. ' _ kind.name);
-    table_begin(class='table-bordered table-striped table-hover kind-list');
+    table_begin(class='kind-list');
       tr(list=[l('Описание'), kind.anno]);
       tr(list=[l('Формат заголовка'), kind.name_fmt]);
       tr(list=[l('Приоритет по умолчанию'), kind.def_prio]);
@@ -41,7 +41,7 @@
       l('<tr><td>Роли</td><td>');
     FOR role IN roles;
       IF loop.first;
-        table_begin(class='table-bordered table-striped table-hover');
+        table_begin();
         tr(list = [ l('Роль'), l('Активна'), l('Приоритет'), 'Спецификация'], use_th = 1, thead = 1);
       END;
       on_name = role.is_on ? l('Да') : l('Нет');

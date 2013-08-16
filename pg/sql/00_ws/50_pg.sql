@@ -229,6 +229,7 @@ $_$
     r_pg_type pg_catalog.pg_type;
     v_code TEXT;
     v_type TEXT;
+    v_type1 TEXT;
     v_tpnm TEXT;
     v_islist boolean;
     v_schm TEXT;
@@ -303,10 +304,13 @@ $_$
         ELSE
           RAISE NOTICE '   column % % (%)', rec.attname, v_type, rec.format_type;
         END IF;
-        v_type := ws.pg_dt_registered(v_type);
-        IF v_type IS NULL THEN
-          RAISE EXCEPTION 'Unknown type (%)', v_type;
-        END IF;
+        BEGIN
+          v_type := ws.pg_dt_registered(v_type);
+          EXCEPTION
+            WHEN raise_exception THEN
+              RAISE EXCEPTION 'Unknown type %:%', v_code, v_type
+          ;
+        END;
         BEGIN
           INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null, is_list)
             VALUES (v_code, rec.attnum, rec.attname, v_type, COALESCE(v_anno, rec.attname), rec.def_val, NOT rec.attnotnull,v_islist)
@@ -443,4 +447,40 @@ $_$
     RAISE EXCEPTION '%', v_text;
     RETURN NEW;
   END;
-$_$;/* ------------------------------------------------------------------------- */
+$_$;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION replace_table_desc(a_name TEXT, a_pattern TEXT, a_replacement TEXT) RETURNS SETOF t_hashtable VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+DECLARE
+  v_schema TEXT;
+  v_table TEXT;
+  v_rec RECORD;
+  v_desc TEXT;
+  v_changed BOOL;
+BEGIN
+  v_schema := split_part(a_name, '.', 1);
+  v_table := split_part(a_name, '.', 2);
+  FOR v_rec IN
+    SELECT
+      attnum AS column_number
+    , attname AS column_name
+    , col_description(attrelid, attnum) AS description
+      FROM pg_catalog.pg_attribute
+      WHERE attrelid = a_name::regclass
+        AND attnum > 0
+        AND NOT attisdropped
+  LOOP
+    v_desc := regexp_replace(v_rec.description, a_pattern, a_replacement);
+    v_changed := (v_desc <> v_rec.description);
+    IF v_changed THEN
+      EXECUTE ws.sprintf(E'COMMENT ON COLUMN %s.%s IS \'%s\'', a_name, v_rec.column_name, v_desc); 
+    END IF;
+    RETURN QUERY
+      SELECT CASE WHEN v_changed THEN '1' ELSE '0' END, v_desc;
+  END LOOP;
+  RETURN;
+END
+$_$;
+SELECT pg_c('f', 'replace_table_desc', 'Изменение комментариев всех столбцов таблицы по регулярному выражению');
+

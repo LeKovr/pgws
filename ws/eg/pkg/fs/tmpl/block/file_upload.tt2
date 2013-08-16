@@ -6,91 +6,202 @@
 # Аргументы:
 # obj_id - ID родительского документа
 # list_method - метод получения списка файлов
+# jsMethod_for_fileList - js метод для переопределения построения спика загруженных файлов
+# jsMethod_for_Delete - js метод для переопределения построения спика при удалении
+# noForm - заменяем тэг form на div если форма уже вложена  в тэг form
+# noUpload - режим просмотра, показываем только список файлов
 
 %][%
   meta.head.upload = 1;
 
 %]
 
-<div id='upload_form_template' class='hide span9'>
-  <div class='prepare'>
-    <form method='POST'>
-      <input type='hidden' name='id' value='[% obj_id; %]'>
-      <input type='file' class='inputFile' name='name' >
-      <input type='submit' class='hide' value='[% l('Отправить') %]'>
-    </form>
-  </div>
-  <span class='label span3'></span>
-  <div class='process hide span9'>
-      <div class='progressbarDiv'>
-        <div class='ui-progressbar-label'><span class='pb-percent offset1'></span><span>%. [% l('Осталось') %]: </span><span class='pb-sec'></span><span> [% l('сек')%]</span></div>
-      </div>
-      <input type='button' class='btnReset' value='[% l('Отменить') %]'>
-  </div>
-  <span class='status alert alert-info span2 hide'>
-  </span>
-</div>
-
-<div class="span9">
-  <div class="uploaded span4">
 [%
-  files = api(list_method, id => obj_id);
-  FOREACH f IN files;
-    %]<div class='fileDiv  span3'><a href="[% uri_mk(f.req) %]" >[% f.name %]</a> <a href='#' fileid='"[% f.id %]"' class='btnDelete close'>&times;</a><div class='deleteStatusError hide alert alert-error' ></div></div>[%
-  END
+row_begin;
+  div_begin(id='uploaded' _ code);
+    lists=[];
+    IF code;
+      files = api(list_method, id => obj_id, code => code);
+    ELSE;
+      files = api(list_method, id => obj_id);
+    END;
+    FOREACH f IN files;
+      comments = '';
+      IF f.anno;
+	comments='- ' _ f.anno _ ' ';
+      END;
+      lists.push({class='fileDiv', content = row_begin _ '<a href=' _ uri_mk(f.req) _ ' >' _ f.name _ '</a> <font style="font-size:10px;" class="muted">' _ comments _ '(' _ f.size _ ' байт)' _ f.created_by _ ',' _ f.created_at _ '</font>' _ (!noUpload ? '<a href="#" fileid=' _ f.id _ ' class="btnDelete close">&times;</a>' : '') _ div_begin(class='deleteStatusError hide alert alert-error') _ div_end _ row_end});
+    END;
+    IF jsMethod_for_fileList;
+      div_begin(size=7, class='hide');
+    ELSE;
+      div_begin(size=7);
+    END;
+      well_begin;
+	ul(class='nav nav-list uploaded', links=lists);
+      well_end;
+    div_end;
+  div_end;
+row_end;
 %]
-  </div>
-</div>
-<div class="upload span9">
-  <input type='button' class='add' value='[% l('Загрузить файл') %]'>
-</div>
+
+[%
+  IF !noUpload;
+    IF noForm;
+      div_begin(id='fileupload' _ code); 
+    ELSE;
+      form_begin(id='fileupload' _ code); 
+    END;
+      row_begin;
+	div_begin(size=7);
+	  span(class='btn btn-success fileinput-button', text='<i class="icon-plus icon-white"></i>' _ span(text='Выбрать файл...') _ input(type='file', name='name', autocomplete='off'));
+	div_end;
+      row_end;
+      div_begin(class='file-list');
+	%]<table class='table-striped'>
+	    <tbody ></tbody>
+	  </table>
+	[%
+      div_end;
+    IF noForm;
+      div_end;
+    ELSE;
+      form_end;
+    END;
+   END;
+   %]
+
 [% meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[
 
-var deleteFileOptions = {
-  action:     '/_[% list_method %]_del.json',
-  id:         [% obj_id %],
-  prefix:     '[% req.prefix %]',
-  onSuccess:  function(self, obj){
-    $(obj).addClass('hide');
-  },
-  onError:    function(self, obj, mess){
-    $(obj).find(self.options.classErrorMessage).show();
-    $(obj).find(self.options.classErrorMessage).text(mess);
+ $('#fileupload[%code%]').fileupload({
+        dataType: 'json',
+        url:'/upload/_[% list_method %]_add.json',
+        beforeSend: function(e, data) {
+          var objElement = $('#fileupload[%code%] .file-list table .'+data.formData.uuid);
+	  e.setRequestHeader('X-Progress-ID', data.formData.uuid);
+          var interval = window.setInterval(function () {
+	      fetchProgress(data.formData.uuid,interval,objElement);
+	  },1000);
+	  var eVar = e;
+	  var dataVar = data;
+	  $(objElement).find('.cancelUpload').unbind('click');
+	  $(objElement).find('.cancelUpload').click(function(){
+	      window.clearTimeout(interval);
+	      var xhr = eVar;
+	      if (xhr.readyState === 1) {
+		xhr.abort('cancelled');
+	      }
+	      $(this).parents('tr').find('.bar').css('width','0%');
+	      var startButton = $(this).parents('tr').find('.startUpload');
+	      $(startButton).show();
+	      $(this).parents('tr').find('.comment').show();
+	      $(this).parents('tr').find('span.progress').hide();
+	      $(this).unbind('click');
+	      $(this).click(function(){
+		$(this).parents('tr:first').remove();
+	      });
+	      return false;
+	  });
+        },
+        add: function (e, data) {
+            var file = data.files[0];
+            var fileDetails = '<tr ><td>' + 
+            file.name + 
+            '</td><td class="progress" style="width:30%;"><div class="comment">Описание:<input type="text" name="anno"/></div><span class="progress"><span class="js-progress-active progress-active"> <div class="bar" style="width:0%;"></div></span>' + 
+            '</span></td><td class="cancel-file"><button  class="btn btn-primary start startUpload" style="padding:0px 12px;"><i class="icon-upload icon-white"></i><span>Начать загрузку</span></button>'+
+            '<button class="btn btn-warning cancel cancelUpload" style="padding:0px 12px;"><i class="icon-ban-circle icon-white"></i><span>Отмена</span></button></td><td class="description"></td></tr>';
+
+            if ($('#fileupload[%code%] .file-list table tr:last').length > 0) {
+                data.context = $('#fileupload[%code%] .file-list table tr:last').after(fileDetails);
+            } else {
+                data.context = $(fileDetails).appendTo('#fileupload[%code%] .file-list table');
+            }
+            var objData = $('#fileupload[%code%] .file-list table tr:last');
+	    $(objData).find('.startUpload').click(function(){
+	      $(this).hide();
+	      var uu = generateUuid();
+	      $(objData).removeClass();
+	      $(objData).addClass(uu);
+	      $(objData).find('.comment').hide();
+	      $(objData).find('.progress').show();
+	      data.formData = {'id':'[% obj_id; %]'
+			      ,'uuid': uu
+			      ,'anno': $(objData).find("[name='anno']").val()
+			      [% IF code; %]
+				,'code': '[% code; %]'
+			      [% END; %]
+			      };
+	      $(data).submit();  
+	      return false;
+	    });
+	    $(objData).find('.cancelUpload').click(function(){
+	      $(this).parents('tr:first').remove();
+	      return false;
+	    });
+	},
+	error: function (e, data, xhr) {
+	  if (e.status === 413){
+	  var objElement;
+	    if($('#fileupload[%code%] .file-list table tr').size()==1){
+	      objElement = $(this);
+	    }else{
+	      objElement = $(this).next();
+	    }
+	    $(objElement).find('.cancel-file').html('<span class="error alert alert-error">Размер файла больше допустимого</span>');
+	  }
+	},
+	done: function(e, data){
+	if (data.result.success === "true") {
+	      var file = data.result.result.data;
+     	      $('#fileupload[%code%] .file-list table .'+data.formData.uuid).find('.bar').css('transition','width 0s ease 0s');
+	      $('#fileupload[%code%] .file-list table .'+data.formData.uuid).find('.bar').css('width','100%');
+	      var comment=''
+	      if(file.anno){
+		comment = '- '+file.anno+' ';
+	      }
+	      $('#uploaded[%code%] .uploaded').append('<li class=\'fileDiv\'><div class="row"><a href="[% req.prefix %]/' + file.req + '">' + file.name + '</a> <font style="font-size:10px;" class="muted">'+comment+'(' + file.size + ' байт)' + file.created_by + ',' + file.created_at + '</font><a href="#" fileid="' + file.id + '" class="btnDelete close">&times;</a><div class="deleteStatusError alert alert-error hide" ></div></div></li>');
+	      $('#fileupload[%code%] .file-list table .'+data.formData.uuid).find('.cancel-file').html('<span class="status alert alert-info">Файл загружен</span>');
+	      [% IF jsMethod_for_fileList;
+		    jsMethod_for_fileList;%](file);[%
+		 END;
+	      %]
+	      $('.btnDelete').deleteFile(PGWS.var.fileupload.deleteFileOptions);
+	  }else{
+	      $('#fileupload[%code%] .file-list table .'+data.formData.uuid).find('.cancel-file').html('<span class="error alert alert-error">'+data.result.error.message+'</span>');
+	  }
+	  
+	}
+    });
+    
+if (PGWS.var === undefined) { PGWS.var = {}; }
+
+PGWS.var.fileupload = {
+  deleteFileOptions : {
+    action:     '/_[% list_method %]_del.json',
+    id:         [% obj_id %],
+    [% IF code; %]
+      code: '[% code; %]',
+    [% END; %]
+    prefix:     '[% req.prefix %]',
+    onSuccess:  function(self, obj){
+      $(obj).addClass('hide');
+      [% IF jsMethod_for_Delete; 
+	jsMethod_for_Delete%](self, obj);
+      [% END; %]
+    },
+    onError:    function(self, obj, mess){
+      $(obj).find(self.options.classErrorMessage).show();
+      $(obj).find(self.options.classErrorMessage).text(mess);
+    }
   }
 };
 
-var onSuccess = function(container, response){
-  if (response.success === "true") {
-    var file = response.result.data;
-    $('.uploaded').append('<div class=\'fileDiv span3\'><a href="[% req.prefix %]/' + file.req + '">' + file.name + '</a> <a href="#" fileid="' + file.id + '" class="btnDelete close">&times;</a><div class="deleteStatusError alert alert-error hide" ></div></div>')
-    container.find('.status').show();
-    container.find('.status').text("[% l('Файл загружен') %]");
-    $('.btnDelete').deleteFile(deleteFileOptions);
-  } else {
-    var error = response.result.error[0].message;
-    container.find('.status').show();
-    container.find('.status').text(error);
-  }
-};
-
-var onError = function(container, jqXHR, textStatus, errorThrown){
-  if (jqXHR.status === 413){
-    $(container).find('.status').show();
-    $(container).find('.status').text("[% l('Размер файла больше допустимого') %]");
-  }
-};
 
 // ----------------------------------------------------------------------------
 $(document).ready(function(){
-  $('.upload').formFieldUpload({
-   action:      '/upload/_[% list_method %]_add.json'
-  , template:   '#upload_form_template'
-  , onSuccess:  onSuccess
-  , onError:    onError
-  });
-  $('.btnDelete').deleteFile(deleteFileOptions);
+  $('.btnDelete').deleteFile(PGWS.var.fileupload.deleteFileOptions);
 });
 
 //]]>

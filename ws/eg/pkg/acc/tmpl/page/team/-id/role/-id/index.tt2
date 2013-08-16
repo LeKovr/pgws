@@ -24,7 +24,7 @@
     perm_list.push({name = p.name});
   END;
   
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'team.id', id = team_id;
+  INCLUDE "inc/page_siblings.tt2", code = 'team.id', id = team_id;
 
   well_begin;
     role.anno;

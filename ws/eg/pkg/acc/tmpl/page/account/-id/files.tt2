@@ -4,26 +4,28 @@
 
 [%
   acc_id = page.args.0;
- # rows = api('account.file_list', 'id' => acc_id);
+  files = api('account.fs_files', id => acc_id);
   c='';
 %]
 
 [%
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", code = 'account.id', id = acc_id, active_code=page.code;
-  table_begin(class='table-bordered');
+  INCLUDE "inc/page_siblings.tt2", code = 'account.id', id = acc_id, active_code=page.code;
+  table_begin();
 %]
 
-  [% FOR row IN rows %]
+  [% FOR row IN files %]
   [% IF loop.first; %]
     <thead>[%
-      tr(list = ['Имя файла','Формат','Каталог','Дата загрузки'], use_th=1);
-    %]</thead
+      tr(list = ['Имя файла','Описание','Формат','Каталог','Дата загрузки',''], use_th=1);
+    %]</thead>
   [% END %]
   <tr class="[% IF loop.count mod 2; 'even'; ELSE; 'odd'; END %]">
-    <td>[% row.name %]</td>
-    <td>[% row.format_code %]</td>
+    <td><a href='[% uri_mk(row.req) %]' >[% row.name  %]</a></td>
+    <td>[% row.anno %]</td>
+    <td>[% row.ext %]</td>
     <td>[% row.folder_name %]</td>
     <td>[% row.created_at %]</td>
+    <td><a class="btn btn-danger btnDelete" href="#" fileid='[%row.id%]'><i class="icon-trash icon-white"></i>Удалить</a><div class="deleteStatusError alert alert-error hide" ></div></td>
   </tr>
   [% END %]
 
@@ -31,5 +33,27 @@
   table_end; 
   %]
 
-      [% INCLUDE block/fs/file_upload.tt2 obj_id = acc_id, list_method = 'account.fs_files' %]
+      [% INCLUDE block/fs/file_upload.tt2 obj_id = acc_id, list_method = 'account.fs_files', jsMethod_for_fileList='PGWS.filesSuccess', jsMethod_for_Delete='PGWS.filesDelete'%]
+      
+      [% meta.js.${meta.js.size} = BLOCK %]
+	<script type="text/javascript">
+	//<![CDATA[
+	  PGWS.filesSuccess = function(file){
+	  var com = '';
+	    if (file.anno){
+	      com = file.anno;
+	    }
+	    var tr = '<tr><td><a href="[% req.prefix %]/' + file.req + '">'+file.name+'</a></td><td>'+com+'</td><td>'+file.ext+'</td><td>'+file.folder_name+'</td><td>'+file.created_at+'</td><td><a class="btn btn-danger btnDelete" href="#" fileid='+file.id+'><i class="icon-trash icon-white"></i>Удалить</a><div class="deleteStatusError alert alert-error hide" ></div></td></tr>';
+	    if($('.files-table tr').size()==0){
+	      var th = '<thead><tr><th>Имя файла</th><th>Формат</th><th>Каталог</th><th>Дата загрузки</th><th></th></tr></thead>';
+	      $(th).appendTo('.files-table');
+	    }
+	    $(tr).appendTo('.files-table');
+	  };
+	  PGWS.filesDelete = function(self, obj){
+	    $(obj.context).parents('tr').remove();
+	  };
+	//]]>
+	</script>
+      [% END; # BLOCK %]
   

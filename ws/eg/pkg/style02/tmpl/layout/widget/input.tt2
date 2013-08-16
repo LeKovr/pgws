@@ -13,6 +13,7 @@
     IF disabled; ' disabled="disabled"'; END;
     IF onclick; " onclick='$onclick'"; END;
     IF checked; ' checked="checked"'; END;
+    IF autocomplete; ' autocomplete="' _ autocomplete _ '"'; END;
     %]>
   [% ELSE; %]
     <textarea[% 

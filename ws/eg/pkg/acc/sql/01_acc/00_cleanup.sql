@@ -22,8 +22,9 @@
 
 /* ------------------------------------------------------------------------- */
 
-DELETE FROM ws.method                WHERE pkg = :'PKG';
 DELETE FROM job.handler             WHERE pkg = :'PKG';
+/*
+DELETE FROM ws.method                WHERE pkg = :'PKG';
 
 DELETE FROM ws.dt_part          WHERE dt_code IN (SELECT code FROM ws.dt WHERE code LIKE 'acc.%');
 DELETE from ws.dt               WHERE code LIKE 'acc.%';
@@ -45,7 +46,7 @@ DELETE FROM acc.class_link WHERE class_id IN (:SYSID, :AID, :TID, :RID);
 DELETE FROM ws.class WHERE id IN (:SYSID, :AID, :TID, :RID);
 
 DELETE FROM ws.error_data WHERE code ~ E'^Y0[34]';
-
+*/
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_cleanup_pkg(ARRAY[acc.const_team_group_prop(),acc.const_account_group_prop()]);
+SELECT cfg.prop_cleanup_without_value(ARRAY[acc.const_team_group_prop(),acc.const_account_group_prop()]);
 

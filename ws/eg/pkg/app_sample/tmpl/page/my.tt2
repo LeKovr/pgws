@@ -7,7 +7,7 @@
 
   ua = uri(code => 'account.id', id => account_id);
   IF uri_allowed(ua);
-    PROCESS "block/$TMPL_LAYOUT/load_subtree.tt2", item = ua, id = account_id, use_submenus = 0;
+    PROCESS "inc/load_subtree.tt2", item = ua, id = account_id, use_submenus = 0;
     account_pages = link;
     div_begin(size= 4 , offset=1);
       well_begin;
@@ -21,7 +21,7 @@
   IF team_id;
     ut = uri(code => 'team.id', id => team_id);
     IF uri_allowed(ut);
-      PROCESS "block/$TMPL_LAYOUT/load_subtree.tt2", item = ut, id = team_id, use_submenus = 0;
+      PROCESS "inc/load_subtree.tt2", item = ut, id = team_id, use_submenus = 0;
       team_pages = link;
       div_begin(size=4);
         well_begin;

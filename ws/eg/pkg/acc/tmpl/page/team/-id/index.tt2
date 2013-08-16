@@ -12,7 +12,7 @@
 
   name_value = team_profile.name;
 
-  INCLUDE "block/$TMPL_LAYOUT/page_siblings.tt2", item = page, id = team_id;
+  INCLUDE "inc/page_siblings.tt2", item = page, id = team_id;
   
   section_begin(header = 'Информация о команде', id = 'team');
       h(type = 3, text = 'Название');

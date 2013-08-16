@@ -37,7 +37,7 @@ CREATE TRIGGER validation_email BEFORE INSERT OR UPDATE ON wsd.account_contact
 CREATE TRIGGER validation_mobile_phone BEFORE INSERT OR UPDATE ON wsd.account_contact
   FOR EACH ROW
   WHEN (NEW.contact_type_id = acc.const_account_contact_mobile_phone_id())
-  EXECUTE PROCEDURE acc.validation_mobile_phone_trigger()
+  EXECUTE PROCEDURE acc.validation_phone_trigger()
 ;
 
 /* ------------------------------------------------------------------------- */

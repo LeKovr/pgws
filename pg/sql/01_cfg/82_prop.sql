@@ -27,7 +27,7 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 
 , ('ws.daemon.startup.sock_wait',       ARRAY['fcgi' ],             '10',     'Максимальная длина очереди ожидающих входящих запросов FCGI до обрыва новых соединений, шт')
 
-, ('ws.daemon.startup.pm.n_processes',  ARRAY['fcgi', 'tm'], '10',     'Количество запускаемых процессов, шт')
+, ('ws.daemon.startup.pm.n_processes',  ARRAY['fcgi', 'tm'], '5',     'Количество запускаемых процессов, шт')
 , ('ws.daemon.startup.pm.die_timeout',  ARRAY['fcgi', 'tm'], '4',      'Время ожидания корректного завершения процесса, сек')
 
 
@@ -38,12 +38,9 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.fcgi.frontend_poid',      ARRAY['fcgi'],              '1',      'POID настроек фронтенда')
 , ('ws.daemon.fcgi.core_poid',          ARRAY['fcgi'],              '1',      'POID настроек бэкенда')
 
-, ('ws.daemon.fe.tmpl.layout_default',  ARRAY['fe'],                'style02','Название макета страниц')
-, ('ws.daemon.fe.tmpl.skin_default',    ARRAY['fe'],                'default','Название скина страниц')
+, ('ws.daemon.fe.tmpl.frame_default',   ARRAY['fe'],                'default','Название фрейма страниц по умолчанию')
 , ('ws.daemon.fe.tmpl.css.cookie',      ARRAY['fe'],                'PGWS_css','Название cookie для хранения названия css')
-, ('ws.daemon.fe.tmpl.css.default',     ARRAY['fe'],                'default','Название css страниц')
-, ('ws.daemon.fe.tmpl.css.allowed',     ARRAY['fe'],                'amelia, cerulean, cosmo, cyborg, journal, readable, simplex, slate, spacelab, spruce, superhero, united','Доступные css страниц')
-, ('ws.daemon.lang.default',            ARRAY['fe','be'],           'ru',     'Код язык сайта по умолчанию')
+, ('ws.daemon.lang.default',            ARRAY['fe','be'],           ws.const_lang_default(),     'Код язык сайта по умолчанию')
 , ('ws.daemon.lang.allowed.:i',         ARRAY['fe','be'],           '',       'Допустимые коды языка сайта')
 , ('ws.daemon.fe.tt2.:s',               ARRAY['fe'],                '',       'Параметр конфигурации TemplateToolkit')
 
@@ -61,7 +58,7 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 
 , ('ws.daemon.fe.tmpl.ext',             ARRAY['fe'],                '.tt2',       'Расширение файлов шаблонов')
 
-, ('ws.daemon.fe.tmpl.error',           ARRAY['fe'],                'app_sample/error', 'Шаблон страницы описаний ошибок')
+, ('ws.daemon.fe.tmpl.error',           ARRAY['fe'],                'app_common/error', 'Шаблон страницы описаний ошибок')
 , ('ws.daemon.fe.tmpl.pages',           ARRAY['fe'],                'page/','Каталог шаблонов, вызываемых по GET-запросу')
 , ('ws.daemon.fe.tmpl.jobs',            ARRAY['fe'],                'job/', 'Каталог шаблонов, вызываемых из Job')
 

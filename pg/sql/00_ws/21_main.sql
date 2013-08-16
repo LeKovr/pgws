@@ -39,7 +39,7 @@ CREATE TABLE method (
 , args          text     NOT NULL
 , pkg           text     NOT NULL DEFAULT ws.pg_cs()
 , realm_code d_code
-, CONSTRAINT method_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action
+, CONSTRAINT method_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action ON DELETE CASCADE
 );
 SELECT pg_c('r', 'method', 'Метод API')
 , pg_c('c', 'method.code'       , 'внешнее имя метода')
@@ -82,7 +82,7 @@ CREATE TABLE page_data (
 , uri_re     text     NULL
 , uri_fmt    text     NULL
 , pkg        TEXT     NOT NULL
-, CONSTRAINT page_fkey_class_action FOREIGN KEY (class_id, action_id) REFERENCES class_action
+, CONSTRAINT page_fkey_class_action FOREIGN KEY (class_id, action_id) REFERENCES class_action ON DELETE CASCADE
 );
 SELECT pg_c('r', 'page_data', 'Атрибуты страниц для page_data')
 , pg_c('c', 'page_data.code'      , 'Идентификатор страницы')

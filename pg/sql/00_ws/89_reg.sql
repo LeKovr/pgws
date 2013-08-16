@@ -25,8 +25,6 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, args
    ('info.date',                  2, 1, 2, 3, pg_cs('date_info'), '')
   ,('info.month',                 2, 1, 2, 3, pg_cs('month_info'), '')
   ,('info.year_months',           2, 1, 2, 5, pg_cs('year_months'), '')
-  ,('info.ref_info',              2, 1, 2, 7, pg_cs('ref_info'), 'id=65')
-  ,('info.ref',                   2, 1, 2, 7, pg_cs('ref'), 'id=65')
 ;
 
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, is_i18n, args_exam) VALUES

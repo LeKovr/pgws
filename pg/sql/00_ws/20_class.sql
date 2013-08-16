@@ -28,6 +28,7 @@ CREATE TABLE class (
 , is_ext     bool     NOT NULL -- true и задан parent_id и у parent такой же id_count => =parent.is_ext
 , sort       d_sort
 , code       d_code   NOT NULL UNIQUE
+, pkg        TEXT     NOT NULL DEFAULT ws.pg_cs()
 , name       text     NOT NULL
 );
 SELECT pg_c('r', 'class', 'Класс объекта')
@@ -42,7 +43,7 @@ SELECT pg_c('r', 'class', 'Класс объекта')
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE class_status (
-  class_id   d_class  REFERENCES class
+  class_id   d_class  REFERENCES class ON DELETE CASCADE
 , id         d_id32   -- > 0
 , sort       d_sort
 , name       text     NOT NULL
@@ -57,7 +58,7 @@ SELECT pg_c('r', 'class_status', 'Статус объекта')
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE class_action (
-  class_id   d_class  REFERENCES class
+  class_id   d_class  REFERENCES class ON DELETE CASCADE
 , id         d_id32
 , sort       d_sort
 , name       text     NOT NULL
@@ -76,8 +77,8 @@ CREATE TABLE class_status_action (
 , status_id  d_id32
 , action_id  d_id32
 , CONSTRAINT class_status_action_pkey PRIMARY KEY (class_id, status_id, action_id)
-, CONSTRAINT class_status_action_class_id_status_id_fkey FOREIGN KEY (class_id, status_id) REFERENCES class_status
-, CONSTRAINT class_status_action_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action
+, CONSTRAINT class_status_action_class_id_status_id_fkey FOREIGN KEY (class_id, status_id) REFERENCES class_status ON DELETE CASCADE
+, CONSTRAINT class_status_action_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action ON DELETE CASCADE
 );
 SELECT pg_c('r', 'class_status_action', 'Акция по статусу объекта')
 , pg_c('c', 'class_status_action.class_id',  'ID класса')
@@ -87,7 +88,7 @@ SELECT pg_c('r', 'class_status_action', 'Акция по статусу объе
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE class_acl (
-  class_id   d_class  REFERENCES class
+  class_id   d_class  REFERENCES class ON DELETE CASCADE
 , id         d_acl
 , is_sys     bool     NOT NULL -- не показывать публично
 , sort       d_sort
@@ -108,8 +109,8 @@ CREATE TABLE class_action_acl (
 , action_id  d_id32
 , acl_id     d_acl
 , CONSTRAINT class_action_acl_pkey PRIMARY KEY (class_id, action_id, acl_id)
-, CONSTRAINT class_action_acl_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action
-, CONSTRAINT class_action_acl_class_id_acl_id_fkey FOREIGN KEY (class_id, acl_id) REFERENCES class_acl
+, CONSTRAINT class_action_acl_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action ON DELETE CASCADE
+, CONSTRAINT class_action_acl_class_id_acl_id_fkey FOREIGN KEY (class_id, acl_id) REFERENCES class_acl ON DELETE CASCADE
 );
 SELECT pg_c('r', 'class_action_acl', 'Уровень доступа для акции объекта')
 , pg_c('c', 'class_action_acl.class_id',  'ID класса')
@@ -125,9 +126,9 @@ CREATE TABLE class_status_action_acl_addon (
 , acl_id     d_acl
 , is_addon   BOOL NOT NULL DEFAULT FALSE -- TRUE добавляем, FALSE - исключаем
 , CONSTRAINT class_status_action_acl_addon_pkey PRIMARY KEY (class_id, status_id, action_id, acl_id)
-, CONSTRAINT class_status_action_acl_addon_class_id_status_id_fkey FOREIGN KEY (class_id, status_id) REFERENCES class_status
-, CONSTRAINT class_status_action_acl_addon_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action
-, CONSTRAINT class_status_action_acl_addon_class_id_acl_id_fkey FOREIGN KEY (class_id, acl_id) REFERENCES class_acl
+, CONSTRAINT class_status_action_acl_addon_class_id_status_id_fkey FOREIGN KEY (class_id, status_id) REFERENCES class_status ON DELETE CASCADE
+, CONSTRAINT class_status_action_acl_addon_class_id_action_id_fkey FOREIGN KEY (class_id, action_id) REFERENCES class_action ON DELETE CASCADE
+, CONSTRAINT class_status_action_acl_addon_class_id_acl_id_fkey FOREIGN KEY (class_id, acl_id) REFERENCES class_acl ON DELETE CASCADE
 );
 SELECT pg_c('r', 'class_status_action_acl_addon', 'Дополнения (+/-) к итоговым разрешениям')
 , pg_c('c', 'class_status_action_acl_addon.class_id',  'ID класса')

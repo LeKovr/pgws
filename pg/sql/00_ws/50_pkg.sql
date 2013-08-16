@@ -155,7 +155,7 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_op_before(a_op t_pkg_op, a_code name, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pkg_op_before(a_op t_pkg_op, a_code name, a_schema name, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     r_pkg ws.pkg%ROWTYPE;
@@ -167,15 +167,30 @@ $_$
     r_pkg := ws.pkg(a_code);
     CASE a_op
       WHEN 'init' THEN
-        IF r_pkg IS NOT NULL THEN
-          RAISE EXCEPTION '***************** Package % (%) installed already at % (%) *****************'
-          , a_code, a_ver, r_pkg.stamp, r_pkg.id
+        IF r_pkg IS NOT NULL AND a_schema = ANY(r_pkg.schemas)THEN
+          RAISE EXCEPTION '***************** Package % schema % installed already at % (%) *****************'
+          , a_code, a_schema, r_pkg.stamp, r_pkg.id
           ;
         END IF;
-        INSERT INTO ws.pkg (id, code, ver, log_name, user_name, ssh_client, op) VALUES 
-          (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client, a_op)
-          RETURNING * INTO r_pkg
-        ;
+        IF r_pkg IS NULL THEN
+          INSERT INTO ws.pkg (id, code, schemas, log_name, user_name, ssh_client, op) VALUES 
+            (NEXTVAL('ws.pkg_id_seq'), a_code, ARRAY[a_schema], a_log_name, a_user_name, a_ssh_client, a_op)
+            RETURNING * INTO r_pkg
+          ;
+        ELSE 
+          UPDATE ws.pkg SET
+            id          = NEXTVAL('ws.pkg_id_seq') -- runs after rule
+          , schemas     = array_append(schemas, a_schema)
+          , log_name    = a_log_name
+          , user_name   = a_user_name
+          , ssh_client  = a_ssh_client
+          , stamp       = now()
+          , op          = a_op
+          WHERE code = a_code
+            RETURNING * INTO r_pkg
+          ;
+        END IF;
+        r_pkg.schemas = ARRAY[a_schema]; -- save schema in log
         INSERT INTO ws.pkg_log VALUES (r_pkg.*);
       WHEN 'make' THEN
         UPDATE ws.pkg SET
@@ -186,14 +201,14 @@ $_$
         , stamp       = now()
         , op          = a_op
         WHERE code = a_code
-          AND ver  = a_ver
           RETURNING * INTO r_pkg
         ;
         IF NOT FOUND THEN
-          RAISE EXCEPTION '***************** Package % ver % does not found *****************'
-          , a_code, a_ver
+          RAISE EXCEPTION '***************** Package % schema % does not found *****************'
+          , a_code, a_schema
           ;
         END IF;
+        r_pkg.schemas = ARRAY[a_schema]; -- save schema in log
         INSERT INTO ws.pkg_log VALUES (r_pkg.*);
       WHEN 'drop', 'erase' THEN
         SELECT INTO v_pkgs
@@ -204,14 +219,24 @@ $_$
         IF v_pkgs IS NOT NULL THEN
           RAISE EXCEPTION '***************** Package % is required by others (%) *****************', a_code, v_pkgs;
         END IF;
-        PERFORM ws.pkg_references(FALSE, a_code);
+        PERFORM ws.pkg_references(FALSE, a_code, a_schema);
+        IF a_schema <> 'ws' OR a_code = 'ws' THEN
+          -- удаляем описания ошибок, заданные в этой схеме
+          -- кроме случая удаления схемы ws не в пакете ws
+          DELETE FROM ws.error_data ed USING ws.pg_const c 
+            WHERE c.code LIKE 'const_error%' 
+              AND c.schema = a_schema
+              AND ed.code = c.value
+          ;
+        END IF;
+
     END CASE;
     RETURN 'Ok';
   END;
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_op_after(a_op t_pkg_op, a_code name, a_ver TEXT, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pkg_op_after(a_op t_pkg_op, a_code name, a_schema name, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$
   DECLARE
     r_pkg ws.pkg%ROWTYPE;
@@ -222,28 +247,46 @@ $_$
     r_pkg := ws.pkg(a_code);
     CASE a_op
       WHEN 'init' THEN
-        IF a_code = 'ws' THEN
-          INSERT INTO ws.pkg (id, code, ver, log_name, user_name, ssh_client, op) VALUES 
-            (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client, a_op)
+        IF a_code = 'ws' AND a_schema = 'ws' THEN
+          INSERT INTO ws.pkg (id, code, schemas, log_name, user_name, ssh_client, op) VALUES 
+            (NEXTVAL('ws.pkg_id_seq'), a_code, ARRAY[a_schema], a_log_name, a_user_name, a_ssh_client, a_op)
             RETURNING * INTO r_pkg
           ;
+          r_pkg.schemas = ARRAY[a_schema]; -- save schema in log
           INSERT INTO ws.pkg_log VALUES (r_pkg.*);
         END IF;
-        PERFORM ws.pkg_references(TRUE, a_code);
+        PERFORM ws.pkg_references(TRUE, a_code, a_schema);
+        UPDATE ws.pkg SET op = 'done' WHERE code = a_code;
       WHEN 'drop', 'erase' THEN
-        INSERT INTO ws.pkg_log (id, code, ver, log_name, user_name, ssh_client, op)
-          VALUES (NEXTVAL('ws.pkg_id_seq'), a_code, a_ver, a_log_name, a_user_name, a_ssh_client, a_op)
+        INSERT INTO ws.pkg_log (id, code, schemas, log_name, user_name, ssh_client, op)
+          VALUES (NEXTVAL('ws.pkg_id_seq'), a_code, ARRAY[a_schema], a_log_name, a_user_name, a_ssh_client, a_op)
         ;
-        DELETE FROM ws.method           WHERE pkg = a_code;
-        DELETE FROM ws.page_data        WHERE pkg = a_code;
-        IF a_op = 'erase' THEN
-          DELETE FROM wsd.pkg_script_protected  WHERE pkg = a_code;
-          DELETE FROM wsd.pkg_default_protected WHERE pkg = a_code;
-          DELETE FROM wsd.pkg_fkey_protected    WHERE pkg = a_code;
-          DELETE FROM wsd.pkg_fkey_required_by  WHERE required_by = a_code;
+        IF a_schema <> 'ws' THEN
+          DELETE FROM ws.method           WHERE pkg = a_schema;
+          DELETE FROM ws.page_data        WHERE pkg = a_schema;
+          -- удалить классы пакета
+          DELETE FROM ws.class WHERE pkg = a_schema;
+        END IF;  
+        -- удалить неиспользуемые группы
+        DELETE FROM i18n_def.page_group pg WHERE NOT EXISTS(SELECT code FROM ws.page_data WHERE group_id = pg.id);
+
+
+        IF a_op = 'erase' AND a_schema <> 'ws' THEN
+          DELETE FROM wsd.pkg_script_protected  WHERE pkg = a_schema;
+          DELETE FROM wsd.pkg_default_protected WHERE pkg = a_schema;
+          DELETE FROM wsd.pkg_fkey_protected    WHERE pkg = a_schema;
+          DELETE FROM wsd.pkg_fkey_required_by  WHERE required_by = a_schema;
         END IF;
-        DELETE FROM ws.pkg_required_by  WHERE required_by = a_code;
-        DELETE FROM ws.pkg              WHERE code = a_code;
+        DELETE FROM ws.pkg_required_by  WHERE required_by = a_schema;
+        IF r_pkg.schemas = ARRAY[a_schema] THEN
+          -- last/single schema
+          DELETE FROM ws.pkg WHERE code = a_code;
+        ELSE  
+          UPDATE ws.pkg SET
+            schemas = ws.array_remove(schemas, a_schema)
+            WHERE code = a_code
+          ;
+        END IF;
       WHEN 'make' THEN
         NULL;
     END CASE;

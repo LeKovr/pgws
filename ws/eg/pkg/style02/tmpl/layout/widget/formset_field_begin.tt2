@@ -1,0 +1,6 @@
+[% META
+  description = 'Начало поля формы для страницы с группой форм'
+%]<div id="[% id %]" class="formLine [% class %]">
+    <div class="container" [% IF widthcon %] style="width: [% widthcon %]" [% END %]>
+		<div class="name" [% IF widthname %] style="width: [% widthname %]" [% END %]>[% IF is_required == 1; %]<div class="warnStar">*</div>[% END %] [% IF name ; name _ ':' ; ELSE ; '&nbsp;' ; END %]</div>
+		<div class="param">

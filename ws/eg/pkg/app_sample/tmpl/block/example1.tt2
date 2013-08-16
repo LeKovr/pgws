@@ -40,12 +40,12 @@
 //<![CDATA[
 $('#form1_result').hide();
 $('#form1_status').hide();
-var form1ok = function(formid, res) {
+PGWS.form1ok = function(formid, res) {
   $(formid + ' > fieldset > div.control-group').removeClass('error');
   $(formid + '_result').text( 'result: ' + res );
   successAlertBlocks(formid);
 };
-var form1err = function(formid, res) {
+PGWS.form1err = function(formid, res) {
   var mess = '';
   $(formid + ' > fieldset > div.control-group').removeClass('error');
   $(res.result.error).each(function(i){
@@ -58,7 +58,7 @@ var form1err = function(formid, res) {
 $('#select').change(function(){if (this.value != 0) { this.form.a.value = this.value }});
   var option = {statusBlock: '#form1_status'};
   var api_form1 = function(){
-    api_form('info.add','#form1',form1ok,form1err, option);
+    api_form('info.add','#form1',PGWS.form1ok,PGWS.form1err, option);
   };
 //]]>
 </script>

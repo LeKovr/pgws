@@ -53,7 +53,7 @@ CREATE OR REPLACE RULE page_ins AS ON INSERT TO i18n_def.page
     , DEFAULT
     , NEW.uri_re
     , NEW.uri_fmt
-    , COALESCE(NEW.pkg, ws.pg_cs())
+    , COALESCE(NEW.pkg, ws.pg_pkg())
     )
   ;
   -- http://postgresql.1045698.n5.nabble.com/Using-Insert-Default-in-a-condition-expression-td1922835.html
@@ -74,14 +74,68 @@ CREATE OR REPLACE VIEW i18n_def.error AS
 ;
 SELECT pg_c('v', 'i18n_def.error', 'Описание ошибки');
 ALTER VIEW i18n_def.error ALTER COLUMN id_count SET DEFAULT 0;
-
-
 /* ------------------------------------------------------------------------- */
+
 CREATE OR REPLACE RULE error_ins AS ON INSERT TO i18n_def.error
   DO INSTEAD (
     INSERT INTO ws.error_data (code) VALUES (NEW.code);
     INSERT INTO i18n_def.error_message (code, id_count, message) VALUES (NEW.code, NEW.id_count, NEW.message)
   )
 ;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW i18n_def.ref AS SELECT
+  d.*
+, n.name
+, n.anno
+, n.synced_at
+  FROM ws.ref_data d
+    JOIN i18n_def.ref_name n
+    USING (code)
+;
+SELECT pg_c('v', 'i18n_def.ref', 'Справочник');
+
+ALTER VIEW i18n_def.ref ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
+ALTER VIEW i18n_def.ref ALTER COLUMN acls_upd SET DEFAULT ws.const_ref_acls_internal();
+ALTER VIEW i18n_def.ref ALTER COLUMN is_dt_vary SET DEFAULT FALSE;
+
+CREATE OR REPLACE RULE ref_ins AS ON INSERT TO i18n_def.ref
+  DO INSTEAD (
+    INSERT INTO ws.ref_data (code, acls, acls_upd, is_dt_vary, method_code, method_code_upd, pkg) VALUES
+      (NEW.code, NEW.acls, NEW.acls_upd, NEW.is_dt_vary, NEW.method_code, NEW.method_code_upd, NEW.pkg);
+    INSERT INTO i18n_def.ref_name (code, name, anno) VALUES (NEW.code, NEW.name, NEW.anno)
+  )
+;
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE VIEW i18n_def.ref_item AS SELECT
+  d.*
+, n.sort
+, n.name
+, n.anno
+  FROM ws.ref_item_data d
+    JOIN i18n_def.ref_item_name n
+    USING (code, item_code)
+;
+SELECT pg_c('v', 'i18n_def.ref_item', 'Позиция справочника');
+-- Нет RULE для обновления, т.к. обновление производится только кодом (ws.ref_update)
+
+/* ------------------------------------------------------------------------- */
+-- TODO: перенести ws.ref_item в i18n_def
+CREATE OR REPLACE VIEW i18n_def.timezone AS
+  SELECT
+    tn.name AS code
+  , n.sort
+  , tn.abbrev
+  , tn.utc_offset
+  , tn.is_dst 
+  , n.name
+    FROM pg_catalog.pg_timezone_names tn
+      JOIN i18n_def.ref_item_name n
+      ON (tn.name = n.item_code) -- привязка к name а не abbrev, т.к. difference between abbreviations and full names: abbreviations always represent a fixed offset from UTC, whereas most of the full names imply a local daylight-savings time rule, and so have two possible UTC offsets. 
+    WHERE n.code = ws.const_ref_code_timezone()
+    ORDER BY n.sort
+;
+SELECT pg_c('v', 'i18n_def.timezone', 'Часовой пояс');
 
 /* ------------------------------------------------------------------------- */

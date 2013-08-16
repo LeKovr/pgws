@@ -23,7 +23,7 @@
 /* ------------------------------------------------------------------------- */
 
 DROP TABLE wsd.session CASCADE;
-DROP TABLE wsd.account_contact;
+DROP TABLE wsd.account_contact CASCADE;
 DROP TABLE wsd.account_team CASCADE;
 DROP TABLE wsd.account CASCADE;
 DROP TABLE wsd.role_permission CASCADE;
@@ -42,5 +42,5 @@ DROP SEQUENCE wsd.permission_id_seq;
 
 
 /* ------------------------------------------------------------------------- */
-SELECT cfg.prop_drop_pkg(ARRAY['acc.const_team_group_prop','acc.const_account_group_prop']);
+SELECT cfg.prop_drop_value(ARRAY[acc.const_team_group_prop(),acc.const_account_group_prop()]);
 

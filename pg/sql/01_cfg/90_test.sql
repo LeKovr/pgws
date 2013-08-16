@@ -21,6 +21,7 @@
 */
 
 /* ------------------------------------------------------------------------- */
+-- begin add data
 INSERT INTO cfg.prop_group (pogc, sort, is_id_required, name) VALUES ('test', 1, FALSE, 'Группа для теста');
 INSERT INTO cfg.prop_owner (pogc, poid, sort, name) VALUES ('test',  1,  1,  'Владелец для свойства');
 INSERT INTO cfg.prop (code, pogc_list, def_value, name) VALUES ('test.code.one',   ARRAY['test'], '', 'Первое свойство для теста');
@@ -32,8 +33,8 @@ SELECT ws.test('prop_value_edit');
 SELECT cfg.prop_value_edit('test', 1, 'test.code.one',   'one',   '2000-01-01');
 SELECT cfg.prop_value_edit('test', 1, 'test.code.two',   'two',   '2000-01-01');
 SELECT cfg.prop_value_edit('test', 1, 'test.code.three', 'three', '2000-01-01');
-SELECT * FROM wsd.prop_value WHERE pogc = 'test';
-
+SELECT * FROM wsd.prop_value WHERE pogc = 'test' ORDER BY 1,2,3;
+-- end add data
 
 /* ------------------------------------------------------------------------- */
 SELECT ws.test('prop_attr_system');
@@ -49,15 +50,18 @@ SELECT * FROM cfg.prop_owner_attr('test', 1);
 
 /* ------------------------------------------------------------------------- */
 SELECT ws.test('prop_value_list');
-SELECT * FROM cfg.prop_value_list('test', 1, 'test.code', false, '2013-01-01', 'T.', '%s');
+SELECT * FROM cfg.prop_value_list('test', 1, 'test.code', false, '2013-01-01', 'T.', '%s') ORDER BY 1,2,3;
 
-SELECT * FROM cfg.prop_value_list('test', 1, 'test.code');
+SELECT * FROM cfg.prop_value_list('test', 1, 'test.code') ORDER BY 1,2,3;
 
 /* ------------------------------------------------------------------------- */
 SELECT ws.test('prop_group_value_list');
-SELECT * FROM cfg.prop_group_value_list('test', 0, 'test.code', false, '2013-01-01', 'T.', '%s'); 
+SELECT * FROM cfg.prop_group_value_list('test', 0, 'test.code', false, '2013-01-01', 'T.', '%s') ORDER BY 1,2,3; 
 
-SELECT * FROM cfg.prop_group_value_list('test', 1) WHERE code LIKE 'test.code.%';
+SELECT * FROM cfg.prop_group_value_list('test', 1) WHERE code LIKE 'test.code.%' ORDER BY 1,2,3;
 
 /* ------------------------------------------------------------------------- */
-
+-- begin deleted data
+SELECT cfg.prop_cleanup_by_code(ARRAY['test.code.one']);
+SELECT cfg.prop_cleanup_without_value(ARRAY['test']);
+-- end deleted data

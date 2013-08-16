@@ -35,3 +35,24 @@ INSERT INTO method_rv_format (id, name) VALUES
   , (8, 'массив массивов')
   , (10, 'дерево хэшей из массива [tag1.tag2][value]')
 ;
+
+
+\set TZ ws.const_ref_code_timezone()
+\set ACL ws.const_ref_acls_internal()
+/* ------------------------------------------------------------------------- */
+INSERT INTO i18n_def.ref (code, name) VALUES
+  (:TZ, 'Часовой пояс')
+;
+
+/* ------------------------------------------------------------------------- */
+SELECT
+  ws.ref_op(:TZ, 'Europe/Kaliningrad', 2, 'Калининградское время',  :ACL) -- | 03:00:00   | -01:00:00
+, ws.ref_op(:TZ, 'Europe/Moscow',      1, 'Московское время',       :ACL) -- | 04:00:00   | 00:00:00
+, ws.ref_op(:TZ, 'Asia/Yekaterinburg', 3, 'Екатеринбургское время', :ACL) -- | 06:00:00   | 02:00:00
+, ws.ref_op(:TZ, 'Asia/Omsk',          4, 'Омское время',           :ACL) -- | 07:00:00   | 03:00:00
+, ws.ref_op(:TZ, 'Asia/Krasnoyarsk',   5, 'Красноярское время',     :ACL) -- | 08:00:00   | 04:00:00
+, ws.ref_op(:TZ, 'Asia/Irkutsk',       6, 'Иркутское время',        :ACL) -- | 09:00:00   | 05:00:00
+, ws.ref_op(:TZ, 'Asia/Yakutsk',       7, 'Якутское время',         :ACL) -- | 10:00:00   | 06:00:00
+, ws.ref_op(:TZ, 'Asia/Vladivostok',   8, 'Владивостокское время',  :ACL) -- | 11:00:00   | 07:00:00
+, ws.ref_op(:TZ, 'Asia/Magadan',       9, 'Магаданское время',      :ACL) -- | 12:00:00   | 08:00:00
+;
