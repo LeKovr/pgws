@@ -10,6 +10,7 @@ FE_LAYOUTS_DEFAULT  = style02 style01
 FE_SKIN_DEFAULT     = light
 
 WWW_HOST           ?= $(WWW_HOST_DEFAULT)
+WWW_IP             ?= $(WWW_HOST)
 FCGI_SOCKET        ?= $(FCGI_SOCKET_DEFAULT)
 FE_COOKIE          ?= $(FE_COOKIE_DEFAULT)
 FE_LAYOUTS         ?= $(FE_LAYOUTS_DEFAULT)
@@ -218,6 +219,7 @@ for f in $(PGWS_ROOT)/pgws/ws/eg/conf/{nginx,pgws}-*.conf; do \
     else \
       echo "$$bnf: Setup for $(PGWS_ROOT) $(WWW_HOST) $(FCGI_SOCKET) $(FE_COOKIE)" ; \
       sed -e "s|$(ROOT_DEFAULT)|$(PGWS_ROOT)|g" \
+        -e "s|$(WWW_HOST_DEFAULT):80|$(WWW_IP):80|g" \
         -e "s|$(WWW_HOST_DEFAULT)|$(WWW_HOST)|g" \
         -e "s|$(FE_COOKIE_DEFAULT)|$(FE_COOKIE)|" \
         -e "s|$(FCGI_SOCKET_DEFAULT)|$(FCGI_SOCKET)|g" $$f > $(NGINX_CFG_DIR)/$$bnf ; \
@@ -436,6 +438,7 @@ keep-sql:
 showconf:
 	@echo "*** $@ ***"
 	@echo "WWW_HOST         =  $(WWW_HOST)"
+	@echo "WWW_IP           =  $(WWW_IP)"
 	@echo "FCGI_SOCKET      =  $(FCGI_SOCKET)"
 	@echo "DAEMON_USER      =  $(DAEMON_USER)"
 	@echo "DB_CONNECT       =  $(DB_CONNECT)"

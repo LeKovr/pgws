@@ -21,9 +21,12 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION prop_info(a_code cfg.d_prop_code DEFAULT NULL, a_is_mask BOOL DEFAULT false) RETURNS SETOF prop STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION prop_info(
+  a_code    cfg.d_prop_code DEFAULT NULL
+, a_is_mask BOOL            DEFAULT FALSE
+) RETURNS SETOF prop STABLE LANGUAGE 'plpgsql' AS
 $_$
--- a_code: код свойства
+-- a_code:    код свойства
 -- a_is_mask: признак атомарности свойства
   DECLARE
     v_code TEXT;
@@ -46,14 +49,18 @@ CREATE OR REPLACE FUNCTION prop_value(
   a_pogc TEXT
 , a_poid d_id
 , a_code cfg.d_prop_code
-, a_date date DEFAULT CURRENT_DATE
-) RETURNS text STABLE LANGUAGE 'sql' AS
+, a_date DATE DEFAULT CURRENT_DATE
+) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
 $_$
 -- a_pogc: код группы владельцев
 -- a_poid: код владельца
 -- a_code: код свойства
 -- a_date: дата получения значения свойства
-  SELECT value
+DECLARE
+  v_value TEXT;
+BEGIN
+
+  SELECT value INTO v_value
     FROM wsd.prop_value
     WHERE pogc = $1 /* a_pogc */
       AND poid = $2 /* a_poid */
@@ -61,6 +68,14 @@ $_$
       AND valid_from <= COALESCE($4, CURRENT_DATE) /* a_date */
       ORDER BY valid_from DESC
       LIMIT 1
+  ;
+
+  IF NOT FOUND THEN
+    v_value := cfg.prop_default_value($3);
+  END IF;
+
+  RETURN v_value;
+END;
 $_$;
 SELECT pg_c('f', 'prop_value', 'Значение свойства');
 
@@ -69,8 +84,8 @@ CREATE OR REPLACE FUNCTION prop_valid_from(
   a_pogc TEXT
 , a_poid d_id
 , a_code cfg.d_prop_code
-, a_date date DEFAULT CURRENT_DATE
-) RETURNS date STABLE LANGUAGE 'sql' AS
+, a_date DATE DEFAULT CURRENT_DATE
+) RETURNS DATE STABLE LANGUAGE 'sql' AS
 $_$
 -- a_pogc: код группы владельцев
 -- a_poid: код владельца
@@ -89,21 +104,21 @@ SELECT pg_c('f', 'prop_valid_from', 'Дата начала дейcтвия те�
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION prop_value_list(
-  a_pogc        TEXT
-, a_poid        d_id
-, a_prefix      text DEFAULT ''
-, a_prefix_keep bool DEFAULT TRUE
-, a_date        date DEFAULT CURRENT_DATE
-, a_prefix_new      text DEFAULT ''
-, a_mark_default text DEFAULT '%s'
+  a_pogc         TEXT
+, a_poid         d_id
+, a_prefix       TEXT DEFAULT ''
+, a_prefix_keep  BOOL DEFAULT TRUE
+, a_date         DATE DEFAULT CURRENT_DATE
+, a_prefix_new   TEXT DEFAULT ''
+, a_mark_default TEXT DEFAULT '%s'
 ) RETURNS SETOF t_prop_value STABLE LANGUAGE 'sql' AS
 $_$
--- a_pogc: код группы владельцев
--- a_poid: код владельца
--- a_prefix: часть кода свойства до '.'
--- a_prefix_keep:признак замены в результате a_prefix на a_prefix_new
--- a_date: дата получения значения свойства
--- a_prefix_new: добавочный префикс
+-- a_pogc:         код группы владельцев
+-- a_poid:         код владельца
+-- a_prefix:       часть кода свойства до '.'
+-- a_prefix_keep:  признак замены в результате a_prefix на a_prefix_new
+-- a_date: дата    получения значения свойства
+-- a_prefix_new:   добавочный префикс
 -- a_mark_default: метка для не атомарного свойства
   SELECT
     $6 || CASE WHEN $3 /* a_prefix */ = '' OR $4 /* a_prefix_keep */
@@ -141,24 +156,24 @@ SELECT pg_c('f', 'prop_value_list', 'Значения свойств по час
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION prop_group_value_list(
-  a_pogc        TEXT
-, a_poid        d_id DEFAULT 0
-, a_prefix      text DEFAULT ''
-, a_prefix_keep bool DEFAULT TRUE
-, a_date        date DEFAULT CURRENT_DATE
-, a_prefix_new      text DEFAULT ''
-, a_mark_default text DEFAULT '%s'
+  a_pogc         TEXT
+, a_poid         d_id DEFAULT 0
+, a_prefix       TEXT DEFAULT ''
+, a_prefix_keep  BOOL DEFAULT TRUE
+, a_date         DATE DEFAULT CURRENT_DATE
+, a_prefix_new   TEXT DEFAULT ''
+, a_mark_default TEXT DEFAULT '%s'
 ) RETURNS SETOF t_prop_value STABLE LANGUAGE 'plpgsql' AS
 $_$
--- a_pogc: код группы владельцев
--- a_poid: код владельца
--- a_prefix: часть кода свойства до '.'
--- a_prefix_keep:признак замены в результате a_prefix на a_prefix_new
--- a_date: дата получения значения свойства
--- a_prefix_new: добавочный префикс
+-- a_pogc:         код группы владельцев
+-- a_poid:         код владельца
+-- a_prefix:       часть кода свойства до '.'
+-- a_prefix_keep:  признак замены в результате a_prefix на a_prefix_new
+-- a_date: дата    получения значения свойства
+-- a_prefix_new:   добавочный префикс
 -- a_mark_default: метка для не атомарного свойства
 DECLARE
-  r cfg.prop_owner;
+  r            cfg.prop_owner;
   v_prefix_add TEXT;
 BEGIN
   FOR r IN SELECT * FROM cfg.prop_owner WHERE pogc = a_pogc AND a_poid IN (poid, 0) ORDER BY sort

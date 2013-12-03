@@ -21,9 +21,13 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ref(a_code d_code_like DEFAULT '%', a__acl d_acls DEFAULT NULL) RETURNS SETOF i18n_def.ref STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION ref(
+  a_code d_code_like DEFAULT '%'
+, a__acl d_acls DEFAULT NULL
+) RETURNS SETOF i18n_def.ref STABLE LANGUAGE 'sql' AS
 $_$
   -- a_code: Код справочника
+  -- a__acl: Список acl (данные ядра)
   SELECT * FROM ref WHERE code ilike $1 || '%' AND (acls IS NULL OR acls && $2) ORDER BY code ;
 $_$;
 SELECT pg_c('f', 'ref', 'Атрибуты справочника', $_$Функция требует SEARCH_PATH$_$);
@@ -36,9 +40,11 @@ $_$
 $_$;
 SELECT pg_c('f', 'ref_data', 'Внутренние атрибуты справочника');
 
-
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ref_is_allowed(a_code d_code, a__acl d_acls) RETURNS BOOL STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION ref_is_allowed(
+  a_code d_code
+, a__acl d_acls
+) RETURNS BOOL STABLE LANGUAGE 'sql' AS
 $_$
   -- a_code: Код справочника
   -- a__acl: Список acl (данные ядра)
@@ -50,7 +56,10 @@ $_$;
 SELECT pg_c('f', 'ref_is_allowed', 'Справочник доступен для чтения');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ref_is_allowed_upd(a_code d_code, a__acl d_acls) RETURNS BOOL STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION ref_is_allowed_upd(
+  a_code d_code
+, a__acl d_acls
+) RETURNS BOOL STABLE LANGUAGE 'sql' AS
 $_$
   -- a_code: Код справочника
   -- a__acl: Список acl (данные ядра)
@@ -71,12 +80,14 @@ CREATE OR REPLACE FUNCTION ref_item(
 , a_by            ws.d_cnt DEFAULT 0
 ) RETURNS SETOF i18n_def.ref_item STABLE LANGUAGE 'plpgsql' AS
 $_$
-  -- a_code: Код справочника
+  -- a_code:      Код справочника
   -- a_item_code: Код позиции
-  -- a_group_id: ID группы
-  -- a__acl: Список acl (данные ядра)
+  -- a_group_id:  ID группы
+  -- a__acl:      Список acl (данные ядра)
+  -- a_page:      Количество страниц
+  -- a_by:        Количество на странице
   DECLARE
-    r_ref_data ws.ref_data%ROWTYPE;
+    r_ref_data    ws.ref_data%ROWTYPE;
     v_method_code TEXT;
   BEGIN
     SELECT * INTO STRICT r_ref_data FROM ws.ref_data(a_code);
@@ -122,8 +133,11 @@ CREATE OR REPLACE FUNCTION ref_log(
 , a__acl          d_acls DEFAULT NULL
 ) RETURNS SETOF wsd.ref_update STABLE LANGUAGE 'sql' AS
 $_$
-  -- a_code: Код справочника
+  -- a_code:          Код справочника
+  -- a_item_code:     Код позиции
+  -- a__lang:         Язык справочника (данные ядра)
   -- a_updated_after: Минимальный момент времени изменения позиции
+  -- a__acl:          Список acl (данные ядра)
   SELECT * FROM wsd.ref_update
     WHERE code = $1
       AND ws.ref_is_allowed(code, $5)
@@ -221,7 +235,7 @@ $_$
   DECLARE
     r_ref_data    ws.ref_data%ROWTYPE;
     v_method_code TEXT;
-    v_ret BOOL;
+    v_ret         BOOL;
   BEGIN
     -- доступ
     IF NOT ws.ref_is_allowed_upd(a_code, a__acl) THEN
@@ -290,9 +304,13 @@ $_$;
 SELECT pg_c('f', 'ref_op', 'Операция изменения справочника', $_$Функция требует SEARCH_PATH$_$);
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ref_sync_complete(a_code d_code, a_updated_at d_stamp DEFAULT NULL) RETURNS VOID VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION ref_sync_complete(
+  a_code       d_code
+, a_updated_at d_stamp DEFAULT NULL
+) RETURNS VOID VOLATILE LANGUAGE 'plpgsql' AS
 $_$
-  -- a_code: Код справочника
+  -- a_code:       Код справочника
+  -- a_updated_at: Момент изменения
   BEGIN
     UPDATE ref_name SET synced_at = COALESCE(a_updated_at, CURRENT_TIMESTAMP)
       WHERE code = a_code

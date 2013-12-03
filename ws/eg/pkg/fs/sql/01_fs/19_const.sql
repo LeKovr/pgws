@@ -18,8 +18,7 @@
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
   Внутренние константы пакета. Используются хранимым кодом.
-  См. также:
-    select * from ws.pg_const WHERE schema='bt';
+  См. также: select * from ws.pg_const WHERE schema='fs';
 */
 
 /* ------------------------------------------------------------------------- */
@@ -42,5 +41,19 @@ $_$
   SELECT 'files'::ws.d_code 
 $_$;
 SELECT pg_c('f', 'const_folder_code_default', 'Код папки файлов по умолчанию');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_parse_json_file() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS 
+$_$
+  SELECT 'Y0301'::ws.d_errcode 
+$_$;
+SELECT pg_c('f', 'const_error_parse_json_file', 'Ошибка парсинга json-файла');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_error_parse_xml_file() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS 
+$_$
+  SELECT 'Y0302'::ws.d_errcode 
+$_$;
+SELECT pg_c('f', 'const_error_parse_xml_file', 'Ошибка парсинга xml-файла');
 
 /* ------------------------------------------------------------------------- */

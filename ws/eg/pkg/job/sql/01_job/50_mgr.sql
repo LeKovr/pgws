@@ -118,5 +118,33 @@ BEGIN
 END;
 $_$;
 
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION data_error_add(
+  a_id      d_id32
+, a_group_code  TEXT DEFAULT NULL
+, a_field_code  TEXT DEFAULT NULL
+, a_item_id     TEXT DEFAULT NULL
+, a_error_code  TEXT DEFAULT NULL
+, a_error_arg   TEXT DEFAULT NULL
+, a_error_arg1  TEXT DEFAULT NULL
+) RETURNS INTEGER VOLATILE LANGUAGE 'plpgsql' AS
+$_$
+DECLARE
+  v_id INTEGER;
+BEGIN
+  INSERT INTO job.data_error(job_id, group_code, field_code, item_id, error_code, error_arg, error_arg1)
+    VALUES(a_id, a_group_code, a_field_code, a_item_id, a_error_code, a_error_arg, a_error_arg1)
+    RETURNING id INTO v_id;
+  RETURN v_id;
+END;
+$_$;
+SELECT pg_c('f', 'data_error_add', 'Добавление ошибки приложения');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION data_error_info(a_job_id d_id32) RETURNS SETOF job.data_error_info STABLE LANGUAGE 'sql' AS
+$_$
+  SELECT * FROM job.data_error_info WHERE job_id = $1;
+$_$;
+SELECT pg_c('f', 'data_error_info', 'Вывод ошибок приложения');
 
 /* ------------------------------------------------------------------------- */

@@ -4,7 +4,7 @@
   doc_id = page.args.0;
   folder_code = page.args.1;
   file_code = page.args.2.remove('^/');
-  files = api('account.fs_files', id => 9, file_code => '6/jquery.fileupload.js');
+  files = api(page_code _ '_' _ folder_code, id => doc_id, file_code => file_code);
   file = files.0;
 
   IF file;

@@ -1,0 +1,296 @@
+         test          
+-----------------------
+  ***** ws.class *****
+
+ id | up_id | id_count | is_ext | sort |  code   | pkg |            name             
+----+-------+----------+--------+------+---------+-----+-----------------------------
+  1 |       |        0 | f      |    1 | system  | job | Система
+ 15 |       |        1 | f      |    3 | account | acc | Учетная запись пользователя
+ 16 |       |        1 | f      |    4 | team    | acc | Группа пользователей
+
+             test             
+------------------------------
+  ***** ws.class_status *****
+
+ class_id | id | sort |      name       
+----------+----+------+-----------------
+        1 |  1 |   11 | Онлайн
+        1 |  2 |   12 | На обслуживании
+       15 |  1 |    1 | Активен
+       15 |  2 |    2 | Заблокирован
+       15 |  3 |    2 | Не активен
+       16 |  1 |    1 | Активна
+       16 |  2 |    2 | Заблокирована
+       16 |  3 |    3 | Удалена
+
+             test             
+------------------------------
+  ***** ws.class_action *****
+
+ class_id | id | sort |            name             
+----------+----+------+-----------------------------
+        1 |  1 |   11 | Чтение онлайн
+        1 |  2 |   12 | Авторизованное чтение
+        1 |  3 |   13 | Системное чтение
+        1 |  4 |   14 | Авторизованная запись
+        1 |  5 |   15 | Системная запись
+        1 |  6 |   16 | Обслуживание
+        1 |  7 |   17 | Использование онлайн
+        1 |  8 |   18 | Только для неавторизованных
+       15 |  1 |    1 | Просмотр профайла
+       15 |  2 |    2 | Просмотр настроек
+       15 |  3 |    3 | Администрирование
+       15 |  4 |    4 | Изменение данных
+       16 |  1 |    1 | Просмотр профайла
+       16 |  2 |    2 | Просмотр настроек
+       16 |  3 |    3 | Администрирование
+       16 |  4 |    4 | Изменение данных
+
+                test                 
+-------------------------------------
+  ***** ws.class_status_action *****
+
+ class_id | status_id | action_id 
+----------+-----------+-----------
+        1 |         1 |         1
+        1 |         1 |         2
+        1 |         1 |         3
+        1 |         1 |         4
+        1 |         1 |         5
+        1 |         1 |         7
+        1 |         1 |         8
+        1 |         2 |         2
+        1 |         2 |         3
+        1 |         2 |         5
+        1 |         2 |         6
+       15 |         1 |         1
+       15 |         1 |         2
+       15 |         1 |         3
+       15 |         1 |         4
+       15 |         2 |         1
+       15 |         2 |         2
+       15 |         2 |         3
+       15 |         3 |         1
+       15 |         3 |         2
+       15 |         3 |         3
+       15 |         3 |         4
+       16 |         1 |         1
+       16 |         1 |         2
+       16 |         1 |         3
+       16 |         1 |         4
+       16 |         2 |         1
+       16 |         2 |         2
+       16 |         2 |         3
+
+           test            
+---------------------------
+  ***** ws.class_acl *****
+
+ class_id | id | is_sys | sort |             name              
+----------+----+--------+------+-------------------------------
+        1 |  1 | t      |   11 | Неавторизованный пользователь
+        1 |  2 | t      |   12 | Авторизованный пользователь
+        1 |  3 | t      |   13 | Сервис
+        1 |  4 | t      |   14 | Оператор
+       15 |  1 | f      |    1 | Просмотр профайла
+       15 |  2 | f      |    2 | Просмотр настроек
+       15 |  3 | f      |    3 | Изменение настроек
+       15 |  4 | f      |    4 | Изменение системных атрибутов
+       16 |  1 | f      |    1 | Гость
+       16 |  2 | f      |    2 | Участник
+       16 |  3 | f      |    3 | Администратор группы
+       16 |  4 | f      |    4 | Администратор системы
+
+               test               
+----------------------------------
+  ***** ws.class_action_acl *****
+
+ class_id | action_id | acl_id 
+----------+-----------+--------
+        1 |         1 |      1
+        1 |         1 |      2
+        1 |         1 |      3
+        1 |         1 |      4
+        1 |         2 |      2
+        1 |         3 |      3
+        1 |         3 |      4
+        1 |         4 |      2
+        1 |         5 |      3
+        1 |         5 |      4
+        1 |         6 |      4
+        1 |         7 |      1
+        1 |         7 |      2
+        1 |         8 |      1
+       15 |         1 |      1
+       15 |         2 |      2
+       15 |         2 |      3
+       15 |         2 |      4
+       15 |         3 |      4
+       15 |         4 |      3
+       15 |         4 |      4
+       16 |         1 |      1
+       16 |         2 |      2
+       16 |         2 |      3
+       16 |         2 |      4
+       16 |         3 |      4
+       16 |         4 |      3
+       16 |         4 |      4
+
+            test            
+----------------------------
+  ***** acc.team_link *****
+
+ id |  name   
+----+---------
+  1 | Свой
+  2 | Чужой
+  3 | Система
+
+                 test                  
+---------------------------------------
+  ***** acc.account_contact_type *****
+
+ id |     name     
+----+--------------
+  1 | Mobile phone
+  2 | Email
+
+            test             
+-----------------------------
+  ***** cfg.prop_group *****
+
+ pogc | sort | is_id_required |     name     | anno | is_system 
+------+------+----------------+--------------+------+-----------
+ team |    7 | t              | Компания     |      | f
+ acc  |    8 | t              | Пользователь |      | f
+
+         test          
+-----------------------
+  ***** cfg.prop *****
+
+       code        | pkg | is_mask | def_value |          name           |                         anno                          | has_log 
+-------------------+-----+---------+-----------+-------------------------+-------------------------------------------------------+---------
+ abp.anno          | acc | f       |           | Описание                | Описание команды                                      | t
+ abp.name.short    | acc | f       |           | Имя                     | Имя, которое публикуется на сайте                     | t
+ abp.person.gender | acc | f       |           | Пол                     | Необходмио для корректного обращения в сообщениях     | f
+ isv.show.email    | acc | f       | all       | Кому показывать email   | Варианты: (all, register, into_team)                  | f
+ isv.show.phone    | acc | f       | all       | Кому показывать телефон | Варианты: (all, register, into_team)                  | f
+ object.promo      | acc | f       |           | Промо-объект            | Является автоматически сгенерированным промо-объектом | f
+
+                  test                  
+----------------------------------------
+  ***** wsd.pkg_default_protected *****
+
+ pkg |  wsd_rel   | wsd_col |    func     | schema 
+-----+------------+---------+-------------+--------
+ acc | permission | pkg     | ws.pg_pkg() | acc
+
+              test               
+---------------------------------
+  ***** ws.pkg_required_by *****
+
+ code | required_by 
+------+-------------
+ fs   | acc
+ job  | acc
+ ws   | acc
+
+          test          
+------------------------
+  ***** ws.method *****
+
+            code             |            code_real            |                                name                                 
+-----------------------------+---------------------------------+---------------------------------------------------------------------
+ account.acl                 | acc.account_acl                 | ACL к учетной записи пользователя
+ account.contact.add         | acc.account_contact_add         | Добавление контактов пользователя
+ account.contact.type        | acc.account_contact_type_attr   | Просмотр типов контактов
+ account.contact.view        | acc.account_contact_view        | Просмотр контактов пользователя
+ account.fs_files            | acc.fs_files                    | Список файлов пользователя
+ account.fs_files_add        | acc.fs_files_add                | Добавление в статью загруженного файла
+ account.fs_files_del        | acc.fs_files_del                | Удаление файла пользователя
+ account.link_id             | acc.account_link_id             | Связь пользователя с учетной записью
+ account.login               | acc.login                       | Авторизация пользователя
+ account.logout              | acc.logout                      | Завершить авторизации пользователя и вернуть количество завершенных
+ account.lookup              | acc.account_lookup              | Поиск пользователя по имени
+ account.password.change     | acc.account_password_change     | Смена пароля пользователя без запроса пароля
+ account.password.change.own | acc.account_password_change_own | Смена пароля пользователя с запросом пароля
+ account.permission          | acc.account_permission          | Разрешения пользователя
+ account.profile             | acc.account_profile             | Профиль пользователя
+ account.prop_abp_attr       | acc.prop_attr_account_abp       | Атрибуты открытых свойств пользователя
+ account.prop_history        | acc.prop_history_account        | Журнал значений свойств пользователя
+ account.prop_isv            | acc.prop_account_isv            | Значения служебных свойств пользователя
+ account.prop_isv_attr       | acc.prop_attr_account_isv       | Атрибуты служебных свойств пользователя
+ account.prop_isv_value      | acc.prop_attr_account_isv       | Атрибуты служебных свойств пользователя
+ account.sid_info            | acc.sid_info                    | Атрибуты своей сессии
+ account.status              | acc.account_status              | Статус учетной записи пользователя
+ account.team                | acc.account_team                | Команды и роли пользователя
+ account.team_link_id        | acc.account_team_link_id        | Связь команды пользователя с командой учетной записи
+ info.prop_def_value         | cfg.prop_default_value          | Значение по умолчанию для свойства
+ system.acl                  | acc.system_acl                  | ACL к системе
+ system.class_permission_acl | acc.system_class_permission_acl | Описание уровней доступа класса
+ system.link_id              | acc.system_link_id              | Связь пользователя с системой (Свой)
+ system.permission_acl       | acc.system_permission_acl       | Описание разрешения
+ system.permission_role      | acc.system_permission_role      | Роли относящиеся к разрешению
+ system.permission_view      | acc.system_permission_view      | Просмотр разрешений
+ system.prop_attr            | cfg.prop_attr_system            | Атрибуты свойств системных объектов
+ system.prop_history         | cfg.prop_history                | История значений свойств
+ system.prop_owner_attr      | cfg.prop_owner_attr             | Атрибуты POID
+ system.ref                  | ws.ref                          | Атрибуты справочника
+ system.ref_item             | ws.ref_item                     | Позиции справочника
+ system.ref_log              | ws.ref_log                      | Журнал изменений справочника начиная с updated_at
+ system.role                 | acc.system_role                 | Описание ролей
+ system.role_permission      | acc.system_role_permission      | Описание разрешений относящихся к роли
+ system.status               | acc.system_status               | Статус системы
+ system.team_link_id         | acc.system_team_link_id         | Связь команды пользователя с командой учетной записи
+ team.account_attr           | acc.team_account_attr           | Атрибуты участников команды
+ team.acl                    | acc.team_acl                    | ACL команды
+ team.by_name                | acc.team_by_name                | Список команд по имени
+ team.fs_files               | acc.team_fs_files               | Список файлов команды
+ team.fs_files_add           | acc.team_fs_files_add           | Добавление в статью загруженного файла
+ team.fs_files_del           | acc.team_fs_files_del           | Удаление файла команды
+ team.get_id                 | acc.get_team_id_by_name         | Получение ID компании по ее названию
+ team.link_id                | acc.team_link_id                | Связь пользователя с командой
+ team.lookup                 | acc.team_lookup                 | Поиск команды по названию
+ team.permission             | acc.team_permission             | Разрешения команды
+ team.profile                | acc.team_profile                | Профиль команды
+ team.prop_abp_attr          | acc.prop_attr_team_abp          | Атрибуты открытых свойств команды
+ team.prop_history           | acc.prop_history_team           | Журнал значений свойств команды
+ team.prop_isv_attr          | acc.prop_attr_team_isv          | Атрибуты служебных свойств команды
+ team.prop_isv_value         | acc.prop_attr_team_isv          | Атрибуты служебных свойств команды
+ team.role                   | acc.team_role                   | Список ролей команды
+ team.role_members           | acc.team_role_members           | Список пользователей команды с указанной ролью
+ team.role_number            | acc.team_role_number            | Количество пользователей команды и роли
+ team.status                 | acc.team_status                 | Статус команды
+ team.team_link_id           | acc.team_team_link_id           | Связь команды пользователя с заданной командой
+
+            test             
+-----------------------------
+  ***** i18n_def.error *****
+
+ code  | id_count |                      message                      
+-------+----------+---------------------------------------------------
+ Y1501 |        0 | неправильный пароль
+ Y1502 |        0 | неизвестный логин
+ Y1503 |        1 | статус пользователя (%s) не допускает авторизацию
+ Y1504 |        0 | ошибка определения уровня доступа класса (%s)
+ Y1505 |        0 | введите корректный email
+ Y1506 |        0 | введите корректный номер телефона
+ Y1507 |        0 | введенные пароли не совпадают
+ Y1508 |        0 | ошибка аутентификации
+
+           test           
+--------------------------
+  ***** job.handler *****
+
+ id | pkg |   code   | def_prio | def_status_id | dust_days | is_run_allowed | is_todo_allowed |   name   
+----+-----+----------+----------+---------------+-----------+----------------+-----------------+----------
+  4 | acc | mailtest |       20 |             2 |        31 | t              | t               | Тест API
+
+           test           
+--------------------------
+  ***** ws.dt_facet *****
+
+      code      | facet_id |                   value                    | base_code |                     anno                     
+----------------+----------+--------------------------------------------+-----------+----------------------------------------------
+ acc.d_password |        4 | ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{4,16}$ | text      | прописные и строчные латинские буквы и цифры
+

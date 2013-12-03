@@ -1,0 +1,38 @@
+          test           
+-------------------------
+  ***** test_email *****
+
+CREATE TABLE
+INSERT 0 22
+                                    ВАЛИДНЫЕ АДРЕСА
+
+ rnum |                              adress                               | result | new_itog 
+------+-------------------------------------------------------------------+--------+----------
+    1 | NICE_andsimple@example.com                                        | t      | OK
+    2 | very.common@example.com                                           | t      | OK
+    3 | a.little.lengthy.but.fine@dept.example.com                        | t      | OK
+    4 | disposable.style.email.with+symbol@example.com                    | t      | OK
+    5 | user@[IPv6:2001:db8:1ff::a0b:dbd0]                                | f      | FAIL
+    6 | "much.more unusual"@example.com                                   | t      | OK
+    7 | "very.unusual.@.unusual.com"@example.com                          | t      | OK
+    8 | "very.(),:;<>[]".VERY."very@\ "very".unusual"@strange.example.com | t      | OK
+    9 | postbox@com                                                       | t      | OK
+   10 | admin@mailserver1                                                 | t      | OK
+   11 | !#$%&'*+-/=?^_`{}|~@example.org                                   | t      | OK
+   12 | "()<>[]:,;@\"!#$%&'*+-/=?^_`{}| ~.a"@example.org                  | t      | OK
+   13 | " "@example.org                                                   | t      | OK
+   14 | üñîçøðé@example.com                                               | t      | OK
+
+                                    НЕКОРРЕКТНЫЕ АДРЕСА
+
+ rnum |                   adress                    | result | new_itog 
+------+---------------------------------------------+--------+----------
+    1 | Abc.example.com                             | f      | OK
+    2 | A@b@c@example.com                           | f      | OK
+    3 | a"b(c)d,e:f;g<h>i[jk]l@example.com          | f      | OK
+    4 | just"not"right@example.com                  | f      | OK
+    5 | this is"notallowed@example.com              | f      | OK
+    6 | this still"not\allowed@example.com          | f      | OK
+    7 | xxx@example..com                            | f      | OK
+    8 | a.little.lengthy..but.fine@dept.example.com | f      | OK
+

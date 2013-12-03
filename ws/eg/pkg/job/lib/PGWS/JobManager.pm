@@ -52,7 +52,7 @@ use constant SOCKET         => ($ENV{'PGWS_FCGI_SOCKET'}        or 'back.test.lo
 
 use constant DB_STATUS_ERROR    => 12; # job.const_status_id_error()
 use constant DB_STATUS_SUCCESS  => 10; # job.const_status_id_success()
-
+use constant DB_STATUS_DATAERROR => 14; # job.const_status_id_data_error()
 #----------------------------------------------------------------------
 sub run {
   my ($config) = @_;
@@ -392,8 +392,8 @@ print STDERR ("SQL[$$] ",SQL_STOP,': ',$cmd{'id'}, ', ',$ret,"\n") if DEBUG;
   $dbh->do(SQL_STOP, undef, $cmd{'id'}, $ret, undef);
   $dbh->do(SQL_FINISHED, undef, $cmd{'id'});
   $self->{'stat'}{'event_count'}++;
-  if ($handler->{'next_handler_id'}) {
-    # создать эхо-задачу
+  if ($ret eq DB_STATUS_SUCCESS and $handler->{'next_handler_id'}) {
+    # создать эхо-задачу, если она задана и текущая завершилась успешно
     $cmd{'handler_id'} = $handler->{'next_handler_id'};
     $dbh->do(SQL_CREATE, undef, $handler->{'next_handler_id'}, undef, $cmd{'id'}, map { $cmd{'arg_'.$_} } qw(date id num more date2 id2 id3));
   }
@@ -413,14 +413,14 @@ print STDERR "API_CALL $$\n", Dumper($request) if(DEBUG);
   my ($stdout, $stderr) = $client->request($request);
   my ($status, $resp) = split /\n\n/, $stdout;
 print STDERR "API_DATA $$\n", Dumper($request, $status, $resp) if(DEBUG);
-  die "FCGIERROR: $status" if ($status !~ /^200 /);
+  die "FCGIERROR: $status" if ($status =~ /^500 /);
   my $result = PGWS::Utils::json_in($resp);
-  return $result->{'result'};
+  return ($status, $result->{'result'});
 }
 #----------------------------------------------------------------------
 sub _api_login {
   my $self = shift;
-  my $session = _api(undef, {
+  my ($status, $session) = _api(undef, {
     'REQUEST_CODE'    => 'login',
     'login'   => AUTH_LOGIN,
     'psw'     => AUTH_PSW,
@@ -433,7 +433,7 @@ sub _api_login {
 sub _api_logout {
   my $proc_manager = shift;
   return unless ($proc_manager->{'_SID'});
-  my $ret = _api(undef, {
+  my ($status, $ret) = _api(undef, {
     'REQUEST_CODE'    => 'logout',
     'REQUEST_SID'     => $proc_manager->{'_SID'},
   });
@@ -452,8 +452,8 @@ sub _api_process {
   foreach my $k (keys %$cmd) {
     $request->{$k} = $cmd->{$k} if (defined($cmd->{$k}) and ($k eq 'id' or $k =~ /^arg_/ or $k eq 'created_by'));
   }
-  my $resp = _api(undef, $request);
-  return DB_STATUS_SUCCESS; # job.const_status_id_success()
+  my ($status, $resp) = _api(undef, $request);
+  return ($status =~ /^200 /) ? DB_STATUS_SUCCESS : DB_STATUS_DATAERROR; # job.const_status_id_success()
 }
 #----------------------------------------------------------------------
 1;

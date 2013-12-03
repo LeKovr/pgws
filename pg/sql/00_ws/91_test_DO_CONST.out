@@ -1,0 +1,28 @@
+           test           
+--------------------------
+  ***** ws.pg_const *****
+
+                     code                     |            type             |        value        |                          anno                          
+----------------------------------------------+-----------------------------+---------------------+--------------------------------------------------------
+ const_error_core_no_data                     | ws.d_errcode                | Y0010               | нет данных
+ const_error_core_no_required_value           | ws.d_errcode                | Y0001               | не задано обязательное значение
+ const_error_core_value_not_match_format      | ws.d_errcode                | Y0003               | значение не соответствует шаблону
+ const_error_core_value_not_match_rule        | ws.d_errcode                | Y0002               | значение не соответствует условию
+ const_error_system_acl_check_not_found       | ws.d_errcode                | Y0105               | не найдена проверка для acl
+ const_error_system_auth_required             | ws.d_errcode                | Y0103               | необходима авторизация (не задан идентификатор сессии)
+ const_error_system_external_access_forbidden | ws.d_errcode                | Y0102               | внешний доступ к методу запрещен
+ const_error_system_incorrect_acl_code        | ws.d_errcode                | Y0101               | недопустимый код acl
+ const_error_system_incorrect_session_id      | ws.d_errcode                | Y0104               | некорректный идентификатор сессии
+ const_error_system_incorrect_status_id       | ws.d_errcode                | Y0106               | некорректный идентификатор статуса
+ const_info_class_id                          | ws.d_class                  | 2                   | Константа: ID класса info
+ const_lang_default                           | text                        | ru                  | Константа: Код языка по умолчанию
+ const_realm_upload                           | ws.d_code                   | upload              | область вызова методов загрузки файлов
+ const_ref_acls_internal                      | ws.d_acls                   | {-1}                | Константа: внутренний ACL обновления справочника
+ const_ref_code_timezone                      | ws.d_code                   | timezone            | Константа: Код справочника часовых поясов
+ const_ref_op_delete                          | ws.d_codei                  | DELETE              | Константа: Код операции удаления позиции справочника
+ const_ref_op_insert                          | ws.d_codei                  | INSERT              | Константа: Код операции добавления позиции справочника
+ const_ref_op_update                          | ws.d_codei                  | UPDATE              | Константа: Код операции обновления позиции справочника
+ const_rpc_err_noaccess                       | text                        | 42501               | Константа: RPC код ошибки отсутствия доступа
+ const_rpc_err_nodata                         | text                        | 02000               | Константа: RPC код ошибки отсутствия данных
+ const_update_timestamp                       | timestamp without time zone | 2000-01-01 00:00:00 | Константа: начальный timestamp изменений данных
+

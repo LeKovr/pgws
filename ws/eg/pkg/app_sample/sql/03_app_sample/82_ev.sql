@@ -20,15 +20,15 @@
     Интеграция с пакетом ev: подписка на события авторизации
 */
 
-INSERT INTO wsd.event_role_signup (role_id, kind_id, spec_id, is_on) VALUES 
-  (2, 1, 0, FALSE) -- TODO: подписка для роли 2и3 всегда имеет NOT is_on - она включается только при  INSERT INTO wsd.event_signup
+INSERT INTO wsd.event_signup (role_id, kind_id, spec_id, is_on) VALUES 
+  (2, 1, 0, FALSE) -- TODO: подписка для роли 2и3 всегда имеет NOT is_on - она включается только при  INSERT INTO wsd.event_account_signup
 , (3, 1, 0, FALSE)
 , (8, 2, 0, TRUE)
 , (9, 3, 0, TRUE) -- этот вид позволяет задать spec_id - ID пользователя
 ;
 
 /* Настройки подписок EV*/
-INSERT INTO  wsd.event_signup (account_id, role_id, kind_id, spec_id, is_on, prio) values 
+INSERT INTO  wsd.event_account_signup (account_id, role_id, kind_id, spec_id, is_on, prio) values 
   (8, 8, 2, 0, false, 1) -- user 8 отменил подписку
 , (7, 3, 1, 0, true,  1) -- user 7 включил подписку
 ;

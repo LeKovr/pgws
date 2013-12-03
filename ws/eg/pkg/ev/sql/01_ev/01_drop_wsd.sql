@@ -17,28 +17,17 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Удаление данных из схемы ws
-*/
-
-/* ------------------------------------------------------------------------- */
-/*
-DELETE FROM wsd.prop_value WHERE pkg = :'PKG';
-
-DELETE FROM cfg.prop_owner WHERE pkg = :'PKG';
-DELETE FROM cfg.prop_group WHERE pkg = :'PKG';
-DELETE FROM cfg.prop       WHERE pkg = :'PKG';
+    Удаление объектов пакета из схемы wsd
 */
 
 /* ------------------------------------------------------------------------- */
 DROP TABLE wsd.event_notify_spec;
 DROP TABLE wsd.event_notify CASCADE;
-DROP TABLE wsd.event_signup CASCADE;
+DROP TABLE wsd.event_account_signup CASCADE;
 DROP TABLE wsd.event_signup_profile;
-DROP TABLE wsd.event_role_signup CASCADE;
+DROP TABLE wsd.event_signup CASCADE;
 DROP TABLE wsd.event_spec;
 DROP TABLE wsd.event;
 DROP SEQUENCE wsd.event_seq;
 DROP SEQUENCE wsd.event_reason_seq;
-
-/* ------------------------------------------------------------------------- */
 

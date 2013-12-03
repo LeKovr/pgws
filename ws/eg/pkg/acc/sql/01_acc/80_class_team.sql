@@ -21,52 +21,14 @@
 */
 
 /* ------------------------------------------------------------------------- */
-\set AID acc.const_class_id()
 \set TID acc.const_team_class_id()
 \set RID acc.const_role_class_id()
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO class (id, up_id, id_count, is_ext, sort, code, name) VALUES
-  (:AID, NULL, 1,        FALSE, '3', 'account',   'Учетная запись пользователя')
-;
-/* ------------------------------------------------------------------------- */
-INSERT INTO class_status (class_id, id, sort, name) VALUES
-  (:AID, 1, '01', 'Активен')
-, (:AID, 2, '02', 'Заблокирован')
-, (:AID, 3, '02', 'Не активен') -- не отправлять уведомления
-;
-/* ------------------------------------------------------------------------- */
-INSERT INTO class_action (class_id, id, sort, name) VALUES
-  (:AID, 1, '01', 'Просмотр профайла')
-, (:AID, 2, '02', 'Просмотр настроек')
-, (:AID, 3, '03', 'Администрирование') -- set_status_locked(BOOL), изменение того, что пользователь не может менять сам
-, (:AID, 4, '04', 'Изменение данных')  -- set_status_active(BOOL)
-;
-/* ------------------------------------------------------------------------- */
-INSERT INTO class_status_action (class_id, status_id, action_id)
-  SELECT :AID, 1, s.a FROM generate_series(1, 4) AS s(a) UNION
-  SELECT :AID, 2, s.a FROM generate_series(1, 3) AS s(a) UNION
-  SELECT :AID, 3, s.a FROM generate_series(1, 4) AS s(a)
-;
-/* ------------------------------------------------------------------------- */
-INSERT INTO class_acl (class_id, id, is_sys, sort, name) VALUES
-  (:AID, 1, FALSE, '01', 'Просмотр профайла')
-, (:AID, 2, FALSE, '02', 'Просмотр настроек')
-, (:AID, 3, FALSE, '03', 'Изменение настроек')
-, (:AID, 4, FALSE, '04', 'Изменение системных атрибутов')
-;
-/* ------------------------------------------------------------------------- */
-INSERT INTO class_action_acl (class_id, action_id, acl_id)
-  SELECT :AID, 1, a FROM unnest(ARRAY[1]) a   UNION
-  SELECT :AID, 2, a FROM unnest(ARRAY[2,3,4]) a UNION
-  SELECT :AID, 3, a FROM unnest(ARRAY[4]) a   UNION
-  SELECT :AID, 4, a FROM unnest(ARRAY[3,4]) a
-;
-
-/* ------------------------------------------------------------------------- */
-INSERT INTO class (id, up_id, id_count, is_ext, sort, code, name) VALUES
   (:TID, NULL, 1,        FALSE, '4', 'team',      'Группа пользователей')
 ;
+
 /* ------------------------------------------------------------------------- */
 INSERT INTO class_status (class_id, id, sort, name) VALUES
   (:TID, 1, '01', 'Активна')
@@ -80,11 +42,13 @@ INSERT INTO class_action (class_id, id, sort, name) VALUES
 , (:TID, 3, '03', 'Администрирование') -- функционал админа системы
 , (:TID, 4, '04', 'Изменение данных')  -- функционал админа команды
 ;
+
 /* ------------------------------------------------------------------------- */
 INSERT INTO class_status_action (class_id, status_id, action_id)
   SELECT :TID, 1, s.a FROM generate_series(1, 4) AS s(a) UNION
   SELECT :TID, 2, s.a FROM generate_series(1, 3) AS s(a)
 ;
+
 /* ------------------------------------------------------------------------- */
 INSERT INTO class_acl (class_id, id, is_sys, sort, name) VALUES
   (:TID, 1, FALSE, '01', 'Гость')

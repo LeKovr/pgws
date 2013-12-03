@@ -21,7 +21,7 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE TRIGGER event_onupdate AFTER UPDATE ON wsd.event FOR EACH ROW
+CREATE TRIGGER event_onupdate AFTER INSERT OR UPDATE ON wsd.event FOR EACH ROW
   WHEN (NEW.status_id = ev.const_status_id_rcpt())
   EXECUTE PROCEDURE ev.tr_send_notifications()
 ;

@@ -20,34 +20,30 @@
     Данные основных таблиц пакета
 */
 
+\set AID acc.const_class_id()
+
 /* ------------------------------------------------------------------------- */
 INSERT INTO ev.kind_group (id, sort, name, anno) VALUES 
   (1, 1, 'Система','Информация о системных событиях')
 ;
 
+/* ------------------------------------------------------------------------- */
 INSERT INTO ev.signature (  id, name, email, tmpl ) VALUES 
   ( 1, 'PGWS support', 'support@localhost', NULL)
 ;
 
-\set AID acc.const_class_id()
-
+/* ------------------------------------------------------------------------- */
 INSERT INTO ev.kind 
   ( id, group_id, class_id, def_prio, tmpl,         form_codes, name, name_fmt,   name_count, anno) VALUES
   ( 1,  1,        :AID,     3, 'account_login_self', ARRAY[1],   'Авторизация своей учетной записи', 'Пользователь %s авторизован в системе',  1
   , 'Уведомление пользователя о том, что под его учетной записью произведена авторизация в системе' )
-, ( 2,  1,        :AID,     2, 'account_login_team', ARRAY[1],   'Авторизация учетной записи своей команды', 'Пользователь %s (%s) авторизован в системе',  2, 'Уведомление администратора команды об авторизации ее участника')
+, ( 2,  1,        :AID,     2, 'account_login_team', ARRAY[1],   'Авторизация учетной записи своей команды', 'Пользователь %s (%s) авторизован в системе',  2
+  , 'Уведомление администратора команды об авторизации ее участника')
 ;
+
 INSERT INTO ev.kind 
   ( id, group_id, class_id, def_prio, tmpl,         form_codes, name, name_fmt,   name_count, has_spec, spec_name, anno) VALUES
   ( 3,  1,        :AID,     1, 'account_login_any',   ARRAY[1],   'Авторизация учетной записи', 'Пользователь %s: новая сессия (%s)',  2, TRUE, 'ID пользователя', 'Уведомление об авторизации заданного (или любого) пользователя')
 ;
 
 
-/* ------------------------------------------------------------------------- */
-
-/* app_sample:
-INSERT INTO  wsd.event_signup (account_id, role_id, kind_id, spec_id, is_on, prio) values 
-  (8, 8, 2, 0, false, 1) -- user 8 отменил подписку
-, (7, 3, 1, 0, true,  1) -- user 7 включил подписку
-;
-*/

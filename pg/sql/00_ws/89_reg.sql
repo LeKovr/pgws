@@ -39,25 +39,25 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, args_exam) VALU
   ,('ws.class',                   2, 1, 2, 5, '')
   ,('ws.method_lookup',           2, 1, 2, 7, 'code=page%&page=2&by=2&need_rc=1')
   ,('ws.class_id',                2, 1, 2, 2, 'code=system')
+  ,('ws.dt',                      2, 1, 2, 7, 'code=double')
+  ,('ws.dt_facet',                2, 1, 2, 7, 'code=oid')
+  ,('ws.dt_part',                 2, 1, 2, 7, 'code=ws.dt,part_id=1')
+  ,('ws.facet',                   2, 1, 2, 5, 'id=3')
+  ,('ws.method_by_code',          2, 1, 2, 7, 'code=ws.facet')
+  ,('ws.method_rvf',              2, 1, 2, 4, 'id=3')
 ;
 
-INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, is_i18n) VALUES
-   ('ws.page_by_uri',             2, 1, 2, 3, true)
-  ,('ws.error_info',              2, 1, 2, 3, true)
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, is_i18n, args_exam) VALUES
+   ('ws.page_by_uri',             2, 1, 2, 3, true, '')
+  ,('ws.error_info',              2, 1, 2, 3, true, 'code=Y0003')
 ;
 
 INSERT INTO method (code, class_id, action_id, cache_id, rvf_id) VALUES
-  ('ws.method_rvf',              2, 1, 2, 4)
-  ,('ws.method_by_code',          2, 1, 2, 7)
-  ,('ws.method_by_action',        2, 1, 2, 7)
-  ,('ws.facet',                   2, 1, 2, 5)
-  ,('ws.dt_facet',                2, 1, 2, 7)
-  ,('ws.dt_part',                 2, 1, 2, 7)
+  ('ws.method_by_action',        2, 1, 2, 7)
   ,('ws.class_status_action_acl', 2, 1, 2, 7)
   ,('ws.class_action',            2, 1, 2, 3)
   ,('ws.class_status',            2, 1, 2, 3)
   ,('ws.class_acl',               2, 1, 2, 3)
-  ,('ws.dt',                      2, 1, 2, 7)
   ,('ws.acls_eff_ids',            2, 1, 2, 6)
   ,('ws.acls_eff',                2, 1, 2, 4)
 ;

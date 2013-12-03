@@ -32,6 +32,7 @@ SELECT pg_c('r', 'wsd.team', 'Команда пользователей')
 , pg_c('c', 'wsd.team.status_id', 'd_id32,   ID статуса')
 , pg_c('c', 'wsd.team.name',      'd_string, Название команды')
 ;
+
 CREATE SEQUENCE wsd.team_id_seq;
 ALTER TABLE wsd.team ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.team_id_seq');
 
@@ -144,11 +145,11 @@ SELECT pg_c('r', 'wsd.session', 'Сессия авторизованного п�
 CREATE SEQUENCE wsd.session_id_seq;
 ALTER TABLE wsd.session ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.session_id_seq');
 
+CREATE INDEX sid_deleted_at ON wsd.session (sid, deleted_at);
+
 /* TODO
 CREATE TABLE wsd.session_log (LIKE wsd.session INCLUDING CONSTRAINTS INCLUDING COMMENTS);
 */
-/* ------------------------------------------------------------------------- */
-CREATE INDEX sid_deleted_at ON wsd.session (sid, deleted_at);
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.permission (
@@ -166,10 +167,6 @@ SELECT pg_c('r', 'wsd.permission', 'Разрешение')
 
 CREATE SEQUENCE wsd.permission_id_seq;
 ALTER TABLE wsd.permission ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.permission_id_seq');
-
-INSERT INTO wsd.pkg_default_protected (pkg, schema, wsd_rel, wsd_col, func) VALUES
-  ('acc', 'acc', 'permission', 'pkg', 'ws.pg_pkg()')
-;
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.role_permission (
@@ -198,5 +195,3 @@ SELECT pg_c('r', 'wsd.permission_acl', 'Соответствие разреше�
 , pg_c('c', 'wsd.permission_acl.team_link_id', 'd_id32,  ID связи с командой')
 , pg_c('c', 'wsd.permission_acl.acl_id',       'd_acl,   ID уровня доступа')
 ;
-
-/* ------------------------------------------------------------------------- */

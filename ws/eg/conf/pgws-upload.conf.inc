@@ -35,6 +35,9 @@
     # чтобы дебажить скрипт и успеть налюбоваться на процесс загрузки
      upload_limit_rate 10k;
 
+    # разрешаем группе чтение и запись
+    upload_store_access user:rw group:rw;
+
     # включаем информирование для "upload" (см. в начале)
     track_uploads proxied 1m;
   }

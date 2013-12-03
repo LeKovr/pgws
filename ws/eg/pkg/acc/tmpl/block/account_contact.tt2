@@ -4,6 +4,15 @@
   rows = api('account.contact.view', id => id, all => all);
   table_begin(class='form');
     FOR row IN rows;
+      FILTER html;
+	p1 = row.name;
+      END;
+      FILTER html;
+	p2 = row.value;
+      END;
+      FILTER html;
+	p3 = row.created_at;
+      END;
       IF row.verified_at == NULL;
         row_verified = 'не подтвержден';
       ELSE;
@@ -13,9 +22,9 @@
         tr(list = [ l('Тип'), l('Контакт'), l('Добавлен'), l('Статус')], use_th = 1, thead = 1);
       END;
 	  IF all == 't';
-        tr(list = [row.name, row.value, row.created_at, row_verified]);
+        tr(list = [p1, p2, p3, row_verified]);
       ELSE;
-        tr(list = [row.name, row.value]);
+        tr(list = [p1, p2]);
 	  END;
     END;
   table_end;

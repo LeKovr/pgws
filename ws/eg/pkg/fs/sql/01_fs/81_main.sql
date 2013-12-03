@@ -31,6 +31,7 @@ INSERT INTO kind (code, sort, name) VALUES
 , ('arc',     7, 'Архив')
 ;
 
+/* ------------------------------------------------------------------------- */
 INSERT INTO mime_type (kind_code, ctype, ext) VALUES
   ('img',   'image/jpeg',                   'jpg')
 , ('img',   'image/jpeg',                   'jpeg')
@@ -59,13 +60,23 @@ INSERT INTO mime_type (kind_code, ctype, ext) VALUES
 , ('arc',   'application/octet-stream',     'lha')
 ;
 
-INSERT INTO ws.dt (code, anno, is_complex) VALUES (pg_cs('z_store_get'), 'Аргументы функций store_get', true);
-INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('z_store_get'), 1, 'path',   dt_code('d_path'), 'ID данных');
+/* ------------------------------------------------------------------------- */
+INSERT INTO ws.dt (code, anno, is_complex) VALUES
+  (pg_cs('z_store_get'),            'Аргументы функций store_get', true)
+, (pg_cs('z_store_set'),            'Аргументы функций store_set', true)
+, (pg_cs('z_store_get_formatted'),  'Аргументы функций store_get_formatted', true)
+;
 
-INSERT INTO ws.dt (code, anno, is_complex) VALUES (pg_cs('z_store_set'), 'Аргументы функций store_set', true);
-INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('z_store_set'), 1, 'path',   dt_code('d_path'), 'ID данных');
-INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno) VALUES (dt_code('z_store_set'), 2, 'data',   dt_code('text'), 'данные');
+/* ------------------------------------------------------------------------- */
+INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno) VALUES
+  (dt_code('z_store_get'),            1, 'path',   dt_code('d_path'), 'ID данных')
+, (dt_code('z_store_set'),            1, 'path',   dt_code('d_path'), 'ID данных')
+, (dt_code('z_store_set'),            2, 'data',   dt_code('text'),   'данные')
+, (dt_code('z_store_get_formatted'),  1, 'path',   dt_code('d_path'), 'ID данных')
+, (dt_code('z_store_get_formatted'),  2, 'format', dt_code('text'),   'данные')
+;
 
+/* ------------------------------------------------------------------------- */
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real, is_write, realm_code) VALUES
   ('fe.file_new',   2, 1, 1,  3, pg_cs('file_new_path_mk'), TRUE,   'fe_only')
 , ('fe.file_attr',  2, 1, 1,  3, pg_cs('file_store'),       FALSE,  'fe_only')
@@ -75,5 +86,10 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, arg_
   ('fe.file_get',   2, 1, 1, 2, 'store:get',    dt_code('z_store_get'), dt_code('d_id'), FALSE, 'fe_only', 'Получение данных из файлового хранилища')
 , ('fe.file_get64', 2, 1, 1, 2, 'store:get64',  dt_code('z_store_get'), dt_code('d_id'), FALSE, 'fe_only', 'Получение данных  из файлового хранилища и конвертация в base64')
 , ('fe.file_set',   2, 1, 1, 3, 'store:set',    dt_code('z_store_set'), dt_code('d_id'), TRUE,  'fe_only', 'Сохранение данных в файловом хранилище')
+, ('fe.file_get_formatted', 2, 1, 1, 2, 'store:get_formatted',    dt_code('z_store_get_formatted'), dt_code('d_id'), FALSE, 'fe_only', 'Получение данных форматированного файла')
 ;
 
+INSERT INTO error (code, id_count, message) VALUES
+  (fs.const_error_parse_json_file(),      1, 'Ошибка парсинга json-файла: %s')
+, (fs.const_error_parse_xml_file(),       1, 'Ошибка парсинга xml-файла: %s')
+;

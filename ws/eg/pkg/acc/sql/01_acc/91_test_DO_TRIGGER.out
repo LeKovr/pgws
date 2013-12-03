@@ -1,0 +1,89 @@
+INSERT 0 1
+INSERT 0 1
+              test              
+--------------------------------
+  ***** add_verified_date *****
+
+ account_contact_add 
+---------------------
+ t
+
+ account_id | contact_type_id |     value     
+------------+-----------------+---------------
+         -1 |               2 | gav@email.com
+
+DELETE 1
+              test              
+--------------------------------
+  ***** add_verified_date *****
+
+ account_contact_add 
+---------------------
+ t
+
+ account_id | contact_type_id |     value     
+------------+-----------------+---------------
+         -1 |               2 | gav@email.com
+
+UPDATE 1
+ account_id | contact_type_id |       value       
+------------+-----------------+-------------------
+         -1 |               2 | new_gav@email.com
+
+                 test                 
+--------------------------------------
+  ***** value_copy_into_account *****
+
+ id |    login    | psw  |   name   
+----+-------------+------+----------
+ -1 | test_method | 1234 | reg_name
+
+INSERT 0 1
+ id |    login    | psw  |   name   
+----+-------------+------+----------
+ -1 | test_method | 1234 | NEW_NAME
+
+               test                
+-----------------------------------
+  ***** value_copy_into_team *****
+
+ id | status_id |   name   
+----+-----------+----------
+ -2 |         1 | reg_name
+
+INSERT 0 1
+ id | status_id |     name      
+----+-----------+---------------
+ -2 |         1 | NEW_NAME_TEAM
+
+                 test                 
+--------------------------------------
+  ***** value_copy_into_account *****
+
+ id |    login    | psw  |   name   
+----+-------------+------+----------
+ -1 | test_method | 1234 | NEW_NAME
+
+UPDATE 1
+ id |    login    | psw  |    name    
+----+-------------+------+------------
+ -1 | test_method | 1234 | NEW_NAME_2
+
+               test                
+-----------------------------------
+  ***** value_copy_into_team *****
+
+ id | status_id |     name      
+----+-----------+---------------
+ -2 |         1 | NEW_NAME_TEAM
+
+UPDATE 1
+ id | status_id |      name       
+----+-----------+-----------------
+ -2 |         1 | NEW_NAME_TEAM_2
+
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1

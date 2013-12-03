@@ -30,6 +30,7 @@ INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, 
 , ('sample.pager',  'samples',  2, 1, 3,    'samples/pager$',   'app_sample/samples/pager',   'Pager')
 , ('sample.tabsjs', 'samples',  2, 1, 4,    'samples/tabsjs$',  'app_sample/samples/tabs_js', 'Вкладки (JS)')
 , ('sample.tabs',   'samples',  2, 1, 5,    NULL,               NULL,                         'Вкладки')
+, ('sample.testjs', 'samples',  2, 1, 4,    'samples/testjs$',  'app_sample/samples/test_js', 'Тесты (JS)')
 
 , ('sample.tabs.index', 'sample.tabs',  2, 1, 1,    'samples/tabs$',      'app_sample/samples/tabs',    'Вкладки: Главная' )
 , ('sample.tabs.tab1',  'sample.tabs',  2, 1, 2,    'samples/tabs/tab1$', 'app_sample/samples/tabs',    'Вкладки: Tab1')

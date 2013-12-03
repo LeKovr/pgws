@@ -74,8 +74,8 @@ CREATE OR REPLACE VIEW i18n_def.error AS
 ;
 SELECT pg_c('v', 'i18n_def.error', 'Описание ошибки');
 ALTER VIEW i18n_def.error ALTER COLUMN id_count SET DEFAULT 0;
-/* ------------------------------------------------------------------------- */
 
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE RULE error_ins AS ON INSERT TO i18n_def.error
   DO INSTEAD (
     INSERT INTO ws.error_data (code) VALUES (NEW.code);
@@ -95,10 +95,12 @@ CREATE OR REPLACE VIEW i18n_def.ref AS SELECT
 ;
 SELECT pg_c('v', 'i18n_def.ref', 'Справочник');
 
+/* ------------------------------------------------------------------------- */
 ALTER VIEW i18n_def.ref ALTER COLUMN pkg SET DEFAULT ws.pg_cs();
 ALTER VIEW i18n_def.ref ALTER COLUMN acls_upd SET DEFAULT ws.const_ref_acls_internal();
 ALTER VIEW i18n_def.ref ALTER COLUMN is_dt_vary SET DEFAULT FALSE;
 
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE RULE ref_ins AS ON INSERT TO i18n_def.ref
   DO INSTEAD (
     INSERT INTO ws.ref_data (code, acls, acls_upd, is_dt_vary, method_code, method_code_upd, pkg) VALUES
@@ -137,5 +139,3 @@ CREATE OR REPLACE VIEW i18n_def.timezone AS
     ORDER BY n.sort
 ;
 SELECT pg_c('v', 'i18n_def.timezone', 'Часовой пояс');
-
-/* ------------------------------------------------------------------------- */

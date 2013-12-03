@@ -1,0 +1,135 @@
+[% # Редактор %]
+
+[% 
+  meta.head.wysiwyg = 1;
+%]
+
+<div class="btn-toolbar" data-role="editor-toolbar" data-target="#editor">
+  <div class="btn-group">
+    <a class="btn dropdown-toggle [% dis %]" data-toggle="dropdown" title="[% l('Шрифт') %]"><i class="icon-font"></i><b class="caret"></b></a>
+    <ul class="dropdown-menu">
+    </ul>
+  </div>
+  <div class="btn-group">
+    <a class="btn dropdown-toggle [% dis %]" data-toggle="dropdown" title="[% l('Размер шрифта') %]"><i class="icon-text-height"></i>&nbsp;<b class="caret"></b></a>
+    <ul class="dropdown-menu">
+      <li><a data-edit="fontSize 5"><font size="5">[% l('Огромный') %]</font></a></li>
+      <li><a data-edit="fontSize 3"><font size="3">[% l('Нормальный') %]</font></a></li>
+      <li><a data-edit="fontSize 1"><font size="1">[% l('Небольшой') %]</font></a></li>
+    </ul>
+  </div>
+  <div class="btn-group">
+    <a class="btn [% dis %]" data-edit="bold" title="[% l('Полужирный') %] (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
+    <a class="btn [% dis %]" data-edit="italic" title="[% l('Курсив') %] (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
+  </div>
+  <div class="btn-group">
+        <a class="btn [% dis %]" data-edit="outdent" title="[% l('Уменьшить отступ (Shift+Tab)') %]"><i class="icon-indent-left"></i></a>
+        <a class="btn [% dis %]" data-edit="indent" title="[% l('Увеличить отступ (Tab)') %]"><i class="icon-indent-right"></i></a>
+  </div>
+  <div class="btn-group">
+    <a class="btn [% dis %]" data-edit="justifyleft" title="[% l('Выравнивание по левому краю (Ctrl/Cmd+L)')%]"><i class="icon-align-left"></i></a>
+    <a class="btn [% dis %]" data-edit="justifycenter" title="[% l('Выравнивание по центру (Ctrl/Cmd+E)') %]"><i class="icon-align-center"></i></a>
+    <a class="btn [% dis %]" data-edit="justifyright" title="[% l('Выравнивание по правому краю (Ctrl/Cmd+R)') %]"><i class="icon-align-right"></i></a>
+    <a class="btn [% dis %]" data-edit="justifyfull" title="[% l('Выравнивание по ширине (Ctrl/Cmd+J)') %]"><i class="icon-align-justify"></i></a>
+  </div>
+  <div class="btn-group">
+    <a class="btn [% dis %]" data-edit="undo" title="[% l('Назад (Ctrl/Cmd+Z)') %]"><i class="icon-arrow-left"></i></a>
+    <a class="btn [% dis %]" data-edit="Dgtht" title="[% l('Вперед (Ctrl/Cmd+Y)]') %]"><i class="icon-arrow-right"></i></a>
+  </div>
+  <input type="text" data-edit="inserttext" id="voiceBtn" x-webkit-speech="">
+</div>
+<div id="editor"> 
+      [% value %]
+</div>
+  
+<textarea name="[% name %]" [% dis %] class="hide">[% value %]</textarea>
+  
+[% meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+//<![CDATA[
+  $(function(){
+    function initToolbarBootstrapBindings() {
+      var fonts = ['Serif', 'Sans', 'Arial', 'Arial Black', 'Courier', 
+            'Courier New', 'Comic Sans MS', 'Helvetica', 'Impact', 'Lucida Grande', 'Lucida Sans', 'Tahoma', 'Times',
+            'Times New Roman', 'Verdana'],
+            fontTarget = $('[title=[% l('Шрифт') %]]').siblings('.dropdown-menu');
+      $.each(fonts, function (idx, fontName) {
+          fontTarget.append($('<li><a data-edit="fontName ' + fontName +'" style="font-family:\''+ fontName +'\'">'+fontName + '</a></li>'));
+      });
+      $('a[title]').tooltip({container:'body'});
+    	$('.dropdown-menu input').click(function() {return false;})
+		    .change(function () {$(this).parent('.dropdown-menu').siblings('.dropdown-toggle').dropdown('toggle');})
+        .keydown('esc', function () {this.value='';$(this).change();});
+
+      $('[data-role=magic-overlay]').each(function () { 
+        var overlay = $(this), target = $(overlay.data('target')); 
+        overlay.css('opacity', 0).css('position', 'absolute').offset(target.offset()).width(target.outerWidth()).height(target.outerHeight());
+      });
+      if ("onwebkitspeechchange"  in document.createElement("input")) {
+        var editorOffset = $('#editor').offset();
+        $('#voiceBtn').css('position','absolute').offset({top: editorOffset.top, left: editorOffset.left+$('#editor').innerWidth()-35});
+      } else {
+        $('#voiceBtn').hide();
+      }
+	};
+	function showErrorAlert (reason, detail) {
+		var msg='';
+		if (reason==='unsupported-file-type') { msg = "Unsupported format " +detail; }
+		else {
+			console.log("error uploading file", reason, detail);
+		}
+		$('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>'+ 
+		 '<strong>File upload error</strong> '+msg+' </div>').prependTo('#alerts');
+	};
+    initToolbarBootstrapBindings();  
+    var obj_wysiwyg = $('#editor').wysiwyg({ fileUploadError: showErrorAlert});
+	obj_wysiwyg.updateToolbar = function () {
+	  if (options.activeToolbarClass) {
+	    $(options.toolbarSelector).find(toolbarBtnSelector).each(function () {
+	      var command = $(this).data(options.commandRole);
+	      if (document.queryCommandEnabled(command) && document.queryCommandState(command)) {
+		$(this).addClass(options.activeToolbarClass);
+	      } else {
+		$(this).removeClass(options.activeToolbarClass);
+	      }
+	    });
+	  }
+      };
+      obj_wysiwyg.disabled = function(){
+	$('[data-target="#editor"]').find('.btn').addClass('disabled');
+	$('[data-target="#editor"]').find('.btn').addClass('event-none');
+	$(this).addClass('event-none');
+	$(this).css('background-color', '#F5F5F5');
+      };
+      obj_wysiwyg.visible = function(){
+	$('[data-target="#editor"]').find('.btn').removeClass('disabled');
+	$('[data-target="#editor"]').find('.btn').removeClass('event-none');
+	$(this).removeClass('event-none');
+	$(this).removeAttr('style')
+      };
+      $('#editor').bind('click dblclick mouseover mouseout keyup', function(){
+	$('[name="[% name %]"]').val($('#editor').html());
+      });
+	
+	var originalAddClassMethod = jQuery.fn.addClass;
+	var originalRemoveClassMethod = jQuery.fn.removeClass;
+	jQuery.fn.addClass = function(){
+	  if($(this).attr('name') == '[% name %]'){
+	    if(arguments[0] =='tmpPGWSDisabled'){
+		obj_wysiwyg.disabled();
+	    }
+	  }
+	  return originalAddClassMethod.apply(this, arguments);
+	};
+	jQuery.fn.removeClass = function(){
+	  if($(this).attr('name') == '[% name %]'){
+	    if(arguments[0] =='tmpPGWSDisabled'){
+		obj_wysiwyg.visible();
+	    }
+	  }
+	  return originalRemoveClassMethod.apply(this, arguments);
+	};
+  });
+//]]>
+</script>
+[% END; # BLOCK %]

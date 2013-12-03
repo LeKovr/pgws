@@ -29,7 +29,6 @@ CREATE TABLE wsd.prop_value (
 , value       TEXT
 , CONSTRAINT  prop_value_pkey PRIMARY KEY (pogc, poid, code, valid_from)
 );
-
 SELECT pg_c('r', 'wsd.prop_value',       'Значения свойств объектов')
 , pg_c('c', 'wsd.prop_value.pogc',       'Код группы (Property Owner Group Code)')
 , pg_c('c', 'wsd.prop_value.poid',       'ID владельца (Property Owner ID)')
@@ -42,5 +41,3 @@ SELECT pg_c('r', 'wsd.prop_value',       'Значения свойств объ
 INSERT INTO wsd.pkg_default_protected (pkg, schema, wsd_rel, wsd_col, func) VALUES
   ('ws', 'cfg', 'prop_value', 'valid_from', 'cfg.const_valid_from_date()')
 ;
-
-

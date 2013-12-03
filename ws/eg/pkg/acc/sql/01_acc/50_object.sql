@@ -21,17 +21,24 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION object_acl(a_class_id d_id, a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION object_acl(
+  a_class_id d_id
+, a_id       d_id
+, a__sid     d_sid DEFAULT NULL
+) RETURNS SETOF d_acl STABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_class_id: ID класса
+  -- a_id:       ID пользователя
+  -- a__sid:     Код сессии
   DECLARE
-    r_session acc.session_info;
-    v_method_link ws.d_sub;
+    r_session            acc.session_info;
+    v_method_link        ws.d_sub;
     v_method_object_team ws.d_sub;
-    v_link_id acc.d_link;
-    v_object_team_id ws.d_id;
-    v_account_team_id ws.d_id;
-    v_role_ids ws.d_ida;
-    v_team_link_id  ws.d_id32 := acc.const_team_link_id_other(); -- любой объект - чужой команды
+    v_link_id            acc.d_link;
+    v_object_team_id     ws.d_id;
+    v_account_team_id    ws.d_id;
+    v_role_ids           ws.d_ida;
+    v_team_link_id       ws.d_id32 := acc.const_team_link_id_other(); -- любой объект - чужой команды
   BEGIN
     RAISE DEBUG 'object_acl(%, %, %)', a_class_id, a_id, a__sid;
     SELECT INTO r_session
@@ -50,23 +57,23 @@ $_$
         -- посчитать team_link_id
         v_account_team_id := r_session.team_id;
         RAISE DEBUG 'USER TEAM = %', v_account_team_id;
-        SELECT INTO v_method_object_team code_real FROM ws.method_by_code(ws.class_code(a_class_id) || '.team_link_id');
-        IF FOUND THEN
+        v_method_object_team:=ws.method_code_real(ws.class_code(a_class_id) || '.team_link_id');
+        IF v_method_object_team IS NOT NULL THEN
           -- team_link_id получаем сразу, без определения team_id
           EXECUTE 
-            ws.sprintf('SELECT %s($1, $2)', v_method_object_team)
+            'SELECT ' || v_method_object_team || '($1, $2)'
             INTO v_team_link_id
             USING a_id, v_account_team_id
           ;
         ELSE
-          SELECT INTO v_method_object_team code_real FROM ws.method_by_code(ws.class_code(a_class_id) || '.team_id');
-          IF NOT FOUND THEN
+          v_method_object_team:=ws.method_code_real(ws.class_code(a_class_id) || '.team_id');
+          IF v_method_object_team IS NULL THEN
             -- не найден метод расчета связи
             RAISE EXCEPTION '%', ws.error_str(acc.const_error_class(), a_class_id::text);
           END IF;
           -- team_link считаем по object.team()
           EXECUTE 
-            ws.sprintf('SELECT %s($1)', v_method_object_team)
+            'SELECT ' || v_method_object_team || '($1)'
             INTO v_object_team_id
             USING a_id
           ;
@@ -79,13 +86,13 @@ $_$
     RAISE DEBUG 'TEAM LINK ID = %', v_team_link_id;
 
     -- считаем link_id
-    SELECT INTO v_method_link code_real FROM ws.method_by_code(ws.class_code(a_class_id) || '.link_id');
-    IF NOT FOUND THEN
+    v_method_link:=ws.method_code_real(ws.class_code(a_class_id) || '.link_id');
+    IF v_method_link IS NULL THEN
       RAISE EXCEPTION 'Class link function %.link() not found', ws.class_code(a_class_id);
     END IF;
 
     EXECUTE
-      ws.sprintf('SELECT %s($1, $2)', v_method_link)
+      'SELECT ' || v_method_link || '($1, $2)'
       INTO v_link_id
       USING a_id, a__sid
     ;

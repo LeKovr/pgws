@@ -1,0 +1,10 @@
+                test                
+------------------------------------
+  ***** cfg.prop_calc_is_mask *****
+
+INSERT 0 1
+   code    | pkg | pogc_list | is_mask | def_value | name | value_fmt | anno | has_log 
+-----------+-----+-----------+---------+-----------+------+-----------+------+---------
+ test_code | cfg | {db}      | f       | 000       | тест |           |      | f
+
+DELETE 1

@@ -50,7 +50,8 @@ th {
   background-color: LightGrey;
 }
 
-tr.odd {
+.table-striped tbody >tr:nth-child(even){}
+.table-striped tbody >tr:nth-child(odd){
   background-color: ghostwhite;
 }
 

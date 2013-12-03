@@ -21,8 +21,13 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION date_info(a_date DATE DEFAULT CURRENT_DATE, a_offset INTEGER DEFAULT 0) RETURNS t_date_info IMMUTABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION date_info(
+  a_date DATE DEFAULT CURRENT_DATE
+, a_offset INTEGER DEFAULT 0
+) RETURNS t_date_info IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_date:   дата
+  -- a_offset: смещение
   DECLARE
     r       ws.t_date_info;
   BEGIN
@@ -46,6 +51,7 @@ SELECT pg_c('f', 'date_info', 'Атрибуты заданной даты');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION month_info(a_date DATE DEFAULT CURRENT_DATE) RETURNS t_month_info IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a_date:  дата
   SELECT
     date_trunc('month', $1)::date
     , date_trunc('month', $1 + '1 month'::interval)::date - 1
@@ -62,17 +68,21 @@ $_$;
 SELECT pg_c('f', 'month_info', 'Атрибуты месяца заданной даты');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION year_months(a_date DATE DEFAULT CURRENT_DATE, a_date_min DATE DEFAULT NULL, a_date_max DATE DEFAULT NULL) RETURNS SETOF t_month_info IMMUTABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION year_months(
+  a_date     DATE DEFAULT CURRENT_DATE
+, a_date_min DATE DEFAULT NULL
+, a_date_max DATE DEFAULT NULL
+) RETURNS SETOF t_month_info IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
   -- Список атрибутов месяцев года заданной даты
   -- a_date:      Дата
   -- a_date_min:  Дата, месяцы раньше которой не включать
   -- a_date_max:  Дата, месяцы позднее которой не включать
   DECLARE
-    v_i INTEGER;
-    v_date DATE;
+    v_i         INTEGER;
+    v_date      DATE;
     v_date_curr DATE;
-    r ws.t_month_info;
+    r           ws.t_month_info;
   BEGIN
     v_date := COALESCE(a_date, CURRENT_DATE);
     FOR v_i IN 0..11 LOOP
@@ -86,4 +96,3 @@ $_$
   END;
 $_$;
 SELECT pg_c('f', 'year_months', 'Список атрибутов месяцев года заданной даты');
-

@@ -43,54 +43,63 @@ $_$
   SELECT 'Y0001'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_core_no_required_value'          , 'не задано обязательное значение');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_core_value_not_match_rule() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'Y0002'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_core_value_not_match_rule'       , 'значение не соответствует условию');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_core_value_not_match_format() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'Y0003'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_core_value_not_match_format'     , 'значение не соответствует шаблону');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_core_no_data() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'Y0010'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_core_no_data'                    , 'нет данных');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_system_incorrect_acl_code() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'Y0101'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_system_incorrect_acl_code'       , 'недопустимый код acl');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_system_external_access_forbidden() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'Y0102'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_system_external_access_forbidden', 'внешний доступ к методу запрещен');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_system_auth_required() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'Y0103'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_system_auth_required'            , 'необходима авторизация (не задан идентификатор сессии)');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_system_incorrect_session_id() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'Y0104'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_system_incorrect_session_id'     , 'некорректный идентификатор сессии');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_system_acl_check_not_found() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'Y0105'::ws.d_errcode
 $_$;
 SELECT pg_c('f', 'const_error_system_acl_check_not_found'      , 'не найдена проверка для acl');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_error_system_incorrect_status_id() RETURNS d_errcode IMMUTABLE LANGUAGE 'sql' AS
 $_$
@@ -125,8 +134,8 @@ $_$
   SELECT 'UPDATE'::ws.d_codei;
 $_$;
 SELECT pg_c('f', 'const_ref_op_update', 'Константа: Код операции обновления позиции справочника');
-/* ------------------------------------------------------------------------- */
 
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_ref_op_delete() RETURNS d_codei IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 'DELETE'::ws.d_codei;
@@ -138,7 +147,7 @@ CREATE OR REPLACE FUNCTION const_update_timestamp() RETURNS timestamp IMMUTABLE 
 $_$
   SELECT '2000-01-01'::timestamp;
 $_$;
-SELECT pg_c('f', 'const_min_timestamp', 'Константа: начальный timestamp изменений данных');
+SELECT pg_c('f', 'const_update_timestamp', 'Константа: начальный timestamp изменений данных');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_ref_acls_internal() RETURNS d_acls IMMUTABLE LANGUAGE 'sql' AS

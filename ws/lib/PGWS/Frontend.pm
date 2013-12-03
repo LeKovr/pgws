@@ -204,7 +204,10 @@ sub process_job {
   $meta->setlang($dbc->config('lang.default'));
   loc_lang($meta->{'lang'});
 
-  my $status = '200 OK';
+  my $resp_meta = {
+     status => '200',
+     status_note => 'OK'
+  };
   my $errors = [];
   my $resp;
   my $call;
@@ -219,6 +222,7 @@ sub process_job {
     $meta->debug('call %s.%s', $req->prefix, $req->uri);
     my $vars = {
       'resp'    => {},
+      'meta'    => $resp_meta,
       'params'  => $req->params,
       'plugin'   => {
         'root' => ROOT,
@@ -231,14 +235,18 @@ sub process_job {
     my $ext     = $dbc->config('fe.tmpl.ext');
     my $call = $req->prefix.'/'.$req->uri;
     my $out = '';
-    $self->template->process($jobs.$call.$ext, $vars, \$out) or $status = '500 '.$self->template->error();
+    unless ($self->template->process($jobs.$call.$ext, $vars, \$out)) {
+      $resp_meta->{'status'} = '500';
+      $resp_meta->{'status_note'} = $self->template->error();
+    }
     $resp = $vars->{'resp'};
     $meta->dump({ 'vars' => $vars, 'out' => $out});
   }
-  $meta->debug('request status: %s', $status);
+  my $status_line = $resp_meta->{'status'}.' '.$resp_meta->{'status_note'};
+  $meta->debug('request status: %s', $status_line);
   $meta->dump({'resp' => $resp});
   my $json = PGWS::Utils::json_out_utf8({'result' => $resp});
-  $req->print("$status\n\n");
+  $req->print($status_line."\n\n");
   $req->print($json);
 }
 #----------------------------------------------------------------------
@@ -577,6 +585,7 @@ sub tmpl_vars {
     'api'         => sub { api($self, $ws, $errors, $meta, undef, @_) },
     'sysapi'      => sub { sysapi($self, $ws, $errors, $meta, undef, @_) },
     'uri'         => sub { api($self, $ws, $errors, $meta, undef, $def_code, @_); },
+    'ref'         => sub { ref($_[0]) },
     'const'       => sub { 
       my $ret = $self->dbc->const($_[0], 1);
       unless (defined($ret)) {

@@ -30,11 +30,6 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 , ('ws.daemon.startup.pm.n_processes',  ARRAY['fcgi', 'tm'], '5',     'Количество запускаемых процессов, шт')
 , ('ws.daemon.startup.pm.die_timeout',  ARRAY['fcgi', 'tm'], '4',      'Время ожидания корректного завершения процесса, сек')
 
-
-, ('ws.daemon.mgr.listen_wait',         ARRAY['tm'],          '60',     'Время ожидания уведомления внутри итерации, сек')
-, ('ws.daemon.mgr.listen.job',          ARRAY['tm'],          '',       'Канал уведомлений (NOTIFY) о добавлении задания')
-
-
 , ('ws.daemon.fcgi.frontend_poid',      ARRAY['fcgi'],              '1',      'POID настроек фронтенда')
 , ('ws.daemon.fcgi.core_poid',          ARRAY['fcgi'],              '1',      'POID настроек бэкенда')
 

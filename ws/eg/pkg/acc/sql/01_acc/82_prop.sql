@@ -38,4 +38,3 @@ INSERT INTO cfg.prop (code, pogc_list, def_value, name, anno, has_log) VALUES
 , ('isv.show.phone',  ARRAY[:AG,:TG],   'all', 'Кому показывать телефон', 'Варианты: (all, register, into_team)',                  FALSE)
 , ('object.promo',    ARRAY[:AG,:TG],   '',    'Промо-объект',            'Является автоматически сгенерированным промо-объектом', FALSE)
 ;
-

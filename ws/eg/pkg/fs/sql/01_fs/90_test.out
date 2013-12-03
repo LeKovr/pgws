@@ -1,6 +1,6 @@
-        test         
----------------------
-  ***** fs_add *****
+             test              
+-------------------------------
+  ***** fs.package_tests *****
 
 INSERT 0 1
 INSERT 0 1
@@ -13,25 +13,13 @@ INSERT 0 1
 ----+-----------+------+------+------------+------------------
  -1 | test/path |   34 | csum | test1.json | application/json
 
-                test                 
--------------------------------------
-  ***** fs_overwrite_same_code *****
-
     file_add    
 ----------------
  test_file.json
 
-           test            
----------------------------
-  ***** fs_auto_code *****
-
    file_add    
 ---------------
  -3/test2.json
-
-            test             
------------------------------
-  ***** test_file_list *****
 
  id | size | csum | kind_code | created_by |    name    |    anno    | class_id | obj_id | folder_code |      code      | ext  | ver | is_ver_last |   folder_name    |                    req                    
 ----+------+------+-----------+------------+------------+------------+----------+--------+-------------+----------------+------+-----+-------------+------------------+-------------------------------------------
@@ -43,10 +31,6 @@ INSERT 0 1
  -1 | test/path |   34 | csum | test1.json | application/json
  -2 | test/path |   35 | csum | test2.json | application/json
  -3 | test/path |   35 | csum | test2.json | application/json
-
-             test              
--------------------------------
-  ***** test_file_delete *****
 
  file_link_delete 
 ------------------
@@ -62,4 +46,20 @@ INSERT 0 1
 
  id | code 
 ----+------
+
+ is_id_positive |                name                 
+----------------+-------------------------------------
+ t              | apidata/info/1/test_folder/name.ext
+
+ class_id |    code     | sort | has_version |  page_code   |   pkg    |       name       | anno 
+----------+-------------+------+-------------+--------------+----------+------------------+------
+        2 | test_folder | 9999 | f           | fs.test.file | i18n_def | Тестовый каталог | 
+
+ ext |   ctype    | kind_code 
+-----+------------+-----------
+ jpg | image/jpeg | img
+
+ name2uri  
+-----------
+ test_file
 

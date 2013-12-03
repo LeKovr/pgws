@@ -17,11 +17,10 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Настройка связей объектов ev. с объектами job.
+    Настройка связей объектов EV с объектами JOB
 */
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO wsd.pkg_fkey_required_by (pkg, rel) VALUES
   ('job','job.handler')
 ;
-/* ------------------------------------------------------------------------- */

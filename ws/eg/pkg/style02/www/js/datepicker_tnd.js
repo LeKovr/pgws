@@ -14,7 +14,6 @@
       pickSeconds: false
     });
     $("i").click(function(){
-      console.log($(this).parents('div:first').find('input').is(':disabled'));
        if($(this).parents('div:first').find('input').is(':disabled')){
 	 return false;
        }

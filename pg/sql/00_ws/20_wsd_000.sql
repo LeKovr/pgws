@@ -52,7 +52,6 @@ CREATE TABLE wsd.pkg_script_protected (
 );
 COMMENT ON TABLE wsd.pkg_script_protected IS 'Оперативные данные пакетов PGWS';
 
-
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.pkg_fkey_protected (
   pkg         name
@@ -105,4 +104,3 @@ INSERT INTO wsd.pkg_default_protected (pkg, wsd_rel, wsd_col, func) VALUES
 , ('ws', 'pkg_fkey_required_by',  'required_by',  'ws.pg_cs()')
 , ('ws', 'ref_update',            'lang',         'ws.const_lang_default()')
 ;
-/* ------------------------------------------------------------------------- */

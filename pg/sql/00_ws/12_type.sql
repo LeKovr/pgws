@@ -266,4 +266,3 @@ SELECT pg_c('t', 't_month_info',           'Атрибуты месяца')
 , pg_c('c','t_month_info.month_name',      'месяц ГГГГ')
 , pg_c('c','t_month_info.month_name_ic',   'Месяц ГГГГ')
 ;
-

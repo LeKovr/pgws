@@ -23,6 +23,9 @@ bootbox.js https://github.com/makeusabrew/bootbox/releases/v3.3.0/1140/bootbox.j
 jquery.fileupload-8.4.2.zip https://github.com/blueimp/jQuery-File-Upload/archive/8.4.2.zip
 bootstrap-datepicker.zip https://codeload.github.com/eternicode/bootstrap-datepicker/legacy.zip/v1.0.1
 bootstrap-timepicker.zip https://codeload.github.com/tarruda/bootstrap-datetimepicker/zip/master
+qunit.zip https://github.com/jquery/qunit/archive/master.zip
+bootstrap-wysiwyg.zip https://github.com/mindmup/bootstrap-wysiwyg/archive/master.zip
+
 EOF
 }
 
@@ -133,6 +136,16 @@ for s in * ; do
       mk_lnd bootstrap-datetimepicker.min.js js/core $s/build/js/
       mk_lnd bootstrap-datetimepicker.min.css css $s/build/css/
       ;;
+    qunit-master*)
+      echo "qunit setup"
+    #  mk_lnd qunit.js js/core $s/src/
+      mk_lnd qunit.css css $s/src/
+    ;;
+    bootstrap-wysiwyg-master*)
+      echo "bootstrap-wysiwyg-master setup"
+      mk_lnd bootstrap-wysiwyg.js js/core $s/
+      mk_lnd jquery.hotkeys.js js/core $s/external/
+    ;;
     bootswatch-*)
       echo "bootswatch skins setup"
       for style in amelia cerulean cosmo cyborg journal readable simplex slate spacelab spruce superhero united ; do

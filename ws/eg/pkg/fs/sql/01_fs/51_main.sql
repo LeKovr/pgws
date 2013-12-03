@@ -21,7 +21,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-
 CREATE OR REPLACE FUNCTION name2uri (a_name d_string) RETURNS d_string IMMUTABLE LANGUAGE 'sql' AS
 $_$
 -- a_name: имя файла
@@ -29,7 +28,7 @@ $_$
 -- TODO: RETURNS d_path?
   SELECT lower(regexp_replace($1, E'\\s', '_', 'g'))::ws.d_string;
 $_$;
-SELECT pg_c('f', 'name2uri', 'Атрибуты хранения файла');
+SELECT pg_c('f', 'name2uri', 'Суффикс uri файла по его имени');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION file_store (a_id d_id) RETURNS SETOF file_store STABLE LANGUAGE 'sql' AS
@@ -96,12 +95,14 @@ $_$
   BEGIN
     r_folder := fs.folder(a_class_id, a_folder_code);
     r_mtype  := fs.mime_type(a_name);
+
     IF r_mtype IS NULL THEN
       -- неизвестный тип файла
       r_mtype.kind_code := fs.const_kind_code_any();
       r_mtype.ctype := a_ctype;
       r_mtype.ext := lower(substring(a_name from E'[^\\.]+$'));
     END IF;
+
     -- проверка наличия формата в списке разрешенных для папки
     SELECT INTO v_job_handler_id
       job_handler_id
@@ -119,7 +120,14 @@ $_$
     -- TODO: если линкуем существующий, не делать INSERT
     INSERT INTO wsd.file (id, path, name, size, csum, kind_code, ctype, created_by, anno) VALUES
       (COALESCE(a_id, NEXTVAL('wsd.file_id_seq'))
-      , a__path, a_name, a__size, a__csum, r_mtype.kind_code, r_mtype.ctype, a_account_id, a_anno)
+        , a__path
+        , a_name
+        , a__size
+        , a__csum
+        , r_mtype.kind_code
+        , r_mtype.ctype
+        , a_account_id
+        , a_anno)
       RETURNING id INTO v_file_id
     ;
 
@@ -150,24 +158,16 @@ $_$
     INSERT INTO wsd.file_link (file_id, class_id, obj_id, folder_code, code, ext, created_by, ver) VALUES
       (v_file_id, a_class_id, a_obj_id, a_folder_code, v_code, r_mtype.ext, a_account_id, COALESCE(v_ver + 1, 1))
     ;
+
     IF v_job_handler_id IS NOT NULL THEN
       -- TODO: создать задачу в job
     END IF;
+
     RETURN v_code;
   END;
 $_$;
 SELECT pg_c('f', 'file_add', 'Добавление файла');
 
-/* ------------------------------------------------------------------------- */
-/* TODO
-CREATE OR REPLACE FUNCTION file_unlink (
-, a_folder_code TEXT
-, a_obj_id      INTEGER
-, a_id          INTEGER DEFAULT NULL
-, a_file_code   TEXT DEFAULT NULL
-) RETURNS INTEGER LANGUAGE 'plpgsql' AS
-$_$
-*/
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION file_new_path_mk (
   a_class_id    ws.d_class
@@ -199,6 +199,7 @@ $_$
       || a_folder_code || '/'
       || v_code
     ;
+
     RETURN r;
   END
 $_$;
@@ -216,7 +217,8 @@ $_$
   -- a_class_id: ID класса
   -- a_folder_code: Код папки
   -- a_obj_id:      ID объекта
-  -- a_file_id:     ID файла
+  -- a_file_code:   Код файла
+  -- a_file_ver:    Версия файла
   SELECT *
     FROM fs.file_info
     WHERE class_id = $1
@@ -252,6 +254,4 @@ $_$
   END
 $_$;
 SELECT pg_c('f', 'file_link_delete', 'Удаление привязки к файлу');
-
-/* ------------------------------------------------------------------------- */
 

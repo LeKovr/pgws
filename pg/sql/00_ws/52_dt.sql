@@ -23,6 +23,7 @@
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_parent_base_code(a_code d_code) RETURNS d_code STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_code:  код типа 
   SELECT base_code FROM ws.dt WHERE code = $1 AND NOT is_complex;
   -- у элементов массива может быть check
   -- SELECT base_id FROM ws.dt WHERE id = $1 AND NOT is_list AND NOT is_complex;
@@ -32,13 +33,15 @@ SELECT pg_c('f', 'dt_parent_base_code', 'Базовый тип для задан
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_part_parent_base_code(a_code d_code) RETURNS d_code STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_code:  код типа 
   SELECT base_code FROM ws.dt WHERE code = $1 AND NOT is_complex;
 $_$;
 SELECT pg_c('f', 'dt_part_parent_base_code', 'Базовый тип для заданной части комплексного типа');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_is_complex(a_code d_code) RETURNS bool STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION dt_is_complex(a_code d_code) RETURNS BOOL STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_code:  код типа 
   SELECT is_complex FROM ws.dt WHERE code = $1;
 $_$;
 SELECT pg_c('f', 'dt_is_complex', 'Значение is_complex для заданного типа');
@@ -46,6 +49,7 @@ SELECT pg_c('f', 'dt_is_complex', 'Значение is_complex для задан
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_code(a_code d_code) RETURNS d_code LANGUAGE 'plpgsql' AS
 $_$
+  -- a_code:  код типа 
   DECLARE
     v_code TEXT;
   BEGIN
@@ -58,13 +62,19 @@ SELECT pg_c('f', 'dt_code', '*DEPRECATED* Код типа из ws.dt с доба
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt(a_code d_code DEFAULT NULL) RETURNS SETOF dt STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_code:  код типа 
   SELECT * FROM ws.dt WHERE code LIKE COALESCE($1, '%') ORDER BY 1;
 $_$;
 SELECT pg_c('f', 'dt', 'Атрибуты типа по маске кода');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_part(a_code d_code, a_part_id d_id32 DEFAULT 0) RETURNS SETOF dt_part STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION dt_part(
+  a_code    d_code
+, a_part_id d_id32 DEFAULT 0
+) RETURNS SETOF dt_part STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_code:      код комплексного типа 
+  -- a_part_id:   ID поля
   SELECT * FROM ws.dt_part WHERE dt_code = $1 AND $2 IN (part_id, 0) ORDER BY 2;
 $_$;
 SELECT pg_c('f', 'dt_part', 'Атрибуты полей комплексного типа');
@@ -72,6 +82,7 @@ SELECT pg_c('f', 'dt_part', 'Атрибуты полей комплексног�
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION facet_id(a_code d_codei) RETURNS d_id32 STABLE STRICT LANGUAGE 'sql' AS
 $_$
+  -- a_code:    код типа 
   SELECT id FROM ws.facet WHERE code = $1;
 $_$;
 SELECT pg_c('f', 'facet_id', 'ID ограничения типа по коду');
@@ -86,17 +97,19 @@ SELECT pg_c('f', 'facet', 'Атрибуты ограничения по id');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_facet(a_code d_code) RETURNS SETOF dt_facet STABLE STRICT LANGUAGE 'sql' AS
 $_$
+  -- a_code:  код типа 
   SELECT * FROM ws.dt_facet WHERE code = $1 ORDER BY 2;
 $_$;
 SELECT pg_c('f', 'dt_facet', 'Атрибуты ограничения типа по коду типа');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_parts(a_code d_code) RETURNS text STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION dt_parts(a_code d_code) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_code:   код комплексного типа
   DECLARE
     v_names TEXT[];
-    r ws.dt_part;
-    r_dt ws.dt;
+    r       ws.dt_part;
+    r_dt    ws.dt;
   BEGIN
     FOR r IN
       SELECT *
@@ -113,14 +126,15 @@ $_$;
 SELECT pg_c('f', 'dt_parts', 'Список полей комплексного типа по коду как строка');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_tree(a_code d_code) RETURNS SETOF text STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION dt_tree(a_code d_code) RETURNS SETOF TEXT STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_code:
   WITH RECURSIVE dtree AS (
-    SELECT d.code::text, d.parent_code::text, ARRAY[code::text] as branches
+    SELECT d.code::TEXT, d.parent_code::TEXT, ARRAY[code::TEXT] as branches
       FROM ws.dt d
       WHERE code = 'ws.d_code'
     UNION
-    SELECT d.code::text, d.parent_code::text, dtree.branches || d.code::text
+    SELECT d.code::TEXT, d.parent_code::TEXT, dtree.branches || d.code::TEXT
       FROM ws.dt d
         JOIN dtree ON d.code = dtree.parent_code 
       WHERE NOT d.code = ANY(dtree.branches)
@@ -129,5 +143,4 @@ $_$
     FROM dtree
     ORDER BY array_length(branches, 1);
 $_$;
-
-/* ------------------------------------------------------------------------- */
+SELECT pg_c('f', 'dt_tree', 'дерево типов');

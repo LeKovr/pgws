@@ -3,12 +3,12 @@ meta.top_headers.push(
   "/js/external/core/jquery.json-2.3.js"
   "/js/$BASE_LAYOUT/pgws-api.jquery.js"
 );
-%]<script type="text/javascript">
+%]
+<script type="text/javascript">
   //<![CDATA[
-  window.PGWS.req = {
-    post_uri: "[% resp.post_uri %]",
-    sid: "[% session.sid %]",
-    lang: "[% session.lang %]"
-  };
+  window.PGWS.req = [% 
+	  json("post_uri" => resp.post_uri, 
+		"sid" => session.sid, 
+		"lang" => session.lang) %];
   //]]>
 </script>

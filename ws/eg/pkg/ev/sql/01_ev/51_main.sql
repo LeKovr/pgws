@@ -17,7 +17,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Методы диспетчера Ev
+    Методы диспетчера EV
 */
 
 /* ------------------------------------------------------------------------- */
@@ -32,9 +32,10 @@ CREATE OR REPLACE FUNCTION ev.create(
 , a_arg_name2   ws.d_string DEFAULT NULL
 ) RETURNS d_id VOLATILE LANGUAGE 'plpgsql' AS
 $_$
--- a_id:          ID вида события
--- a_status_id:   ID статуса
+-- a_kind_id:     ID вида события
 -- a_created_by:  ID автора события
+-- a_reason_id:   ID причины создания события
+-- a_status_id:   ID статуса
 -- a_arg_id:      ID1 (аргумент события)
 -- a_arg_id2:     ID2 (аргумент события)
 -- a_arg_name:    Описание события
@@ -79,14 +80,14 @@ CREATE OR REPLACE FUNCTION ev.role_signup_ins(
 , a_spec_id ws.d_id32
 , a_is_on   BOOL DEFAULT true
 , a_prio    INTEGER DEFAULT 1
-) RETURNS wsd.event_role_signup LANGUAGE 'sql' AS
+) RETURNS wsd.event_signup LANGUAGE 'sql' AS
 $_$
   -- a_role_id: ID роли
   -- a_kind_id: ID вида события
   -- a_spec_id: ID специфкации ( если требуется )
   -- a_is_on:   флаг включения ( если включён, пользователи данной роли получают уведомления, если нет — им надо подписаться вручную )
   -- a_prio:    приоритет
-  INSERT INTO wsd.event_role_signup ( role_id, kind_id, spec_id, is_on, prio ) VALUES ( $1, $2, $3, $4, $5 ) RETURNING *;
+  INSERT INTO wsd.event_signup ( role_id, kind_id, spec_id, is_on, prio ) VALUES ( $1, $2, $3, $4, $5 ) RETURNING *;
 $_$;
 SELECT pg_c('f', 'role_signup_ins', 'Создание подписки роли');
 
@@ -95,12 +96,12 @@ CREATE OR REPLACE FUNCTION ev.role_signup_del(
   a_role_id ws.d_id32
 , a_kind_id ws.d_id32
 , a_spec_id ws.d_id32
-) RETURNS wsd.event_role_signup LANGUAGE 'sql' AS
+) RETURNS wsd.event_signup LANGUAGE 'sql' AS
 $_$
   -- a_role_id: ID роли
   -- a_kind_id: ID вида события
   -- a_spec_id: ID спецификации
-  DELETE FROM wsd.event_role_signup WHERE role_id = $1 AND kind_id = $2 AND spec_id = $3 RETURNING *;
+  DELETE FROM wsd.event_signup WHERE role_id = $1 AND kind_id = $2 AND spec_id = $3 RETURNING *;
 $_$;
 SELECT pg_c('f', 'role_signup_del', 'Удаление подписки роли');
 

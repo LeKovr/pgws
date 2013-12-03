@@ -51,6 +51,7 @@ $_$
     RETURN NEW;
   END;
 $_$;
+SELECT pg_c('f', 'dt_insupd_trigger', 'триггер на INSERT/UPDATE таблицы ws.dt ');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_part_del_trigger() RETURNS TRIGGER LANGUAGE 'plpgsql' AS
@@ -94,6 +95,7 @@ $_$
     RETURN OLD;
   END;
 $_$;
+SELECT pg_c('f', 'dt_part_del_trigger', 'триггер на DELETE таблицы ws.dt_part');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_part_insupd_trigger() RETURNS TRIGGER LANGUAGE 'plpgsql' AS
@@ -117,6 +119,7 @@ $_$
     RETURN NEW;
   END;
 $_$;
+SELECT pg_c('f', 'dt_part_insupd_trigger', 'триггер на INSERT/UPDATE таблицы ws.dt_part');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION dt_facet_insupd_trigger() RETURNS TRIGGER LANGUAGE 'plpgsql' AS
@@ -133,6 +136,7 @@ $_$
     RETURN NEW;
   END;
 $_$;
+SELECT pg_c('f', 'dt_facet_insupd_trigger', 'триггер на INSERT/UPDATE таблицы ws.dt_facet');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION page_insupd_trigger() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
@@ -150,6 +154,7 @@ $_$
     RETURN NEW;
   END;
 $_$;
+SELECT pg_c('f', 'page_insupd_trigger', 'триггер на INSERT/UPDATE таблицы ws.page_data');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION method_insupd_trigger() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
@@ -206,6 +211,7 @@ $_$
     RETURN NEW;
   END;
 $_$;
+SELECT pg_c('f', 'method_insupd_trigger', 'триггер на INSERT/UPDATE таблицы ws.method');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION method_del_trigger() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
@@ -261,6 +267,7 @@ $_$
     RETURN OLD;
   END;
 $_$;
+SELECT pg_c('f', 'method_del_trigger', 'триггер на DELETE таблицы ws.method');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ref_op_register_trigger() RETURNS TRIGGER VOLATILE LANGUAGE 'plpgsql' AS
@@ -286,3 +293,4 @@ $_$
     RETURN NULL;
   END;
 $_$;
+SELECT pg_c('f', 'ref_op_register_trigger', 'Триггер синхронизации справочников');

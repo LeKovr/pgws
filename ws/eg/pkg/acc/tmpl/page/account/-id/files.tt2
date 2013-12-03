@@ -19,9 +19,9 @@
       tr(list = ['Имя файла','Описание','Формат','Каталог','Дата загрузки',''], use_th=1);
     %]</thead>
   [% END %]
-  <tr class="[% IF loop.count mod 2; 'even'; ELSE; 'odd'; END %]">
+  <tr>
     <td><a href='[% uri_mk(row.req) %]' >[% row.name  %]</a></td>
-    <td>[% row.anno %]</td>
+    <td>[% FILTER html; row.anno; END; %]</td>
     <td>[% row.ext %]</td>
     <td>[% row.folder_name %]</td>
     <td>[% row.created_at %]</td>

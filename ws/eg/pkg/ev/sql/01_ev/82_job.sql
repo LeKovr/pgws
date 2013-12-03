@@ -17,12 +17,11 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Настройка связей объектов jb. с объектами wsd.
+    Настройка связей объектов JOB с объектами WSD.
 */
 
 /* ------------------------------------------------------------------------- */
 
 INSERT INTO job.handler ( id, code, def_prio, arg_date_type, dust_days, name) VALUES
-  ( 10, 'process_login',  1, 1,  0, 'Обработка события авторизации пользователя')
---  ( 10, 'send_notifications',  1, 1,  0, 'Рассылка уведомлений')
+  ( 10, 'send_notifications',  1, 1,  0, 'Рассылка уведомлений')
 ;

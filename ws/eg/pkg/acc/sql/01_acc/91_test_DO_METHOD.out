@@ -1,0 +1,345 @@
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+                 test                 
+--------------------------------------
+  ***** acc.account_contact_add *****
+
+ account_contact_add 
+---------------------
+ t
+
+                    test                    
+--------------------------------------------
+  ***** acc.account_contact_type_attr *****
+
+ account_contact_type_attr 
+---------------------------
+ (2,Email)
+
+                 test                  
+---------------------------------------
+  ***** acc.account_contact_view *****
+
+ name  | account_id | contact_type_id |     value     
+-------+------------+-----------------+---------------
+ Email |         -1 |               2 | gav@email.com
+
+               test               
+----------------------------------
+  ***** acc.account_link_id *****
+
+ account_link_id 
+-----------------
+               2
+
+              test               
+---------------------------------
+  ***** acc.account_lookup *****
+
+ id | status_id |    login    | psw  |   name   | is_psw_plain | is_ip_checked 
+----+-----------+-------------+------+----------+--------------+---------------
+ -1 |         1 | test_method | 1234 | ACC-Test | t            | t
+
+          test          
+------------------------
+  ***** acc.login *****
+
+ account_id | role_id | team_id | sid  |   ip    | is_ip_checked 
+------------+---------+---------+------+---------+---------------
+         -1 |      -3 |      -2 | '; ' | test_ip | t
+
+                   test                   
+------------------------------------------
+  ***** acc.account_password_change *****
+
+ account_password_change 
+-------------------------
+ t
+
+                     test                     
+----------------------------------------------
+  ***** acc.account_password_change_own *****
+
+ account_password_change_own 
+-----------------------------
+ t
+
+           test            
+---------------------------
+  ***** acc.sid_info *****
+
+ account_id | role_id | team_id | sid  |   ip    | is_ip_checked 
+------------+---------+---------+------+---------+---------------
+         -1 |      -3 |      -2 | '; ' | test_ip | t
+
+                test                 
+-------------------------------------
+  ***** acc.account_permission *****
+
+ id | team_id | name | pkg | is_enabled 
+----+---------+------+-----+------------
+ -4 |      -2 | test | acc | t
+
+               test               
+----------------------------------
+  ***** acc.account_profile *****
+
+ status_id |    login    |   psw    |   name   | is_psw_plain | is_ip_checked 
+-----------+-------------+----------+----------+--------------+---------------
+         1 | test_method | 5678yuYU | ACC-Test | t            | t
+
+              test               
+---------------------------------
+  ***** acc.account_status *****
+
+ account_status 
+----------------
+              1
+
+             test              
+-------------------------------
+  ***** acc.account_team *****
+
+        account_team         
+-----------------------------
+ (-1,-3,-2,t,test_team,test)
+
+                 test                  
+---------------------------------------
+  ***** acc.account_team_link_id *****
+
+ account_team_link_id 
+----------------------
+                    1
+
+          test           
+-------------------------
+  ***** acc.logout *****
+
+ logout 
+--------
+      1
+
+               test                
+-----------------------------------
+  ***** acc.prop_account_isv *****
+
+ prop_account_isv 
+------------------
+ (email,all)
+ (phone,all)
+
+                  test                  
+----------------------------------------
+  ***** acc.prop_attr_account_abp *****
+
+       code        | pkg | pogc_list  | is_mask | def_value | name | value_fmt |                       anno                        | has_log | pogc | poid |  owner_name  | valid_from | value 
+-------------------+-----+------------+---------+-----------+------+-----------+---------------------------------------------------+---------+------+------+--------------+------------+-------
+ abp.name.short    | acc | {acc,team} | f       |           | Имя  |           | Имя, которое публикуется на сайте                 | t       | acc  |   -1 | Пользователь | 2000-01-01 | 
+ abp.person.gender | acc | {acc}      | f       |           | Пол  |           | Необходмио для корректного обращения в сообщениях | f       | acc  |   -1 | Пользователь | 2000-01-01 | male
+
+                  test                  
+----------------------------------------
+  ***** acc.prop_attr_account_isv *****
+
+      code      | pkg | pogc_list  | is_mask | def_value |          name           | value_fmt |                 anno                 | has_log | pogc | poid |  owner_name  | valid_from | value 
+----------------+-----+------------+---------+-----------+-------------------------+-----------+--------------------------------------+---------+------+------+--------------+------------+-------
+ isv.show.email | acc | {acc,team} | f       | all       | Кому показывать email   |           | Варианты: (all, register, into_team) | f       | acc  |   -1 | Пользователь | 2000-01-01 | all
+ isv.show.phone | acc | {acc,team} | f       | all       | Кому показывать телефон |           | Варианты: (all, register, into_team) | f       | acc  |   -1 | Пользователь | 2000-01-01 | all
+
+                test                 
+-------------------------------------
+  ***** acc.prop_attr_team_abp *****
+
+      code      | pkg | def_value |   name   |               anno                | pogc | poid | owner_name |   value   
+----------------+-----+-----------+----------+-----------------------------------+------+------+------------+-----------
+ abp.anno       | acc |           | Описание | Описание команды                  | team |   -2 | Компания   | 
+ abp.name.short | acc |           | Имя      | Имя, которое публикуется на сайте | team |   -2 | Компания   | test_team
+
+                test                 
+-------------------------------------
+  ***** acc.prop_attr_team_isv *****
+
+      code      | pkg | def_value |          name           |                 anno                 | pogc | poid | owner_name | value 
+----------------+-----+-----------+-------------------------+--------------------------------------+------+------+------------+-------
+ isv.show.email | acc | all       | Кому показывать email   | Варианты: (all, register, into_team) | team |   -2 | Компания   | all
+ isv.show.phone | acc | all       | Кому показывать телефон | Варианты: (all, register, into_team) | team |   -2 | Компания   | all
+
+                 test                  
+---------------------------------------
+  ***** acc.prop_history_account *****
+
+ prop_history_account 
+----------------------
+ (2000-01-01,male)
+
+                test                
+------------------------------------
+  ***** acc.prop_history_team *****
+
+   prop_history_team    
+------------------------
+ (2000-01-01,test_team)
+
+              test               
+---------------------------------
+  ***** acc.system_link_id *****
+
+ system_link_id 
+----------------
+              1
+
+                  test                   
+-----------------------------------------
+  ***** acc.system_permission_role *****
+
+    system_permission_role     
+-------------------------------
+ (-3,t,test,тест,-2,test_team)
+
+                  test                   
+-----------------------------------------
+  ***** acc.system_permission_view *****
+
+ id | team_id | name | pkg | team_name 
+----+---------+------+-----+-----------
+ -4 |      -2 | test | acc | test_team
+
+             test             
+------------------------------
+  ***** acc.system_role *****
+
+ id | is_team_only | name | anno | team_id | team_name 
+----+--------------+------+------+---------+-----------
+ -3 | t            | test | тест |      -2 | test_team
+
+                  test                   
+-----------------------------------------
+  ***** acc.system_role_permission *****
+
+   system_role_permission   
+----------------------------
+ (-4,-2,test,acc,test_team)
+
+              test              
+--------------------------------
+  ***** acc.system_status *****
+
+ system_status 
+---------------
+             1
+
+                 test                 
+--------------------------------------
+  ***** acc.system_team_link_id *****
+
+ system_team_link_id 
+---------------------
+                   2
+
+                test                
+------------------------------------
+  ***** acc.team_account_attr *****
+
+ status_id |    login    |   psw    |   name   | is_psw_plain | is_ip_checked 
+-----------+-------------+----------+----------+--------------+---------------
+         1 | test_method | 5678yuYU | ACC-Test | t            | t
+
+             test              
+-------------------------------
+  ***** acc.team_by_name *****
+
+ status_id |   name    
+-----------+-----------
+         1 | test_team
+
+             test              
+-------------------------------
+  ***** acc.team_link_id *****
+
+ team_link_id 
+--------------
+            2
+
+             test             
+------------------------------
+  ***** acc.team_lookup *****
+
+ id | status_id |   name    
+----+-----------+-----------
+ -2 |         1 | test_team
+
+               test               
+----------------------------------
+  ***** acc.team_permission *****
+
+ team_permission  
+------------------
+ (-4,-2,test,acc)
+
+             test              
+-------------------------------
+  ***** acc.team_profile *****
+
+ status_id |   name    
+-----------+-----------
+         1 | test_team
+
+            test            
+----------------------------
+  ***** acc.team_role *****
+
+      team_role      
+---------------------
+ (-3,t,test,тест,-2)
+
+                test                
+------------------------------------
+  ***** acc.team_role_members *****
+
+ id | status_id |    login    |   psw    |   name   | is_psw_plain | is_ip_checked 
+----+-----------+-------------+----------+----------+--------------+---------------
+ -1 |         1 | test_method | 5678yuYU | ACC-Test | t            | t
+
+               test                
+-----------------------------------
+  ***** acc.team_role_number *****
+
+ team_role_number 
+------------------
+ (-2,-3,1)
+
+             test             
+------------------------------
+  ***** acc.team_status *****
+
+ team_status 
+-------------
+           1
+
+                test                
+------------------------------------
+  ***** acc.team_team_link_id *****
+
+ team_team_link_id 
+-------------------
+                 1
+
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1

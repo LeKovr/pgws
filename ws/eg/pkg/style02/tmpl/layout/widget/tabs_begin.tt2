@@ -1,6 +1,6 @@
 <div class="tabBlock navbar">
-<div class="navbar-inner">
-<ul class='nav nav-pills' style="width:92%">
+  <div class="navbar-inner">
+    <ul class='nav nav-pills' style="width:92%">
 [%
     FOR u IN meta.page_tabs;
       %]<li class="[% IF u.code == page.code; ' active'; END %]">
@@ -9,9 +9,9 @@
         </li>[%
     END;
 %]
-</ul>
+    </ul>
   [% append_to_menu; %]
-</div>
+  </div>
 </div>
 <div id="error"></div>
 [%

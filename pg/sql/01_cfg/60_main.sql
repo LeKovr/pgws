@@ -74,7 +74,7 @@ $_$
 
   END;
 $_$;
-SELECT pg_c('f', 'prop_value_ins_has_log', 'Обработка логирования значений');
+SELECT pg_c('f', 'prop_value_insupd_has_log', 'Обработка логирования значений');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION prop_value_system_owner_insupd() RETURNS TRIGGER IMMUTABLE LANGUAGE 'plpgsql' AS
@@ -127,4 +127,4 @@ $_$
     RETURN NEW;
   END;
 $_$;
-SELECT pg_c('f', 'prop_value_method_fkeys', 'Проверка наличия в prop_value внешних ключей таблицы ws.method');
+SELECT pg_c('f', 'prop_value_check_method_fkeys', 'Проверка наличия в prop_value внешних ключей таблицы ws.method');

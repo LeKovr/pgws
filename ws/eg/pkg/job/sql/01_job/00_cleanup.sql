@@ -30,5 +30,5 @@ DROP TRIGGER handler_id_update_forbidden  ON wsd.job_todo;
 
 /* ------------------------------------------------------------------------- */
 SELECT cfg.prop_cleanup_without_value(ARRAY[job.const_job_group_prop()]);
-SELECT cfg.prop_cleanup_by_code(ARRAY['ws.daemon.log.syslog.job.(default,call,sid,acl,cache,validate)']);
+SELECT cfg.prop_cleanup_by_code(ARRAY['ws.daemon.log.syslog.job.%']);
 

@@ -47,14 +47,17 @@ $_$
   BEGIN
 
     DELETE FROM cfg.prop WHERE code = ANY($1);
-    DELETE FROM wsd.prop_value WHERE code = ANY($1);
+    DELETE FROM wsd.prop_value WHERE code like ANY($1);
 
   END
 $_$;
 SELECT pg_c('f', 'prop_cleanup_by_code', 'Удаление настроек по коду');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION prop_drop_value (a_pogc TEXT[], a_code TEXT DEFAULT NULL) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION prop_drop_value (
+  a_pogc TEXT[]
+, a_code TEXT DEFAULT NULL
+) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
 $_$
 -- a_pogc: владельцы удаляемых свойств
 -- a_code: код свойства
@@ -68,6 +71,3 @@ $_$
   END
 $_$;
 SELECT pg_c('f', 'prop_drop_value', 'Удаление значениий свойства');
-
-/* ------------------------------------------------------------------------- */
-

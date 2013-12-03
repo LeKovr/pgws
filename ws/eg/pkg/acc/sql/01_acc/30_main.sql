@@ -21,8 +21,13 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION class_link_name(a_class_id d_class, a_id d_id32) RETURNS d_string STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION class_link_name(
+  a_class_id d_class
+, a_id       d_id32
+) RETURNS d_string STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_class_id: ID класса
+  -- a_id:       ID связи
   SELECT name FROM acc.class_link WHERE class_id = $1 AND id = $2;
 $_$;
 SELECT pg_c('f', 'class_link_name', 'Название связи класса');
@@ -30,13 +35,19 @@ SELECT pg_c('f', 'class_link_name', 'Название связи класса');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION team_link_name(a_id d_id32) RETURNS d_string STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_id: ID связи
   SELECT name FROM acc.team_link WHERE id = $1
 $_$;
 SELECT pg_c('f', 'team_link_name', 'Название связи команды');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION last_visit(a_id d_id, a_team_id d_id DEFAULT NULL) RETURNS timestamp STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION last_visit(
+  a_id      d_id
+, a_team_id d_id DEFAULT NULL
+) RETURNS timestamp STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_id:      ID пользователя
+  -- a_team_id: ID команды
   SELECT 
       MAX(updated_at) 
     FROM wsd.session 
@@ -45,5 +56,3 @@ $_$
   ;
 $_$;
 SELECT pg_c('f', 'last_visit', 'Последнее посещение сайта пользователем');
-
-/* ------------------------------------------------------------------------- */

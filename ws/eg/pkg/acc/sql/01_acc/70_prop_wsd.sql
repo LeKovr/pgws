@@ -47,9 +47,3 @@ CREATE TRIGGER value_copy_into_account AFTER INSERT OR UPDATE ON wsd.prop_value
   WHEN (NEW.pogc IN (acc.const_account_group_prop()))
   EXECUTE PROCEDURE acc.prop_copy_value_account_insupd()
 ;
-
-/* ------------------------------------------------------------------------- */
-
-
-
-

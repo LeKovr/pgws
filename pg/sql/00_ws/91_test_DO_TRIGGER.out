@@ -1,0 +1,96 @@
+CREATE FUNCTION
+ pg_c 
+------
+ 
+
+                 test                  
+---------------------------------------
+  ***** ws.method_insupd_trigger *****
+
+INSERT 0 1
+    dt_code     | part_id | code | parent_code | base_code | allow_null | def_val | anno | is_list 
+----------------+---------+------+-------------+-----------+------------+---------+------+---------
+ ws.z_test_func |       1 | id   | ws.d_id32   | integer   | f          | 0       |      | f
+
+      code      | parent_code | base_code | allow_null | def_val |             anno              | is_list | is_complex | is_sql 
+----------------+-------------+-----------+------------+---------+-------------------------------+---------+------------+--------
+ ws.z_test_func |             |           | t          |         | Aргументы метода ws.test_func | f       | t          | f
+
+               test                
+-----------------------------------
+  ***** ws.dt_insupd_trigger *****
+
+INSERT 0 1
+   code    | parent_code | base_code | allow_null | def_val |       anno       | is_list | is_complex | is_sql 
+-----------+-------------+-----------+------------+---------+------------------+---------+------------+--------
+ test_code | test_code   | test_code | t          |         | тестовый вариант | f       | f          | f
+
+UPDATE 1
+   code    | parent_code | base_code | allow_null | def_val |       anno       | is_list | is_complex | is_sql 
+-----------+-------------+-----------+------------+---------+------------------+---------+------------+--------
+ test_code | text        | text      | t          |         | тестовый вариант | f       | f          | f
+
+                  test                  
+----------------------------------------
+  ***** ws.dt_part_insupd_trigger *****
+
+    dt_code     | part_id | code | parent_code | base_code | allow_null | def_val | anno | is_list 
+----------------+---------+------+-------------+-----------+------------+---------+------+---------
+ ws.z_test_func |       1 | id   | ws.d_id32   | integer   | f          | 0       |      | f
+
+UPDATE 1
+    dt_code     | part_id | code | parent_code | base_code | allow_null | def_val | anno | is_list 
+----------------+---------+------+-------------+-----------+------------+---------+------+---------
+ ws.z_test_func |       1 | id   | ws.d_code   | text      | f          | 0       |      | f
+
+                test                
+------------------------------------
+  ***** ws.method_del_trigger *****
+
+DELETE 1
+ dt_code | part_id | code | parent_code | base_code | allow_null | def_val | anno | is_list 
+---------+---------+------+-------------+-----------+------------+---------+------+---------
+
+ code | parent_code | base_code | allow_null | def_val | anno | is_list | is_complex | is_sql 
+------+-------------+-----------+------------+---------+------+---------+------------+--------
+
+                  test                   
+-----------------------------------------
+  ***** ws.dt_facet_insupd_trigger *****
+
+INSERT 0 1
+   code    | facet_id | value | base_code | anno 
+-----------+----------+-------+-----------+------
+ test_code |        1 | 15    | text      | TEST
+
+                test                 
+-------------------------------------
+  ***** ws.dt_part_del_trigger *****
+
+INSERT 0 1
+  dt_code  | part_id | code | parent_code | base_code | allow_null | def_val |    anno     | is_list 
+-----------+---------+------+-------------+-----------+------------+---------+-------------+---------
+ test_code |       1 | id   | test_code   | text      | t          |         | ID компании | f
+
+   code    | parent_code | base_code | allow_null | def_val |       anno       | is_list | is_complex | is_sql 
+-----------+-------------+-----------+------------+---------+------------------+---------+------------+--------
+ test_code | text        | text      | t          |         | тестовый вариант | f       | f          | f
+
+DELETE 0
+ dt_code | part_id | code | parent_code | base_code | allow_null | def_val | anno | is_list 
+---------+---------+------+-------------+-----------+------------+---------+------+---------
+
+ code | parent_code | base_code | allow_null | def_val | anno | is_list | is_complex | is_sql 
+------+-------------+-----------+------------+---------+------+---------+------------+--------
+
+                test                 
+-------------------------------------
+  ***** ws.page_insupd_trigger *****
+
+INSERT 0 1
+ code | class_id | action_id | sort | uri |   tmpl    | is_hidden | uri_re 
+------+----------+-----------+------+-----+-----------+-----------+--------
+ main |        2 |         1 |    0 | $   | app/index | t         | $
+
+DELETE 1
+DROP FUNCTION

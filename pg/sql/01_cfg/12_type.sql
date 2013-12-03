@@ -21,20 +21,17 @@
 */
 
 /* ------------------------------------------------------------------------- */
-
 CREATE DOMAIN d_prop_code AS TEXT CHECK (VALUE ~* E'^([a-z\\d_]+)(\\.((:?[a-z\\d_]+)|(\\([a-z\\d_]+(,[a-z\\d_]+)+\\))))*$') ;
 COMMENT ON DOMAIN d_prop_code IS 'Код свойства';
 
 /* ------------------------------------------------------------------------- */
 CREATE TYPE t_prop_value AS (
-  code       text
-, value      text
-, valid_from date
+  code       TEXT
+, value      TEXT
+, valid_from DATE
 );
-SELECT pg_c('t','t_prop_value', 'Значения свойств')
+SELECT pg_c('t','t_prop_value',        'Значения свойств')
 , pg_c('c','t_prop_value.code',        'Код')
 , pg_c('c','t_prop_value.value',       'Значение')
 , pg_c('c','t_prop_value.valid_from',  'Начало действия')
 ;
-
---SELECT pg_dt_registered('t_prop_value');

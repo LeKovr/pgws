@@ -33,10 +33,12 @@ $_$
     RETURN 'Ok';
   END;
 $_$;
+SELECT pg_c('f', 'compile_errors_chk', 'сообщение компиляции');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION test(a_code d_code) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_code:  сообщение для теста
   BEGIN
     --t/test1_global_config.t .. ok
     --t/test2_run_config.t ..... ok
@@ -48,19 +50,29 @@ $_$
     RETURN ' ***** ' || a_code || ' *****';
   END;
 $_$;
+SELECT pg_c('f', 'test', 'метка теста');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg(a_code TEXT) RETURNS ws.pkg STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_code:  пакет
   SELECT * FROM ws.pkg WHERE code = $1;
 $_$;
+SELECT pg_c('f', 'pkg', 'актуальная информация о пакете');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_references(a_is_on BOOL, a_pkg name, a_schema name DEFAULT NULL) RETURNS SETOF TEXT VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pkg_references(
+  a_is_on  BOOL
+, a_pkg    name
+, a_schema name DEFAULT NULL
+) RETURNS SETOF TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_is_on:  флаг активности
+  -- a_pkg:    пакет
+  -- a_schema: связанная схема
   DECLARE
-    r RECORD;
-    v_sql TEXT;
+    r              RECORD;
+    v_sql          TEXT;
     v_self_default TEXT;
   BEGIN
     -- defaults
@@ -153,16 +165,30 @@ $_$
     RETURN;
   END;
 $_$;
+SELECT pg_c('f', 'pkg_references', 'обработка пакета и связанных схем');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_op_before(a_op t_pkg_op, a_code name, a_schema name, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pkg_op_before(
+  a_op         t_pkg_op
+, a_code       name
+, a_schema     name
+, a_log_name   TEXT
+, a_user_name  TEXT
+, a_ssh_client TEXT
+) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_op:          стадия
+  -- a_code:        пакет 
+  -- a_schema:      список схем
+  -- a_log_name:    имя 
+  -- a_user_name:   имя пользователя 
+  -- a_ssh_client:  ключ
   DECLARE
-    r_pkg ws.pkg%ROWTYPE;
-    r RECORD;
-    v_sql TEXT;
+    r_pkg          ws.pkg%ROWTYPE;
+    r              RECORD;
+    v_sql          TEXT;
     v_self_default TEXT;
-    v_pkgs TEXT;
+    v_pkgs         TEXT;
   BEGIN
     r_pkg := ws.pkg(a_code);
     CASE a_op
@@ -234,14 +260,28 @@ $_$
     RETURN 'Ok';
   END;
 $_$;
+SELECT pg_c('f', 'pkg_op_before', 'обработка пакета до');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pkg_op_after(a_op t_pkg_op, a_code name, a_schema name, a_log_name TEXT, a_user_name TEXT, a_ssh_client TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pkg_op_after(
+  a_op         t_pkg_op
+, a_code       name
+, a_schema     name
+, a_log_name   TEXT
+, a_user_name  TEXT
+, a_ssh_client TEXT
+) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_op:           стадия
+  -- a_code:         пакет
+  -- a_schema:       список схем
+  -- a_log_name:     имя
+  -- a_user_name:    имя пользователя
+  -- a_ssh_client:   ключ
   DECLARE
-    r_pkg ws.pkg%ROWTYPE;
-    r RECORD;
-    v_sql TEXT;
+    r_pkg          ws.pkg%ROWTYPE;
+    r              RECORD;
+    v_sql          TEXT;
     v_self_default TEXT;
   BEGIN
     r_pkg := ws.pkg(a_code);
@@ -293,14 +333,15 @@ $_$
     RETURN 'Ok';
   END;
 $_$;
+SELECT pg_c('f', 'pkg_op_after', 'обработка пакета после');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pkg_require(a_code TEXT) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_code:
   BEGIN
     RAISE NOTICE 'TODO: function needs code';
     RETURN NULL;
   END
 $_$;
-
-/* ------------------------------------------------------------------------- */
+SELECT pg_c('f', 'pkg_require', '..');

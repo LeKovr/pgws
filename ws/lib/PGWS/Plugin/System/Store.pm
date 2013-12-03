@@ -29,6 +29,7 @@ use constant FILE_STORE_PATH        => ($ENV{PGWS_FILE_STORE_PATH} || '/tmp');
 use constant FILE_GENERATED_PREFIX  => ($ENV{PGWS_FILE_GENERATED_PREFIX} || 'apidata' );
 
 use Data::Dumper;
+use XML::Simple;
 #----------------------------------------------------------------------
 # сохранение данных
 # Пример вызова:
@@ -60,6 +61,70 @@ sub get64 {
   $meta->dump({ 'path'=> $path, 'data' => $data});
   return { 'result' => { 'data' => $data } };
 }
+
+#----------------------------------------------------------------------
+sub _space_array_node {
+  my ($arr) = @_;
+  foreach my $i (@$arr) {
+    print "type ".ref($i)."\n";
+    if (ref($i) eq 'HASH') {
+      if (keys(%$i) == 0) {
+        $i = "";
+      }
+      else {
+        _space_hash_node($i);
+      }
+    }
+    elsif (ref($i) eq 'ARRAY') {
+      _space_array_node($i);
+    }
+  }
+}
+
+#----------------------------------------------------------------------
+sub _space_hash_node {
+  my ($node) = @_;
+  while (my ($key, $value) = each(%$node)) {
+    if (ref($value) eq 'HASH') {
+      if (keys(%$value) == 0) {
+        $node->{$key} = "";
+      }
+      else {
+        _space_hash_node($value);
+      }
+    }
+    elsif (ref($value) eq 'ARRAY') {
+      _space_array_node($value);
+    }
+  }
+}
+
+#----------------------------------------------------------------------
+sub get_formatted {
+  my ($pkg, $self, $meta, $args, $mtd_def) = @_;
+  my ($path, $format) = (@$args);
+  my $data = PGWS::Utils::data_get(FILE_STORE_PATH.'/'.$path);
+  $meta->dump({ 'path'=> $path, 'data' => $data});
+  if ($format =~ /JSON/i) {
+    my $json = new JSON;
+    $json->relaxed(1);
+    utf8::decode($data);
+    $data = eval { $json->decode($data) };
+    $data = {'errors' => [{'error_code' => 'Y0301', 'error_arg' => $@}]} if($@);
+  }
+  elsif ($format =~ /XML/i) {
+    my $xml = XML::Simple->new();
+    $data = eval { $xml->XMLin($data) };
+    if ($@) {
+      $data = {'errors' => [{'error_code' => 'Y0302', 'error_arg' => $@}]};
+    }
+    else {
+      _space_hash_node($data);
+    }
+  }
+  return { 'result' => { 'data' => $data } };
+}
+
 1;
 
 __END__

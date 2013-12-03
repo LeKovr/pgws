@@ -102,10 +102,6 @@ INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
 , ('fe',    1,  'ws.daemon.log.syslog.tmpl.cache',      NULL)
 , ('fe',    1,  'ws.daemon.log.syslog.tmpl.validate',   NULL)
 
-, ('tm',    1,  'ws.daemon.mgr.listen.job',             'jq_event')
-, ('tm',    1,  'ws.daemon.mgr.listen_wait',            '300')
-, ('tm',    1,  'ws.daemon.startup.pm.n_processes',     '1')
-
 , ('be',    1,  'ws.daemon.be.error.bad_json.code',     '-32700')
 , ('be',    1,  'ws.daemon.be.error.bad_json.message',  'Parse error')
 , ('be',    1,  'ws.daemon.be.error.bad_json.data',     'Invalid JSON was received by the server.')

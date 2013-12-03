@@ -1,0 +1,8 @@
+[%
+  meta.html_headers.push(
+    "/js/external/core/qunit.js"
+    "/css/external/qunit.css"
+    "/js/$BASE_LAYOUT/qunit.pgws.js"
+    "/js/$TMPL_LAYOUT/steps.js"
+  );
+%]

@@ -27,14 +27,13 @@ CREATE TABLE wsd.file (
 , name          TEXT          NOT NULL
 , size          INTEGER       NOT NULL
 , csum          TEXT          NOT NULL
-, kind_code     TEXT          NOT NULL -- REFERENCES fs.kind
+, kind_code     TEXT          NOT NULL
 , ctype         TEXT          NOT NULL DEFAULT 'application/unknown'
 , link_cnt      INTEGER       NOT NULL DEFAULT 1
-, created_by    INTEGER       NOT NULL -- REFERENCES wsd.account
+, created_by    INTEGER       NOT NULL
 , created_at    TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
 , anno          TEXT
 );
-
 SELECT pg_c('r', 'wsd.file', 'Внешние файлы')
 , pg_c('c', 'wsd.file.id',          'd_id,   ID файла')
 , pg_c('c', 'wsd.file.path',        'd_path, Ключ файл-сервера')
@@ -55,16 +54,16 @@ ALTER TABLE wsd.file ALTER COLUMN id SET DEFAULT NEXTVAL('wsd.file_id_seq');
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.file_link (
   class_id    INTEGER
-, obj_id      INTEGER   
+, obj_id      INTEGER
 , folder_code TEXT
 , code        TEXT -- TODO: d_code, если сделаем нормализацию
-, ver         INTEGER       DEFAULT 1
-, ext         TEXT          NOT NULL
-, file_id     INTEGER       NOT NULL REFERENCES wsd.file
-, up_id       INTEGER       REFERENCES wsd.file
-, is_ver_last BOOL          NOT NULL DEFAULT TRUE -- TODO: d_ton?
-, created_by  INTEGER       NOT NULL -- REFERENCES wsd.account
-, created_at  TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
+, ver         INTEGER        DEFAULT 1
+, ext         TEXT           NOT NULL
+, file_id     INTEGER        NOT NULL REFERENCES wsd.file
+, up_id       INTEGER        REFERENCES wsd.file
+, is_ver_last BOOL           NOT NULL DEFAULT TRUE -- TODO: d_ton?
+, created_by  INTEGER        NOT NULL
+, created_at  TIMESTAMP(0)   NOT NULL DEFAULT CURRENT_TIMESTAMP
 , CONSTRAINT  file_link_pkey PRIMARY KEY (class_id, obj_id, folder_code, code, ver)
 );
 SELECT pg_c('r', 'wsd.file_link', 'Связи внешних файлов')

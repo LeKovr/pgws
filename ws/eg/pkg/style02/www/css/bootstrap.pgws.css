@@ -67,3 +67,6 @@ a.external {
     padding-left: 12px;
     background-image: url(/img/wiki/external.png);
 }
+
+.table-striped tbody >tr:nth-child(even){}
+.table-striped tbody >tr:nth-child(odd){}

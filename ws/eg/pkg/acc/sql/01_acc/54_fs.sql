@@ -22,7 +22,7 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION fs_files (
-  a_id d_id
+  a_id          d_id
 , a_file_code   ws.d_string DEFAULT NULL
 ) RETURNS SETOF fs.file_info STABLE LANGUAGE 'sql' AS
 $_$
@@ -43,14 +43,14 @@ $_$);
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION fs_files_add (
-  a__sid      text
+  a__sid      TEXT
 , a_id        ws.d_id
-, a__path     text
-, a__size     integer
-, a__csum     text
-, a_name      text
-, a_ctype     text
-, a_anno      text DEFAULT NULL
+, a__path     TEXT
+, a__size     INTEGER
+, a__csum     TEXT
+, a_name      TEXT
+, a_ctype     TEXT
+, a_anno      TEXT DEFAULT NULL
   ) RETURNS SETOF fs.file_info LANGUAGE 'plpgsql' AS
 $_$
   -- a__sid:  ID сессии
@@ -86,19 +86,19 @@ CREATE OR REPLACE FUNCTION fs_files_del (
 , a_file_id   ws.d_id
 ) RETURNS BOOL LANGUAGE 'sql' AS
 $_$
+  -- a_id:        ID объекта
+  -- a_file_id:   ID файла
   SELECT fs.file_link_delete(acc.const_class_id(), fs.const_folder_code_default(), $1, $2);
 $_$;
-SELECT pg_c('f', 'fs_files_del', 'Удаление файла из статьи', $_$
+SELECT pg_c('f', 'fs_files_del', 'Удаление файла пользователя', $_$
 Этот метод должен регистрироваться в API с именем PARENT_del,
 где
 PARENT - имя, под которым зарегистирован Список файлов статьи
 $_$);
 
 /* ------------------------------------------------------------------------- */
-
-/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION team_fs_files (
-  a_id d_id
+  a_id          d_id
 , a_file_code   ws.d_string DEFAULT NULL
 ) RETURNS SETOF fs.file_info STABLE LANGUAGE 'sql' AS
 $_$
@@ -119,14 +119,14 @@ $_$);
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION team_fs_files_add (
-  a__sid      text
+  a__sid      TEXT
 , a_id        ws.d_id
-, a__path     text
-, a__size     integer
-, a__csum     text
-, a_name      text
-, a_ctype     text
-, a_anno      text DEFAULT NULL
+, a__path     TEXT
+, a__size     INTEGER
+, a__csum     TEXT
+, a_name      TEXT
+, a_ctype     TEXT
+, a_anno      TEXT DEFAULT NULL
   ) RETURNS SETOF fs.file_info LANGUAGE 'plpgsql' AS
 $_$
   -- a__sid:  ID сессии
@@ -162,12 +162,12 @@ CREATE OR REPLACE FUNCTION team_fs_files_del (
 , a_file_id   ws.d_id
 ) RETURNS BOOL LANGUAGE 'sql' AS
 $_$
+  -- a_id:        ID объекта
+  -- a_file_id:   ID файла
   SELECT fs.file_link_delete(acc.const_team_class_id(), fs.const_folder_code_default(), $1, $2);
 $_$;
-SELECT pg_c('f', 'team_fs_files_del', 'Удаление файла из статьи', $_$
+SELECT pg_c('f', 'team_fs_files_del', 'Удаление файла команды', $_$
 Этот метод должен регистрироваться в API с именем PARENT_del,
 где
 PARENT - имя, под которым зарегистирован Список файлов статьи
 $_$);
-
-/* ------------------------------------------------------------------------- */

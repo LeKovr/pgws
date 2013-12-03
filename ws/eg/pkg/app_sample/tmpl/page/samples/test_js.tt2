@@ -1,0 +1,171 @@
+[% 
+  description = 'Тесты (JS)';
+%]
+
+[%
+  meta.head.api = 1;
+  meta.head.qunit = 1;
+  
+  test_name_param = get.item('test_name');
+  
+%]
+[%	
+  div_begin(class='form-horizontal well');
+    controlGroup_begin(label = 'Тестируем:');%]
+      <select id='selectTest'>
+	<option value='api' [% test_name_param == 'api' ? 'selected' : '' %]>Api тесты
+	<option value='ajaxurl' [% test_name_param == 'ajaxurl' ? 'selected' : '' %]>Pgws-ajaxUrl.jquery
+	<option value='step' [% test_name_param == 'step' ? 'selected' : '' %]>Setting Table
+      </select>
+[% 
+    controlGroup_end; 
+  div_end;
+%]
+[%	
+  div_begin(id='tabs', class='hide');
+%]
+ <div id="main">
+  </div>
+<div class="tabbable">
+  <div class="tab-content">
+   <div id="one" class="tab-pane">Section1</div>
+   <div id="two" class="tab-pane">Section2</div>
+   <div id="free" class="tab-pane">Section3</div>
+  </div>
+</div>
+[%	
+  div_end;
+%]
+
+[%	
+  div_begin(id='step', class='hide');
+%]
+ <ul class="grid-settings" data-grid="baseTable">
+	<li class="">
+	  <a class="" href="#">
+	    <i class="icon-black icon-cog"></i>
+	  </a>
+	  <ul class="">
+	   <li>
+	<h6>Управление колонками таблицы</h6>
+      </li>
+      <li>
+	<label>
+	  <input class="col-trigger" type="checkbox"  data-column="view">
+	  Просмотр
+	</label>
+      </li>
+      <li>
+	<label>
+	  <input class="col-trigger" type="checkbox"  data-column="seton">
+	  Включено
+	</label>
+      </li>
+      </ul>
+[%
+
+    table_begin(class='baseTable');%]
+      <tr>
+	<th width="40%">[% l('Поле') %]</th>
+	<th>[% l('Значение') %]</th>
+	<th data-column="view">[% l('Просмотр') %]</th>
+	<th data-column="seton" style="display: table-cell;">[% l('Включено') %]</th>
+      </tr>
+      
+      <tr>
+	<td width="40%">test name1</td>
+	<td><input type='text' value='test value1'></td>
+	<td><select></select></td>
+	<td><input type="checkbox" class="disable-row"></td>
+      </tr>
+      
+      <tr>
+	<td width="40%">test name2</td>
+	<td><input type='text' value='test value2'></td>
+	<td><select></select></td>
+	<td><input type="checkbox" class="disable-row"></td>
+      </tr>
+[%	
+    table_end;
+  div_end;
+%]
+
+
+  <h1 id="qunit-header">QUNIT TEST JavaScript</h1>
+  <h2 id="qunit-banner"></h2>
+  <div id="qunit-testrunner-toolbar"></div>
+  <h2 id="qunit-userAgent"></h2>
+  <ol id="qunit-tests"></ol>
+  <div id="qunit-fixture">test markup</div>
+  
+  
+  [% 
+    PROCESS 'macro/tabs.tt2';
+meta.js.${meta.js.size} = BLOCK %]
+<script type="text/javascript">
+//<![CDATA[
+if (PGWS.var === undefined) { PGWS.var = {}; }
+
+PGWS.var.tabs_js = {
+  links : [['one','one'],['two','two'],['free','free']],
+  html:'<ul class ="nav nav-tabs">',
+  index : location.href.indexOf('#')
+};
+$(PGWS.var.tabs_js.links).each(function(i){
+  if(PGWS.var.tabs_js.index<0 && i == 0){
+    PGWS.var.tabs_js.html+='<li class="active"><a class="ajax active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+    $('#'+this[1]).addClass('active');
+  return;
+  }
+  if(PGWS.var.tabs_js.index>=0){
+    if(this[1] == location.href.substring(PGWS.var.tabs_js.index+1)){
+      PGWS.var.tabs_js.html+='<li class="active"><a class="ajax active" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+    $('#'+this[1]).addClass('active');
+      return;
+    }
+  }
+  PGWS.var.tabs_js.html+='<li><a class="ajax" href="#'+this[1]+'" data-toggle="tab">'+this[0]+'</a></li>';
+});
+PGWS.var.tabs_js.html+='</ul>';
+$('#main').html(PGWS.var.tabs_js.html);
+
+/* ------------------------------------------------------------------------- */
+// Инициализация вкладки
+PGWS.page = {
+  titleSuffix: '[% resp.title _ " - " _ our_title %]',
+};
+
+PGWS.tabContentEvents = function(obj) {
+
+};
+
+/* ------------------------------------------------------------------------- */
+// Управление вкладками
+
+PGWS.tabSelected = function(objActive){
+  $(".ajax").removeClass("active");
+  $(".ajax").parent('li').removeClass("active");
+  $(objActive).addClass("active");
+  $(objActive).parent('li').addClass("active");
+  $('.tab-content').find('.tab-pane').removeClass('active');
+  PGWS.var.tabs_js.index = $(objActive).attr('href').indexOf('#');
+  $('#' + $(objActive).attr('href').substring(PGWS.var.tabs_js.index+1)).addClass('active');
+};
+
+/* ------------------------------------------------------------------------- */
+// Инициализация основной страницы
+
+
+$(document).ready(function(){
+   $('.ajax').ajaxUrl({
+    onSuccess:  PGWS.tabSelected,
+    titleSuffix: PGWS.page.titleSuffix,
+    classMenuItemActive:'.active'
+  });
+  PGWS.tabContentEvents('');
+});
+//]]>
+</script>
+[% 
+    END; # BLOCK
+%]

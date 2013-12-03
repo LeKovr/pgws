@@ -54,4 +54,3 @@ SELECT pg_c('r', 'ref_item_data', 'Позиция справочника')
 , pg_c('c', 'ref_item_data.group_id',    'Внутренний ID группы')
 , pg_c('c', 'ref_item_data.code_addon',  'Дополнительный код (опция)')
 ;
-

@@ -24,7 +24,6 @@
 CREATE SCHEMA i18n_def;
 COMMENT ON SCHEMA i18n_def IS 'WebService (PGWS) default internationalization data';
 
+/* ------------------------------------------------------------------------- */
 CREATE SCHEMA ws;
 COMMENT ON SCHEMA ws IS 'WebService (PGWS) core';
-
-/* ------------------------------------------------------------------------- */

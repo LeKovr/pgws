@@ -16,7 +16,7 @@
     FOR u2 IN uris2;
       NEXT IF u2.req && !uri_allowed(u2);
       item2 = { href = uri_mk(u2.req), name = u2.name, active = (u2.code == active_code) ? 1 : 0};
-      uris3 = api('ws.page_childs', code => u2.code, id => id); # есть ли группировка
+      uris3 = api('ws.page_childs', code => u2.code, id => id, class_id => u2.class_id); # есть ли группировка
       has_group = 0;
       items3 = [];
       FOR u3 IN uris3;

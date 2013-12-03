@@ -17,10 +17,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Таблицы для компиляции и установки пакетов
 */
--- 20_pkg.sql - Таблицы для компиляции и установки пакетов
-/* ------------------------------------------------------------------------- */
-
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE compile_errors (
@@ -102,4 +100,3 @@ SELECT pg_c('r', 'pkg_required_by', 'Зависимоть пакета от др
 , pg_c('c', 'pkg_required_by.code',         'Код пакета')
 , pg_c('c', 'pkg_required_by.required_by',  'Код зависимого пакета')
 ;
-/* ------------------------------------------------------------------------- */

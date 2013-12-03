@@ -2,31 +2,31 @@
 ----------------------------------
   ***** ev.pg_view_comments *****
 
-       rel        |       code        |     rel_src      | rel_src_col  | status_id |                                                                                                                                                                                                                                                                                                                                                                                    anno                                                                                                                                                                                                                                                                                                                                                                                     
-------------------+-------------------+------------------+--------------+-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- ev.signup_joined | role_id           | at.role_id))))   | role_id      |         4 | Ошибка определения комментария для: ers_at.role_id select ers_at.role_id, ers_at.kind_id, ers_at.spec_id, ers_at.is_on, ers_at.prio, ers_at.account_id, ers_at.team_role_id, ers_at.team_id, es.account_id as signup_account_id, es.role_id as signup_role_id, es.spec_id as signup_spec_id, es.is_on as signup_is_on, es.prio as signup_prio from ((select ers.role_id, ers.kind_id, ers.spec_id, ers.is_on, ers.prio, at.account_id, at.role_id as team_role_id, at.team_id from (wsd.event_role_signup ers left join wsd.account_team at on ((ers.role_id = at.role_id)))) ers_at left join wsd.event_signup es on ((((ers_at.kind_id = es.kind_id) and (ers_at.role_id = es.role_id)) and ((ers_at.account_id is null) or (ers_at.account_id = es.account_id))))) 
- ev.signup_joined | kind_id           | at.role_id))))   | kind_id      |         4 | Ошибка определения комментария для: ers_at.kind_id select ers_at.role_id, ers_at.kind_id, ers_at.spec_id, ers_at.is_on, ers_at.prio, ers_at.account_id, ers_at.team_role_id, ers_at.team_id, es.account_id as signup_account_id, es.role_id as signup_role_id, es.spec_id as signup_spec_id, es.is_on as signup_is_on, es.prio as signup_prio from ((select ers.role_id, ers.kind_id, ers.spec_id, ers.is_on, ers.prio, at.account_id, at.role_id as team_role_id, at.team_id from (wsd.event_role_signup ers left join wsd.account_team at on ((ers.role_id = at.role_id)))) ers_at left join wsd.event_signup es on ((((ers_at.kind_id = es.kind_id) and (ers_at.role_id = es.role_id)) and ((ers_at.account_id is null) or (ers_at.account_id = es.account_id))))) 
- ev.signup_joined | spec_id           | at.role_id))))   | spec_id      |         4 | Ошибка определения комментария для: ers_at.spec_id select ers_at.role_id, ers_at.kind_id, ers_at.spec_id, ers_at.is_on, ers_at.prio, ers_at.account_id, ers_at.team_role_id, ers_at.team_id, es.account_id as signup_account_id, es.role_id as signup_role_id, es.spec_id as signup_spec_id, es.is_on as signup_is_on, es.prio as signup_prio from ((select ers.role_id, ers.kind_id, ers.spec_id, ers.is_on, ers.prio, at.account_id, at.role_id as team_role_id, at.team_id from (wsd.event_role_signup ers left join wsd.account_team at on ((ers.role_id = at.role_id)))) ers_at left join wsd.event_signup es on ((((ers_at.kind_id = es.kind_id) and (ers_at.role_id = es.role_id)) and ((ers_at.account_id is null) or (ers_at.account_id = es.account_id))))) 
- ev.signup_joined | is_on             | at.role_id))))   | is_on        |         4 | Ошибка определения комментария для: ers_at.is_on select ers_at.role_id, ers_at.kind_id, ers_at.spec_id, ers_at.is_on, ers_at.prio, ers_at.account_id, ers_at.team_role_id, ers_at.team_id, es.account_id as signup_account_id, es.role_id as signup_role_id, es.spec_id as signup_spec_id, es.is_on as signup_is_on, es.prio as signup_prio from ((select ers.role_id, ers.kind_id, ers.spec_id, ers.is_on, ers.prio, at.account_id, at.role_id as team_role_id, at.team_id from (wsd.event_role_signup ers left join wsd.account_team at on ((ers.role_id = at.role_id)))) ers_at left join wsd.event_signup es on ((((ers_at.kind_id = es.kind_id) and (ers_at.role_id = es.role_id)) and ((ers_at.account_id is null) or (ers_at.account_id = es.account_id))))) 
- ev.signup_joined | prio              | at.role_id))))   | prio         |         4 | Ошибка определения комментария для: ers_at.prio select ers_at.role_id, ers_at.kind_id, ers_at.spec_id, ers_at.is_on, ers_at.prio, ers_at.account_id, ers_at.team_role_id, ers_at.team_id, es.account_id as signup_account_id, es.role_id as signup_role_id, es.spec_id as signup_spec_id, es.is_on as signup_is_on, es.prio as signup_prio from ((select ers.role_id, ers.kind_id, ers.spec_id, ers.is_on, ers.prio, at.account_id, at.role_id as team_role_id, at.team_id from (wsd.event_role_signup ers left join wsd.account_team at on ((ers.role_id = at.role_id)))) ers_at left join wsd.event_signup es on ((((ers_at.kind_id = es.kind_id) and (ers_at.role_id = es.role_id)) and ((ers_at.account_id is null) or (ers_at.account_id = es.account_id))))) 
- ev.signup_joined | account_id        | at.role_id))))   | account_id   |         4 | Ошибка определения комментария для: ers_at.account_id select ers_at.role_id, ers_at.kind_id, ers_at.spec_id, ers_at.is_on, ers_at.prio, ers_at.account_id, ers_at.team_role_id, ers_at.team_id, es.account_id as signup_account_id, es.role_id as signup_role_id, es.spec_id as signup_spec_id, es.is_on as signup_is_on, es.prio as signup_prio from ((select ers.role_id, ers.kind_id, ers.spec_id, ers.is_on, ers.prio, at.account_id, at.role_id as team_role_id, at.team_id from (wsd.event_role_signup ers left join wsd.account_team at on ((ers.role_id = at.role_id)))) ers_at left join wsd.event_signup es on ((((ers_at.kind_id = es.kind_id) and (ers_at.role_id = es.role_id)) and ((ers_at.account_id is null) or (ers_at.account_id = es.account_id))))) 
- ev.signup_joined | team_role_id      | at.role_id))))   | team_role_id |         4 | Ошибка определения комментария для: ers_at.team_role_id select ers_at.role_id, ers_at.kind_id, ers_at.spec_id, ers_at.is_on, ers_at.prio, ers_at.account_id, ers_at.team_role_id, ers_at.team_id, es.account_id as signup_account_id, es.role_id as signup_role_id, es.spec_id as signup_spec_id, es.is_on as signup_is_on, es.prio as signup_prio from ((select ers.role_id, ers.kind_id, ers.spec_id, ers.is_on, ers.prio, at.account_id, at.role_id as team_role_id, at.team_id from (wsd.event_role_signup ers left join wsd.account_team at on ((ers.role_id = at.role_id)))) ers_at left join wsd.event_signup es on ((((ers_at.kind_id = es.kind_id) and (ers_at.role_id = es.role_id)) and ((ers_at.account_id is null) or (ers_at.account_id = es.account_id))))) 
- ev.signup_joined | team_id           | at.role_id))))   | team_id      |         4 | Ошибка определения комментария для: ers_at.team_id select ers_at.role_id, ers_at.kind_id, ers_at.spec_id, ers_at.is_on, ers_at.prio, ers_at.account_id, ers_at.team_role_id, ers_at.team_id, es.account_id as signup_account_id, es.role_id as signup_role_id, es.spec_id as signup_spec_id, es.is_on as signup_is_on, es.prio as signup_prio from ((select ers.role_id, ers.kind_id, ers.spec_id, ers.is_on, ers.prio, at.account_id, at.role_id as team_role_id, at.team_id from (wsd.event_role_signup ers left join wsd.account_team at on ((ers.role_id = at.role_id)))) ers_at left join wsd.event_signup es on ((((ers_at.kind_id = es.kind_id) and (ers_at.role_id = es.role_id)) and ((ers_at.account_id is null) or (ers_at.account_id = es.account_id))))) 
- ev.signup_joined | signup_account_id | wsd.event_signup | account_id   |         1 | ID пользователя
- ev.signup_joined | signup_role_id    | wsd.event_signup | role_id      |         2 | 
- ev.signup_joined | signup_spec_id    | wsd.event_signup | spec_id      |         1 | ID спецификации
- ev.signup_joined | signup_is_on      | wsd.event_signup | is_on        |         1 | Подписка активна
- ev.signup_joined | signup_prio       | wsd.event_signup | prio         |         1 | Приоритет
+       rel        |       code        |         rel_src          | rel_src_col  | status_id |          anno           
+------------------+-------------------+--------------------------+--------------+-----------+-------------------------
+ ev.signup_joined | role_id           | ev.account_role_signup   | role_id      |         1 | ID роли
+ ev.signup_joined | kind_id           | ev.account_role_signup   | kind_id      |         1 | ID вида события
+ ev.signup_joined | spec_id           | ev.account_role_signup   | spec_id      |         1 | ID спецификации
+ ev.signup_joined | is_on             | ev.account_role_signup   | is_on        |         1 | Подписка активна
+ ev.signup_joined | prio              | ev.account_role_signup   | prio         |         1 | Приоритет
+ ev.signup_joined | account_id        | ev.account_role_signup   | account_id   |         1 | d_id, ID учетной записи
+ ev.signup_joined | team_role_id      | ev.account_role_signup   | team_role_id |         1 | d_id, ID роли
+ ev.signup_joined | team_id           | ev.account_role_signup   | team_id      |         1 | d_id, ID команды
+ ev.signup_joined | signup_account_id | wsd.event_account_signup | account_id   |         1 | ID пользователя
+ ev.signup_joined | signup_role_id    | wsd.event_account_signup | role_id      |         2 | 
+ ev.signup_joined | signup_spec_id    | wsd.event_account_signup | spec_id      |         1 | ID спецификации
+ ev.signup_joined | signup_is_on      | wsd.event_account_signup | is_on        |         1 | Подписка активна
+ ev.signup_joined | signup_prio       | wsd.event_account_signup | prio         |         1 | Приоритет
 
     rel    |    code    |     rel_src      | rel_src_col | status_id |                               anno                                
 -----------+------------+------------------+-------------+-----------+-------------------------------------------------------------------
- ev.signup | role_id    | ev.signup_joined | role_id     |         2 | 
- ev.signup | kind_id    | ev.signup_joined | kind_id     |         2 | 
+ ev.signup | role_id    | ev.signup_joined | role_id     |         1 | ID роли
+ ev.signup | kind_id    | ev.signup_joined | kind_id     |         1 | ID вида события
  ev.signup | account_id |                  |             |         3 | coalesce(signup_joined.signup_account_idsignup_joined.account_id)
  ev.signup | spec_id    |                  |             |         3 | coalesce(signup_joined.signup_spec_idsignup_joined.spec_id)
  ev.signup | is_on      |                  |             |         3 | coalesce(signup_joined.signup_is_onsignup_joined.is_on)
  ev.signup | is_own     |                  |             |         3 | (signup_joined.signup_is_on is not null)
- ev.signup | team_id    | ev.signup_joined | team_id     |         2 | 
+ ev.signup | team_id    | ev.signup_joined | team_id     |         1 | d_id, ID команды
 
      rel      |     code     |    rel_src    | rel_src_col  | status_id |                    anno                    
 --------------+--------------+---------------+--------------+-----------+--------------------------------------------
@@ -48,44 +48,44 @@
  ev.kind_info | group_sort   | ev.kind_group | sort         |         1 | Сортировка
  ev.kind_info | group_name   | ev.kind_group | name         |         1 | Название
 
-         rel         |     code     |        rel_src        | rel_src_col  | status_id |                    anno                    
----------------------+--------------+-----------------------+--------------+-----------+--------------------------------------------
- ev.role_signup_info | role_id      | wsd.event_role_signup | role_id      |         1 | ID роли
- ev.role_signup_info | spec_id      | wsd.event_role_signup | spec_id      |         1 | ID спецификации
- ev.role_signup_info | is_on        | wsd.event_role_signup | is_on        |         1 | Подписка активна
- ev.role_signup_info | prio         | wsd.event_role_signup | prio         |         1 | Приоритет
- ev.role_signup_info | id           | ev.kind               | id           |         1 | ID вида
- ev.role_signup_info | group_id     | ev.kind               | group_id     |         1 | ID группы вида
- ev.role_signup_info | class_id     | ev.kind               | class_id     |         1 | ID класса
- ev.role_signup_info | def_prio     | ev.kind               | def_prio     |         1 | Приоритет по умолчанию
- ev.role_signup_info | keep_days    | ev.kind               | keep_days    |         1 | Кол-во дней хранения уведомления о событии
- ev.role_signup_info | has_spec     | ev.kind               | has_spec     |         1 | Есть спецификация
- ev.role_signup_info | signature_id | ev.kind               | signature_id |         1 | ID подписи
- ev.role_signup_info | tmpl         | ev.kind               | tmpl         |         1 | Файл шаблона
- ev.role_signup_info | form_codes   | ev.kind               | form_codes   |         1 | Массив кодов допустимых форматов
- ev.role_signup_info | name         | ev.kind               | name         |         1 | Название
- ev.role_signup_info | name_fmt     | ev.kind               | name_fmt     |         1 | Строка формата названия
- ev.role_signup_info | name_count   | ev.kind               | name_count   |         1 | Кол-во аргументов строки формата
- ev.role_signup_info | spec_name    | ev.kind               | spec_name    |         1 | Название спецификации (если она есть)
- ev.role_signup_info | anno         | ev.kind               | anno         |         1 | Аннотация
- ev.role_signup_info | pkg          | ev.kind               | pkg          |         1 | Пакет
- ev.role_signup_info | group_name   | ev.kind_group         | name         |         1 | Название
+         rel         |     code     |     rel_src      | rel_src_col  | status_id |                    anno                    
+---------------------+--------------+------------------+--------------+-----------+--------------------------------------------
+ ev.role_signup_info | role_id      | wsd.event_signup | role_id      |         1 | ID роли
+ ev.role_signup_info | spec_id      | wsd.event_signup | spec_id      |         1 | ID спецификации
+ ev.role_signup_info | is_on        | wsd.event_signup | is_on        |         1 | Подписка активна
+ ev.role_signup_info | prio         | wsd.event_signup | prio         |         1 | Приоритет
+ ev.role_signup_info | id           | ev.kind          | id           |         1 | ID вида
+ ev.role_signup_info | group_id     | ev.kind          | group_id     |         1 | ID группы вида
+ ev.role_signup_info | class_id     | ev.kind          | class_id     |         1 | ID класса
+ ev.role_signup_info | def_prio     | ev.kind          | def_prio     |         1 | Приоритет по умолчанию
+ ev.role_signup_info | keep_days    | ev.kind          | keep_days    |         1 | Кол-во дней хранения уведомления о событии
+ ev.role_signup_info | has_spec     | ev.kind          | has_spec     |         1 | Есть спецификация
+ ev.role_signup_info | signature_id | ev.kind          | signature_id |         1 | ID подписи
+ ev.role_signup_info | tmpl         | ev.kind          | tmpl         |         1 | Файл шаблона
+ ev.role_signup_info | form_codes   | ev.kind          | form_codes   |         1 | Массив кодов допустимых форматов
+ ev.role_signup_info | name         | ev.kind          | name         |         1 | Название
+ ev.role_signup_info | name_fmt     | ev.kind          | name_fmt     |         1 | Строка формата названия
+ ev.role_signup_info | name_count   | ev.kind          | name_count   |         1 | Кол-во аргументов строки формата
+ ev.role_signup_info | spec_name    | ev.kind          | spec_name    |         1 | Название спецификации (если она есть)
+ ev.role_signup_info | anno         | ev.kind          | anno         |         1 | Аннотация
+ ev.role_signup_info | pkg          | ev.kind          | pkg          |         1 | Пакет
+ ev.role_signup_info | group_name   | ev.kind_group    | name         |         1 | Название
 
-         rel         |     code     |        rel_src        | rel_src_col  | status_id |        anno         
----------------------+--------------+-----------------------+--------------+-----------+---------------------
- ev.team_role_signup | id           | acc.role_attr         | id           |         1 | d_id,     ID роли
- ev.team_role_signup | is_team_only | acc.role_attr         | is_team_only |         2 | 
- ev.team_role_signup | name         | acc.role_attr         | name         |         1 | d_string, Название
- ev.team_role_signup | anno         | acc.role_attr         | anno         |         1 | d_text,   Описание
- ev.team_role_signup | team_id      | acc.role_attr         | team_id      |         1 | d_id,     ID группы
- ev.team_role_signup | kind_id      | wsd.event_role_signup | kind_id      |         1 | ID вида события
- ev.team_role_signup | spec_id      | wsd.event_role_signup | spec_id      |         1 | ID спецификации
- ev.team_role_signup | is_on        | wsd.event_role_signup | is_on        |         1 | Подписка активна
- ev.team_role_signup | prio         | wsd.event_role_signup | prio         |         1 | Приоритет
- ev.team_role_signup | kind_name    | ev.kind_info          | name         |         1 | Название
- ev.team_role_signup | group_id     | ev.kind_info          | group_id     |         1 | ID группы вида
- ev.team_role_signup | group_sort   | ev.kind_info          | group_sort   |         1 | Сортировка
- ev.team_role_signup | group_name   | ev.kind_info          | group_name   |         1 | Название
+         rel         |     code     |     rel_src      | rel_src_col  | status_id |        anno         
+---------------------+--------------+------------------+--------------+-----------+---------------------
+ ev.team_role_signup | id           | acc.role_attr    | id           |         1 | d_id,     ID роли
+ ev.team_role_signup | is_team_only | acc.role_attr    | is_team_only |         2 | 
+ ev.team_role_signup | name         | acc.role_attr    | name         |         1 | d_string, Название
+ ev.team_role_signup | anno         | acc.role_attr    | anno         |         1 | d_text,   Описание
+ ev.team_role_signup | team_id      | acc.role_attr    | team_id      |         1 | d_id,     ID группы
+ ev.team_role_signup | kind_id      | wsd.event_signup | kind_id      |         1 | ID вида события
+ ev.team_role_signup | spec_id      | wsd.event_signup | spec_id      |         1 | ID спецификации
+ ev.team_role_signup | is_on        | wsd.event_signup | is_on        |         1 | Подписка активна
+ ev.team_role_signup | prio         | wsd.event_signup | prio         |         1 | Приоритет
+ ev.team_role_signup | kind_name    | ev.kind_info     | name         |         1 | Название
+ ev.team_role_signup | group_id     | ev.kind_info     | group_id     |         1 | ID группы вида
+ ev.team_role_signup | group_sort   | ev.kind_info     | group_sort   |         1 | Сортировка
+ ev.team_role_signup | group_name   | ev.kind_info     | group_name   |         1 | Название
 
       rel      |    code    |     rel_src      | rel_src_col | status_id |                         anno                         
 ---------------+------------+------------------+-------------+-----------+------------------------------------------------------

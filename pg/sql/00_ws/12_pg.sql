@@ -22,7 +22,7 @@
 
 /* ------------------------------------------------------------------------- */
 CREATE DOMAIN d_pg_argtypes AS oidvector; -- pg_catalog.pg_proc.proargtypes
-CREATE DOMAIN d_pg_argnames AS text[];    -- pg_catalog.pg_proc.proargnames
+CREATE DOMAIN d_pg_argnames AS TEXT[];    -- pg_catalog.pg_proc.proargnames
 
 /* ------------------------------------------------------------------------- */
 CREATE TYPE t_pg_object AS ENUM ('h', 'r', 'v', 'c', 't', 'd', 'f', 'a', 's'); -- see pg_comment
@@ -30,24 +30,24 @@ CREATE TYPE t_pkg_op AS ENUM ('init', 'make', 'drop', 'erase', 'done'); -- see 5
 
 /* ------------------------------------------------------------------------- */
 CREATE TYPE t_pg_proc_info AS (
-  schema      text
-, name        text
-, anno        text
+  schema      TEXT
+, name        TEXT
+, anno        TEXT
 , rt_oid      oid
-, rt_name     text
-, is_set      bool
-, args        text
-, args_pub    text
+, rt_name     TEXT
+, is_set      BOOL
+, args        TEXT
+, args_pub    TEXT
 );
         
 /* ------------------------------------------------------------------------- */
 CREATE TYPE t_pg_view_info AS (
-  rel         text  -- имя view из аргументов ф-и (схема.объект)
-, code        text  -- имя столбца (без значения rel)
-, rel_src     text  -- имя (схема.объект) источника комментария без имени столбца)
-, rel_src_col text  -- имя столбца источника комментария
-, status_id   int   -- результат поиска (1 - найден коммент, 2 - у источника коммент не задан, 3 - расчетное поле, 4 - ошибка, 5 - неподдерживаемый формат поля в представлении) 
-, anno        text  -- зависит от status_d: 1 - комментарий, 2 - null, 3 - текст формулы, 4- описание "иного" 
+  rel         TEXT  -- имя view из аргументов ф-и (схема.объект)
+, code        TEXT  -- имя столбца (без значения rel)
+, rel_src     TEXT  -- имя (схема.объект) источника комментария без имени столбца)
+, rel_src_col TEXT  -- имя столбца источника комментария
+, status_id   INT   -- результат поиска (1 - найден коммент, 2 - у источника коммент не задан, 3 - расчетное поле, 4 - ошибка, 5 - неподдерживаемый формат поля в представлении) 
+, anno        TEXT  -- зависит от status_d: 1 - комментарий, 2 - null, 3 - текст формулы, 4- описание "иного" 
 );
 
 /* ------------------------------------------------------------------------- */
@@ -63,14 +63,16 @@ $_$ #
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pg_schema_oid(a_name text) RETURNS oid STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION pg_schema_oid(a_name TEXT) RETURNS oid STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_name: название пакета
   SELECT oid FROM pg_namespace WHERE nspname = $1
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pg_exec_func(a_name text) RETURNS text STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pg_exec_func(a_name TEXT) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_name:  имя функции
   DECLARE
     v TEXT;
   BEGIN
@@ -80,20 +82,27 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pg_exec_func(a_schema TEXT, a_name TEXT) RETURNS TEXT STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION pg_exec_func(
+  a_schema TEXT
+, a_name   TEXT
+) RETURNS TEXT STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_schema: название пакета
+  -- a_name:   имя функции
   SELECT ws.pg_exec_func($1 || '.' || $2)
 $_$;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_schema_by_oid(a_oid oid) RETURNS TEXT STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_oid:  OID
   SELECT nspname::TEXT FROM pg_namespace WHERE oid = $1
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.pg_type_name(a_oid oid) RETURNS text STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION ws.pg_type_name(a_oid oid) RETURNS TEXT STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_oid:  OID
   SELECT CASE WHEN nspname = 'pg_catalog' THEN pg_catalog.format_type($1, NULL) ELSE  nspname || '.' || typname END
     FROM (
       SELECT (SELECT nspname FROM pg_namespace WHERE oid = typnamespace) as nspname, typname FROM pg_type WHERE oid = $1
@@ -101,18 +110,25 @@ $_$
 $_$;
       
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION reserved_args() RETURNS text[] IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION reserved_args() RETURNS TEXT[] IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT ARRAY['a__acl', 'a__sid', 'a__ip', 'a__cook', 'a__lang'];
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pg_proargs2str(a_names d_pg_argnames, a_types d_pg_argtypes, a_pub BOOL) RETURNS text STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pg_proargs2str(
+  a_names d_pg_argnames
+, a_types d_pg_argtypes
+, a_pub   BOOL
+) RETURNS TEXT STABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_names:  список аргументов
+  -- a_types:  список OID-ов
+  -- a_pub:    флаг
   DECLARE
     v_reserved TEXT[];
-    v_names TEXT[];
-    v_i INTEGER;
+    v_names    TEXT[];
+    v_i        INTEGER;
   BEGIN
     v_reserved := ws.reserved_args();
     FOR v_i IN 0 .. pg_catalog.array_upper(a_types, 1) LOOP
@@ -136,8 +152,13 @@ $_$
 $_$;
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION pg_proc_info(a_ns text, a_name text) RETURNS SETOF t_pg_proc_info STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION pg_proc_info(
+  a_ns   TEXT
+, a_name TEXT
+) RETURNS SETOF t_pg_proc_info STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_ns:   название пакета
+  -- a_name: название функции
   SELECT $1
   , $2
   , obj_description(p.oid, 'pg_proc')
@@ -151,17 +172,17 @@ $_$
       AND p.proname = $2
   ;
 $_$;
+
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.pg_view_comments_get_tbl(
-  a_code text             -- имя объекта
-) RETURNS text VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION ws.pg_view_comments_get_tbl(a_code TEXT) RETURNS TEXT VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_code: имя объекта
   DECLARE
-    v_ret text;
-    R record;
-    v_schema text[];
-    v_table text;
-    _i int;
+    v_ret    TEXT;
+    R        record;
+    v_schema TEXT[];
+    v_table  TEXT;
+    _i       INT;
   BEGIN
     IF a_code ~ E'\\.' THEN -- схема передана в вводном параметре
       v_schema := ARRAY[split_part(a_code, '.', 1)];
@@ -188,26 +209,26 @@ $_$
     RETURN v_ret;
   END;
 $_$;
+
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.pg_view_comments(
-  a_code text              -- имя объекта
-) RETURNS SETOF ws.t_pg_view_info VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION ws.pg_view_comments(a_code TEXT) RETURNS SETOF ws.t_pg_view_info VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_code: имя объекта
   DECLARE
-    v_code text[];
-    v_def text;
-    v_def_arr text[];
-    r_ record;
-    v_i int;
-    v_j int;
-    v_k int;
-    v_viewname text;    
-    v_ret_1 text[];
-    v_ret_2 text[];
-    v_ret_3 text[];
-    v_ret_4 text[];
-    v_ret_5 int[];
-    v_ret_6 text[];
+    v_code     TEXT[];
+    v_def      TEXT;
+    v_def_arr  TEXT[];
+    r_         record;
+    v_i        INT;
+    v_j        INT;
+    v_k        INT;
+    v_viewname TEXT;    
+    v_ret_1    TEXT[];
+    v_ret_2    TEXT[];
+    v_ret_3    TEXT[];
+    v_ret_4    TEXT[];
+    v_ret_5    INT[];
+    v_ret_6    TEXT[];
   BEGIN
     RAISE DEBUG 'PROCESSING: View %', a_code;
     v_code := string_to_array(a_code, '.');
@@ -223,6 +244,7 @@ $_$
       v_def := r_._def;
       v_viewname := r_.vname;
     END LOOP;
+    v_def := REGEXP_REPLACE(REGEXP_REPLACE(TRANSLATE(TRIM(v_def), E'\n', ' '), E'\\s+', ' ', 'g'), E' +([()]) +', E'\\1', 'g');
     IF v_def is null THEN
       RAISE WARNING 'ERROR: Представление не найдено %', a_code;
       RETURN;
@@ -230,11 +252,11 @@ $_$
     v_def_arr := string_to_array(v_def, ' union ');
     FOR v_j in array_lower(v_def_arr, 1)..array_upper(v_def_arr, 1) LOOP
       DECLARE
-         v_list text;
-         v_list_check text;
-         v_field text;
-         v_brac int;  -- индекс подсчета скобок
-         v_temp text[];
+         v_list       TEXT;
+         v_list_check TEXT;
+         v_field      TEXT;
+         v_brac       INT;  -- индекс подсчета скобок
+         v_temp       TEXT[];
       BEGIN
         v_def := ' ' ||  trim(trim(v_def_arr[v_j]), ';') || ' ';
         IF position(' except ' in v_def) > 0 THEN
@@ -275,20 +297,20 @@ $_$
         -- обработать поля
         FOR v_i in array_lower(v_code, 1)..array_upper(v_code, 1) LOOP
           DECLARE
-            v_const_1 text := ' as ';         
-            v_const_2 text := '.';
-            v_fld text; -- поле "A.B" или "A.B as C"
-            v_exp text; -- A.B A.B
-            v_tbl text; -- A   A
-            v_col text; -- B   B
-            v_als text; -- B   C
-            v_res_1 text;
-            v_res_2 text;
-            v_res_3 text;
-            v_res_4 text;
-            v_res_5 int;
-            v_res_6 text;
-            v__debug text;
+            v_const_1 TEXT := ' as ';         
+            v_const_2 TEXT := '.';
+            v_fld     TEXT; -- поле "A.B" или "A.B as C"
+            v_exp     TEXT; -- A.B A.B
+            v_tbl     TEXT; -- A   A
+            v_col     TEXT; -- B   B
+            v_als     TEXT; -- B   C
+            v_res_1   TEXT;
+            v_res_2   TEXT;
+            v_res_3   TEXT;
+            v_res_4   TEXT;
+            v_res_5   INT;
+            v_res_6   TEXT;
+            v__debug  TEXT;
           BEGIN
             v_fld := trim(v_code[v_i]);
             v_exp := split_part(v_fld, v_const_1, 1);
@@ -305,16 +327,16 @@ $_$
               v_res_6 = v_exp;      
             ELSE
               DECLARE
-                v_src text; -- таб. источник
+                v_src TEXT; -- таб. источник
               BEGIN
                 -- v_pos: позиция v_tbl в строке выборки v_def в порядке определенном v_const_3
                 DECLARE
-                  v_const_3 text[][] = ARRAY[[' ',' '],[' ',','],['.',''],['','']];
-                  v_srh text;
-                  v_x int;
-                  v_pos int;
-                  v_l text;
-                  v_r text;
+                  v_const_3 TEXT[][] = ARRAY[[' ',' '],[' ',','],['.',''],['','']];
+                  v_srh     TEXT;
+                  v_x       INT;
+                  v_pos     INT;
+                  v_l       TEXT;
+                  v_r       TEXT;
                 BEGIN
                   FOR v_x in array_lower(v_const_3,1)..array_upper(v_const_3,1) LOOP
                     v_srh := v_const_3[v_x][1] || v_tbl || v_const_3[v_x][2];
@@ -352,7 +374,7 @@ $_$
                       v_src := ws.pg_view_comments_get_tbl(v_src);
                     END IF;
                   END IF;
-                  v__debug = v_l || '~' || v_r || '~' || v_tbl || '~' || v_pos::text;
+                  v__debug = v_l || '~' || v_r || '~' || v_tbl || '~' || v_pos::TEXT;
                 END;
                 v_res_3 := v_src;
                 v_res_4 := v_col;
@@ -362,7 +384,7 @@ $_$
                   IF FOUND THEN
                     v_res_6 := 
                       (SELECT col_description
-                      ((SELECT (v_src)::regclass::oid)::int,
+                      ((SELECT (v_src)::regclass::oid)::INT,
                       (SELECT attnum FROM pg_attribute WHERE attrelid = (v_src)::regclass AND attname = v_col)));
                     v_res_5 := case when v_res_6 is not null THEN 1 ELSE 2 END;
                   END IF;
@@ -398,18 +420,23 @@ $_$
     END LOOP;
   END;
 $_$;
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_c(
-  a_type ws.t_pg_object    -- тип объекта (из перечисления ws.t_pg_object)
-, a_code name              -- имя объекта
-, a_text text              -- комментарий
-, a_anno text DEFAULT NULL -- аннотация (не сохраняется, предназначено для размещения описания рядом с кодом)
+  a_type ws.t_pg_object
+, a_code name
+, a_text TEXT
+, a_anno TEXT DEFAULT NULL
 ) RETURNS void VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_type: тип объекта (из перечисления ws.t_pg_object)
+  -- a_code: имя объекта
+  -- a_text: комментарий
+  -- a_anno: аннотация (не сохраняется, предназначено для размещения описания рядом с кодом)
   DECLARE
     v_code TEXT;
     v_name TEXT;
-    rec ws.t_pg_proc_info;
+    rec    ws.t_pg_proc_info;
     r_view RECORD;
 
   BEGIN
@@ -463,15 +490,28 @@ SELECT pg_c('f', 'pg_c', 'Создать комментарий к объект�
 
 /* ------------------------------------------------------------------------- */
 SELECT 
-  pg_c('f', 'sprintf', 'Порт функции sprintf')
-, pg_c('f', 'pg_cs', 'Текущая (первая) схема БД в пути поиска', $_$если задан аргумент, он и '.' добавляются к имени схемы$_$)
-, pg_c('f', 'reserved_args', 'Зарезервированные имена аргументов методов')
-, pg_c('f', 'pg_view_comments','получить комментарии полей view из таблиц запроса')
+  pg_c('f', 'sprintf',                  'Порт функции sprintf')
+, pg_c('f', 'pg_cs',                    'Текущая (первая) схема БД в пути поиска', $_$если задан аргумент, он и '.' добавляются к имени схемы$_$)
+, pg_c('f', 'reserved_args',            'Зарезервированные имена аргументов методов')
+, pg_c('f', 'pg_view_comments',         'получить комментарии полей view из таблиц запроса')
+, pg_c('f', 'pg_schema_oid',            'получить OID по названию пакета')
+, pg_c('f', 'pg_exec_func',             'вызов функции')
+, pg_c('f', 'pg_schema_by_oid',         'получить название пакета по OID-у')
+, pg_c('f', 'pg_type_name',             'получить название типа по OID-у')
+, pg_c('f', 'pg_proargs2str',           'сформировать список аргументов в строку')
+, pg_c('f', 'pg_proc_info',             'информация о функции')
+, pg_c('f', 'pg_view_comments_get_tbl', 'получить из названия строку схема.название')
+, pg_c('d', 'd_pg_argtypes',            'список OID-ов')
+, pg_c('d', 'd_pg_argnames',            'список аргументов')
+, pg_c('t', 't_pg_object',              'типы объектов')
+, pg_c('t', 't_pkg_op',                 'стадии')
+, pg_c('t', 't_pg_view_info',           'информация о представлении')
 ;
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_type_search(a_code TEXT) RETURNS TEXT STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_code: название типа
   SELECT tmp.sch || '.' || t.typname 
     FROM (SELECT row_number() OVER () AS rn, sch FROM unnest(current_schemas(TRUE)) sch) tmp
     , pg_catalog.pg_type t 
@@ -485,6 +525,7 @@ SELECT pg_c('f', 'pg_type_search', 'Поиск схемы для типа по s
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_type_oid(a_name TEXT) RETURNS oid STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_name: название типа
   SELECT oid FROM pg_type
     WHERE typnamespace = ws.pg_schema_oid(split_part($1, '.', 1))
       AND typname = split_part($1, '.', 2)
@@ -493,22 +534,24 @@ SELECT pg_c('f', 'pg_type_oid', 'OID типа по его схема.имя');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION raise (
-  a_lvl text DEFAULT 'EXCEPTION'
-, a_msg text DEFAULT 'Default error msg.'
+  a_lvl TEXT DEFAULT 'EXCEPTION'
+, a_msg TEXT DEFAULT 'Default error msg.'
 ) RETURNS void LANGUAGE plpgsql STRICT AS
 $_$
-BEGIN
-   a_msg := COALESCE(a_msg, 'Default error msg.');
-   CASE upper(a_lvl)
-       WHEN 'EXCEPTION' THEN RAISE EXCEPTION '%', a_msg;
-       WHEN 'WARNING'   THEN RAISE WARNING   '%', a_msg;
-       WHEN 'NOTICE'    THEN RAISE NOTICE    '%', a_msg;
-       WHEN 'DEBUG'     THEN RAISE DEBUG     '%', a_msg;
-       WHEN 'LOG'       THEN RAISE LOG       '%', a_msg;
-       WHEN 'INFO'      THEN RAISE INFO      '%', a_msg;
-       ELSE RAISE EXCEPTION 'ws.raise(): unexpected raise-level: "%"', a_lvl;
-   END CASE;
-END;
+  -- a_lvl: способ вызова
+  -- a_msg: сообщение
+  BEGIN
+     a_msg := COALESCE(a_msg, 'Default error msg.');
+     CASE upper(a_lvl)
+         WHEN 'EXCEPTION' THEN RAISE EXCEPTION '%', a_msg;
+         WHEN 'WARNING'   THEN RAISE WARNING   '%', a_msg;
+         WHEN 'NOTICE'    THEN RAISE NOTICE    '%', a_msg;
+         WHEN 'DEBUG'     THEN RAISE DEBUG     '%', a_msg;
+         WHEN 'LOG'       THEN RAISE LOG       '%', a_msg;
+         WHEN 'INFO'      THEN RAISE INFO      '%', a_msg;
+         ELSE RAISE EXCEPTION 'ws.raise(): unexpected raise-level: "%"', a_lvl;
+     END CASE;
+  END;
 $_$;
 SELECT pg_c('f', 'raise', 'Вызов RAISE из SQL запросов', $_$/*
 Метод позволяет вызывать RAISE из SQL-запросов и скриптов psql.
@@ -519,6 +562,7 @@ SELECT pg_c('f', 'raise', 'Вызов RAISE из SQL запросов', $_$/*
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION notice (a_text TEXT) RETURNS VOID LANGUAGE 'sql' AS
 $_$
+  -- a_text: сообщение
   SELECT ws.raise('NOTICE', $1);
 $_$ ;
 SELECT pg_c('f', 'notice', 'Вывод предупреждения посредством RAISE NOTICE', $_$/*
@@ -528,25 +572,28 @@ SELECT pg_c('f', 'notice', 'Вывод предупреждения посред
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_cast (
-  a_type text
-, a_value text
-) RETURNS text LANGUAGE plpgsql STRICT AS
+  a_type  TEXT
+, a_value TEXT
+) RETURNS TEXT LANGUAGE plpgsql STRICT AS
 $_$
-DECLARE
-v_sql TEXT;
-BEGIN
-v_sql := ws.sprintf('SELECT $1::%s', a_type);
-EXECUTE v_sql USING a_value;
-  RETURN NULL;
-EXCEPTION WHEN OTHERS THEN
-  RETURN SQLSTATE;
-END;
+  -- a_type:  тип 
+  -- a_value: значение
+  DECLARE
+  v_sql TEXT;
+  BEGIN
+    v_sql := ws.sprintf('SELECT $1::%s', a_type);
+    EXECUTE v_sql USING a_value;
+      RETURN NULL;
+    EXCEPTION WHEN OTHERS THEN
+      RETURN SQLSTATE;
+  END;
 $_$;
 SELECT pg_c('f', 'pg_cast', 'Приведение значения к заданному типу');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.epoch2timestamp(a_epoch INTEGER DEFAULT 0) RETURNS TIMESTAMP IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a_epoch: количество секунд
 SELECT CASE
   WHEN $1 = 0 THEN NULL
   ELSE timezone(
@@ -555,4 +602,4 @@ SELECT CASE
     )
 END;
 $_$;
-
+SELECT pg_c('f', 'epoch2timestamp', 'преобразование секунд к типу TIMESTAMP');

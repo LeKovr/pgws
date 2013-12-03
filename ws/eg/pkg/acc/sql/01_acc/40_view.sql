@@ -21,18 +21,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-/*
-CREATE OR REPLACE VIEW team_account_attr AS SELECT
-  ta.*
-  , t.name AS team_name
-  , a.name AS account_name
-  FROM wsd.team_account ta
-    JOIN wsd.account a ON (a.id = ta.account_id)
-    JOIN wsd.team t ON (t.id = ta.team_id)
-;
-*/
-
-/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW account_attr AS SELECT
   a.* 
 , a.created_at::date AS registration_date 
@@ -67,6 +55,7 @@ SELECT pg_c('v', 'account_attr_info', 'Атрибуты учетной запи�
 , pg_c('c', 'account_attr_info.status_name',       'Название статуса')
 , pg_c('c', 'account_attr_info.gender',            'Пол')
 ;
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW session_info AS SELECT
   s.*
@@ -92,6 +81,7 @@ CREATE OR REPLACE VIEW account_team AS SELECT
     JOIN wsd.role r ON r.id = ar.role_id
     JOIN wsd.team t ON t.id = ar.team_id
 ;
+SELECT pg_c('v', 'account_team', 'Описание ролей учетных записей');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW account_permission_attr AS SELECT
@@ -114,7 +104,7 @@ CREATE OR REPLACE VIEW team_account_attr AS SELECT
     JOIN wsd.role r ON r.id = ar.role_id
     JOIN wsd.team t ON t.id = ar.team_id
 ;
-SELECT pg_c('v', 'team_account_attr', 'Аттрибуты участников команды');
+SELECT pg_c('v', 'team_account_attr', 'Атрибуты участников команды');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW team_attr AS SELECT
@@ -179,6 +169,8 @@ CREATE OR REPLACE VIEW perm_info AS SELECT
    JOIN wsd.permission p ON (pa.perm_id = p.id)
   ORDER BY pa.perm_id, r.id, pa.class_id, team_link_id, link_id
 ;
+SELECT pg_c('v', 'perm_info', 'Информация по разрешениям');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW permission_attr AS SELECT
   p.*
@@ -224,5 +216,3 @@ CREATE OR REPLACE VIEW account_contact_type_attr AS SELECT
   FROM acc.account_contact_type
 ;
 SELECT pg_c('v', 'account_contact_type_attr', 'Типы контактов пользователя');
-
-/* ------------------------------------------------------------------------- */

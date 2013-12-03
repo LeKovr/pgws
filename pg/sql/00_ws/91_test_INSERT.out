@@ -1,0 +1,143 @@
+         test          
+-----------------------
+  ***** ws.class *****
+
+ id | up_id | id_count | is_ext | sort | code | pkg |    name    
+----+-------+----------+--------+------+------+-----+------------
+  2 |       |        0 | f      |    2 | info | ws  | Информация
+
+             test             
+------------------------------
+  ***** ws.class_status *****
+
+ class_id | id | sort |  name  
+----------+----+------+--------
+        2 |  1 |    1 | Онлайн
+
+             test             
+------------------------------
+  ***** ws.class_action *****
+
+ class_id | id | sort |       name       
+----------+----+------+------------------
+        2 |  1 |    1 | Публичное чтение
+
+                test                 
+-------------------------------------
+  ***** ws.class_status_action *****
+
+ class_id | status_id | action_id 
+----------+-----------+-----------
+        2 |         1 |         1
+
+           test            
+---------------------------
+  ***** ws.class_acl *****
+
+ class_id | id | is_sys | sort |        name        
+----------+----+--------+------+--------------------
+        2 |  1 | t      |    1 | Любой пользователь
+
+               test               
+----------------------------------
+  ***** ws.class_action_acl *****
+
+ class_id | action_id | acl_id 
+----------+-----------+--------
+        2 |         1 |      1
+
+          test          
+------------------------
+  ***** ws.method *****
+
+            code            |         code_real          |                        name                         
+----------------------------+----------------------------+-----------------------------------------------------
+ ws.acls_eff                | ws.acls_eff                | Список эффективных ACL
+ ws.acls_eff_ids            | ws.acls_eff_ids            | Список id эффективных ACL
+ ws.class                   | ws.class                   | Атрибуты классов по ID
+ ws.class_acl               | ws.class_acl               | Описание уровней доступа класса
+ ws.class_action            | ws.class_action            | Описание акции класса
+ ws.class_id                | ws.class_id                | ID класса по коду
+ ws.class_status            | ws.class_status            | Описание статуса класса
+ ws.class_status_action_acl | ws.class_status_action_acl | Статусы и ACL для заданной акции
+ ws.dt                      | ws.dt                      | Атрибуты типа по маске кода
+ ws.dt_facet                | ws.dt_facet                | Атрибуты ограничения типа по коду типа
+ ws.dt_part                 | ws.dt_part                 | Атрибуты полей комплексного типа
+ ws.error_info              | ws.error_info              | Описание ошибки
+ ws.facet                   | ws.facet                   | Атрибуты ограничения по id
+ ws.method_by_action        | ws.method_by_action        | Атрибуты страницы  по акции и идентификаторам
+ ws.method_by_code          | ws.method_by_code          | Атрибуты метода по коду
+ ws.method_lookup           | ws.method_lookup           | Поиск метода по code
+ ws.method_rvf              | ws.method_rvf              | Список форматов результата метода
+ ws.page_by_action          | ws.page_by_action          | Атрибуты страницы  по акции и идентификаторам
+ ws.page_by_code            | ws.page_by_code            | Атрибуты страницы  по маске кода и идентификаторам
+ ws.page_by_uri             | ws.page_by_uri             | Атрибуты страницы по uri
+ ws.page_childs             | ws.page_childs             | Атрибуты страниц, имеющих предком заданную
+ ws.page_path               | ws.page_path               | Атрибуты страниц пути от заданной до корневой
+ ws.page_tree               | ws.page_tree               | Иерархия страниц, имеющих предком заданную или main
+ ws.uncache                 | cache:uncache              | Сброс кэша метода
+
+               test               
+----------------------------------
+  ***** ws.method_rv_format *****
+
+ id |                    name                    
+----+--------------------------------------------
+  1 | нет
+  2 | скаляр
+  3 | хэш
+  4 | хэш {[i][0] -> [i][1]}
+  5 | хэш {([i]{id}|[i]{code}) -> %[i]}
+  6 | массив [i][0]
+  7 | массив хэшей
+  8 | массив массивов
+ 10 | дерево хэшей из массива [tag1.tag2][value]
+
+          test          
+------------------------
+  ***** ws.server *****
+
+ id |          uri          |      name       
+----+-----------------------+-----------------
+  1 | http://localhost:8080 | Основной сервер
+
+            test             
+-----------------------------
+  ***** i18n_def.error *****
+
+ code  | id_count |                        message                         
+-------+----------+--------------------------------------------------------
+ Y0001 |        0 | не задано обязательное значение
+ Y0002 |        2 | значение не соответствует условию "%s %s"
+ Y0003 |        1 | значение не соответствует шаблону "%s"
+ Y0010 |        0 | нет данных
+ Y0101 |        1 | недопустимый код acl "%s"
+ Y0102 |        1 | внешний доступ к методу с "%s" запрещен
+ Y0103 |        0 | необходима авторизация (не задан идентификатор сессии)
+ Y0104 |        1 | некорректный идентификатор сессии "%s"
+ Y0105 |        1 | не найдена проверка для acl "%s"
+ Y0106 |        1 | некорректный идентификатор статуса "%s"
+
+           test            
+---------------------------
+  ***** i18n_def.ref *****
+
+   code   | is_dt_vary | acls | method_code | acls_upd | method_code_upd | pkg |     name     | anno | synced_at 
+----------+------------+------+-------------+----------+-----------------+-----+--------------+------+-----------
+ timezone | f          |      |             | {-1}     |                 | ws  | Часовой пояс |      | 
+
+                  test                  
+----------------------------------------
+  ***** wsd.pkg_default_protected *****
+
+ pkg |        wsd_rel        |   wsd_col   |          func           | schema 
+-----+-----------------------+-------------+-------------------------+--------
+ ws  | pkg_default_protected | pkg         | ws.pg_cs()              | ws
+ ws  | pkg_default_protected | schema      | ws.pg_cs()              | ws
+ ws  | pkg_fkey_protected    | pkg         | ws.pg_cs()              | ws
+ ws  | pkg_fkey_protected    | schema      | ws.pg_cs()              | ws
+ ws  | pkg_fkey_required_by  | required_by | ws.pg_cs()              | ws
+ ws  | pkg_script_protected  | pkg         | ws.pg_cs()              | ws
+ ws  | pkg_script_protected  | schema      | ws.pg_cs()              | ws
+ ws  | ref_update            | lang        | ws.const_lang_default() | ws
+

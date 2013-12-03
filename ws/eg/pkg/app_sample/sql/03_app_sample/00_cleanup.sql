@@ -38,6 +38,6 @@ DELETE FROM fs.folder WHERE class_id IN (:AID, :TID, :WID);
 DELETE FROM acc.class_link;
 
 /* ------------------------------------------------------------------------- */
-DELETE FROM wsd.event_signup; -- TODO: разбирать fkey на wsd.event_role_signup
-DELETE FROM wsd.event_role_signup;
+DELETE FROM wsd.event_account_signup; -- TODO: разбирать fkey на wsd.event_signup
+DELETE FROM wsd.event_signup;
 /* ------------------------------------------------------------------------- */

@@ -28,5 +28,3 @@ INSERT INTO status (id, name) VALUES
 , /*4*/ (ev.const_status_id_done()    , 'Зарегистировано')
 , /*5*/ (ev.const_status_id_archive() , 'Архив')
 ;
-
-/* ------------------------------------------------------------------------- */

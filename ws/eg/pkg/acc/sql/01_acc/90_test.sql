@@ -25,7 +25,8 @@
 -- TODO: insert into .account
 
 \set SID '\'; \''
-\set LOGIN admin_test_norealdb
+\set LOGIN 'admin_test_norealdb'
+\set a_psw '1234'
 
 -- тестовый ID
 \set TEAM -1
@@ -38,7 +39,7 @@ INSERT INTO wsd.role (id, name, anno) VALUES
   (:ROLE, 'Admins', '');
 
 INSERT INTO wsd.account (id, status_id, login, psw, name) VALUES
-  (:ACC, acc.const_status_id_active(), :'LOGIN', :'PSW_DEFAULT', 'Admin');
+  (:ACC, acc.const_status_id_active(), :'LOGIN', :'a_psw', 'Admin');
 
 INSERT INTO wsd.team (id, name, status_id) VALUES
   (:TEAM, 'ACC-Test-Admins', acc.const_team_status_id_active())
@@ -81,8 +82,8 @@ SELECT cfg.prop_value_edit(acc.const_account_group_prop(), (SELECT id FROM wsd.a
 SELECT  status_id,login,name,is_psw_plain,is_ip_checked FROM wsd.account where name = 'registration';
 
 /* ------------------------------------------------------------------------- */
-SELECT acc.account_password_change(-1, 'Test111', 'Test111');
+SELECT acc.account_password_change(-1, 'Test111', 'Test111', TRUE);
 SELECT psw FROM wsd.account WHERE id=-1;
 
-SELECT acc.account_password_change_own(-1, 'Test111', 'Test222', 'Test222');
+SELECT acc.account_password_change_own(-1, 'Test111', 'Test222', 'Test222', TRUE);
 SELECT psw FROM wsd.account WHERE id=-1;

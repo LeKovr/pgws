@@ -44,9 +44,7 @@ INSERT INTO dt (parent_code, code, anno) VALUES
 -- parent для массива хэшей, но они пока не поддерживаются DBD::Pg
 -- INSERT INTO dt (id, parent_code, code, anno) VALUES (21, 21, 'composite', 'Структура');
 
-
 /* ------------------------------------------------------------------------- */
-
 INSERT INTO facet (id, code, anno) VALUES
   ( 1, 'length',         'Длина')
 , ( 2, 'minLength',      'Мин. длина')
@@ -62,6 +60,7 @@ INSERT INTO facet (id, code, anno) VALUES
 , (12, 'fractionDigits', 'Знаков дробной части')
 ;
 
+/* ------------------------------------------------------------------------- */
 INSERT INTO facet_dt_base (id, base_code) VALUES
   ( 1, 'text')
 , ( 2, 'text')
@@ -85,54 +84,64 @@ INSERT INTO facet_dt_base (id, base_code) VALUES
 , (11, 'smallint')
 ;
 
+/* ------------------------------------------------------------------------- */
 -- parent для массива хэшей, но они пока не поддерживаются DBD::Pg
 INSERT INTO facet_dt_base SELECT 4, code FROM dt WHERE code = parent_code; --  AND code <> 'composite';
 
-INSERT INTO dt (code, parent_code, anno, is_list) VALUES (pg_cs('d_acls'),    'd_acl',  'Массив уровней доступа', true);
-INSERT INTO dt (code, parent_code, anno, is_list) VALUES (pg_cs('d_booleana'),'boolean','Массив boolean', true);
-INSERT INTO dt (code, parent_code, anno, is_list) VALUES (pg_cs('d_texta'),   'text',   'Массив text', true);
-INSERT INTO dt (code, parent_code, anno, is_list) VALUES (pg_cs('d_id32a'),   'd_id32', 'Массив d_id32', true);
-INSERT INTO dt (code, parent_code, anno, is_list) VALUES (pg_cs('d_codea'),   'd_code', 'Массив d_code', true);
-INSERT INTO dt (code, parent_code, anno, is_list) VALUES (pg_cs('d_ida'),     'd_id',   'Массив d_id', true);
-INSERT INTO dt (code, parent_code, anno, is_list) VALUES (pg_cs('d_moneya'),  'd_money','Массив d_money', true);
+/* ------------------------------------------------------------------------- */
+INSERT INTO dt (code, parent_code, anno, is_list) VALUES 
+  (pg_cs('d_acls'),    'd_acl',  'Массив уровней доступа', true)
+, (pg_cs('d_booleana'),'boolean','Массив boolean', true)
+, (pg_cs('d_texta'),   'text',   'Массив text', true)
+, (pg_cs('d_id32a'),   'd_id32', 'Массив d_id32', true)
+, (pg_cs('d_codea'),   'd_code', 'Массив d_code', true)
+, (pg_cs('d_ida'),     'd_id',   'Массив d_id', true)
+, (pg_cs('d_moneya'),  'd_money','Массив d_money', true);
 
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('boolean', facet_id('pattern'), E'^([01tf]|on|off)$', 'только 0,1,t,f,on или off');
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('numeric', facet_id('pattern'), E'^(\\+|\\-)?(\\d)*(\\.\\d+)?$','[знак]целая часть[.дробная часть]');
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('real', facet_id('pattern'), E'^(\\+|\\-)?(\\d)*(\\.\\d+)?$','[знак]целая часть[.дробная часть]');
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('integer', facet_id('pattern'), E'^(\\+|\\-)?\\d+$', '[знак]цифры');
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('smallint', facet_id('pattern'), E'^(\\+|\\-)?\\d+$', '[знак]цифры');
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('bigint',  facet_id('pattern'), E'^(\\+|\\-)?\\d+$', '[знак]цифры');
-INSERT INTO dt_facet VALUES ('oid', facet_id('pattern'), E'^\d+$');
+/* ------------------------------------------------------------------------- */
+INSERT INTO dt_facet (code, facet_id, value, anno) VALUES 
+  ('boolean',  facet_id('pattern'), E'^([01tf]|on|off)$', 'только 0,1,t,f,on или off')
+, ('numeric',  facet_id('pattern'), E'^(\\+|\\-)?(\\d)*(\\.\\d+)?$','[знак]целая часть[.дробная часть]')
+, ('real',     facet_id('pattern'), E'^(\\+|\\-)?(\\d)*(\\.\\d+)?$','[знак]целая часть[.дробная часть]')
+, ('integer',  facet_id('pattern'), E'^(\\+|\\-)?\\d+$', '[знак]цифры')
+, ('smallint', facet_id('pattern'), E'^(\\+|\\-)?\\d+$', '[знак]цифры')
+, ('bigint',   facet_id('pattern'), E'^(\\+|\\-)?\\d+$', '[знак]цифры')
+, ('date',     facet_id('pattern'), E'^\\d{1,2}\\.\\d{2}\\.\\d{4}$', 'ДД.ММ.ГГГГ')
+, ('d_stamp',  facet_id('pattern'), E'^\\d{1,2}\\.\\d{2}\\.\\d{4}(?: +| +/ +)\\d{2}:\\d{2}(:\\d{2})?$', 'ДД.ММ.ГГГГ ЧЧ:ММ[:СС]')
+, ('d_string', facet_id('pattern'), E'^[^\n]','NO CR')
+, ('d_email',  facet_id('pattern'), E'(?:^$|^[^ ]+@[^ ]+\\.[^ ]{2,6}$)','your@email.ru')
+, ('d_emails', facet_id('pattern'), E'(?:^$|^[^ ]+@[^ ]+\\.[^ ]{2,6}$)','your@email.ru');
+
 -- TODO: INSERT INTO dt_facet VALUES ('uuid'), facet_id('pattern'), E'????');
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('date', facet_id('pattern'), E'^\\d{1,2}\\.\\d{2}\\.\\d{4}$', 'ДД.ММ.ГГГГ');
 -- INSERT INTO dt_facet VALUES ('integer'), facet_id('fractionDigits'), 0);
-INSERT INTO dt_facet VALUES ('integer', facet_id('minInclusive'), -2147483648);
-INSERT INTO dt_facet VALUES ('integer', facet_id('maxInclusive'), 2147483647);
-INSERT INTO dt_facet VALUES ('smallint', facet_id('minInclusive'), -32768);
-INSERT INTO dt_facet VALUES ('smallint', facet_id('maxInclusive'), 32767);
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('d_stamp', facet_id('pattern')
-, E'^\\d{1,2}\\.\\d{2}\\.\\d{4}(?: +| +/ +)\\d{2}:\\d{2}(:\\d{2})?$', 'ДД.ММ.ГГГГ ЧЧ:ММ[:СС]');
-INSERT INTO dt_facet VALUES ('d_rating', facet_id('minInclusive'), -2);
-INSERT INTO dt_facet VALUES ('d_rating', facet_id('maxInclusive'), 2);
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('d_string', facet_id('pattern'), E'^[^\n]','NO CR');
-INSERT INTO dt_facet VALUES ('d_errcode', facet_id('length'), 5);
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('d_email', facet_id('pattern'), E'(?:^$|^[^ ]+@[^ ]+\\.[^ ]{2,6}$)','your@email.ru');
-INSERT INTO dt_facet (code, facet_id, value, anno) VALUES ('d_emails', facet_id('pattern'), E'(?:^$|^[^ ]+@[^ ]+\\.[^ ]{2,6}$)','your@email.ru');
 
-INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_uncache'), 'Аргументы функций cache_uncache', true);
-INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (pg_cs('z_uncache'), 1, 'code', 'text', 'код метода');
-INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (pg_cs('z_uncache'), 2, 'key', 'text', 'ключ кэша');
+/* ------------------------------------------------------------------------- */
+INSERT INTO dt_facet VALUES ('oid',       facet_id('pattern'),      E'^\d+$');
+INSERT INTO dt_facet VALUES ('integer',   facet_id('minInclusive'), -2147483648);
+INSERT INTO dt_facet VALUES ('integer',   facet_id('maxInclusive'), 2147483647);
+INSERT INTO dt_facet VALUES ('smallint',  facet_id('minInclusive'), -32768);
+INSERT INTO dt_facet VALUES ('smallint',  facet_id('maxInclusive'), 32767);
+INSERT INTO dt_facet VALUES ('d_rating',  facet_id('minInclusive'), -2);
+INSERT INTO dt_facet VALUES ('d_rating',  facet_id('maxInclusive'), 2);
+INSERT INTO dt_facet VALUES ('d_errcode', facet_id('length'),       5);
 
+/* ------------------------------------------------------------------------- */
+INSERT INTO dt (code, anno, is_complex) VALUES 
+  (pg_cs('z_uncache'),   'Аргументы функций cache_uncache', true)
+, (pg_cs('z_acl_check'), 'Аргументы функций acl_check',     true);
+
+/* ------------------------------------------------------------------------- */
+INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES 
+  (pg_cs('z_uncache'),   1, 'code',      'text',    'код метода')
+, (pg_cs('z_uncache'),   2, 'key',       'text',    'ключ кэша')
+, (pg_cs('z_acl_check'), 1, '_sid',      'text',    'ID сессии')
+, (pg_cs('z_acl_check'), 2, 'class_id',  'd_class', 'ID класса')
+, (pg_cs('z_acl_check'), 3, 'action_id', 'd_id32',  'ID акции')
+, (pg_cs('z_acl_check'), 4, 'id',        'd_id',    'ID объекта')
+, (pg_cs('z_acl_check'), 5, 'id1',       'd_id',    'ID1 объекта')
+, (pg_cs('z_acl_check'), 6, 'id2',       'text',    'ID2 объекта');
 /*
   -- RESERVED
 INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_cache_reset'), 'Аргументы функций cache_reset', true);
 INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (pg_cs('z_cache_reset'), 1, 'keys', pg_cs('text'), 'ключи');
 */
-
-INSERT INTO dt (code, anno, is_complex) VALUES (pg_cs('z_acl_check'), 'Аргументы функций acl_check', true);
-INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (pg_cs('z_acl_check'), 1, '_sid', 'text', 'ID сессии');
-INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (pg_cs('z_acl_check'), 2, 'class_id', 'd_class', 'ID класса');
-INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (pg_cs('z_acl_check'), 3, 'action_id', 'd_id32', 'ID акции');
-INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (pg_cs('z_acl_check'), 4, 'id', 'd_id', 'ID объекта');
-INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (pg_cs('z_acl_check'), 5, 'id1', 'd_id', 'ID1 объекта');
-INSERT INTO dt_part (dt_code, part_id, code, parent_code, anno) VALUES (pg_cs('z_acl_check'), 6, 'id2', 'text', 'ID2 объекта');

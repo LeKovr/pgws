@@ -10,7 +10,7 @@
       NEXT IF meta.nopath_doubles && u.req && u_req_pre == u.req;
       u_req_pre = u.req;
       IF u.group_id;
-        %]<li>[% u.group_name %]</a> <span class="divider">/ </span></li>[%
+        %]<li>[% u.group_name %] <span class="divider">/ </span></li>[%
       END;
       IF u.up_code;
         %]<li>[%

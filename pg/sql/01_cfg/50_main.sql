@@ -21,7 +21,10 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION prop_owner_attr(a_pogc TEXT DEFAULT NULL, a_poid INTEGER DEFAULT 0) RETURNS SETOF prop_owner_attr STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION prop_owner_attr(
+  a_pogc TEXT    DEFAULT NULL
+, a_poid INTEGER DEFAULT 0
+) RETURNS SETOF prop_owner_attr STABLE LANGUAGE 'sql' AS
 $_$
 -- a_pogc: код группы владельцев
 -- a_poid: код владельца свойства
@@ -32,7 +35,11 @@ $_$;
 SELECT pg_c('f', 'prop_owner_attr', 'Атрибуты POID');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION prop_attr_system(a_pogc TEXT DEFAULT NULL, a_poid INTEGER DEFAULT 0, a_code cfg.d_prop_code DEFAULT NULL) RETURNS SETOF prop_attr STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION prop_attr_system(
+  a_pogc TEXT            DEFAULT NULL
+, a_poid INTEGER         DEFAULT 0
+, a_code cfg.d_prop_code DEFAULT NULL
+) RETURNS SETOF prop_attr STABLE LANGUAGE 'sql' AS
 $_$
 -- a_pogc: код группы владельцев
 -- a_poid: код владельца свойств
@@ -47,12 +54,17 @@ SELECT pg_c('f', 'prop_attr_system', 'Атрибуты свойств систе
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION prop_group_name(a_pogc TEXT) RETURNS TEXT STABLE LANGUAGE 'sql' AS
 $_$
+-- a_pogc: код группы 
   SELECT name FROM cfg.prop_group WHERE pogc = $1;
 $_$;
 SELECT pg_c('f', 'prop_group_name', 'Название группы свойств');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION cfg.prop_attr(a_pogc TEXT, a_poid INTEGER, a_code cfg.d_prop_code DEFAULT NULL) RETURNS SETOF prop_attr STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION cfg.prop_attr(
+  a_pogc TEXT
+, a_poid INTEGER
+, a_code cfg.d_prop_code DEFAULT NULL
+) RETURNS SETOF prop_attr STABLE LANGUAGE 'sql' AS
 $_$
 -- a_pogc: код группы владельцев
 -- a_poid: код владельца свойств
@@ -74,22 +86,23 @@ $_$
     AND ($3 IS NULL OR p.code LIKE $3)
     ORDER BY code
   ;   
-$_$;SELECT pg_c('f', 'prop_attr', 'Атрибуты свойств пользовательского объекта');
+$_$;
+SELECT pg_c('f', 'prop_attr', 'Атрибуты свойств пользовательского объекта');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION prop_value_edit(
-  a_pogc text
-, a_poid ws.d_id
-, a_code cfg.d_prop_code
+  a_pogc           TEXT
+, a_poid           ws.d_id
+, a_code           cfg.d_prop_code
 , a_prop_new_value TEXT DEFAULT ''::TEXT
-, a_date DATE DEFAULT NULL
+, a_date           DATE DEFAULT NULL
 ) RETURNS BOOLEAN LANGUAGE 'plpgsql' AS
 $_$
--- a_pogc: код группы владельцев
--- a_poid: код владельца
--- a_code: код свойства
+-- a_pogc:           код группы владельцев
+-- a_poid:           код владельца
+-- a_code:           код свойства
 -- a_prop_new_value: новое значение свойства
--- a_date: дата начала действия нового значения свойства
+-- a_date:           дата начала действия нового значения свойства
   DECLARE
     v_log  BOOLEAN;
   BEGIN
@@ -141,7 +154,11 @@ $_$;
 SELECT pg_c('f', 'prop_is_pogc_system', 'Является ли группа системной');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION cfg.prop_history(a_pogc TEXT, a_poid INTEGER, a_code cfg.d_prop_code) RETURNS SETOF prop_history STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION cfg.prop_history(
+  a_pogc TEXT
+, a_poid INTEGER
+, a_code cfg.d_prop_code
+) RETURNS SETOF prop_history STABLE LANGUAGE 'sql' AS
 $_$
 -- a_pogc: код группы владельцев
 -- a_poid: код владельца свойств
@@ -155,13 +172,13 @@ $_$
       AND pv.code = $3
     ORDER BY pv.valid_from DESC
   ;
-$_$;SELECT pg_c('f', 'prop_history', 'История значений свойств');
+$_$;
+SELECT pg_c('f', 'prop_history', 'История значений свойств');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION cfg.prop_default_value(a_code cfg.d_prop_code) RETURNS TEXT STABLE LANGUAGE 'sql' AS
 $_$
 -- a_code: код свойства
   SELECT def_value FROM cfg.prop WHERE code = $1
-$_$;SELECT pg_c('f', 'prop_default_value', 'Значение по умолчанию для свойства');
-
-/* ------------------------------------------------------------------------- */
+$_$;
+SELECT pg_c('f', 'prop_default_value', 'Значение по умолчанию для свойства');

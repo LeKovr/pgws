@@ -10,6 +10,7 @@
 # jsMethod_for_Delete - js метод для переопределения построения спика при удалении
 # noForm - заменяем тэг form на div если форма уже вложена  в тэг form
 # noUpload - режим просмотра, показываем только список файлов
+# succesMethod - js метод выполнится после удачной загрузки
 
 %][%
   meta.head.upload = 1;
@@ -168,6 +169,7 @@ row_end;
 		 END;
 	      %]
 	      $('.btnDelete').deleteFile(PGWS.var.fileupload.deleteFileOptions);
+	      [% succesMethod %]
 	  }else{
 	      $('#fileupload[%code%] .file-list table .'+data.formData.uuid).find('.cancel-file').html('<span class="error alert alert-error">'+data.result.error.message+'</span>');
 	  }

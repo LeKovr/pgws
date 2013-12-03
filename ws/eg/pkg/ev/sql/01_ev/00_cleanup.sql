@@ -17,16 +17,10 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Удаление данных из схемы ws
+    Удаление данных
 */
 
 /* ------------------------------------------------------------------------- */
 DELETE FROM ws.method                WHERE pkg = :'PKG';
 DELETE FROM job.handler              WHERE pkg = :'PKG';
 
--- ALTER TABLE wsd.event DROP CONSTRAINT IF EXISTS event_fk_status_id;
-
-
-
--- DROP TRIGGER IF EXISTS notify_oninsert ON wsd.event;
--- DROP TRIGGER IF EXISTS notify_onupdate ON wsd.event;

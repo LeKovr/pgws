@@ -17,9 +17,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
+    Таблицы поддержки интернационализации для локали по умолчанию
 */
--- 22_i18n.sql - Таблицы поддержки интернационализации для локали по умолчанию
-/* ------------------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------- */
 CREATE TABLE i18n_def.page_name (
@@ -83,4 +82,3 @@ CREATE TABLE i18n_def.timezone_name (
 , name     text     NOT NULL
 );
 SELECT pg_c('r', 'i18n_def.timezone_name', 'Название часового пояса');
-/* ------------------------------------------------------------------------- */

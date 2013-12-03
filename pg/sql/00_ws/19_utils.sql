@@ -21,69 +21,107 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION e_code(code d_errcode) RETURNS text IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION e_code(code d_errcode) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- code: сообщение об ошибке
   SELECT ws.sprintf('[{"code": "%s"}]', $1);
 $_$;
+SELECT pg_c('f', 'e_code', 'возвращает сообщение об ошибке');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION e_noaccess() RETURNS text IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION e_noaccess() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT ws.sprintf('[{"code": "%s"}]', ws.const_rpc_err_noaccess());
 $_$;
+SELECT pg_c('f', 'e_noaccess', 'возвращает строку ошибки - нет доступа');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION e_nodata() RETURNS text IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION e_nodata() RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT ws.sprintf('[{"code": "%s"}]', ws.const_rpc_err_nodata());
 -- P0002  no_data_found
 $_$;
+SELECT pg_c('f', 'e_nodata', 'возвращает строку ошибки - нет данных');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION error_str (code d_errcode, arg TEXT DEFAULT '') RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION error_str (
+  code d_errcode
+, arg  TEXT DEFAULT ''
+) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- code: сообщение об ошибке
+  -- arg:  аргумент
   SELECT ws.sprintf('[{"code": "%s", "id":"%s", "arg": "%s"}]', $1::TEXT, '_', $2);
 $_$;
-
---CREATE OR REPLACE FUNCTION error_str (code errcode, arg TEXT, arg1 TEXT) RETURNS TEXT AS $_$
---  SELECT sprintf('[{"code": "%s", "id":"%s", "arg": "%s", "arg1": "%s"}]', $1::TEXT, '_', $2, $3);
---$_$ IMMUTABLE LANGUAGE 'sql';
+SELECT pg_c('f', 'error_str', 'возвращает строку ошибки');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION perror_str (code d_errcode, param_name TEXT, arg TEXT DEFAULT '') RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION perror_str (
+  code       d_errcode
+, param_name TEXT
+, arg        TEXT DEFAULT ''
+) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- code:       сообщение об ошибке
+  -- param_name: название параметра
+  -- arg:        аргумент
   SELECT ws.sprintf('[{"code": "%s", "id":"%s", "arg": "%s"}]', $1::TEXT, $2, $3);
 $_$;
+SELECT pg_c('f', 'perror_str', 'возвращает строку ошибки');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION uri_args (a_uri TEXT, a_mask TEXT) RETURNS text[] IMMUTABLE LANGUAGE 'plperl' AS
+CREATE OR REPLACE FUNCTION uri_args (
+  a_uri  TEXT
+, a_mask TEXT
+) RETURNS TEXT[] IMMUTABLE LANGUAGE 'plperl' AS
 $_$  #
     my ($uri, $mask) = @_; if ($uri =~ /$mask/) { return [$1, $2, $3, $4, $5]; } return undef;
 $_$;
+SELECT pg_c('f', 'uri_args', '..');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.epoch2timestamptz(a_epoch INTEGER DEFAULT 0) RETURNS TIMESTAMPTZ IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a_epoch:  количество секунд
 SELECT CASE WHEN $1 = 0 THEN NULL ELSE TIMESTAMPTZ 'epoch' + $1 * INTERVAL '1 second' END;
 $_$;
+SELECT pg_c('f', 'epoch2timestamptz', 'возвращает TIMESTAMPTZ через заданное количество секунд');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.min(a TIMESTAMP, b TIMESTAMP) RETURNS TIMESTAMP IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION ws.min(
+  a TIMESTAMP
+, b TIMESTAMP
+) RETURNS TIMESTAMP IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a:  первый момент времени
+  -- b:  второй момент времени
 SELECT CASE WHEN $1 < $2 THEN $1 ELSE $2 END;
 $_$;
+SELECT pg_c('f', 'min', 'минимальный момент времени');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.max(a TIMESTAMP, b TIMESTAMP) RETURNS TIMESTAMP IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION ws.max(
+  a TIMESTAMP
+, b TIMESTAMP
+) RETURNS TIMESTAMP IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a:  первый момент времени
+  -- b:  второй момент времени
 SELECT CASE WHEN $1 < $2 THEN $2 ELSE $1 END;
 $_$;
+SELECT pg_c('f', 'max', 'максимальный момент времени');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.array_remove(a ANYARRAY, b ANYELEMENT) RETURNS ANYARRAY IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION ws.array_remove(
+  a ANYARRAY
+, b ANYELEMENT
+) RETURNS ANYARRAY IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a: массив
+  -- b: элемент
 SELECT array_agg(x) FROM unnest($1) x WHERE x <> $2;
 $_$;
+SELECT pg_c('f', 'array_remove', 'удаляет элемент из массива');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.stamp2xml(
@@ -122,16 +160,20 @@ $_$
     RETURN v_stamp_xml;
   END;
 $_$;
+SELECT pg_c('f', 'stamp2xml', 'Возвращает метку времени в виде текста для использования в XML-документах');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.date2xml(a DATE) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a: дата
 SELECT to_char($1, E'YYYY-MM-DD');
 $_$;
+SELECT pg_c('f', 'date2xml', 'Возвращает дату в виде текста для использования в XML-документах');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.mask2regexp(a_mask TEXT) RETURNS TEXT IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_mask:  шаблон
   DECLARE
     v TEXT;
   BEGIN
@@ -150,14 +192,15 @@ SELECT pg_c('f', 'mask2regexp', 'Сформировать строку поис�
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.mask_is_multi(a_mask TEXT) RETURNS BOOL IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a_mask:  шаблон
   SELECT $1 ~ E'(\\?|,|:)'
 $_$;
 SELECT pg_c('f', 'mask_is_multi', 'Шаблон соответствует нескольким значениям');
 
-
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.mask2format(a_mask TEXT) RETURNS TEXT IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_mask:  шаблон
   DECLARE
     v TEXT;
   BEGIN
@@ -173,5 +216,3 @@ $_$
   END;
 $_$;
 SELECT pg_c('f', 'mask2format', 'Сформировать строку формата по шаблону');
-
-/* ------------------------------------------------------------------------- */

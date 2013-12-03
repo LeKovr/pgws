@@ -108,3 +108,29 @@ SELECT pg_c('r', 'handler',  'Обработчик задач Job')
 ;
 
 /* ------------------------------------------------------------------------- */
+CREATE TABLE data_error (
+  id              d_id32        PRIMARY KEY
+, job_id          d_id32        NOT NULL
+, group_code      TEXT              NULL
+, field_code      TEXT              NULL
+, item_id         TEXT              NULL
+, error_code      TEXT              NULL
+, error_arg       TEXT              NULL
+, error_arg1      TEXT              NULL
+, created_at      TIMESTAMP(0)  NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+SELECT pg_c('r', 'data_error', 'Ошибки приложения')
+, pg_c('c', 'data_error.id',             'ID ошибки')
+, pg_c('c', 'data_error.job_id',         'ID задачи')
+, pg_c('c', 'data_error.group_code',     'Код группы')
+, pg_c('c', 'data_error.field_code',     'Код поля')
+, pg_c('c', 'data_error.item_id',        'ID позиции')
+, pg_c('c', 'data_error.error_code',     'Код ошибки')
+, pg_c('c', 'data_error.error_arg',      'ID аргумента ошибки')
+, pg_c('c', 'data_error.error_arg',      'ID второго аргумента ошибки')
+, pg_c('c', 'data_error.created_at',     'Момент регистрации ошибки')
+;
+CREATE SEQUENCE data_error_seq;
+ALTER TABLE data_error ALTER COLUMN id SET DEFAULT NEXTVAL('data_error_seq');
+
+/* ------------------------------------------------------------------------- */

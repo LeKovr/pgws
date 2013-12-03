@@ -1,0 +1,214 @@
+SET
+           test           
+--------------------------
+  ***** ws.acls_eff *****
+
+         acls_eff         
+--------------------------
+ (1,"Любой пользователь")
+
+             test             
+------------------------------
+  ***** ws.acls_eff_ids *****
+
+ acls_eff_ids 
+--------------
+            1
+
+         test          
+-----------------------
+  ***** ws.class *****
+
+             class             
+-------------------------------
+ (2,,0,f,2,info,ws,Информация)
+
+           test            
+---------------------------
+  ***** ws.class_acl *****
+
+           class_acl            
+--------------------------------
+ (2,1,t,1,"Любой пользователь")
+
+             test             
+------------------------------
+  ***** ws.class_action *****
+
+        class_action        
+----------------------------
+ (2,1,1,"Публичное чтение")
+
+           test           
+--------------------------
+  ***** ws.class_id *****
+
+ class_id 
+----------
+        2
+
+             test             
+------------------------------
+  ***** ws.class_status *****
+
+  class_status  
+----------------
+ (2,1,1,Онлайн)
+
+                  test                   
+-----------------------------------------
+  ***** ws.class_status_action_acl *****
+
+                       class_status_action_acl                        
+----------------------------------------------------------------------
+ (2,1,1,1,,Информация,Онлайн,"Публичное чтение","Любой пользователь")
+
+        test        
+--------------------
+  ***** ws.dt *****
+
+                              dt                              
+--------------------------------------------------------------
+ (double,double,double,t,,"Длинное вещественное число",f,f,f)
+
+           test           
+--------------------------
+  ***** ws.dt_facet *****
+
+     dt_facet      
+-------------------
+ (oid,4,^d+$,oid,)
+
+          test           
+-------------------------
+  ***** ws.dt_part *****
+
+ dt_code | part_id | code | parent_code | base_code | allow_null | def_val |   anno   | is_list 
+---------+---------+------+-------------+-----------+------------+---------+----------+---------
+ ws.dt   |       1 | code | ws.d_code   | text      | f          |         | Код типа | f
+
+            test            
+----------------------------
+  ***** ws.error_info *****
+
+                      error_info                      
+------------------------------------------------------
+ (Y0003,1,"значение не соответствует шаблону ""%s""")
+
+         test          
+-----------------------
+  ***** ws.facet *****
+
+            facet            
+-----------------------------
+ (3,maxLength,"Макс. длина")
+
+               test               
+----------------------------------
+  ***** ws.method_by_action *****
+
+            code            | class_id | action_id |         code_real          |                        name                         
+----------------------------+----------+-----------+----------------------------+-----------------------------------------------------
+ ws.acls_eff                |        2 |         1 | ws.acls_eff                | Список эффективных ACL
+ ws.acls_eff_ids            |        2 |         1 | ws.acls_eff_ids            | Список id эффективных ACL
+ ws.class                   |        2 |         1 | ws.class                   | Атрибуты классов по ID
+ ws.class_acl               |        2 |         1 | ws.class_acl               | Описание уровней доступа класса
+ ws.class_action            |        2 |         1 | ws.class_action            | Описание акции класса
+ ws.class_id                |        2 |         1 | ws.class_id                | ID класса по коду
+ ws.class_status            |        2 |         1 | ws.class_status            | Описание статуса класса
+ ws.class_status_action_acl |        2 |         1 | ws.class_status_action_acl | Статусы и ACL для заданной акции
+ ws.dt                      |        2 |         1 | ws.dt                      | Атрибуты типа по маске кода
+ ws.dt_facet                |        2 |         1 | ws.dt_facet                | Атрибуты ограничения типа по коду типа
+ ws.dt_part                 |        2 |         1 | ws.dt_part                 | Атрибуты полей комплексного типа
+ ws.error_info              |        2 |         1 | ws.error_info              | Описание ошибки
+ ws.facet                   |        2 |         1 | ws.facet                   | Атрибуты ограничения по id
+ ws.method_by_action        |        2 |         1 | ws.method_by_action        | Атрибуты страницы  по акции и идентификаторам
+ ws.method_by_code          |        2 |         1 | ws.method_by_code          | Атрибуты метода по коду
+ ws.method_lookup           |        2 |         1 | ws.method_lookup           | Поиск метода по code
+ ws.method_rvf              |        2 |         1 | ws.method_rvf              | Список форматов результата метода
+ ws.page_by_action          |        2 |         1 | ws.page_by_action          | Атрибуты страницы  по акции и идентификаторам
+ ws.page_by_code            |        2 |         1 | ws.page_by_code            | Атрибуты страницы  по маске кода и идентификаторам
+ ws.page_by_uri             |        2 |         1 | ws.page_by_uri             | Атрибуты страницы по uri
+ ws.page_childs             |        2 |         1 | ws.page_childs             | Атрибуты страниц, имеющих предком заданную
+ ws.page_path               |        2 |         1 | ws.page_path               | Атрибуты страниц пути от заданной до корневой
+ ws.page_tree               |        2 |         1 | ws.page_tree               | Иерархия страниц, имеющих предком заданную или main
+ ws.uncache                 |        2 |         1 | cache:uncache              | Сброс кэша метода
+
+              test              
+--------------------------------
+  ***** ws.method_by_code *****
+
+                                                method_by_code                                                
+--------------------------------------------------------------------------------------------------------------
+ (ws.facet,2,1,2,5,f,f,t,f,ws.facet,ws.z_facet,ws.facet,"Атрибуты ограничения по id",id=3,"id ws.d_id32",ws,)
+
+             test              
+-------------------------------
+  ***** ws.method_lookup *****
+
+                                              method_lookup                                              
+---------------------------------------------------------------------------------------------------------
+ (ws.class,2,1,2,5,f,f,t,f,ws.class,ws.z_class,ws.class,"Атрибуты классов по ID","","id ws.d_class",ws,)
+
+            test            
+----------------------------
+  ***** ws.method_rvf *****
+
+ id | name 
+----+------
+  3 | хэш
+
+INSERT 0 1
+INSERT 0 1
+              test              
+--------------------------------
+  ***** ws.page_by_action *****
+
+ code  | up_code | class_id | action_id | sort |  uri   |   tmpl    | is_hidden | uri_re | uri_fmt | pkg | name |  req  |            args            | group_name 
+-------+---------+----------+-----------+------+--------+-----------+-----------+--------+---------+-----+------+-------+----------------------------+------------
+ login | main    |        2 |         1 |    1 | login$ | acc/login | t         | login$ | login   | ws  | Вход | login | {NULL,NULL,NULL,NULL,NULL} | 
+ main  |         |        2 |         1 |    0 | $      | app/index | t         | $      |         | ws  | API  |       | {NULL,NULL,NULL,NULL,NULL} | 
+
+             test             
+------------------------------
+  ***** ws.page_by_code *****
+
+                                  page_by_code                                  
+--------------------------------------------------------------------------------
+ (main,,2,1,,0,$,app/index,,,t,"",$,"",ws,API,"","{NULL,NULL,NULL,NULL,NULL}",)
+
+            test             
+-----------------------------
+  ***** ws.page_by_uri *****
+
+                                  page_by_uri                                   
+--------------------------------------------------------------------------------
+ (main,,2,1,,0,$,app/index,,,t,"",$,"",ws,API,"","{NULL,NULL,NULL,NULL,NULL}",)
+
+            test             
+-----------------------------
+  ***** ws.page_childs *****
+
+ code  | up_code | class_id | action_id | sort |  uri   |   tmpl    | is_hidden | uri_re | uri_fmt | pkg | name |  req  |            args            | group_name 
+-------+---------+----------+-----------+------+--------+-----------+-----------+--------+---------+-----+------+-------+----------------------------+------------
+ login | main    |        2 |         1 |    1 | login$ | acc/login | t         | login$ | login   | ws  | Вход | login | {NULL,NULL,NULL,NULL,NULL} | 
+
+           test            
+---------------------------
+  ***** ws.page_path *****
+
+                                   page_path                                    
+--------------------------------------------------------------------------------
+ (main,,2,1,,0,$,app/index,,,t,"",$,"",ws,API,"","{NULL,NULL,NULL,NULL,NULL}",)
+
+           test            
+---------------------------
+  ***** ws.page_tree *****
+
+ page_tree 
+-----------
+ (1,main)
+ (2,login)
+
+DELETE 1
+DELETE 1

@@ -35,7 +35,7 @@ CREATE TABLE wsd.event (
 , arg_name2   TEXT
 );
 SELECT pg_c('r', 'wsd.event',  'Событие')
-, pg_c('c', 'wsd.event.id'    , 'ID события')
+, pg_c('c', 'wsd.event.id'          , 'ID события')
 , pg_c('c', 'wsd.event.status_id'   , 'ID статуса')
 , pg_c('c', 'wsd.event.reason_id'   , 'ID причины возникновения события') -- несколько событий по одной причине => один reason_id
 , pg_c('c', 'wsd.event.created_at'  , 'отметка времени возникновения')
@@ -65,20 +65,20 @@ SELECT pg_c('r', 'wsd.event_spec',  'Спецификация события')
 ;
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE wsd.event_role_signup (
+CREATE TABLE wsd.event_signup (
   role_id    INTEGER
 , kind_id    INTEGER
 , spec_id    INTEGER DEFAULT 0 -- 0 IF NOT ev.kind.has_spec
 , is_on      BOOL NOT NULL DEFAULT TRUE
 , prio       INTEGER -- если NULL - берем из ev.kind.def_prio NOT NULL
-, CONSTRAINT  event_role_signup_pkey PRIMARY KEY (role_id, kind_id, spec_id)
+, CONSTRAINT  event_signup_pkey PRIMARY KEY (role_id, kind_id, spec_id)
 );
-SELECT pg_c('r', 'wsd.event_role_signup'      , 'Подписка роли')
-, pg_c('c', 'wsd.event_role_signup.role_id'   , 'ID роли')
-, pg_c('c', 'wsd.event_role_signup.kind_id'   , 'ID вида события')
-, pg_c('c', 'wsd.event_role_signup.spec_id'   , 'ID спецификации')
-, pg_c('c', 'wsd.event_role_signup.is_on'     , 'Подписка активна')
-, pg_c('c', 'wsd.event_role_signup.prio'      , 'Приоритет')
+SELECT pg_c('r', 'wsd.event_signup', 'Подписка роли')
+, pg_c('c', 'wsd.event_signup.role_id'   , 'ID роли')
+, pg_c('c', 'wsd.event_signup.kind_id'   , 'ID вида события')
+, pg_c('c', 'wsd.event_signup.spec_id'   , 'ID спецификации')
+, pg_c('c', 'wsd.event_signup.is_on'     , 'Подписка активна')
+, pg_c('c', 'wsd.event_signup.prio'      , 'Приоритет')
 ;
 
 /* ------------------------------------------------------------------------- */
@@ -89,15 +89,15 @@ CREATE TABLE wsd.event_signup_profile (
 , delay_hours INTEGER NOT NULL DEFAULT 0
 , CONSTRAINT  event_signup_profile_pkey PRIMARY KEY (account_id, profile_id)
 );
-SELECT pg_c('r', 'wsd.event_signup_profile'       , 'Профайл подписок пользователя')
-, pg_c('c', 'wsd.event_signup_profile.account_id' , 'ID пользователя')
-, pg_c('c', 'wsd.event_signup_profile.profile_id' , 'ID профайла')
-, pg_c('c', 'wsd.event_signup_profile.format_code'        , 'Код формата')
-, pg_c('c', 'wsd.event_signup_profile.delay_hours'        , 'Частота уведомления')
+SELECT pg_c('r', 'wsd.event_signup_profile', 'Профайл подписок пользователя')
+, pg_c('c', 'wsd.event_signup_profile.account_id',  'ID пользователя')
+, pg_c('c', 'wsd.event_signup_profile.profile_id',  'ID профайла')
+, pg_c('c', 'wsd.event_signup_profile.format_code', 'Код формата')
+, pg_c('c', 'wsd.event_signup_profile.delay_hours', 'Частота уведомления')
 ;
 
 /* ------------------------------------------------------------------------- */
-CREATE TABLE wsd.event_signup (
+CREATE TABLE wsd.event_account_signup (
   account_id  INTEGER
 , kind_id     INTEGER
 , spec_id     INTEGER
@@ -105,18 +105,17 @@ CREATE TABLE wsd.event_signup (
 , is_on       BOOL NOT NULL DEFAULT TRUE
 , prio        INTEGER NOT NULL
 , profile_id  INTEGER
-, CONSTRAINT  event_signup_pkey PRIMARY KEY (account_id, kind_id, spec_id)
-, CONSTRAINT  event_signup_role_id_kind_id_spec_id_fkey FOREIGN KEY (role_id, kind_id, spec_id) 
-  REFERENCES wsd.event_role_signup 
+, CONSTRAINT  event_account_signup_pkey PRIMARY KEY (account_id, kind_id, spec_id)
+, CONSTRAINT  event_signup_role_id_kind_id_spec_id_fkey FOREIGN KEY (role_id, kind_id, spec_id) REFERENCES wsd.event_signup
 , CONSTRAINT  event_signup_account_id_profile_id_fkey FOREIGN KEY (account_id, profile_id) REFERENCES wsd.event_signup_profile
 );
-SELECT pg_c('r', 'wsd.event_signup'       , 'Подписка роли')
-, pg_c('c', 'wsd.event_signup.account_id' , 'ID пользователя')
-, pg_c('c', 'wsd.event_signup.kind_id'    , 'ID вида события')
-, pg_c('c', 'wsd.event_signup.spec_id'    , 'ID спецификации')
-, pg_c('c', 'wsd.event_signup.is_on'      , 'Подписка активна')
-, pg_c('c', 'wsd.event_signup.prio'       , 'Приоритет')
-, pg_c('c', 'wsd.event_signup.profile_id' , 'ID профайла подписки')
+SELECT pg_c('r', 'wsd.event_account_signup', 'Подписка роли')
+, pg_c('c', 'wsd.event_account_signup.account_id' , 'ID пользователя')
+, pg_c('c', 'wsd.event_account_signup.kind_id'    , 'ID вида события')
+, pg_c('c', 'wsd.event_account_signup.spec_id'    , 'ID спецификации')
+, pg_c('c', 'wsd.event_account_signup.is_on'      , 'Подписка активна')
+, pg_c('c', 'wsd.event_account_signup.prio'       , 'Приоритет')
+, pg_c('c', 'wsd.event_account_signup.profile_id' , 'ID профайла подписки')
 ;
 
 
@@ -126,7 +125,6 @@ CREATE TABLE wsd.event_notify (
 , account_id    INTEGER
 , role_id       INTEGER
 , is_new        BOOL NOT NULL DEFAULT TRUE
--- , folder_id     INTEGER -- REFERENCES event_notify_folder
 , cause_id      INTEGER NOT NULL
 , read_at       TIMESTAMP(0)
 , read_by       INTEGER
@@ -138,20 +136,21 @@ CREATE TABLE wsd.event_notify (
 , confirm_data  TEXT
 , CONSTRAINT  event_notify_pkey PRIMARY KEY (event_id, account_id, role_id, cause_id)
 );
-SELECT pg_c('r', 'wsd.event_notify'           , 'Уведомление')
-, pg_c('c', 'wsd.event_notify.event_id', 'ID события')
-, pg_c('c', 'wsd.event_notify.account_id'             , 'ID пользователя')
-, pg_c('c', 'wsd.event_notify.role_id'        , 'ID роли пользователя')
-, pg_c('c', 'wsd.event_notify.cause_id'       , 'ID причины связывания')
-, pg_c('c', 'wsd.event_notify.read_at'        , 'время прочтения')
-, pg_c('c', 'wsd.event_notify.read_by'        , 'SID пользователя')
-, pg_c('c', 'wsd.event_notify.deleted_at'     , 'время удаления')
-, pg_c('c', 'wsd.event_notify.deleted_by'     , 'SID пользователя')
-, pg_c('c', 'wsd.event_notify.notify_at'      , 'время отправки дополнительного уведомления (согласно профайлу)')
-, pg_c('c', 'wsd.event_notify.notify_data'    , 'ID доп. уведомления (message ID письма и т.п.)')
-, pg_c('c', 'wsd.event_notify.confirm_at'     , 'время получения уведомления о доставке')
-, pg_c('c', 'wsd.event_notify.confirm_data'   , 'результат отправки доп. уведомления')
+SELECT pg_c('r', 'wsd.event_notify', 'Уведомление')
+, pg_c('c', 'wsd.event_notify.event_id',     'ID события')
+, pg_c('c', 'wsd.event_notify.account_id',   'ID пользователя')
+, pg_c('c', 'wsd.event_notify.role_id',      'ID роли пользователя')
+, pg_c('c', 'wsd.event_notify.cause_id',     'ID причины связывания')
+, pg_c('c', 'wsd.event_notify.read_at',      'время прочтения')
+, pg_c('c', 'wsd.event_notify.read_by',      'SID пользователя')
+, pg_c('c', 'wsd.event_notify.deleted_at',   'время удаления')
+, pg_c('c', 'wsd.event_notify.deleted_by',   'SID пользователя')
+, pg_c('c', 'wsd.event_notify.notify_at',    'время отправки дополнительного уведомления (согласно профайлу)')
+, pg_c('c', 'wsd.event_notify.notify_data',  'ID доп. уведомления (message ID письма и т.п.)')
+, pg_c('c', 'wsd.event_notify.confirm_at' ,  'время получения уведомления о доставке')
+, pg_c('c', 'wsd.event_notify.confirm_data', 'результат отправки доп. уведомления')
 ;
+
 /* ------------------------------------------------------------------------- */
 CREATE TABLE wsd.event_notify_spec (
   event_id    INTEGER
@@ -160,11 +159,11 @@ CREATE TABLE wsd.event_notify_spec (
 , spec_id     INTEGER
 , CONSTRAINT  event_notify_spec_pkey PRIMARY KEY (event_id, account_id, role_id, spec_id)
 );
-SELECT pg_c('r', 'wsd.event_notify_spec'      , 'Спецификация уведомления')
-, pg_c('c', 'wsd.event_notify_spec.event_id'  , 'ID события')
+SELECT pg_c('r', 'wsd.event_notify_spec', 'Спецификация уведомления')
+, pg_c('c', 'wsd.event_notify_spec.event_id',   'ID события')
 , pg_c('c', 'wsd.event_notify_spec.account_id', 'ID пользователя')
-, pg_c('c', 'wsd.event_notify_spec.role_id'   , 'ID пользователя')
-, pg_c('c', 'wsd.event_notify_spec.spec_id'   , 'ID спецификации')
+, pg_c('c', 'wsd.event_notify_spec.role_id',    'ID пользователя')
+, pg_c('c', 'wsd.event_notify_spec.spec_id',    'ID спецификации')
 ;
 
 /* ------------------------------------------------------------------------- */

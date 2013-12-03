@@ -20,7 +20,7 @@ window.PGWS.body_colums_setting_array = function(tt){
     var check = $(t),
     row = check.closest('tr');
     row.toggleClass('disabled', !check.is(':checked'))
-      .find('textarea,select,input:not(.disable-row)')
+      .find('textarea,select,input:not(.disable-row, :hidden)')
       .prop('disabled', function(i, disabled) {
 	check.prop('title', 'Поле конкурса ' + (disabled ? 'включено' : 'выключено'));
 	return !disabled;
@@ -53,3 +53,24 @@ window.PGWS.initSteps = function(){
 $(document).ready(function(){
   window.PGWS.initSteps();
 });
+window.PGWS.settings_table_onready = function(){
+    $('.grid-settings').hide();
+    $table = $('.' + $('.grid-settings').data('grid'));
+    /**hide column**/
+    var colAll = $table.find('th[data-column]');
+    $(colAll).each(function(j,col){
+      $(col).hide();
+      $table.find('tr').each(function(i, row) {
+	$(row).find('td').eq($(col).index()).hide();
+      });
+    });
+    /**hide row**/
+    $table.find('tr.disabled').each(function(i, row) {
+      $(row).hide();
+    });
+};
+window.PGWS.settings_table_onedit = function(){
+    $('.grid-settings').show();
+    window.PGWS.initSteps();
+};
+

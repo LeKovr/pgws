@@ -22,9 +22,14 @@
 */
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_role(a_id d_id, a_role_id d_id DEFAULT NULL, a_team_only boolean DEFAULT FALSE) RETURNS SETOF acc.role_attr STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION team_role(
+  a_id        d_id
+, a_role_id   d_id    DEFAULT NULL
+, a_team_only BOOLEAN DEFAULT FALSE
+) RETURNS SETOF acc.role_attr STABLE LANGUAGE 'sql' AS
 $_$
--- a_id: ID команды
+-- a_id:        ID команды
+-- a_role_id:   ID роли
 -- a_team_only: Не включать общие роли
   SELECT *
     FROM acc.role_attr
@@ -36,10 +41,13 @@ $_$;
 SELECT pg_c('f', 'team_role', 'Список ролей команды');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_role_number(a_id d_id, a_role_id d_id DEFAULT 0) RETURNS SETOF acc.team_role_number STABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION team_role_number(
+  a_id      d_id
+, a_role_id d_id DEFAULT 0
+) RETURNS SETOF acc.team_role_number STABLE LANGUAGE 'plpgsql' AS
 $_$
--- a_id: ID команды
--- a_team_only: Не включать общие роли
+-- a_id:        ID команды
+-- a_role_id:   ID роли
   BEGIN
     IF a_role_id = acc.const_role_id_login() THEN
       RETURN QUERY SELECT 
@@ -61,10 +69,13 @@ $_$;
 SELECT pg_c('f', 'team_role_number', 'Количество пользователей команды и роли');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_role_members(a_id d_id, a_role_id d_id) RETURNS SETOF acc.team_account_attr STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION team_role_members(
+  a_id      d_id
+, a_role_id d_id
+) RETURNS SETOF acc.team_account_attr STABLE LANGUAGE 'sql' AS
 $_$
--- a_id: ID команды
--- a_team_only: Не включать общие роли
+-- a_id:        ID команды
+-- a_role_id:   ID роли
   SELECT *
     FROM acc.team_account_attr
     WHERE team_id = $1
@@ -78,7 +89,7 @@ CREATE OR REPLACE FUNCTION team_role_save(
   a_id      d_id
 , a_name    d_string
 , a_anno    d_text
-, a_role_id d_id DEFAULT NULL
+, a_role_id d_id      DEFAULT NULL
 ) RETURNS d_id LANGUAGE 'plpgsql' AS
 $_$
 -- a_id:      ID команды
@@ -108,7 +119,10 @@ $_$;
 SELECT pg_c('f', 'team_role_save', 'Сохранение роли');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_role_del(a_id d_id, a_role_id d_id) RETURNS boolean LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION team_role_del(
+  a_id      d_id
+, a_role_id d_id
+) RETURNS BOOLEAN LANGUAGE 'plpgsql' AS
 $_$
 -- a_id:      ID команды
 -- a_role_id: ID роли
@@ -123,13 +137,16 @@ SELECT pg_c('f', 'team_role_del', 'Удаление роли');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION team_by_name(a_name d_string DEFAULT '') RETURNS SETOF acc.team_attr STABLE LANGUAGE 'sql' AS
 $_$
+-- a_name:    название команды
   SELECT * FROM acc.team_attr WHERE name ~ $1;
 $_$;
 SELECT pg_c('f', 'team_by_name', 'Список команд по имени');
 
 /* ------------------------------------------------------------------------- */
--- служебная ф-я для team_lookup - кастинг *
-CREATE OR REPLACE FUNCTION team_lookup_fetch(c_cursor REFCURSOR,  a_col TEXT) RETURNS SETOF acc.team_attr STABLE LANGUAGE 'plperl' AS
+CREATE OR REPLACE FUNCTION team_lookup_fetch(
+  c_cursor REFCURSOR
+, a_col    TEXT
+) RETURNS SETOF acc.team_attr STABLE LANGUAGE 'plperl' AS
 $_$ #
 while (defined (my $row = spi_fetchrow($_[0]))) {
   delete $row->{$_[1]};
@@ -137,17 +154,19 @@ while (defined (my $row = spi_fetchrow($_[0]))) {
 }
 return;
 $_$;
+SELECT ws.pg_c('f', 'team_lookup_fetch', 'служебная ф-я для team_lookup - кастинг');
 
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION team_lookup(
-  a_name d_string DEFAULT ''
-, a_page ws.d_cnt DEFAULT 0
-, a_by ws.d_cnt DEFAULT 0
+  a_name    d_string  DEFAULT ''
+, a_page    ws.d_cnt  DEFAULT 0
+, a_by      ws.d_cnt  DEFAULT 0
 , a_need_rc REFCURSOR DEFAULT NULL
 ) RETURNS SETOF acc.team_attr STABLE LANGUAGE 'plpgsql' AS
 $_$
-  -- a_name:  фильтр по названию команды
-  -- a_page:  номер страницы (>= 0)
-  -- a_by:    количество строк на странице
+  -- a_name:    фильтр по названию команды
+  -- a_page:    номер страницы (>= 0)
+  -- a_by:      количество строк на странице
   -- a_need_rc: вернуть результат в хэше { need_rc =, rows =}, где need_rc - общее количество строк в выборке
   DECLARE
     v_rc  CURSOR FOR 
@@ -182,13 +201,19 @@ SELECT ws.pg_c('f', 'team_lookup', 'Поиск команды по назван�
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION team_profile(a_id d_id) RETURNS SETOF acc.team_attr STABLE LANGUAGE 'sql' AS
 $_$
+-- a_id:      ID команды
   SELECT * FROM acc.team_attr WHERE id = $1;
 $_$;
 SELECT pg_c('f', 'team_profile', 'Профиль команды');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_acl(a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS SETOF d_acl STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION team_acl(
+  a_id   d_id
+, a__sid d_sid DEFAULT NULL
+) RETURNS SETOF d_acl STABLE LANGUAGE 'sql' AS
 $_$
+-- a_id:        ID команды
+-- a__sid:      ID сессии
   SELECT * FROM acc.object_acl(acc.const_team_class_id(), $1, $2);
 $_$;
 SELECT pg_c('f', 'team_acl', 'ACL команды');
@@ -196,13 +221,19 @@ SELECT pg_c('f', 'team_acl', 'ACL команды');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION team_status(a_id d_id) RETURNS d_id32 STABLE LANGUAGE 'sql' AS
 $_$
+-- a_id:      ID команды
   SELECT status_id::ws.d_id32 FROM wsd.team WHERE id = $1;
 $_$;
 SELECT pg_c('f', 'team_status', 'Статус команды');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_account_attr(a_id d_id, a_account_id d_id DEFAULT 0) RETURNS SETOF team_account_attr LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION team_account_attr(
+  a_id         d_id
+, a_account_id d_id DEFAULT 0
+) RETURNS SETOF team_account_attr LANGUAGE 'sql' AS
 $_$
+-- a_id:              ID команды
+-- a_account_id:      ID пользователя
   SELECT 
     ac.* 
     FROM acc.team_account_attr ac
@@ -212,12 +243,16 @@ SELECT pg_c('f', 'team_account_attr', 'Атрибуты участников к�
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION team_account_add(
-  a_id d_id
+  a_id         d_id
 , a_account_id d_id
-, a_role_id d_id
-, a_is_default boolean DEFAULT TRUE
-) RETURNS boolean LANGUAGE 'plpgsql' AS
+, a_role_id    d_id
+, a_is_default BOOLEAN DEFAULT TRUE
+) RETURNS BOOLEAN LANGUAGE 'plpgsql' AS
 $_$
+-- a_id:              ID команды
+-- a_account_id:      ID пользователя
+-- a_role_id:         ID роли
+-- a_is_default:      флаг апдейта
   BEGIN
     IF a_is_default THEN
       UPDATE wsd.account_team
@@ -235,8 +270,13 @@ $_$;
 SELECT pg_c('f', 'team_account_add', 'Добавление пользователя в команду');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_account_del(a_id d_id, a_account_id d_id) RETURNS boolean LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION team_account_del(
+  a_id         d_id
+, a_account_id d_id
+) RETURNS BOOLEAN LANGUAGE 'plpgsql' AS
 $_$
+-- a_id:              ID команды
+-- a_account_id:      ID пользователя
   BEGIN
     DELETE FROM wsd.account_team 
       WHERE account_id = a_account_id
@@ -247,8 +287,13 @@ $_$;
 SELECT pg_c('f', 'team_account_del', 'Удаление пользователя из команды');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_team_link_id(a_object_team_id d_id, a_account_team_id d_id) RETURNS d_link IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION team_team_link_id(
+  a_object_team_id  d_id
+, a_account_team_id d_id
+) RETURNS d_link IMMUTABLE LANGUAGE 'sql' AS
 $_$
+-- a_object_team_id:       ID команды пользователя
+-- a_account_team_id:      ID заданной команды
   SELECT 
     CASE 
       WHEN $1 = $2 THEN acc.const_team_link_id_owner() 
@@ -259,16 +304,25 @@ $_$;
 SELECT pg_c('f', 'team_team_link_id', 'Связь команды пользователя с заданной командой');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_link_id(a_id d_id, a__sid d_sid DEFAULT NULL) RETURNS d_link IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION team_link_id(
+  a_id   d_id
+, a__sid d_sid DEFAULT NULL
+) RETURNS d_link IMMUTABLE LANGUAGE 'sql' AS
 $_$
+-- a_id:        ID команды
+-- a__sid:      ID сессии
   SELECT acc.const_link_id_other(); -- link_id пользователя к команде всегда такой, связь определяется team_team_link_id
 $_$;
 SELECT pg_c('f', 'team_link_id', 'Связь пользователя с командой');
 
-
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION team_permission(a_id d_id, a_role_id d_id DEFAULT NULL) RETURNS SETOF wsd.permission STABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION team_permission(
+  a_id      d_id
+, a_role_id d_id DEFAULT NULL
+) RETURNS SETOF wsd.permission STABLE LANGUAGE 'sql' AS
 $_$
+-- a_id:              ID команды
+-- a_role_id:         ID роли
 -- TODO: сравнить с запросом
 -- select rp.*,p.* from wsd.role_permission rp join wsd.permission p on p.id = rp.perm_id order by perm_id
 -- вынести результат сравнения в представление
@@ -286,5 +340,17 @@ $_$
   ;
 $_$;
 SELECT pg_c('f', 'team_permission', 'Разрешения команды');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION get_team_id_by_name(a_name TEXT) RETURNS INTEGER STABLE LANGUAGE 'sql' AS
+$_$
+-- a_name: Название компании
+  SELECT
+    id
+    FROM wsd.team
+    WHERE name = $1
+  ;
+$_$;
+SELECT pg_c('f', 'get_team_id_by_name', 'Получение ID компании по ее названию');
 
 /* ------------------------------------------------------------------------- */

@@ -21,25 +21,25 @@
 */
 
 /* ------------------------------------------------------------------------- */
-
 CREATE TABLE kind_group (
   id              d_id32    PRIMARY KEY
 , sort            ws.d_sort NOT NULL
 , name            d_string  NOT NULL
 , anno            d_text    NOT NULL
 );
-SELECT pg_c('r', 'kind_group',  'Группа вида события')
+SELECT pg_c('r', 'kind_group', 'Группа вида события')
 , pg_c('c', 'kind_group.id',    'ID группы')
 , pg_c('c', 'kind_group.sort',  'Сортировка')
 , pg_c('c', 'kind_group.name',  'Название')
 , pg_c('c', 'kind_group.anno',  'Аннотация')
 ;
+
 /* ------------------------------------------------------------------------- */
 CREATE TABLE status (
   id              d_id32    PRIMARY KEY
 , name            d_string  NOT NULL
 );
-SELECT pg_c('r', 'status',  'Статус события')
+SELECT pg_c('r', 'status', 'Статус события')
 , pg_c('c', 'status.id',    'ID группы')
 , pg_c('c', 'status.name',  'Название')
 ;
@@ -51,7 +51,7 @@ CREATE TABLE form (
 , is_email        BOOL      NOT NULL DEFAULT TRUE
 , name            d_string  NOT NULL
 );
-SELECT pg_c('r', 'form',    'Формат уведомления')
+SELECT pg_c('r', 'form', 'Формат уведомления')
 , pg_c('c', 'form.code',    'Код формата')
 , pg_c('c', 'form.sort',    'Сортировка')
 , pg_c('c', 'form.is_email','Отправляется по электронной почте')
@@ -65,7 +65,7 @@ CREATE TABLE signature (
 , email           d_string  NOT NULL
 , tmpl            ws.d_path NULL
 );
-SELECT pg_c('r', 'signature',  'Подпись уведомлений')
+SELECT pg_c('r', 'signature', 'Подпись уведомлений')
 , pg_c('c', 'signature.id',    'ID подписи')
 , pg_c('c', 'signature.name',  'Имя отправителя')
 , pg_c('c', 'signature.email', 'Email отправителя')
@@ -90,7 +90,7 @@ CREATE TABLE kind (
 , anno            d_text
 , pkg             TEXT      NOT NULL DEFAULT ws.pg_cs()
 );
-SELECT pg_c('r', 'kind',          'Вид события')
+SELECT pg_c('r', 'kind', 'Вид события')
 , pg_c('c', 'kind.id',            'ID вида')
 , pg_c('c', 'kind.group_id',      'ID группы вида')
 , pg_c('c', 'kind.class_id',      'ID класса')

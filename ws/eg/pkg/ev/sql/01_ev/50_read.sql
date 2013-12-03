@@ -17,7 +17,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-    Методы диспетчера Ev
+    Методы диспетчера EV
 */
 
 /* ------------------------------------------------------------------------- */
@@ -45,22 +45,13 @@ $_$;
 SELECT pg_c('f', 'notification', 'Список уведомлений пользователя');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION notification_count_new(a_id d_id)
-  RETURNS BIGINT LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION notification_count_new(a_id d_id) RETURNS BIGINT LANGUAGE 'sql' AS
 $_$
   -- a_id: ID аккаунта пользователя
   SELECT COUNT(*) FROM wsd.event_notify WHERE account_id = $1 AND is_new = TRUE;
 $_$;
 SELECT pg_c('f', 'notification_count_new', 'Количество новых уведомлений пользователя');
 
-/*
-INSERT INTO method ( code, class_id, action_id, cache_id, rvf_id, args_exam, name )  VALUES 
-, ('account.signup',        :AID, 2,  1,  7, 'id=1', pg_cs('signup_by_account_id'))
-
-, ('team.role_signup',      :TID, 2,  1,  7, 'id=1', pg_cs('signup_by_team_role_id'))
-, ('system.role_signup',    1,    3,  1,  7, 'id=1', pg_cs('signup_by_role_id'))
-
-*/
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION signup_by_account_id(a_id d_id) RETURNS SETOF signup_info STABLE LANGUAGE 'sql' AS
 $_$
@@ -75,7 +66,7 @@ CREATE OR REPLACE FUNCTION signup_by_role_id(a_id d_id) RETURNS SETOF role_signu
 $_$
   -- a_id: ID роли
   SELECT * FROM ev.role_signup_info WHERE role_id = $1;
-$_$; 
+$_$;
 SELECT pg_c('f', 'signup_by_role_id', 'Список подписок роли');
 
 /* ------------------------------------------------------------------------- */
@@ -84,7 +75,7 @@ $_$
   -- a_id: ID команды
   -- a_role_id: ID роли
   SELECT * FROM ev.team_role_signup WHERE team_id = $1 AND $2 IN (id, 0);
-$_$; 
+$_$;
 SELECT pg_c('f', 'signup_by_team_role_id', 'Список подписок по команде и роли');
 
 /* ------------------------------------------------------------------------- */
@@ -93,7 +84,7 @@ $_$
   -- a_id: ID команды
   -- a_kind_id: ID вида события
   SELECT * FROM ev.team_role_signup WHERE team_id = $1 AND $2 IN (kind_id, 0) ORDER BY team_id, group_sort, kind_id;
-$_$; 
+$_$;
 SELECT pg_c('f', 'signup_by_team_kind_id', 'Список подписок по команде и виду события');
 
 /* ------------------------------------------------------------------------- */
@@ -103,5 +94,5 @@ $_$
   -- a_role_id: ID роли
   SELECT * FROM ev.signup_role_info WHERE kind_id = $1 AND $2 IN (id, 0) ORDER BY id;
   -- TODO: добавить в wsd.role sort и везде в списках по нему сортировать роли
-$_$; 
+$_$;
 SELECT pg_c('f', 'role_signup_by_kind_id', 'Список подписок по команде и роли');

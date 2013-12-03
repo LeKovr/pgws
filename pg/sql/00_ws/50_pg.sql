@@ -23,6 +23,7 @@
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION set_search_path(a_path TEXT) RETURNS VOID LANGUAGE 'plpgsql' AS
 $_$
+  -- a_path: путь поиска
   DECLARE
     v_sql TEXT;
   BEGIN
@@ -30,12 +31,14 @@ $_$
     EXECUTE v_sql;
   END;
 $_$;
+SELECT pg_c('f', 'set_search_path', 'установить переменную search_path');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION set_lang(a_lang TEXT DEFAULT NULL) RETURNS TEXT LANGUAGE 'plpgsql' AS
 $_$
+  -- a_lang:  язык
   DECLARE
-    v_lang TEXT;
+    v_lang     TEXT;
     v_path_old TEXT;
     v_path_new TEXT;
   BEGIN
@@ -50,10 +53,12 @@ $_$
     RETURN v_path_old;
   END;
 $_$;
+SELECT pg_c('f', 'set_lang', 'установить локаль');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION normalize_type_name(a_type TEXT) RETURNS TEXT LANGUAGE 'sql' AS
 $_$
+  -- a_type:  тип
   SELECT CASE
     WHEN $1 ~ E'^timestamp[\\( ]' THEN
       'timestamp' -- clean "timestamp(0) without time zone"
@@ -69,17 +74,19 @@ $_$
       $1 
     END
 $_$;
+SELECT pg_c('f', 'normalize_type_name', 'нормализует название типа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_register_proarg_old(a_code ws.d_code) RETURNS ws.d_code VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_code:  название функции
   DECLARE
-    v_names text[];
+    v_names TEXT[];
     v_types oidvector;
-    v_i INTEGER;
-    v_name TEXT;
-    v_type TEXT;
-    v_code d_code;
+    v_i     INTEGER;
+    v_name  TEXT;
+    v_type  TEXT;
+    v_code  d_code;
   BEGIN
     SELECT INTO v_names, v_types, v_i
       p.proargnames, p.proargtypes, p.pronargs
@@ -119,27 +126,35 @@ $_$
     RETURN v_code;
   END;
 $_$;
+SELECT pg_c('f', 'pg_register_proarg_old', 'регистрация в ws.dt и ws.dt_part');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION ws.pg_proarg_arg_anno(a_src TEXT, a_argname TEXT) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
+CREATE OR REPLACE FUNCTION ws.pg_proarg_arg_anno(
+  a_src     TEXT
+, a_argname TEXT
+) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a_src:     путь к функции
+  -- a_argname: название аргумента
   SELECT (regexp_matches($1, E'--\\s+' || $2 || E':\\s+(.*)$', 'gm'))[1];
 $_$;
+SELECT pg_c('f', 'pg_proarg_arg_anno', 'возвращает описание аргумента');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_register_proarg(a_code ws.d_code) RETURNS ws.d_code VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_code:  название функции
   DECLARE
-    v_i INTEGER;
-    v_code ws.d_code;
-
-    v_args TEXT;
-    v_src  TEXT;
-    v_arg_anno TEXT;
-    v_defs TEXT[];
-    v_def TEXT;
-    v_name TEXT;
-    v_type TEXT;
-    v_default TEXT;
+    v_i          INTEGER;
+    v_code       ws.d_code;
+    v_args       TEXT;
+    v_src        TEXT;
+    v_arg_anno   TEXT;
+    v_defs       TEXT[];
+    v_def        TEXT;
+    v_name       TEXT;
+    v_type       TEXT;
+    v_default    TEXT;
     v_allow_null BOOL;
   BEGIN
     SELECT INTO v_args, v_src
@@ -201,10 +216,18 @@ $_$
     RETURN v_code;
   END;
 $_$;
+SELECT pg_c('f', 'pg_register_proarg', 'регистрация в ws.dt и ws.dt_part по названию');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION dt_code_extract(a_anno TEXT, OUT o_type TEXT, OUT o_anno TEXT) IMMUTABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION dt_code_extract(
+  a_anno     TEXT
+, OUT o_type TEXT
+, OUT o_anno TEXT
+) IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_anno:  описание
+  -- o_type:  возвращаемый тип
+  -- o_anno:  возвращаемое описание 
   DECLARE
     v_pos INTEGER;
   BEGIN
@@ -221,20 +244,22 @@ $_$
     END IF;
   END;
 $_$;
+SELECT pg_c('f', 'dt_code_extract', 'возвращает тип и описание');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_register_class(a_oid oid) RETURNS ws.d_code VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_oid:  OID
   DECLARE
     r_pg_type pg_catalog.pg_type;
-    v_code TEXT;
-    v_type TEXT;
-    v_type1 TEXT;
-    v_tpnm TEXT;
-    v_islist boolean;
-    v_schm TEXT;
-    v_anno TEXT;
-    rec RECORD;
+    v_code    TEXT;
+    v_type    TEXT;
+    v_type1   TEXT;
+    v_tpnm    TEXT;
+    v_islist  BOOLEAN;
+    v_schm    TEXT;
+    v_anno    TEXT;
+    rec       RECORD;
   BEGIN
     SELECT INTO r_pg_type * FROM pg_catalog.pg_type WHERE oid = a_oid;
     v_code := ws.pg_type_name(a_oid);
@@ -327,11 +352,17 @@ $_$
     RETURN v_code;
   END;
 $_$;
+SELECT pg_c('f', 'pg_register_class', 'регистрация в ws.dt и ws.dt_part по OID-у');
 
 /* ------------------------------------------------------------------------- */
 
-CREATE OR REPLACE FUNCTION pg_register_class_facet(a_oid oid, a_exe boolean DEFAULT TRUE) RETURNS boolean VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION pg_register_class_facet(
+  a_oid oid
+, a_exe BOOLEAN DEFAULT TRUE
+) RETURNS BOOLEAN VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_oid:  OID
+  -- a_exe:  флаг
   DECLARE
     v_cstr  TEXT;
     v_type  TEXT;
@@ -357,9 +388,9 @@ $_$
         RETURN TRUE;
       ELSE
         DECLARE
-          v_i INT;
-          v_oper text[] = ARRAY['>=','=<','>','<'];
-          v_fct  text[] = ARRAY['minInclusive','maxInclusive','minExclusive','maxExclusive'];
+          v_i    INT;
+          v_oper TEXT[] = ARRAY['>=','=<','>','<'];
+          v_fct  TEXT[] = ARRAY['minInclusive','maxInclusive','minExclusive','maxExclusive'];
         BEGIN
           FOR v_i in array_lower(v_oper,1)..array_upper(v_oper,1) LOOP
             IF position('VALUE ' || v_oper[v_i] in v_cstr) > 0 THEN
@@ -379,10 +410,12 @@ $_$
     RETURN FALSE;
   END;
 $_$;
+SELECT pg_c('f', 'pg_register_class_facet', 'регистрация в ws.dt_facet по OID-у');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_dt_registered(a_type d_code) RETURNS d_code LANGUAGE 'plpgsql' AS
 $_$
+  -- a_type:  тип
   DECLARE
     v_type TEXT;
   BEGIN
@@ -407,16 +440,20 @@ $_$
     RETURN a_type;
   END;
 $_$;
+SELECT pg_c('f', 'pg_dt_registered', 'проверка и регистрация типа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION pg_register_type(a_type ws.d_code) RETURNS ws.d_code VOLATILE LANGUAGE 'sql' AS
 $_$
+  -- a_type:  тип
   SELECT ws.pg_register_class(ws.pg_type_oid($1));
 $_$;
+SELECT pg_c('f', 'pg_register_type', 'регистрация типа');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION ws.pg_const(a_code d_code DEFAULT NULL) RETURNS SETOF t_hashtable STABLE LANGUAGE 'sql' AS
 $_$
+  -- a_code: название константы
   SELECT schema || '_' || code, value FROM ws.pg_const WHERE CASE WHEN $1 IS NULL THEN TRUE ELSE (schema || '_' || code) = $1 END ORDER BY 1;
 $_$;
 SELECT pg_c('f', 'pg_const', 'Константы PGWS для использования вне бэкенда');
@@ -434,6 +471,7 @@ $_$
     RETURN NEW;
   END;
 $_$;
+SELECT pg_c('f', 'tr_notify', 'триггер на INSERT/UPDATE таблицы wsd.job');
 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION tr_exception (
@@ -448,15 +486,23 @@ $_$
     RETURN NEW;
   END;
 $_$;
+SELECT pg_c('f', 'tr_exception', 'триггер на UPDATE таблицы wsd.job и wsd.job_todo');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION replace_table_desc(a_name TEXT, a_pattern TEXT, a_replacement TEXT) RETURNS SETOF t_hashtable VOLATILE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION replace_table_desc(
+  a_name        TEXT
+, a_pattern     TEXT
+, a_replacement TEXT
+) RETURNS SETOF t_hashtable VOLATILE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_name:        название таблицы
+  -- a_pattern:     паттерн
+  -- a_replacement: новый комментарий
 DECLARE
-  v_schema TEXT;
-  v_table TEXT;
-  v_rec RECORD;
-  v_desc TEXT;
+  v_schema  TEXT;
+  v_table   TEXT;
+  v_rec     RECORD;
+  v_desc    TEXT;
   v_changed BOOL;
 BEGIN
   v_schema := split_part(a_name, '.', 1);
@@ -483,4 +529,3 @@ BEGIN
 END
 $_$;
 SELECT pg_c('f', 'replace_table_desc', 'Изменение комментариев всех столбцов таблицы по регулярному выражению');
-

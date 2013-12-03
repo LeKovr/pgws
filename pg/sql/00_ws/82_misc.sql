@@ -36,9 +36,10 @@ INSERT INTO method_rv_format (id, name) VALUES
   , (10, 'дерево хэшей из массива [tag1.tag2][value]')
 ;
 
-
+/* ------------------------------------------------------------------------- */
 \set TZ ws.const_ref_code_timezone()
 \set ACL ws.const_ref_acls_internal()
+
 /* ------------------------------------------------------------------------- */
 INSERT INTO i18n_def.ref (code, name) VALUES
   (:TZ, 'Часовой пояс')

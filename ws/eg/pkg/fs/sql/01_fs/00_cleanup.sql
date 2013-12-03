@@ -17,16 +17,9 @@
     You should have received a copy of the GNU Affero General Public License
     along with PGWS.  If not, see <http://www.gnu.org/licenses/>.
 
-
-    Удаление данных из схемы ws
+    Удаление данных
 */
-
--- ALTER TABLE wsd.file_folder ALTER COLUMN pkg DROP DEFAULT;
 
 /* ------------------------------------------------------------------------- */
 
--- ALTER TABLE wsd.file               DROP CONSTRAINT file_fk_kind;
--- ALTER TABLE wsd.file_link          DROP CONSTRAINT file_link_fk_folder;
-
--- DELETE FROM ws.method                WHERE pkg = :'PKG';
 

@@ -41,13 +41,12 @@ $_$
     v_id := NEXTVAL('wsd.event_reason_seq');
     SELECT INTO v_name name FROM wsd.account WHERE id = NEW.account_id;
 --    PERFORM ev.create(1, NEW.id, v_id, ev.const_status_id_draft(), NEW.account_id);
-    PERFORM ev.create(1, NEW.id, v_id, a_arg_id := NEW.account_id, a_arg_name := v_name);
-    PERFORM ev.create(3, NEW.id, v_id, a_arg_id := NEW.account_id, a_arg_id2 := NEW.id, a_arg_name := v_name, a_arg_name2 := NEW.id::TEXT);
+    PERFORM ev.create(1, NEW.id, v_id, ev.const_status_id_rcpt(), a_arg_id := NEW.account_id, a_arg_name := v_name);
+    PERFORM ev.create(3, NEW.id, v_id, ev.const_status_id_rcpt(), a_arg_id := NEW.account_id, a_arg_id2 := NEW.id, a_arg_name := v_name, a_arg_name2 := NEW.id::TEXT);
     IF NEW.team_id IS NOT NULL THEN
-      PERFORM ev.create(2, NEW.id, v_id, a_arg_id := NEW.account_id, a_arg_id2 := NEW.team_id,
+      PERFORM ev.create(2, NEW.id, v_id, ev.const_status_id_rcpt(), a_arg_id := NEW.account_id, a_arg_id2 := NEW.team_id,
       a_arg_name := v_name, a_arg_name2 := (SELECT name FROM wsd.team WHERE id = NEW.team_id));
     END IF;
-    PERFORM job.create( job.handler_id('ev.process_login'), NULL, -2, NULL, v_id );
     RETURN NEW;
   END;
 $_$;

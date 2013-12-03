@@ -34,7 +34,7 @@ CREATE TRIGGER insupd BEFORE INSERT OR UPDATE ON wsd.prop_value
 /* ------------------------------------------------------------------------- */
 CREATE TRIGGER value_insupd BEFORE INSERT OR UPDATE ON wsd.prop_value
   FOR EACH ROW
-  WHEN (NEW.valid_from <> '2000-01-01'::date)
+  WHEN (NEW.valid_from <> '2000-01-01'::DATE)
   EXECUTE PROCEDURE cfg.prop_value_insupd_has_log()
 ;
 
@@ -56,5 +56,3 @@ CREATE TRIGGER validation_valid_from BEFORE INSERT OR UPDATE ON wsd.prop_value
 CREATE TRIGGER insupd_check_prop BEFORE INSERT OR UPDATE ON method
   FOR EACH ROW EXECUTE PROCEDURE cfg.prop_value_check_method_fkeys()
 ;
-
-/* ------------------------------------------------------------------------- */

@@ -84,6 +84,13 @@ $_$;
 SELECT pg_c('f', 'const_status_id_error', 'ID статуса задач, выполнение которых вызвало ошибку');
 
 /* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION const_status_id_data_error() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
+$_$
+  SELECT 14
+$_$;
+SELECT pg_c('f', 'const_status_id_data_error', 'ID статуса задач, при выполнении которых найдена ошибка в данных');
+
+/* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION const_status_id_success() RETURNS INTEGER IMMUTABLE LANGUAGE 'sql' AS
 $_$
   SELECT 10

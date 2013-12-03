@@ -21,9 +21,6 @@
 */
 
 /* ------------------------------------------------------------------------- */
-INSERT INTO method (code, class_id, action_id, cache_id, rvf_id) VALUES
-    ('cfg.cache', 2, 1, 2, 5)
+INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, args_exam) VALUES
+    ('cfg.cache', 2, 1, 2, 5, 'id=4')
 ;
-
-/* ------------------------------------------------------------------------- */
-

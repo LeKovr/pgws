@@ -69,3 +69,10 @@ CREATE OR REPLACE VIEW arg_attr AS
   ORDER BY id
 ;
 
+CREATE OR REPLACE VIEW data_error_info AS
+  SELECT
+    ae.*
+  , ws.error_message_parse(ae.error_code, ARRAY[ae.error_arg, ae.error_arg1]::TEXT[]) AS error_message
+  FROM job.data_error ae
+  ORDER BY ae.created_at
+;

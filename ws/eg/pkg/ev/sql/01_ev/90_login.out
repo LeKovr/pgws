@@ -1,12 +1,12 @@
 DO
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-INSERT 0 1
-              test              
---------------------------------
-  ***** user_login_spec_0 *****
+                  test                   
+-----------------------------------------
+  ***** ev.notification_user_login *****
 
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
  role_id | kind_id | spec_id | is_on | prio 
 ---------+---------+---------+-------+------
       -1 |       1 |       0 | t     |    1
@@ -17,7 +17,7 @@ INSERT 0 1
 
  job_count 
 -----------
-         1
+         3
 
  notification_count_new 
 ------------------------
@@ -26,10 +26,6 @@ INSERT 0 1
  count 
 -------
      1
-
-              test              
---------------------------------
-  ***** user_login_spec_1 *****
 
  role_id | kind_id | spec_id | is_on | prio 
 ---------+---------+---------+-------+------
@@ -43,7 +39,7 @@ INSERT 0 1
 
  job_count 
 -----------
-         0
+         2
 
  notification_count_new 
 ------------------------
@@ -52,10 +48,6 @@ INSERT 0 1
  count 
 -------
      1
-
-              test               
----------------------------------
-  ***** ev.role_signup_del *****
 
  role_id | kind_id | spec_id | is_on | prio 
 ---------+---------+---------+-------+------

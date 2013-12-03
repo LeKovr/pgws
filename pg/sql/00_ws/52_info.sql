@@ -30,15 +30,14 @@ SELECT pg_c('f', 'info_status', 'Статус инфо');
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION info_acl(a__sid d_sid) RETURNS SETOF d_acl IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a__sid:   ID сессии
   SELECT 1::ws.d_acl;
 $_$;
 SELECT pg_c('f', 'info_acl', 'ACL sid для инфо');
 
 /* ------------------------------------------------------------------------- */
--- вернуть описание сервера, отвечающего за экземпляр текущего класса
 CREATE OR REPLACE FUNCTION info_server() RETURNS SETOF server STABLE LANGUAGE 'sql' AS
 $_$
   SELECT * FROM ws.server WHERE id = 1
 $_$;
-
-/* ------------------------------------------------------------------------- */
+SELECT pg_c('f', 'info_server', 'вернуть описание сервера, отвечающего за экземпляр текущего класса');

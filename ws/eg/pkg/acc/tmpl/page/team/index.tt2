@@ -30,14 +30,14 @@
 # Page layout
 # ========================================================= #
 %]<div class='form-horizontal'>[%
-  "<form action='$page.req'>";
+  
+  "<form onsubmit='$page.req'>";
   input(type='hidden', name='by',value="$by");
   controlGroup_begin(label='Поиск компании');
   input(id='autoc', name='name' ,value=name);
-  btn(name='Показать',type='submit');
-
+  btn(name='Показать', onclick='submit');
   controlGroup_end;
-  "</form>";
+  "</form>";   
 
   IF teams.rows.size;
     uldoplist= ul(class='dropdown-menu', links= options);
@@ -58,8 +58,8 @@
     p(text=l("По заданным параметрам поиска команда не найдена"));
     alert_end;
   END;
+
 %]</div>[%
-  
 meta.js.${meta.js.size} = BLOCK %]
 <script type="text/javascript">
 //<![CDATA[

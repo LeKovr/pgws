@@ -37,7 +37,6 @@ CREATE TABLE mime_type (
   ext       d_string  PRIMARY KEY -- TODO: был бы d_code, но если расширение на русском...
 , ctype     d_string  NOT NULL
 , kind_code d_code    NOT NULL REFERENCES fs.kind
--- ico_uri -- ссылка на иконку формата
 );
 SELECT pg_c('r', 'mime_type', 'Тип файла')
 , pg_c('c', 'mime_type.ext', 'Расширение')
@@ -48,7 +47,7 @@ SELECT pg_c('r', 'mime_type', 'Тип файла')
 /* ------------------------------------------------------------------------- */
 CREATE TABLE folder (
   class_id          d_class
-, code              d_code    
+, code              d_code
 , sort              d_sort    NOT NULL DEFAULT 1
 , has_version       BOOL      NOT NULL DEFAULT FALSE
 , page_code         d_code    NULL
@@ -76,7 +75,6 @@ CREATE TABLE folder_kind (
 , job_handler_id  d_id32 -- TODO: REFERENCES job.handler
 , CONSTRAINT folder_kind_pkey PRIMARY KEY (class_id, code, kind_code)
 , CONSTRAINT folder_kind_fkey_folder FOREIGN KEY (class_id, code) REFERENCES folder
-
 );
 SELECT pg_c('r', 'folder_kind', 'Допустимый в папке вид файла')
 , pg_c('c', 'folder_kind.class_id',       'ID класса папки')
@@ -84,4 +82,3 @@ SELECT pg_c('r', 'folder_kind', 'Допустимый в папке вид фа�
 , pg_c('c', 'folder_kind.kind_code',      'Код вида')
 , pg_c('c', 'folder_kind.job_handler_id', 'ID обработчика задачи, создаваемой при обновлении')
 ;
-/* ------------------------------------------------------------------------- */

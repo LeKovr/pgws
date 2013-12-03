@@ -22,8 +22,8 @@
 
 /* ------------------------------------------------------------------------- */
 
-\set AID ws.class_id('account')
-\set TID ws.class_id('team')
+\set AID acc.const_class_id()       -- account class id
+\set TID acc.const_team_class_id()  -- team class id
 
 INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, pkg, name) VALUES
   ('info.prop',            'group.info',          1,    3, 10, 'info/prop$',                 'app_common/prop/index',        :'PKG', 'Параметры системы')

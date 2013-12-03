@@ -137,5 +137,3 @@ SELECT pg_c('r', 'class_status_action_acl_addon', 'Дополнения (+/-) к
 , pg_c('c', 'class_status_action_acl_addon.acl_id',    'ID уровня доступа')
 , pg_c('c', 'class_status_action_acl_addon.is_addon',  'Строка является добавлением разрешения')
 ;
-
-/* ------------------------------------------------------------------------- */

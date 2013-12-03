@@ -35,8 +35,6 @@ INSERT INTO cfg.prop_owner (pogc, poid, sort, name) VALUES
 UPDATE cfg.prop SET pogc_list = array_append(pogc_list, job.const_job_group_prop()) WHERE code IN (
   'ws.daemon.startup.pm.n_processes'
 , 'ws.daemon.startup.pm.die_timeout'
-, 'ws.daemon.mgr.listen_wait'
-, 'ws.daemon.mgr.listen.job'
 );
 
 /* ------------------------------------------------------------------------- */
@@ -45,6 +43,9 @@ INSERT INTO cfg.prop (code,                 pogc_list,               def_value, 
 , ('ws.daemon.mgr.cron_predict',        ARRAY[job.const_job_group_prop()],               '50',     'За сколько секунд до запуска cron резервировать процесс')
 , ('ws.daemon.mgr.mem_size',            ARRAY[job.const_job_group_prop()],               '131072', 'Объем разделяемой памяти для очереди выполненных задач, байт')
 , ('ws.daemon.mgr.reload_key',          ARRAY[job.const_job_group_prop()],               '',       'Пароль рестарта демона')
+
+, ('ws.daemon.mgr.listen_wait',         ARRAY[job.const_job_group_prop()],               '60',     'Время ожидания уведомления внутри итерации, сек')
+, ('ws.daemon.mgr.listen.job',          ARRAY[job.const_job_group_prop()],               '',       'Канал уведомлений (NOTIFY) о добавлении задания')
 
 , ('ws.daemon.mgr.listen.stat',         ARRAY[job.const_job_group_prop()],               '',       'Канал команд (NOTIFY) об обновлении статистики процессов')
 , ('ws.daemon.mgr.listen.reload',       ARRAY[job.const_job_group_prop()],               '',       'Канал команд (NOTIFY) о рестарте процессов')

@@ -20,7 +20,6 @@
     Представления информации о свойствах
 */
 
-
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW prop_owner_attr AS SELECT
   po.*
@@ -53,7 +52,6 @@ SELECT pg_c('v', 'prop_attr_owned_nomask', 'Атрибуты свойств бе
 ;
 
 /* ------------------------------------------------------------------------- */
-
 CREATE OR REPLACE VIEW prop_attr AS SELECT -- явно заданные значения с описаниями по маске
   pv.code --    p.*
 , p.pkg
@@ -90,8 +88,3 @@ CREATE OR REPLACE VIEW prop_history AS SELECT
   ORDER BY valid_from DESC
 ;
 SELECT pg_c('v', 'prop_history', 'Журнал значений свойств');
-
-/* ------------------------------------------------------------------------- */
-
-
-

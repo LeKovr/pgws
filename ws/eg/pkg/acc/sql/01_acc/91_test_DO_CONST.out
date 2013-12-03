@@ -1,0 +1,39 @@
+           test           
+--------------------------
+  ***** ws.pg_const *****
+
+ schema |                 code                  |    type    | value |                           anno                            
+--------+---------------------------------------+------------+-------+-----------------------------------------------------------
+ acc    | const_account_contact_email_id        | integer    | 2     | 
+ acc    | const_account_contact_mobile_phone_id | integer    | 1     | 
+ acc    | const_account_group_prop              | text       | acc   | Константа: Название группы владельца свойств пользователя
+ acc    | const_class_id                        | ws.d_class | 15    | Константа: ID класса account
+ acc    | const_error_badsid                    | text       | Y1508 | Некорректный sid
+ acc    | const_error_class                     | text       | Y1504 | Константа: Код ошибки определения уровня доступа класса
+ acc    | const_error_email_validation          | text       | Y1505 | Константа: Код ошибки валидации email
+ acc    | const_error_login                     | text       | Y1502 | Константа: Код ошибки авторизации с неизвестным логином
+ acc    | const_error_mobile_phone_validation   | text       | Y1506 | Константа: Код ошибки валидации мобильного телефона
+ acc    | const_error_password                  | text       | Y1501 | Константа: Код ошибки авторизации с неправильным паролем
+ acc    | const_error_passwords_match           | text       | Y1507 | Константа: Код ошибки ввода повторного пароля
+ acc    | const_error_status                    | text       | Y1503 | Константа: Код ошибки авторизации с недопустимым статусом
+ acc    | const_link_id_other                   | acc.d_link | 2     | Константа: ID связи чужого объекта
+ acc    | const_link_id_owner                   | acc.d_link | 1     | Константа: ID связи своего объекта
+ acc    | const_role_class_id                   | ws.d_class | 17    | 
+ acc    | const_role_id_guest                   | integer    | 1     | Константа: ID роли неавторизованного пользователя
+ acc    | const_role_id_login                   | integer    | 3     | Константа: ID роли авторизованного пользователя
+ acc    | const_role_id_noteam                  | integer    | 2     | Константа: ID роли пользователя без команды
+ acc    | const_status_id_active                | integer    | 1     | Константа: ID статуса активного аккаунта
+ acc    | const_status_id_locked                | integer    | 2     | Константа: ID статуса заблокированного аккаунта
+ acc    | const_system_class_id                 | ws.d_class | 1     | Константа: ID класса system
+ acc    | const_team_admin_id                   | integer    | 2     | ID команды администраторов системы
+ acc    | const_team_class_id                   | ws.d_class | 16    | Константа: ID класса team
+ acc    | const_team_group_prop                 | text       | team  | Константа: Название группы владельца свойств компании
+ acc    | const_team_id_admin                   | integer    | 2     | 
+ acc    | const_team_id_system                  | integer    | 1     | Константа: ID админской команды
+ acc    | const_team_link_id_other              | acc.d_link | 2     | Константа: Уровень связи чужой команды
+ acc    | const_team_link_id_owner              | acc.d_link | 1     | Константа: Уровень связи своей команды
+ acc    | const_team_link_id_system             | acc.d_link | 3     | Константа: Уровень связи системной команды
+ acc    | const_team_status_id_active           | integer    | 1     | Константа: ID статуса активной команды
+ acc    | const_team_status_id_locked           | integer    | 2     | Константа: ID статуса заблокированной команды
+ acc    | const_team_system_id                  | integer    | 1     | ID системных команд
+

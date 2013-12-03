@@ -18,9 +18,9 @@
   [% IF loop.first; %]
     <thead>[%
       tr(list = ['Имя файла','Описание','Формат','Каталог','Дата загрузки','Автор',''], use_th=1);
-    %]</thead
+    %]</thead>
   [% END %]
-  <tr class="[% IF loop.count mod 2; 'even'; ELSE; 'odd'; END %]">
+  <tr>
     <td><a href='[% uri_mk(row.req) %]' >[% row.name  %]</a></td>
     <td>[% row.anno %]</td>
     <td>[% row.ext %]</td>

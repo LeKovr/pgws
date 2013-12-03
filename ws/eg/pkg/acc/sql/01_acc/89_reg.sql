@@ -23,16 +23,12 @@
 /* ------------------------------------------------------------------------- */
 \set IID ws.const_info_class_id()
 \set SID acc.const_system_class_id()
-
 \set AID acc.const_class_id()       -- account class id
 \set TID acc.const_team_class_id()  -- team class id
 \set RID acc.const_role_class_id()  -- role class id
 
 /* ------------------------------------------------------------------------- */
--- тип данных пакета acc
--- INSERT INTO dt (parent_code, code, anno) VALUES (dt_code('ws.d_id32'), pg_cs('d_link'), 'Связь с объектом');
-
-INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
+INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
   ('system.status',              :IID, 1, 2, 2, pg_cs('system_status'))
 , ('system.acl',                 :IID, 1, 2, 6, pg_cs('system_acl'))
 , ('system.team_link_id',        :IID, 1, 3, 2, pg_cs('system_team_link_id'))
@@ -45,60 +41,61 @@ INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real) VALU
 , ('system.class_permission_acl',:IID, 1, 2, 7, pg_cs('system_class_permission_acl'))
 ;
 
-INSERT INTO method (code, class_id, action_id, cache_id, rvf_id, code_real, args_exam) VALUES
-  ('system.ref',                 :SID, 1, 2, 7, 'ws.ref', 'code=' || ws.const_ref_code_timezone())
-, ('system.ref_item',            :SID, 1, 2, 7, 'ws.ref_item', 'code=' || ws.const_ref_code_timezone())
-, ('system.ref_log',             :SID, 1, 2, 7, 'ws.ref_log', 'code=' || ws.const_ref_code_timezone())
+INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real, args_exam) VALUES
+  ('system.ref',                 :SID, 1, 2, 7, 'ws.ref',          'code=' || ws.const_ref_code_timezone())
+, ('system.ref_item',            :SID, 1, 2, 7, 'ws.ref_item',     'code=' || ws.const_ref_code_timezone())
+, ('system.ref_log',             :SID, 1, 2, 7, 'ws.ref_log',      'code=' || ws.const_ref_code_timezone())
+, ('account.acl',                :IID, 1, 3, 6, 'acc.account_acl',               'id=1')
+, ('team.acl',                   :IID, 1, 3, 6, 'acc.team_acl',                  'id=2')
+, ('team.prop_abp_attr',         :TID, 2, 4, 7, 'acc.prop_attr_team_abp',        'id=2')
+, ('account.prop_abp_attr',      :AID, 2, 4, 7, 'acc.prop_attr_account_abp',     'id=1')
+, ('team.prop_isv_value',        :TID, 2, 3, 3, 'acc.prop_attr_team_isv',        'id=2')
+, ('team.prop_isv_attr',         :TID, 2, 4, 7, 'acc.prop_attr_team_isv' ,       'id=2')
+, ('account.prop_isv_attr',      :AID, 2, 4, 7, 'acc.prop_attr_account_isv',     'id=1')
+, ('account.prop_isv_value',     :AID, 2, 3, 3, 'acc.prop_attr_account_isv',     'id=1')
+, ('team.account_attr',          :TID, 1, 3, 7, 'acc.team_account_attr',         'id=2')
+, ('team.prop_history',          :TID, 2, 4, 7, 'acc.prop_history_team',         'id=2')
+, ('account.prop_history',       :AID, 2, 4, 7, 'acc.prop_history_account',      'id=1')
+, ('account.prop_isv',           :AID, 2, 4, 4, 'acc.prop_account_isv',          'id=1')
+, ('team.role_number',           :TID, 1, 3, 7, 'acc.team_role_number',          'id=2')
+, ('account.team',               :AID, 1, 4, 7, 'acc.account_team',              'id=1')
+, ('team.lookup',                :IID, 1, 3, 7, 'acc.team_lookup',               'name=Комп')
+, ('account.lookup',             :IID, 1, 4, 7, 'acc.account_lookup',            'name=Участ')
+, ('account.contact.view',       :AID, 1, 4, 7, 'acc.account_contact_view',      'id=1')
+, ('account.contact.type',       :IID, 1, 4, 7, 'acc.account_contact_type_attr', '')
+, ('team.profile',               :TID, 1, 3, 3, 'acc.team_profile',              'id=2')
+, ('account.profile',            :AID, 1, 3, 3, 'acc.account_profile',           'id=1')
+, ('team.permission',            :TID, 1, 3, 7, 'acc.team_permission',           'id=2')
+, ('account.permission',         :AID, 1, 4, 7, 'acc.account_permission',        'id=1,team_id=2')
+, ('team.team_link_id',          :IID, 1, 3, 2, 'acc.team_team_link_id',         'object_team_id=3,account_team_id=2')
+, ('account.team_link_id',       :IID, 1, 3, 2, 'acc.account_team_link_id',      'id=1,team_id=2')
+, ('team.link_id',               :IID, 1, 3, 2, 'acc.team_link_id',              'id=1')
+, ('account.link_id',            :IID, 1, 3, 2, 'acc.account_link_id',           'id=2')
+, ('team.by_name',               :IID, 1, 3, 7, 'acc.team_by_name',              'name=Комп')
+, ('team.role_members',          :TID, 1, 3, 7, 'acc.team_role_members',         'id=2,role_id=337')
+, ('team.role',                  :TID, 1, 3, 7, 'acc.team_role',                 'id=2')
+, ('team.fs_files',              :TID, 2, 4, 7, 'acc.team_fs_files',             'id=2')
+, ('account.fs_files',           :AID, 2, 4, 7, 'acc.fs_files',                  'id=1')
+, ('team.status',                :IID, 1, 3, 2, 'acc.team_status',               'id=2')
+, ('account.status',             :IID, 1, 3, 2, 'acc.account_status',            'id=1')
 ;
 
+INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, code_real, args_exam) VALUES
+  ('account.sid_info',           :IID, 1, 3, 3, TRUE, 'acc.sid_info',            '')
+, ('account.logout',             :SID, 2, 1, 2, TRUE, 'acc.logout',              '')
+, ('account.contact.add',        :AID, 1, 1, 2, TRUE, 'acc.account_contact_add', 'id=1,type_id=1,value=2345678')
+;
+
+INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
+  ('team.get_id',      :IID, 1, 3, 2, 'acc.get_team_id_by_name')
+;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, code_real) VALUES
-  ('account.sid_info',        :IID, 1, 3, 3, TRUE, 'acc.sid_info')
-, ('account.login',           :SID, 8, 1, 3, TRUE, 'acc.login')
-, ('account.logout',          :SID, 2, 1, 2, TRUE, 'acc.logout')
-;
-
-INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
-  ('team.profile',     :TID, 1, 3, 3, 'acc.team_profile')
-, ('team.status',      :IID, 1, 3, 2, 'acc.team_status')
-, ('team.acl',         :IID, 1, 3, 6, 'acc.team_acl')
-, ('team.team_link_id',:IID, 1, 3, 2, 'acc.team_team_link_id')
-, ('team.link_id',     :IID, 1, 3, 2, 'acc.team_link_id')
-, ('team.by_name',     :IID, 1, 3, 7, 'acc.team_by_name')
-, ('team.account_attr',:TID, 1, 3, 7, 'acc.team_account_attr')
-, ('team.role',        :TID, 1, 3, 7, 'acc.team_role')
-, ('team.role_number', :TID, 1, 3, 7, 'acc.team_role_number')
-, ('team.permission',  :TID, 1, 3, 7, 'acc.team_permission')
-, ('team.role_members',:TID, 1, 3, 7, 'acc.team_role_members')
-, ('team.lookup',      :IID, 1, 3, 7, 'acc.team_lookup')
-;
-
-INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, code_real) VALUES
-  ('account.status',      :IID, 1, 3, 2, 'acc.account_status')
-, ('account.acl',         :IID, 1, 3, 6, 'acc.account_acl')
-, ('account.link_id',     :IID, 1, 3, 2, 'acc.account_link_id')
-, ('account.team_link_id',:IID, 1, 3, 2, 'acc.account_team_link_id')
-, ('account.profile',    :AID, 1, 3, 3, 'acc.account_profile')
-, ('account.team',       :AID, 1, 4, 7, 'acc.account_team')
-, ('account.permission', :AID, 1, 4, 7, 'acc.account_permission')
-, ('account.lookup',     :IID, 1, 4, 7, 'acc.account_lookup')
-, ('account.contact.view',:AID,1, 4, 7, 'acc.account_contact_view')
-, ('account.contact.type',:IID, 1, 4, 7, 'acc.account_contact_type_attr')
-;
-
-INSERT INTO ws.method (code, class_id, action_id, cache_id, rvf_id, is_write, code_real) VALUES
-  ('account.contact.add',         :AID, 1, 1, 2, TRUE, 'acc.account_contact_add')
+  ('account.login',               :SID, 8, 1, 3, TRUE, 'acc.login')
 , ('account.password.change',     :AID, 3, 1, 2, TRUE, 'acc.account_password_change' )
 , ('account.password.change.own', :AID, 4, 1, 2, TRUE, 'acc.account_password_change_own')
-;
-/* ------------------------------------------------------------------------- */
-INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
-  ('account.fs_files', :AID, 2, 4, 7, 'acc.fs_files')
-, ('team.fs_files',    :TID, 2, 4, 7, 'acc.team_fs_files')
-;
-INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, code_real) VALUES
-  ('account.fs_files_del',     :AID, 4, 1, 2, true, 'acc.fs_files_del')
-, ('team.fs_files_del',        :TID, 4, 1, 2, true, 'acc.team_fs_files_del')
+, ('account.fs_files_del',        :AID, 4, 1, 2, true, 'acc.fs_files_del')
+, ('team.fs_files_del',           :TID, 4, 1, 2, true, 'acc.team_fs_files_del')
 ;
 
 INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, realm_code, code_real) VALUES
@@ -106,22 +103,10 @@ INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, is_write, r
 , ('team.fs_files_add',        :TID, 4, 1, 3, true, ws.const_realm_upload(), 'acc.team_fs_files_add')
 ;
 
-INSERT INTO method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
+INSERT INTO ws.method (code, class_id , action_id, cache_id, rvf_id, code_real) VALUES
   ('system.prop_attr',          :SID, 3, 4, 7, 'cfg.prop_attr_system')
 , ('system.prop_owner_attr',    :SID, 3, 4, 7, 'cfg.prop_owner_attr')
 , ('system.prop_history',       :SID, 3, 4, 7, 'cfg.prop_history')
-, ('account.prop_abp_attr',     :AID, 2, 4, 7, 'acc.prop_attr_account_abp')
-, ('account.prop_isv_attr',     :AID, 2, 4, 7, 'acc.prop_attr_account_isv')
-, ('account.prop_isv',          :AID, 2, 4, 4, 'acc.prop_account_isv')
-, ('team.prop_abp_attr',        :TID, 2, 4, 7, 'acc.prop_attr_team_abp')
-, ('team.prop_isv_attr',        :TID, 2, 4, 7, 'acc.prop_attr_team_isv')
-
-, ('team.prop_isv_value',       :TID, 2, 3, 3, 'acc.prop_attr_team_isv')
-, ('account.prop_isv_value',    :AID, 2, 3, 3, 'acc.prop_attr_account_isv')
-
-, ('account.prop_history',      :AID, 2, 4, 7, 'acc.prop_history_account')
-, ('team.prop_history',         :TID, 2, 4, 7, 'acc.prop_history_team')
-
 , ('info.prop_def_value',       :SID, 2, 4, 2, 'cfg.prop_default_value')
 ;
 
@@ -148,10 +133,10 @@ INSERT INTO i18n_def.error (code, id_count, message) VALUES
 , (acc.const_error_badsid(),                  0, 'ошибка аутентификации')
 ;
 
+/* ------------------------------------------------------------------------- */
 INSERT INTO job.handler (id, code, def_prio, arg_date_type, dust_days, is_sql, name) VALUES
   (4, 'mailtest', 20, 2, 31, false, 'Тест API')
 ;
---   ,('Y0051', 0, 'Указанный логин уже занят.  Выберите другой логин')
 
 /* ------------------------------------------------------------------------- */
 UPDATE ws.dt_facet

@@ -93,4 +93,3 @@ $_$
   END;
 $_$;
 SELECT pg_c('f', 'prop_copy_value_team_insupd', 'Копирование актуальных значений в team');
-

@@ -32,6 +32,7 @@ CREATE OR REPLACE VIEW class_status_action_ext AS SELECT
     JOIN class_action a ON (sa.class_id = a.class_id AND sa.action_id = a.id)
 ;
 SELECT pg_c('v', 'class_status_action_ext', 'class_status_action с именами class, status, action');
+
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW csa AS SELECT * FROM class_status_action_ext;
 SELECT pg_c('v', 'csa', 'Синоним class_status_action_ext');
@@ -85,4 +86,3 @@ SELECT pg_c('v', 'class_status_action_acl_ext', 'class_status_action_acl с им
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE VIEW csaa AS SELECT * FROM class_status_action_acl_ext;
 SELECT pg_c('v', 'csaa', 'Синоним class_status_action_acl_ext');
-

@@ -23,6 +23,7 @@
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION i18n_def.date_name (a_date DATE) RETURNS TEXT IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_date:  дата
   DECLARE
     m_names TEXT := 'января февраля марта апреля мая июня июля августа сентября октября ноября декабря';
   BEGIN
@@ -37,6 +38,7 @@ SELECT pg_c('f', 'i18n_def.date_name', 'Название даты вида "1 я
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION i18n_def.date_name_doc (a_date DATE) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a_date:  дата
   SELECT CASE WHEN date_part('day', $1) < 10 THEN '0' ELSE '' END || date_name($1)
 $_$;
 SELECT pg_c('f', 'i18n_def.date_name_doc', 'Название даты вида "01 января 2007"');
@@ -44,6 +46,7 @@ SELECT pg_c('f', 'i18n_def.date_name_doc', 'Название даты вида "
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION i18n_def.month_name (a_date DATE) RETURNS TEXT IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
+  -- a_date:  дата
   DECLARE
     m_names TEXT := 'январь февраль март апрель май июнь июль август сентябрь октябрь ноябрь декабрь';
   BEGIN
@@ -57,6 +60,7 @@ SELECT pg_c('f', 'i18n_def.month_name', 'Название месяца вида 
 /* ------------------------------------------------------------------------- */
 CREATE OR REPLACE FUNCTION i18n_def.month_amount_name(a_id INTEGER) RETURNS TEXT IMMUTABLE LANGUAGE 'sql' AS
 $_$
+  -- a_id:   количество месяцев
   SELECT CASE
     WHEN $1 % 10 = 1 AND $1 <> 11 THEN $1::text || ' ' || 'месяц'
     WHEN $1 IN (24,36,48) THEN $1/12 || ' ' || 'года'
@@ -70,7 +74,10 @@ $_$;
 SELECT pg_c('f', 'i18n_def.month_amount_name', 'Название периода из заданного числа месяцев (252 max)');
 
 /* ------------------------------------------------------------------------- */
-CREATE OR REPLACE FUNCTION i18n_def.amount2words (source DECIMAL, up_mode INTEGER) RETURNS TEXT IMMUTABLE LANGUAGE 'plpgsql' AS
+CREATE OR REPLACE FUNCTION i18n_def.amount2words (
+  source  DECIMAL
+, up_mode INTEGER
+) RETURNS TEXT IMMUTABLE LANGUAGE 'plpgsql' AS
 $_$
 /*
   Сумма прописью в рублях и копейках
@@ -183,5 +190,3 @@ BEGIN
 END
 $_$;
 SELECT pg_c('f', 'i18n_def.amount2words', 'Сумма прописью в рублях и копейках');
-
-/* ------------------------------------------------------------------------- */
