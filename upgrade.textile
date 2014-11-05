@@ -1,0 +1,59 @@
+h1. Инструкция по обновлению
+
+{{toc}}
+
+В зависимости от характера изменений, для обновления локальной копии могут быть необходимы разные наборы команд.
+Конкретный вариант из указанных ниже приводится к комментариях к релизу.
+
+Перед началом обновления текущим каталого должен быть */data/sampleapp*
+
+Далее по тексту строкой *#PULL#* обозначена последовательность команд:
+<pre>
+cd pgws
+gmake uninstall
+git pull
+gmake install
+cd ..
+</pre>
+
+h2. Make
+
+Выполняется, если изменения затронули только хранимый код и шаблоны.
+
+<pre>
+#PULL#
+pgws.sh db make
+pgws.sh db make pkg
+pgws.sh cache clear
+pgws.sh fcgi restart
+</pre>
+
+h2. Update
+
+Выполняется, если изменения затронули статические данные (которые не меняются в процессе работы)
+
+<pre>
+pgws.sh db drop pkg
+pgws.sh db drop
+#PULL#
+pgws.sh db init
+pgws.sh db init pkg
+pgws.sh cache clear
+pgws.sh fcgi restart
+</pre>
+
+h2. ReInstall
+
+Выполняется, если изменения затронули оперативные данные для случаев, когда их потеря некритична
+
+<pre>
+pgws.sh fcgi stop
+pgws.sh db drop pkg
+pgws.sh db erase
+#PULL#
+pgws.sh db init
+pgws.sh db init pkg
+pgws.sh cache clear
+pgws.sh fcgi start
+</pre>
+

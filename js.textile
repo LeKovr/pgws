@@ -1,0 +1,44 @@
+h1. Доступ к API из Javascript
+
+Дистрибутив PGWS содержит реализацию поддержки JSON-RPC для библиотеки jQuery (см _app/www/js/jquery.pwl-full.js_). Для других библиотек необходимо найти (или разработать) аналогичный функционал.
+Ниже описан вариант с использованием jQuery.
+
+Для использования API необходимо в заголовке страницы подключить следующие библиотеки:
+* */js/jquery.js* - jQuery
+* */js/jquery.json.js* - плагин для работы с JSON
+* */js/jquery.pwl-full.js* - пример плагина для работы с API
+
+Для этого достаточно включить в текст шаблона инструкцию:
+
+<pre>[% 
+ meta.api = 1 
+%]
+</pre>
+
+После этого вызов метода для обработки html-формы производится следующим образом:
+
+<pre><code class="html">
+<div id="req___err" class="error"><!-- Контейнер для прикладных ошибок --></div> 
+<div id="req_id_err" class="error"><!-- Контейнер для ошибок валидации поля "id"--></div>
+<p id="req_result"><!-- Контейнер для результата --></p>
+<a href="#" onClick="reqSend();">Call</a>
+<p id="status"><!-- Контейнер для статуса и системных ошибок --></p>
+<script type="text/javascript">
+</code><code class="javascript">
+//<![CDATA[
+function reqSend() {
+  par = {
+    code: 'company.info',
+    id: 200
+  };
+  api('ws.page_by_code', '#req', reqOK, par); // вызов метода API с прямой передачей параметров
+};
+
+var reqOK = function(res) {
+  $('#req_result').html( 'Result:' + res.name);
+};
+//]]>
+</code></pre>
+
+См. также:
+* Примеры в каталоге дистрибутива *app/tmpl/block*
