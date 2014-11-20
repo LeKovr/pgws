@@ -54,6 +54,7 @@ use constant COOKIE_MASK        => ($ENV{PGWS_FE_COOKIE_MASK});
 sub user_ip { $_[0]->{'user_ip'}  }
 sub proto   { $_[0]->{'proto'}    }
 sub type    { $_[0]->{'type'}     }
+sub host    { $_[0]->{'host'}     }
 sub method  { $_[0]->{'method'}   }
 sub uri     { $_[0]->{'uri'}      }
 sub prefix  { $_[0]->{'prefix'}   }
@@ -81,12 +82,13 @@ sub new {
   if ($ip and $ip =~ /(\S+)$/) { $ip = $1 }
   $self->{'user_ip'} ||= $ENV{'HTTP_X_REAL_IP'} || $ip || $ENV{'REMOTE_ADDR'};
   $self->{'proto'} ||= $ENV{'HTTP_UT_HTTPS'}?'https':'http';
+
   $self->{'type'} ||= $ENV{'CONTENT_TYPE'};
   $self->{'method'} ||= $ENV{'REQUEST_METHOD'};
+  $self->{'host'}  ||= $ENV{'HTTP_HOST'};
   $self->{'accept'} ||= $ENV{'HTTP_ACCEPT'} || '';
   $self->{'server_name'} ||= $ENV{'SERVER_NAME'} || '';
   $S = $self;
-
   $self->{'encode_utf'} = $ENV{'FCGI_ROLE'}?1:0;
 
   if ($self->{'method'} eq 'JOB') {
@@ -99,6 +101,11 @@ sub new {
     return $self;
   }
 
+
+if ($self->{'method'} eq 'POST' and $ENV{'PATH_INFO'} eq '/soap') {
+    # don't read stdin
+    $self->{'method'} = 'SOAP';
+} else {
   $self->{'_q'} = new CGI::Simple;
 
   if ($self->{'method'} eq 'POST' and $self->type =~ /application\/json/) {
@@ -116,7 +123,7 @@ sub new {
     }
     $self->{'params'} = \%params;
   }
-
+}
   my $uri = $self->{'uri'} || $ENV{'PATH_INFO'} || $ENV{'REDIRECT_PINFO'} || '';
   my $uri_full = $ENV{'REDIRECT_URL'};
   my $prefix = '';
@@ -147,7 +154,7 @@ sub fetch_cook {
 sub attrs {
   my $self = shift;
   my %params;
-  foreach my $n (qw(proto accept user_ip cookie uri type method prefix)) {
+  foreach my $n (qw(proto accept user_ip cookie uri type method prefix host)) {
     $params{$n} = $self->{$n};
   }
   return \%params;

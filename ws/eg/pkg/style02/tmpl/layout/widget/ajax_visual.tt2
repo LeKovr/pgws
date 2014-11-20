@@ -1,0 +1,56 @@
+[% #визуализация ajax событий %]
+
+[%
+
+# selector - объекты запуска визуализации
+# type  - 1 = cursor; 2 - banner
+
+%]
+
+[% IF type == 1; %]
+  [% meta.js.${meta.js.size} = BLOCK %]
+    <script type="text/javascript">
+      //<![CDATA[
+      $('[% selector %]').click(function(){
+	$('html').bind("ajaxStart.mine",function() {
+	  $(this).addClass('busy');
+	}).bind("ajaxStop.mine",function() {
+	  $(this).removeClass('busy');
+	  $('[% selector %]').css('cursor:auto');
+	  $(document).unbind('ajaxStart.mine');
+	});
+      });
+      //]]>
+    </script>
+  [% END; # BLOCK %]
+[% END; %]
+
+[% IF type == 2; %]
+<div id="loading" class="hide">
+  <div class="_overlay"></div>
+  <div class="message_box">
+    Пожалуйста, подождите. Идет отправка данных
+  </div>
+</div>
+
+  [% meta.js.${meta.js.size} = BLOCK %]
+    <script type="text/javascript">
+      //<![CDATA[
+	  var timerStart = null;
+	  $('[% selector %]').bind("ajaxStart.mine2",function() {
+	    timerStart = setTimeout(window.PGWS.startLoad, 1000);
+	  }).bind("ajaxStop.mine2",function() {
+	    $(document).unbind('ajaxStart.mine2');
+	    clearTimeout(timerStart);
+	    setTimeout(window.PGWS.stopLoad, 2000);
+	  });
+	window.PGWS.startLoad = function(){
+	  $('#loading').removeClass('hide');
+	};
+	window.PGWS.stopLoad = function(){
+	  $('#loading').addClass('hide');
+	};
+      //]]>
+    </script>
+  [% END; # BLOCK %]
+[% END; %]

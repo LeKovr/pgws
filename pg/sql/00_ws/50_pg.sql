@@ -180,6 +180,7 @@ $_$
     v_defs := regexp_split_to_array(v_args, E',\\s+');
     FOR v_i IN 1 .. pg_catalog.array_upper(v_defs, 1) LOOP
       v_def := v_defs[v_i];
+      RAISE DEBUG 'PARSING ARG DEF (%)', v_def;
       IF v_def !~ E'^(IN)?OUT ' THEN
         v_def := 'IN ' || v_def;
       END IF;
@@ -265,90 +266,91 @@ $_$
     v_code := ws.pg_type_name(a_oid);
 --raise warning 'VT % -- %',v_code,(select array_agg(code::text)::text from ws.dt where code like '%d_prop_code');
 
-    IF r_pg_type.typtype IN ('c', 'd', 'p') THEN
-      v_tpnm := CASE
-        WHEN r_pg_type.typtype = 'c' THEN
-          'Composite'
-        WHEN r_pg_type.typtype = 'd' THEN
-          'Domain'
-        WHEN r_pg_type.typtype = 'p' THEN
-          'Void'
-        END;
-      RAISE NOTICE 'Registering "%" type: % (%)', v_tpnm, v_code, a_oid;      
-      v_islist := FALSE;
-      IF r_pg_type.typtype = 'd' THEN
-        -- проверить необходимость регистрации родительского домена
-        v_type := ws.pg_type_name(r_pg_type.typbasetype);
-        IF v_type ~ E'\\[\\]$' THEN
-          v_islist := TRUE;
-          v_type := split_part(btrim(v_type, '[]'),' ', 1);
-        END IF;
-        v_type := ws.normalize_type_name(v_type);
-        IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = v_type) THEN
-          IF position('.' IN v_type) = 0 THEN
-            RAISE EXCEPTION 'Parent type for domain % is base and unknown (%)', v_code, v_type;
-          END IF;
-          v_type := ws.pg_register_type(v_type);
-        END IF;
-        IF v_type IS NULL THEN
-          RAISE EXCEPTION 'Parent type for domain % is unknown', v_code;
-        END IF;
-      END IF;
-      INSERT INTO ws.dt (code, anno, is_complex, parent_code, is_list)
-        VALUES (v_code, COALESCE(obj_description(r_pg_type.typrelid, 'pg_class'), obj_description(a_oid, 'pg_type'), v_code), 
-          CASE WHEN r_pg_type.typtype = 'c' THEN true ELSE false END
-        , v_type, v_islist)
-      ;
-      IF r_pg_type.typtype = 'd' THEN
-        PERFORM ws.pg_register_class_facet(a_oid);
-        RETURN v_code;
-      ELSIF r_pg_type.typtype = 'p' THEN
-        RETURN v_code;
-      END IF;
-      
-      FOR rec IN
-        -- TODO: перенести в 18_pg, возвращать refcursor
-        SELECT a.attname
-          , pg_catalog.format_type(a.atttypid, a.atttypmod)
-          , (SELECT substring(pg_catalog.pg_get_expr(d.adbin, d.adrelid) for 128)
-            FROM pg_catalog.pg_attrdef d
-            WHERE d.adrelid = a.attrelid AND d.adnum = a.attnum AND a.atthasdef) as def_val
-          , a.attnotnull
-          , a.attnum
-          , pg_catalog.col_description(a.attrelid, a.attnum) as anno
-        FROM pg_catalog.pg_attribute a
-        WHERE a.attrelid = r_pg_type.typrelid AND a.attnum > 0 AND NOT a.attisdropped
-        ORDER BY a.attnum
-      LOOP
-        v_islist := case when rec.format_type ~ E'\\[\\]$' THEN TRUE ELSE FALSE END;
-        SELECT INTO v_type, v_anno * FROM ws.dt_code_extract(rec.anno);
-        IF v_type IS NULL THEN
-          v_type := btrim(rec.format_type, '[]');
-          v_type := ws.normalize_type_name(v_type);
-          RAISE NOTICE '   column % %', rec.attname, v_type;
-        ELSE
-          RAISE NOTICE '   column % % (%)', rec.attname, v_type, rec.format_type;
-        END IF;
-        BEGIN
-          v_type := ws.pg_dt_registered(v_type);
-          EXCEPTION
-            WHEN raise_exception THEN
-              RAISE EXCEPTION 'Unknown type %:%', v_code, v_type
-          ;
-        END;
-        BEGIN
-          INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null, is_list)
-            VALUES (v_code, rec.attnum, rec.attname, v_type, COALESCE(v_anno, rec.attname), rec.def_val, NOT rec.attnotnull,v_islist)
-          ;
-          EXCEPTION
-            WHEN CHECK_VIOLATION THEN
-              RAISE EXCEPTION 'Unregistered % part type (%)', v_code, v_type
-            ;
-        END;
-      END LOOP;
-    ELSE
+    IF r_pg_type.typtype NOT IN ('c', 'd', 'p') THEN
       RAISE EXCEPTION 'ERROR: OID = % неподдерживаемого типа "%"', a_oid, r_pg_type.typtype;
     END IF;
+
+    v_tpnm := CASE
+      WHEN r_pg_type.typtype = 'c' THEN
+        'Composite'
+      WHEN r_pg_type.typtype = 'd' THEN
+        'Domain'
+      WHEN r_pg_type.typtype = 'p' THEN
+        'Void'
+      END;
+    RAISE NOTICE 'Registering "%" type: % (%)', v_tpnm, v_code, a_oid;      
+    v_islist := FALSE;
+    IF r_pg_type.typtype = 'd' THEN
+      -- проверить необходимость регистрации родительского домена
+      v_type := ws.pg_type_name(r_pg_type.typbasetype);
+      IF v_type ~ E'\\[\\]$' THEN
+        v_islist := TRUE;
+        v_type := split_part(btrim(v_type, '[]'),' ', 1);
+      END IF;
+      v_type := ws.normalize_type_name(v_type);
+      IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = v_type) THEN
+        IF position('.' IN v_type) = 0 THEN
+          RAISE EXCEPTION 'Parent type for domain % is base and unknown (%)', v_code, v_type;
+        END IF;
+        v_type := ws.pg_register_type(v_type);
+      END IF;
+      IF v_type IS NULL THEN
+        RAISE EXCEPTION 'Parent type for domain % is unknown', v_code;
+      END IF;
+    END IF;
+    INSERT INTO ws.dt (code, anno, is_complex, parent_code, is_list)
+      VALUES (v_code, COALESCE(obj_description(r_pg_type.typrelid, 'pg_class'), obj_description(a_oid, 'pg_type'), v_code), 
+        CASE WHEN r_pg_type.typtype = 'c' THEN true ELSE false END
+      , v_type, v_islist)
+    ;
+    IF r_pg_type.typtype = 'd' THEN
+      PERFORM ws.pg_register_class_facet(a_oid);
+      RETURN v_code;
+    ELSIF r_pg_type.typtype = 'p' THEN
+      RETURN v_code;
+    END IF;
+    
+    FOR rec IN
+      -- TODO: перенести в 18_pg, возвращать refcursor
+      SELECT a.attname
+        , pg_catalog.format_type(a.atttypid, a.atttypmod)
+        , (SELECT substring(pg_catalog.pg_get_expr(d.adbin, d.adrelid) for 128)
+          FROM pg_catalog.pg_attrdef d
+          WHERE d.adrelid = a.attrelid AND d.adnum = a.attnum AND a.atthasdef) as def_val
+        , a.attnotnull
+        , a.attnum
+        , pg_catalog.col_description(a.attrelid, a.attnum) as anno
+      FROM pg_catalog.pg_attribute a
+      WHERE a.attrelid = r_pg_type.typrelid AND a.attnum > 0 AND NOT a.attisdropped
+      ORDER BY a.attnum
+    LOOP
+      v_islist := case when rec.format_type ~ E'\\[\\]$' THEN TRUE ELSE FALSE END;
+      SELECT INTO v_type, v_anno * FROM ws.dt_code_extract(rec.anno);
+      IF v_type IS NULL THEN
+        v_type := btrim(rec.format_type, '[]');
+        v_type := ws.normalize_type_name(v_type);
+        RAISE NOTICE '   column % %', rec.attname, v_type;
+      ELSE
+        RAISE NOTICE '   column % % (%)', rec.attname, v_type, rec.format_type;
+      END IF;
+      BEGIN
+        v_type := ws.pg_dt_registered(v_type);
+        EXCEPTION
+          WHEN raise_exception THEN
+            RAISE EXCEPTION 'Unknown type %:%', v_code, v_type
+        ;
+      END;
+      BEGIN
+        INSERT INTO ws.dt_part (dt_code, part_id, code, parent_code, anno, def_val, allow_null, is_list)
+          VALUES (v_code, rec.attnum, rec.attname, v_type, COALESCE(v_anno, rec.attname), rec.def_val, NOT rec.attnotnull,v_islist)
+        ;
+        EXCEPTION
+          WHEN CHECK_VIOLATION THEN
+            RAISE EXCEPTION 'Unregistered % part type (%)', v_code, v_type
+          ;
+      END;
+    END LOOP;
+
     RETURN v_code;
   END;
 $_$;
@@ -419,6 +421,7 @@ $_$
   DECLARE
     v_type TEXT;
   BEGIN
+    RAISE DEBUG 'pg_dt_registered(%)', a_type;
     IF NOT EXISTS(SELECT 1 FROM ws.dt WHERE code = a_type) THEN
       -- в текущем виде тип не найден
       IF position('.' IN a_type) = 0 THEN
@@ -529,3 +532,49 @@ BEGIN
 END
 $_$;
 SELECT pg_c('f', 'replace_table_desc', 'Изменение комментариев всех столбцов таблицы по регулярному выражению');
+
+/* ------------------------------------------------------------------------- */
+CREATE OR REPLACE FUNCTION pg_comment (
+  a_table text
+, a_comment text default ''
+, a_cols json default null
+) RETURNS TEXT LANGUAGE 'plpgsql' AS
+$_$
+  -- a_table: имя таблицы (схема.таблица)
+  -- a_comment: комментарий таблицы
+  -- a_cols: json хэш комментариев полей вида {field: comment ,..}
+DECLARE 
+  v_ret TEXT;
+  v_c TEXT; -- table comment
+  v_s TEXT; -- columnt comment string
+  r RECORD;
+BEGIN
+  IF a_comment <> '' THEN
+    -- save table comment
+    EXECUTE 'COMMENT ON TABLE ' || a_table || ' IS ' || quote_literal(a_comment);
+  END IF;
+  FOR r IN SELECT * FROM json_each_text(a_cols)
+  LOOP
+    -- save column comment
+    RAISE NOTICE 'comment % with %', r.key, r.value;
+    EXECUTE 'COMMENT ON COLUMN ' || a_table || '.' || r.key || ' IS ' || quote_literal(r.value);
+  END LOOP;
+
+  -- read column comments
+  SELECT INTO v_s
+    string_agg(
+      '"' || attname || '": ' || to_json(COALESCE(col_description(attrelid, attnum), '')) || E'\n'
+      , ',') 
+    FROM pg_catalog.pg_attribute 
+    WHERE attrelid = a_table::regclass 
+      AND attnum > 0 
+      AND NOT attisdropped
+    ;
+  
+  v_c := COALESCE(obj_description(a_table::regclass, 'pg_class'), '');  
+  v_ret := format(E'SELECT ws.pg_comment(\'%s\', %s,\'{\n %s}\');',a_table, quote_literal(v_c), v_s);
+  RETURN v_ret ;
+END
+
+$_$;
+SELECT pg_c('f', 'pg_comment', 'чтение/запись комментариев полей таблицы');

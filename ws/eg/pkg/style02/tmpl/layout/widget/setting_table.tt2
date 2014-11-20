@@ -1,8 +1,8 @@
 [% 
   # Управление настройками таблицы
 %]
-  [% IF show; %]
-      <ul class="nav pull-right grid-settings [% style %]" data-grid="baseTable">
+[% IF show; %]
+      <ul class="nav pull-right grid-settings hide" data-grid="table.baseTable.withSetting">
 	<li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" href="#">
             <i class="icon-black icon-cog"></i>
@@ -39,5 +39,4 @@
 	  </ul>
 	</li>
       </ul>
-
-  [% END; %]
+[% END; %]

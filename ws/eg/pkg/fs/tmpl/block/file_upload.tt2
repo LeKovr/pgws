@@ -31,7 +31,7 @@ row_begin;
       IF f.anno;
 	comments='- ' _ f.anno _ ' ';
       END;
-      lists.push({class='fileDiv', content = row_begin _ '<a href=' _ uri_mk(f.req) _ ' >' _ f.name _ '</a> <font style="font-size:10px;" class="muted">' _ comments _ '(' _ f.size _ ' байт)' _ f.created_by _ ',' _ f.created_at _ '</font>' _ (!noUpload ? '<a href="#" fileid=' _ f.id _ ' class="btnDelete close">&times;</a>' : '') _ div_begin(class='deleteStatusError hide alert alert-error') _ div_end _ row_end});
+      lists.push({class='fileDiv', content = row_begin _ '<a href=' _ uri_mk(f.req) _ ' >' _ f.name _ '</a> <font style="color:black">' _ comments _ '(' _ f.size _ ' байт)' _ f.created_by _ ',' _ f.created_at _ '</font>' _ (!noUpload ? '<a href="#" fileid=' _ f.id _ ' class="btnDelete close">&times;</a>' : '') _ div_begin(class='deleteStatusError hide alert alert-error') _ div_end _ row_end});
     END;
     IF jsMethod_for_fileList;
       div_begin(size=7, class='hide');
@@ -151,29 +151,41 @@ row_end;
 	      objElement = $(this).next();
 	    }
 	    $(objElement).find('.cancel-file').html('<span class="error alert alert-error">Размер файла больше допустимого</span>');
+	    setTimeout(function(){
+		  $(objElement).hide(500);
+	    }, 2000);
 	  }
 	},
 	done: function(e, data){
 	if (data.result.success === "true") {
 	      var file = data.result.result.data;
-     	      $('#fileupload[%code%] .file-list table .'+data.formData.uuid).find('.bar').css('transition','width 0s ease 0s');
-	      $('#fileupload[%code%] .file-list table .'+data.formData.uuid).find('.bar').css('width','100%');
+	      var tr_actual = $('#fileupload[%code%] .file-list table .'+data.formData.uuid)
+     	      $(tr_actual).find('.bar').css('transition','width 0s ease 0s');
+	      $(tr_actual).find('.bar').css('width','100%');
+	  
 	      var comment=''
 	      if(file.anno){
 		comment = '- '+file.anno+' ';
 	      }
-	      $('#uploaded[%code%] .uploaded').append('<li class=\'fileDiv\'><div class="row"><a href="[% req.prefix %]/' + file.req + '">' + file.name + '</a> <font style="font-size:10px;" class="muted">'+comment+'(' + file.size + ' байт)' + file.created_by + ',' + file.created_at + '</font><a href="#" fileid="' + file.id + '" class="btnDelete close">&times;</a><div class="deleteStatusError alert alert-error hide" ></div></div></li>');
+	      $('#uploaded[%code%] .uploaded').append('<li class=\'fileDiv\'><div class="row"><a href="[% req.prefix %]/' + file.req + '">' + file.name + '</a> <font style="color:black">'+comment+'(' + file.size + ' байт)' + file.created_by + ',' + file.created_at + '</font><a href="#" fileid="' + file.id + '" class="btnDelete close">&times;</a><div class="deleteStatusError alert alert-error hide" ></div></div></li>');
 	      $('#fileupload[%code%] .file-list table .'+data.formData.uuid).find('.cancel-file').html('<span class="status alert alert-info">Файл загружен</span>');
 	      [% IF jsMethod_for_fileList;
 		    jsMethod_for_fileList;%](file);[%
 		 END;
 	      %]
 	      $('.btnDelete').deleteFile(PGWS.var.fileupload.deleteFileOptions);
+	      data.hide_after_done(tr_actual);
 	      [% succesMethod %]
 	  }else{
-	      $('#fileupload[%code%] .file-list table .'+data.formData.uuid).find('.cancel-file').html('<span class="error alert alert-error">'+data.result.error.message+'</span>');
+	      var tr_actual = $('#fileupload[%code%] .file-list table .'+data.formData.uuid)
+	      $(tr_actual).find('.cancel-file').html('<span class="error alert alert-error">'+data.result.error.message+'</span>');
+	      data.hide_after_done(tr_actual);
 	  }
-	  
+	},
+	hide_after_done: function(tr){
+	  setTimeout(function(){
+		  $(tr).hide(500);
+	  }, 2000);
 	}
     });
     

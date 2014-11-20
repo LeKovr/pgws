@@ -20,6 +20,7 @@ union
 select * from ws.pg_view_comments('i18n_def.error')
 union
 select * from ws.pg_view_comments('ws.pg_const')
+order by 1,2
 ;
 
 /*

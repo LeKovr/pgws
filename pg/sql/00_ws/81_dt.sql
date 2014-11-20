@@ -106,7 +106,7 @@ INSERT INTO dt_facet (code, facet_id, value, anno) VALUES
 , ('integer',  facet_id('pattern'), E'^(\\+|\\-)?\\d+$', '[знак]цифры')
 , ('smallint', facet_id('pattern'), E'^(\\+|\\-)?\\d+$', '[знак]цифры')
 , ('bigint',   facet_id('pattern'), E'^(\\+|\\-)?\\d+$', '[знак]цифры')
-, ('date',     facet_id('pattern'), E'^\\d{1,2}\\.\\d{2}\\.\\d{4}$', 'ДД.ММ.ГГГГ')
+, ('date',     facet_id('pattern'), E'^(\\d{1,2}\\.\\d{2}\\.\\d{4})|(\\d{4}\\-\\d{2}\\-\\d{2})$', 'ДД.ММ.ГГГГ (или ГГГГ-ММ-ДД)')
 , ('d_stamp',  facet_id('pattern'), E'^\\d{1,2}\\.\\d{2}\\.\\d{4}(?: +| +/ +)\\d{2}:\\d{2}(:\\d{2})?$', 'ДД.ММ.ГГГГ ЧЧ:ММ[:СС]')
 , ('d_string', facet_id('pattern'), E'^[^\n]','NO CR')
 , ('d_email',  facet_id('pattern'), E'(?:^$|^[^ ]+@[^ ]+\\.[^ ]{2,6}$)','your@email.ru')

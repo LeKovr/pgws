@@ -29,6 +29,11 @@ use PGWS::DBConfig;
 use Template 2.24;
 use Template::Exception;
 
+use SOAP::Transport::HTTP;
+#use SOAP::Transport::HTTP::CGI;
+use PGWS::Proxy;
+#use PGWS::Serializer;
+
 use strict;
 
 # проверка зависимостей
@@ -65,6 +70,7 @@ our $VERSION = $PGWS::VERSION;
 
 #----------------------------------------------------------------------
 sub ws        { $_[0]->{'_ws'}       }
+sub proxy     { $_[0]->{'_proxy'}    }
 sub template  { $_[0]->{'template'} }
 
 sub dbc       { $_[0]->{'_dbc'} }
@@ -78,7 +84,6 @@ sub new {
   my ($class, $cfg) = @_;
   my $self = $cfg ? { %{$cfg} } : {};
   bless $self, $class;
-print STDERR '>>>',;
   my $dbc =  $self->{'_dbc'} = PGWS::DBConfig->new({
     'pogc' => POGC
   , 'poid' => $self->{'frontend_poid'}
@@ -94,6 +99,7 @@ print STDERR '>>>',;
     PRE_PROCESS   => 'config'.$ext,
     %{$dbc->config('fe.tt2')}
   );
+
   $self->{'template'} = Template->new(%template_config);
   {
     no warnings 'once';
@@ -123,6 +129,8 @@ sub run {
       $req->options_header;
     } elsif ($req->method eq 'POST' and $req->type =~m |application/json|) {
       $self->process_post($meta, $req);
+    } elsif ($req->method eq 'SOAP') {
+      $self->process_xml($meta, $req);
     } elsif($req->uri =~ m|^_(.+)\.json$|) {
       $self->process_direct($meta, $req, $1);
     } else {
@@ -145,6 +153,37 @@ sub process_post {
 
   $req->header('application/json; '.$meta->charset, '200 OK');
   $req->print(PGWS::Utils::json_out_utf8($ret)); # mod_perl иначе портит utf
+}
+
+
+#----------------------------------------------------------------------
+# Обработка POST запроса SOAP / XML-RPC
+sub process_xml {
+  my ($self, $meta, $req) = @_;
+
+  $meta->setsource('post');
+  $meta->keyoff; # основной запрос - не от имени фронтенда
+  my $map = {};
+  
+  #print STDERR '===============',Dumper(\%ENV);
+  SOAP::Transport::HTTP::CGI
+    -> on_action(sub { 
+      my ($action, $uri, $name) = @_;
+      # any action mapped to Proxy
+      $map->{$action} = PGWS::Proxy->new({
+        'ws'    => $self->ws, 
+        'meta'  => $meta, 
+        'req'   => $req, 
+        'class' => $uri, 
+      })
+    })
+   # -> serializer(PGWS::Serializer->new)
+    -> dispatch_with($map) 
+    # enable compression support
+    -> options({compress_threshold => 10000})
+    -> handle
+  ;
+
 }
 
 #----------------------------------------------------------------------
@@ -335,7 +374,8 @@ sub process_get {
 
   $self->template->process($file, $vars, \$btm) or die 'error processing footer ('.$file.'): '.$self->template->error();
   $req->print($btm);
-  if ($status eq '200' and (CACHE_MODE & 2) == 2 and !$vars->{'session'}{'sid'}) { 
+  if ($status eq '200' and $resp->{'ctype'} eq 'text/html'
+    and (CACHE_MODE & 2) == 2 and !$vars->{'session'}{'sid'}) { 
     $self->response_cache($vars, $meta, $top, $body, $btm); 
   }
   $meta->debugN('get', 'exit after %s with %i hits and %i db calls', $meta->elapsed, $meta->stat_hit, $meta->stat_db);

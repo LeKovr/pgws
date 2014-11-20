@@ -18,4 +18,5 @@ MACRO form_country   INCLUDE "widget/form_country.tt2";
 MACRO form_address   INCLUDE "widget/form_address.tt2";
 MACRO form_date   INCLUDE "widget/form_date.tt2";
 MACRO form_timestamp   INCLUDE "widget/form_timestamp.tt2";
+MACRO ajax_visual   INCLUDE "widget/ajax_visual.tt2";
 %]

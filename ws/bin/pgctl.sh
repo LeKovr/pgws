@@ -30,15 +30,17 @@ db_help() {
   cat <<EOF
 
   Usage:
-    $0 db (init|make|drop|doc|create) [SRC] [PKG]
+    $0 db COMMAND [SRC] [PKG]
 
-  Where
+  Where COMMAND is one from
     init - create DB objects
     make - compile code
     drop - drop DB objects
     erase - drop DB objects
 
     create - create database (if shell user granted)
+
+    comment - show column comments for table SRC
 
     doc  - make docs for schema SRC (Default: ws)
     dump - dump schema SRC (Default: all)
@@ -281,7 +283,7 @@ EOF
           [[ "$db_csum" ]] && echo "INSERT INTO wsd.pkg_script_protected (pkg, schema, code, csum) VALUES ('$pn', '$sn', '$n', '$db_csum');" >> $BLD/build.sql 
         else
           echo "\\qecho '----- SKIPPED PROTECTED FILE  -----'" >> $BLD/build.sql
-          [[ "$db_csum" != "$csum" ]] && echo "\\qecho '!!!WARNING!!! protected csum is $db_csum'" >> $BLD/build.sql
+          [[ "$db_csum" != "$csum" ]] && echo "\\qecho '!!!WARNING!!! db csum $db_csum <> file csum $csum'" >> $BLD/build.sql
         fi
       fi
     done
@@ -436,6 +438,17 @@ db_doc() {
 }
 
 # ------------------------------------------------------------------------------
+db_comment() {
+  for t in $@ ; do
+    echo "$t..."
+    echo "/* ------------------------------------------------------------------------- */" 1>&2
+    ${PG_BINDIR}psql -X -d "$CONN" -t --pset format=unaligned -c "SELECT ws.pg_comment('$t')" 1>&2
+    echo "" 1>&2
+  done
+  echo "Done."
+}
+
+# ------------------------------------------------------------------------------
 db_create() {
 
   local bin="createdb"
@@ -495,6 +508,9 @@ case "$cmd" in
     ;;
   doc)
     db_doc $src
+    ;;
+  comment)
+    db_comment $src $@
     ;;
   dump)
     db_dump $src $@

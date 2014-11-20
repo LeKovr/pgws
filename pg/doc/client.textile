@@ -1,0 +1,38 @@
+h1. Реализация доступа извне
+
+В дополнение к [[js|доступу из javascript]], доступ к API из внешних приложений может производится по [[Rpc|стандартному протоколу]].
+Для языка программирования, на котором написано внешнее приложение, необходимо найти (или реализовать) соответствующую библиотеку.
+
+Ниже приведен пример вызова из приложения на perl
+
+<pre><code class="perl">
+
+use JSON::RPC::Client;
+
+my $client = new JSON::RPC::Client;
+
+my $url = 'http://test.tender.pro/api/';
+
+my $object = {
+  jsonrpc => '2.0',
+  method => 'app.add',
+  id => $$,
+  params => { 'a' => 333, 'b' => 444 }
+};
+
+my $res = $client->call( $url, $object);
+    
+if ($res) {
+  if ($res->is_error) {
+    print "Error : ", $res->error_message->{'code'};
+  } else {
+    print 'Result: ', $res->result;
+  }
+} else {
+  print $client->status_line;
+}
+
+</code></pre>
+
+См. также:
+* Примеры в файле дистрибутива *ws/eg/bin/client.pl*

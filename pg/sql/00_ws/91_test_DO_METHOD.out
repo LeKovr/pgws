@@ -164,42 +164,42 @@ INSERT 0 1
 --------------------------------
   ***** ws.page_by_action *****
 
- code  | up_code | class_id | action_id | sort |  uri   |   tmpl    | is_hidden | uri_re | uri_fmt | pkg | name |  req  |            args            | group_name 
--------+---------+----------+-----------+------+--------+-----------+-----------+--------+---------+-----+------+-------+----------------------------+------------
- login | main    |        2 |         1 |    1 | login$ | acc/login | t         | login$ | login   | ws  | Вход | login | {NULL,NULL,NULL,NULL,NULL} | 
- main  |         |        2 |         1 |    0 | $      | app/index | t         | $      |         | ws  | API  |       | {NULL,NULL,NULL,NULL,NULL} | 
+      code      |    up_code     | class_id | action_id | sort |       uri       |   tmpl    | is_hidden |     uri_re      |    uri_fmt     | pkg | name |      req       |            args            | group_name 
+----------------+----------------+----------+-----------+------+-----------------+-----------+-----------+-----------------+----------------+-----+------+----------------+----------------------------+------------
+ login          | temp_root_main |        2 |         1 |    1 | login$          | acc/login | t         | login$          | login          | ws  | Вход | login          | {NULL,NULL,NULL,NULL,NULL} | 
+ temp_root_main |                |        2 |         1 |    0 | temp_root_main$ | app/index | t         | temp_root_main$ | temp_root_main | ws  | API  | temp_root_main | {NULL,NULL,NULL,NULL,NULL} | 
 
              test             
 ------------------------------
   ***** ws.page_by_code *****
 
-                                  page_by_code                                  
---------------------------------------------------------------------------------
- (main,,2,1,,0,$,app/index,,,t,"",$,"",ws,API,"","{NULL,NULL,NULL,NULL,NULL}",)
+      code      |     uri_re      |    uri_fmt     | pkg | name |      req       
+----------------+-----------------+----------------+-----+------+----------------
+ temp_root_main | temp_root_main$ | temp_root_main | ws  | API  | temp_root_main
 
             test             
 -----------------------------
   ***** ws.page_by_uri *****
 
-                                  page_by_uri                                   
---------------------------------------------------------------------------------
- (main,,2,1,,0,$,app/index,,,t,"",$,"",ws,API,"","{NULL,NULL,NULL,NULL,NULL}",)
+      code      |     uri_re      |    uri_fmt     | pkg | name |      req       
+----------------+-----------------+----------------+-----+------+----------------
+ temp_root_main | temp_root_main$ | temp_root_main | ws  | API  | temp_root_main
 
             test             
 -----------------------------
   ***** ws.page_childs *****
 
- code  | up_code | class_id | action_id | sort |  uri   |   tmpl    | is_hidden | uri_re | uri_fmt | pkg | name |  req  |            args            | group_name 
--------+---------+----------+-----------+------+--------+-----------+-----------+--------+---------+-----+------+-------+----------------------------+------------
- login | main    |        2 |         1 |    1 | login$ | acc/login | t         | login$ | login   | ws  | Вход | login | {NULL,NULL,NULL,NULL,NULL} | 
+ code  |    up_code     | class_id | action_id | sort |  uri   |   tmpl    | is_hidden | uri_re | uri_fmt | pkg | name |  req  |            args            | group_name 
+-------+----------------+----------+-----------+------+--------+-----------+-----------+--------+---------+-----+------+-------+----------------------------+------------
+ login | temp_root_main |        2 |         1 |    1 | login$ | acc/login | t         | login$ | login   | ws  | Вход | login | {NULL,NULL,NULL,NULL,NULL} | 
 
            test            
 ---------------------------
   ***** ws.page_path *****
 
-                                   page_path                                    
---------------------------------------------------------------------------------
- (main,,2,1,,0,$,app/index,,,t,"",$,"",ws,API,"","{NULL,NULL,NULL,NULL,NULL}",)
+                                                                  page_path                                                                   
+----------------------------------------------------------------------------------------------------------------------------------------------
+ (temp_root_main,,2,1,,0,temp_root_main$,app/index,,,t,"",temp_root_main$,temp_root_main,ws,API,temp_root_main,"{NULL,NULL,NULL,NULL,NULL}",)
 
            test            
 ---------------------------
@@ -207,8 +207,7 @@ INSERT 0 1
 
  page_tree 
 -----------
- (1,main)
- (2,login)
+ (1,login)
 
 DELETE 1
 DELETE 1

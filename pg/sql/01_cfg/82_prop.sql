@@ -27,8 +27,8 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 
 , ('ws.daemon.startup.sock_wait',       ARRAY['fcgi' ],             '10',     'Максимальная длина очереди ожидающих входящих запросов FCGI до обрыва новых соединений, шт')
 
-, ('ws.daemon.startup.pm.n_processes',  ARRAY['fcgi', 'tm'], '5',     'Количество запускаемых процессов, шт')
-, ('ws.daemon.startup.pm.die_timeout',  ARRAY['fcgi', 'tm'], '4',      'Время ожидания корректного завершения процесса, сек')
+, ('ws.daemon.startup.pm.n_processes',  ARRAY['fcgi'],              '5',     'Количество запускаемых процессов, шт')
+, ('ws.daemon.startup.pm.die_timeout',  ARRAY['fcgi'],              '4',      'Время ожидания корректного завершения процесса, сек')
 
 , ('ws.daemon.fcgi.frontend_poid',      ARRAY['fcgi'],              '1',      'POID настроек фронтенда')
 , ('ws.daemon.fcgi.core_poid',          ARRAY['fcgi'],              '1',      'POID настроек бэкенда')
@@ -123,4 +123,18 @@ INSERT INTO prop (code,                 pogc_list,                  def_value, n
 /* ------------------------------------------------------------------------- */
 -- ALTER TABLE wsd.prop_value ADD CONSTRAINT prop_value_code_fkey FOREIGN KEY (code) REFERENCES job.prop(code);
 -- ALTER TABLE wsd.prop_value ADD CONSTRAINT prop_value_group_id_fkey FOREIGN KEY (group_id) REFERENCES job.prop_group(id);
+
+/*
+  для совместимости с версиями, где уже установлен 83_prop_val_wsd_000.sql,
+  временно добавляем устаревшие для пакета cfg свойства
+  (будут удалены в 84_prop.sql)
+*/
+UPDATE cfg.prop SET pogc_list = array_append(pogc_list, 'tm') WHERE code IN (
+  'ws.daemon.startup.pm.n_processes'
+, 'ws.daemon.startup.pm.die_timeout'
+);
+INSERT INTO cfg.prop (code,            pogc_list,                 def_value, name) VALUES
+ ('ws.daemon.mgr.listen_wait',         ARRAY['tm'],               '60',     'Время ожидания уведомления внутри итерации, сек')
+, ('ws.daemon.mgr.listen.job',         ARRAY['tm'],               '',       'Канал уведомлений (NOTIFY) о добавлении задания')
+;
 

@@ -88,9 +88,9 @@ DELETE 0
   ***** ws.page_insupd_trigger *****
 
 INSERT 0 1
- code | class_id | action_id | sort | uri |   tmpl    | is_hidden | uri_re 
-------+----------+-----------+------+-----+-----------+-----------+--------
- main |        2 |         1 |    0 | $   | app/index | t         | $
+      code      | class_id | action_id | sort |       uri       |   tmpl    | is_hidden |     uri_re      
+----------------+----------+-----------+------+-----------------+-----------+-----------+-----------------
+ temp_root_main |        2 |         1 |    0 | temp_root_main$ | app/index | t         | temp_root_main$
 
 DELETE 1
 DROP FUNCTION

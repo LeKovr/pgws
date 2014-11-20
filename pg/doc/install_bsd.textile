@@ -1,0 +1,76 @@
+Особенности установки pgws на FreeBSD
+
+> Внутренний ip-адрес проекта для FastCGI сервера (back.test.local)
+127.0.0.2    back.test.local
+
+с адресом 127.0.0.2 по какой-то причине у меня на FreeBSD не стартует nginx
+поэтому прописано
+<pre>
+127.0.0.1    back.test.local
+</pre>
+
+-----
+
+> 1. Создать пользователей БД
+
+Я создавал так:
+createuser --username pgsql -s dev
+createuser --username pgsql -RSDl apache
+
+-----
+
+> Проверить наличие библиотек можно следующим образом:
+[YOUR_LOGIN@host]$ psql -d pgws -c "select * from pg_language where lanname ~ 'plp'" 
+
+ИМХО, проще и короче:
+
+<pre>
+[YOUR_LOGIN@host]$ droplang pgws --list
+Procedural Languages
+  Name   | Trusted?
+---------+----------
+ plpgsql | yes
+ plperl  | yes
+</pre>
+
+-----
+
+> nginx
+
+Немного отличаются пути при установке nginx из портов:
+/usr/local/etc/nginx/fastcgi_params
+/usr/local/etc/nginx/conf.d
+
+> Кроме этого, в секции http {} должны быть строки ...
+
+Я бы сказал "должны быть _раскомментированы_ строки" )
+
+-----
+
+> Установка пакетов из портов во FreeBSD
+
+|p5-JSON|
+|p5-FCGI-ProcManager|
+|p5-Cache-FastMmap|
+|p5-CGI-Simple|
+|p5-DBI|
+|p5-DBD-Pg|
+|p5-FCGI|
+|p5-Locale-Maketext-Lexicon|
+|p5-Locale-Maketext-Simple|
+|p5-Template-Toolkit|
+
+Для варианта установки из портов для каждого пакета делаем:
+cd `whereis -q ИМЯ_ПАКЕТА` && sudo make install clean
+
+Для пакетной установки:
+sudo pkg_add -r ИМЯ_ПАКЕТА
+
+(Хотя в этом случае у меня например p5-JSON начинает тянуть из сети perl-5.12.4 при уже установленном perl-5.8.9 ...)
+
+-----
+
+> Для работы в конфигурации по умолчанию достаточно поместить ссылку на пример конфигурации nginx в каталог /etc/nginx/conf.d:
+[root@host]#ln -s /home/data/sampleapp/conf/nginx-pgws.conf /etc/nginx/conf.d
+
+Тут аналогично: /usr/local/etc/nginx/conf.d

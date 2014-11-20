@@ -31,7 +31,11 @@ use MIME::Base64 qw(encode_base64);
 use Data::Dumper;
 use URI::Escape;
 
+use constant FILE_STORE_PATH => ($ENV{PGWS_FILE_STORE_PATH} || '/tmp');
+
 #----------------------------------------------------------------------
+sub get_file_store_path { FILE_STORE_PATH }
+
 ## @fn hash data_get($config_file)
 # Загрузить данные из файла в perl-структуру
 # @return указатель на загруженную структуру данных
@@ -174,13 +178,14 @@ sub load_env {
 sub data_set {
   my ($data, $path) = @_;
   check_path($path);
-  my $mode = '>';
+  my $mode = '>'; #:encoding(utf8)';
   if ($path =~ /\.gz$/) {
     $mode = '|-';
     $path = 'gzip - > '.$path;
   }
   if ($path =~ /\.json($|\.)/) {
     $data = json_out_utf8($data, 1);
+    $mode = '>:encoding(utf8)' if ($mode eq '>');
   }
   open my $F, $mode, $path or PGWS::bye "File: $path error:".$!;
   print $F $data;
@@ -188,6 +193,7 @@ sub data_set {
   my $mod = "0666";
   chmod oct($mod), $path;
   if (wantarray) {
+    utf8::encode($data);
     return (-s $path, sha1_hex($data)); # size & sha1
   }
 }

@@ -1,0 +1,34 @@
+h1. PGWS
+
+*PGWS* (Postgresql Web Services) is the gateway between Perl or stored Postgresql code and client side Javascript or server side templates.
+
+There is only Russian documentation right now which is following below.
+
+*PGWS* (Вебсервисы Postgresql) - шлюз между Perl или хранимым кодом Postgresql и клиентским Javascript или серверными шаблонами.
+
+Данный программный продукт распространяется на условиях AGPL ("Стандартная общественная лицензия GNU Афферо":http://www.gnu.org/licenses/agpl.html)
+
+h2. Документация
+
+Ниже представлена предварительная версия документации PGWS, которая находится в процессе доработки и может не соответствовать исходному коду.
+
+# "Новости проекта":http://rm2.tender.pro/projects/pgws/news
+# [[faq|F.A.Q. Часто задаваемые вопросы]]
+# [[task|Функциональные требования]]
+# [[desc|Описание реализации]]
+## [[rpc|Протокол передачи данных]]
+## [[acl|Разграничение доступа]]
+## [[typesystem|Типы данных и правила валидации]]
+## [[i18n|Интернационализация]]
+# [[guide|Инструкции по использованию]]
+## [[install|Инструкция по установке]]
+## [[upgrade|Инструкция по обновлению]]
+## [[patch|Инструкция по оформлению патчей]]
+## [[backend|Разработка прикладной логики]]
+## [[frontend|Разработка интерфейса]]
+## [[js|Доступ к API из Javascript]]
+## [[client|Реализация доступа извне]]
+
+h2. Загрузка
+
+Исходные файлы проекта доступны в репозитории git: http://pgws.tender.pro

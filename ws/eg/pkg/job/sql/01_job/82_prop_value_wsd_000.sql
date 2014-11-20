@@ -23,10 +23,10 @@
 
 /* ------------------------------------------------------------------------- */
 INSERT INTO wsd.prop_value (pogc, poid, code,      value) VALUES
-  (job.const_job_group_prop(),   1,  'ws.daemon.mgr.listen.stat',            'job_stat')
+  (job.const_job_group_prop(),   1,  'ws.daemon.mgr.listen.job',             'job_event')
+, (job.const_job_group_prop(),   1,  'ws.daemon.mgr.listen.stat',            'job_stat')
 , (job.const_job_group_prop(),   1,  'ws.daemon.mgr.listen.reload',          'job_reload')
 , (job.const_job_group_prop(),   1,  'ws.daemon.mgr.reload_key',             'job_secret_reload')
-, (job.const_job_group_prop(),   1,  'ws.daemon.mgr.listen.job',             'job_event')
 , (job.const_job_group_prop(),   1,  'ws.daemon.startup.pm.n_processes',     '5')
 
 , ('fe',    1,  'ws.daemon.log.syslog.job.default',     '6')

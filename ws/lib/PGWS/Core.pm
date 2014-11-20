@@ -141,6 +141,17 @@ sub run {
 
   $res->{'id'} = $call->{'id'};
 
+  my $ret = $self->run_parsed($meta, $call);
+  %$res = (%$res, %$ret);
+  $meta->dump({'res' => $res});
+  $res->{'debug'} = $meta->data if $meta->debug_iface_allowed;
+  return $res;
+}
+
+#----------------------------------------------------------------------
+sub run_parsed {
+  my ($self, $meta, $call) = @_;
+
   # проверить sid и получить параметры сессии
   # sid валидируем здесь, т.к. run_prepared вызывается фронтендом (и шаблонизатором) десятки раз на страницу для одного и того же sid.
   # т.е. можем разгрузить кэш
@@ -165,13 +176,9 @@ sub run {
 
   $meta->stage_out;
   delete $call->{'params'}{'_realm'}; # only in run_prepared direct call
-  my $ret = $self->run_prepared($meta, $call->{'method'}, $call->{'params'});
-  %$res = (%$res, %$ret);
-  $meta->dump({'res' => $res});
-  $res->{'debug'} = $meta->data if $meta->debug_iface_allowed;
-  return $res;
-}
-
+  return $self->run_prepared($meta, $call->{'method'}, $call->{'params'});
+ } 
+ 
 #----------------------------------------------------------------------
 sub run_prepared {
   my ($self, $meta, $method, $params) = @_;
@@ -215,12 +222,12 @@ sub _process {
   }
 
   unless ($method =~ /^[a-z\d_][a-z\d\.\-_]*$/) { # можно бы и валидатор вызвать, но будет дольше
-    return $self->_rpc_error($meta, 'bad_args');
+    return $self->_rpc_error($meta, 'no_mtd', $method);
   }
 
   my $mtd_def = $self->_call_meta($self->def_mtd, $meta, $method);
   unless ($mtd_def and ref $mtd_def eq 'ARRAY' and $mtd_def->[0]{'code'}) {
-    return $self->_rpc_error($meta, 'no_mtd',$method);
+    return $self->_rpc_error($meta, 'no_mtd', $method);
   } else {
     $mtd_def = $mtd_def->[0];
   }
@@ -249,7 +256,7 @@ sub _process {
   if ($class->{'id_count'}) {
     for my $i (0..$class->{'id_count'} - 1) {
       my $k = 'id'.($i || '');
-      return $self->_rpc_error($meta, 'bad_args', $i) unless defined($params->{$k});
+      return $self->_rpc_error($meta, 'bad_args', ''.$i) unless defined($params->{$k});
       $acl_params{$k} = $params->{$k};
     }
   }

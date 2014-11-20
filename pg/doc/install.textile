@@ -1,0 +1,230 @@
+h1. Инструкция по установке
+
+{{toc}}
+
+h2. Настройка ОС
+
+Для установки проекта необходимо иметь доступ уровня администратора к компьютеру под управлением ОС Linux/FreeBSD.
+
+Права администратора необходимы для установки и настройки серверного ПО.
+
+Также необходимо выбрать и настроить
+
+h4. Внешний ip-адрес проекта для доступа к вебсерверу.
+
+Далее по тексту и в примерах конфигурации этот адрес обозначен как *pgws.local*
+
+Для настройки адреса достаточно прописать в /etc/hosts строку
+<pre>
+127.0.0.1    www.pgws.local    pgws.local
+</pre>
+
+h4. Внутренний ip-адрес проекта для FastCGI сервера.
+
+Далее по тексту и в примерах конфигурации этот адрес обозначен как *back.test.local*
+
+Для настройки адреса достаточно прописать в /etc/hosts строку
+<pre>
+127.0.0.2    back.test.local
+</pre>
+
+h4. Пользователь ОС с правами которого будет работать FastCGI сервер.
+
+Этот пользователь будет создавать файлы и соединяться с БД.
+Если планируется работа через CGI-скрипт, тот этот пользователь будет совпадать с тем, под которым работает вебсервер.
+
+Далее по тексту и в примерах конфигурации этот пользователь обозначен как *apache*.
+
+Если этого пользователя еще нет в системе, то его можно добавить командой
+<pre>
+#adduser apache
+</pre>
+
+h3. Postgresql
+
+Установка postgresql производится стандартным для ОС способом. Допустима версия от 9.0 и старше.
+
+После установки необходимо инициализировать кластер БД.
+В некоторых версиях linux это производится автоматически при первом запуске.
+В остальных случаях необходима команда вида:
+
+<pre>
+[root@host]#initdb --pgdata /usr/local/pgsql/data --encoding=UTF8 --locale=ru_RU.UTF-8
+</pre>
+
+Далее необходимо произвести следующие действия, если они не были сделаны ранее:
+
+h4. 1. Создать пользователей БД.
+
+<pre>
+# суперюзер, имя совпадает с вашим логином
+# выполняется от имени пользователя, под которым запущен postgresql
+[root@host]# su postgres -c "createuser -s YOUR_LOGIN"
+# пользователь PGWS
+[root@host]# su postgres -c "createuser -RSDl apache"
+</pre>
+
+h4. 2. Настроить доступ к БД.
+
+В примере конфигурации все соединения с БД производятся через UNIX-сокеты.
+
+/var/lib/pgsql/data/pg_hba.conf (или /usr/local/pgsql/data/pg_hba.conf):
+<pre>
+local   all             all                                     ident
+</pre>
+
+После этого необходимо рестартовать postgresql и проверить успешность настройки:
+<pre>
+[YOUR_LOGIN@host]$ psql template1
+</pre>
+
+h4. 3. Настроить БД.
+
+После настройки СУБД необходимо создать БД: 
+
+<pre>
+[YOUR_LOGIN@host]$ createdb -O apache -E UTF8 -T template0 --lc-collate=C --lc-ctype='ru_RU.UTF-8' pgws
+</pre>
+
+И инсталлировать библиотеки языков хранимого кода, если их еще нет:
+<pre>
+[YOUR_LOGIN@host]$ createlang -d pgws plpgsql
+[YOUR_LOGIN@host]$ createlang -d pgws plperl
+</pre>
+
+Проверить наличие библиотек можно следующим образом:
+
+<pre>
+[YOUR_LOGIN@host]$ psql -d pgws -c "select * from pg_language where lanname ~ 'plp'"
+ lanname | lanowner | lanispl | lanpltrusted | lanplcallfoid | laninline | lanvalidator | lanacl 
+---------+----------+---------+--------------+---------------+-----------+--------------+--------
+ plpgsql |       10 | t       | t            |         11571 |     11572 |        11573 | 
+ plperl  |    16384 | t       | t            |         16385 |     16386 |        16387 | 
+(2 rows)
+</pre>
+
+h3. Nginx
+
+Установка nginx производится стандартным для ОС способом. Допустима любая версия от 0.8 и старше.
+Пакет должен включать опциональные модули, для Ubuntu надо ставить не nginx, а nginx-extras. 
+
+Далее по тексту предполагается, что nginx установлен, существует файл /etc/nginx/fastcgi_params и nginx при старте подключает файлы из каталога /etc/nginx/conf.d
+Возможно, после установки придется создать каталог самостоятельно и дописать в секцию http {} файла /etc/nginx/nginx.conf строки
+<pre>
+   # Load config files from the /etc/nginx/conf.d directory
+   include /etc/nginx/conf.d/*.conf;
+</pre>
+
+Кроме этого, в секции http {} должны быть строки
+<pre>
+  log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+</pre>
+
+h3. Perl
+
+Установка perl производится стандартным для ОС способом. Допустима любая версия от 5.8.9 и старше.
+Дополнительно устанавливаются следующие perl-библиотеки (обычно присутствуют в стандартном репозитории дистрибутива ОС).
+
+| Библиотека | Пример пакета для Fedora Linux | Пример для Ubuntu |
+| *JSON* | perl-JSON-2.17-2.fc14.noarch | libjson-perl |
+| *FCGI::ProcManager* | perl-FCGI-ProcManager-0.19-4.fc14.noarch | libfcgi-procmanager-perl |
+| *Cache::FastMmap* | perl-Cache-FastMmap-1.39-1.fc14.i686 | libcache-fastmmap-perl |
+| *CGI::Simple* | perl-CGI-Simple-1.113-1.fc14.noarch | libcgi-simple-perl |
+| *DBI* | perl-DBI-1.613-1.fc14.i686 | libdbi-perl |
+| *DBD::Pg* | perl-DBD-Pg-2.17.1-3.fc14.i686 | libdbd-pg-perl |
+| *FCGI* | perl-FCGI-0.74-1.fc14.i686 | libfcgi-perl |
+| *Locale::Maketext::Lexicon* | perl-Locale-Maketext-Lexicon-0.84-1.fc14.noarch | liblocale-maketext-lexicon-perl |
+| *Locale::Maketext::Simple* | perl-Locale-Maketext-Simple-0.21-148.fc14.noarch | liblocale-maketext-simple-perl |
+| *Template* | perl-Template-Toolkit-2.22-6.fc14.i686 | libtemplate-perl |
+| *MIME::Entity* | perl-MIME-tools-5.502-2.fc16.noarch | libmime-perl |
+| *IPC::Shareable* | perl-IPC-Shareable-0.60-16.fc16.noarch | libipc-shareable-perl |
+| *FCGI::Client* | perl-FCGI-Client-0.04-6.fc16.noarch | N/A |
+| *Digest::SHA1* | perl-Digest-SHA1-2.13-3.fc16.i686 | N/A |
+| *URI::Escape* | | liburi-perl |
+
+Библиотеки для работы пакета wiki:
+| Библиотека | Пример пакета для Fedora Linux |
+| *Text::Diff* | perl-Text-Diff-1.37-6.fc15.noarch |
+| *Text::MultiMarkdown* | perl-Text-MultiMarkdown-1.000034-1.fc15.noarch |
+
+Названия пакетов для конкретной ОС могут отличаться, при возникновении затруднений воспользуйтесь документацией по своему дистрибутиву.
+
+Проверить корректность установки библиотек можно после установки PGWS следующей командой:
+<pre>
+cd /home/data/sampleapp/pgws && make test
+</pre>
+
+h3. Утилиты ОС
+
+Необходимо установить из стандартных репозиториев ОС следующие утилиты:
+
+| Утилита | Пример пакета для Fedora Linux 16 |
+| *gmake* | make-3.82-8.fc16.i686 |
+| *gawk* | gawk-4.0.1-1.fc16.i686 |
+| *find* | findutils-4.5.10-1.fc16.i686 |
+| *curl* | curl-7.21.7-7.fc16.i686 |
+
+h2. Установка PGWS
+
+Создаем каталог, в котором будем разворачивать дистрибутив. Далее по тексту и в примерах конфигурации этот каталог обозначен как /home/data/sampleapp:
+
+<pre>
+[YOUR_LOGIN@host]$ mkdir -p /home/data/sampleapp
+[YOUR_LOGIN@host]$ cd /home/data/sampleapp
+</pre>
+
+h3. Выгрузка версии из git
+
+Команда:
+<pre>
+git clone git://github.com/LeKovr/pgws.git
+</pre>
+
+При успехе этой операции будет создан каталог /home/data/sampleapp/pgws
+
+h3. Подготовка дистрибутива к работе
+
+<pre>
+[YOUR_LOGIN@host]$ cd pgws
+# создание каталогов
+[YOUR_LOGIN@host]$ gmake install
+[YOUR_LOGIN@host]$ cd ..
+#
+# Произвести настройку конфигурации (файл config.json), если она отличается от стандартной
+#
+# создание объектов БД (ядро)
+[YOUR_LOGIN@host]$ ./pgws.sh db init
+# создание объектов БД (приложение)
+[YOUR_LOGIN@host]$ ./pgws.sh db init pkg
+</pre>
+
+Команда *gmake install* создает каталоги lib, pkg, var в /home/data/sampleapp/
+Команда *db init* использует настройки из файла config.json и создает объекты БД.
+
+Журналы работы команд сохраняются в каталоге /home/data/sampleapp/var/log
+
+h3. Настройка nginx
+
+Для работы в конфигурации по умолчанию достаточно поместить ссылку на пример конфигурации nginx в каталог /etc/nginx/conf.d:
+
+<pre>
+[root@host]#ln -s /home/data/sampleapp/pgws/ws/eg/conf/nginx-pgws.conf /etc/nginx/conf.d
+</pre>
+
+и дать nginx права на запись журналов в /home/data/sampleapp/var/log
+
+<pre>
+[YOUR_LOGIN@host]$ chmod a+w /home/data/sampleapp/var/log
+</pre>
+
+h3. Запуск PGWS
+
+В каталоге /home/data/sampleapp достаточно выполнить:
+<pre>
+[YOUR_LOGIN@host]$ ./pgws.sh fcgi start
+</pre>
+Команда *fcgi start* использует настройки из БД, доступ к которой задается в config.json
+
+После этого проект должен быть доступен по адресу http://www.pgws.local/api

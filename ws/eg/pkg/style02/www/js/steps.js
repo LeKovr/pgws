@@ -3,7 +3,7 @@
     var $trigger = $(t);
     trigger = $trigger.is(':checked');
     col = $trigger.data('column');
-    $table = $('.' + $trigger.closest('.grid-settings').data('grid')).not(':hidden');
+    $table = $($trigger.closest('.grid-settings').data('grid')).not(':hidden');
     $col = $table.find('th[data-column="' + col + '"]');
     $col.toggle(trigger);
     $table.find('tr').each(function(i, row) {
@@ -20,7 +20,7 @@ window.PGWS.body_colums_setting_array = function(tt){
     var check = $(t),
     row = check.closest('tr');
     row.toggleClass('disabled', !check.is(':checked'))
-      .find('textarea,select,input:not(.disable-row, :hidden)')
+      .find('textarea,select,input:not(.disable-row, :hidden, .necessarily_row)')
       .prop('disabled', function(i, disabled) {
 	check.prop('title', 'Поле конкурса ' + (disabled ? 'включено' : 'выключено'));
 	return !disabled;

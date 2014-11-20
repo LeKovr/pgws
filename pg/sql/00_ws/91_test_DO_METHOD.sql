@@ -37,7 +37,7 @@ SET search_path TO ws, i18n_def, public;
 \set a_method_code 'ws.facet'
 \set a_code_lookup 'class'
 \set a_rvf_id 3
-\set a_page_code 'main'
+\set a_page_code 'temp_root_main'
 
 /* ------------------------------------------------------------------------- */
  SELECT ws.test('ws.acls_eff');
@@ -96,9 +96,9 @@ SET search_path TO ws, i18n_def, public;
  SELECT id,name FROM ws.method_rvf(:a_rvf_id);
 
  INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-  ('main', NULL, 2, 1, 0, '$', 'app/index', 'API');
+  (:'a_page_code', NULL, 2, 1, 0, :'a_page_code' ||'$', 'app/index', 'API');
  INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-  ('login', 'main', 2, 1, 1, 'login$', 'acc/login', 'Вход');
+  ('login', :'a_page_code', 2, 1, 1, 'login$', 'acc/login', 'Вход');
 
  SELECT ws.test('ws.page_by_action');
  SELECT code, up_code, class_id, action_id, sort, uri, tmpl, is_hidden, uri_re, uri_fmt, pkg, name, req, args, group_name 
@@ -106,10 +106,14 @@ SET search_path TO ws, i18n_def, public;
  ;
 
  SELECT ws.test('ws.page_by_code');
- SELECT ws.page_by_code(:'a_page_code');
+ SELECT code, uri_re, uri_fmt, pkg, name, req 
+   FROM ws.page_by_code(:'a_page_code')
+ ;
 
  SELECT ws.test('ws.page_by_uri');
- SELECT ws.page_by_uri();
+ SELECT code, uri_re, uri_fmt, pkg, name, req 
+   FROM ws.page_by_uri(:'a_page_code')
+ ;
 
  SELECT ws.test('ws.page_childs');
  SELECT code, up_code, class_id, action_id, sort, uri, tmpl, is_hidden, uri_re, uri_fmt, pkg, name, req, args, group_name
@@ -120,7 +124,7 @@ SET search_path TO ws, i18n_def, public;
  SELECT ws.page_path(:'a_page_code');
 
  SELECT ws.test('ws.page_tree');
- SELECT ws.page_tree();
+ SELECT ws.page_tree(:'a_page_code');
 
  DELETE FROM ws.page_data WHERE code='login';
- DELETE FROM ws.page_data WHERE code='main';
+ DELETE FROM ws.page_data WHERE code=:'a_page_code';

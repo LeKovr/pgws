@@ -49,10 +49,10 @@ SELECT ws.test('ws.server');
 SELECT * FROM ws.server;
 
 SELECT ws.test('i18n_def.error');
-SELECT * FROM i18n_def.error ORDER BY code;
+SELECT * FROM i18n_def.error WHERE code ~ '^Y0(0|1)' ORDER BY code;
 
 SELECT ws.test('i18n_def.ref');
-SELECT * FROM i18n_def.ref ;
+SELECT * FROM i18n_def.ref WHERE code = 'timezone'; -- только этот есть в ws
 
 SELECT ws.test('wsd.pkg_default_protected');
 SELECT pkg, wsd_rel, wsd_col, func, schema FROM wsd.pkg_default_protected WHERE schema LIKE 'ws' ORDER BY 2,3;

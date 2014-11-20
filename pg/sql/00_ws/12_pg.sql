@@ -603,3 +603,4 @@ SELECT CASE
 END;
 $_$;
 SELECT pg_c('f', 'epoch2timestamp', 'преобразование секунд к типу TIMESTAMP');
+

@@ -27,6 +27,7 @@
 \set a_anno 'тестовый вариант'
 \set a_new_type 'ws.d_code'
 \set a_name_func 'ws.z_test_func'
+\set a_page_code 'temp_root_main'
 
  CREATE OR REPLACE FUNCTION ws.test_func(a_id ws.d_id32 DEFAULT 0) RETURNS INT STABLE LANGUAGE 'sql' AS
  $_$
@@ -77,9 +78,9 @@
 /* ------------------------------------------------------------------------- */
   SELECT ws.test('ws.page_insupd_trigger');
   INSERT INTO i18n_def.page (code, up_code, class_id, action_id, sort, uri, tmpl, name) VALUES
-    ('main', NULL, 2, 1, 0, '$', 'app/index', 'API');
-  SELECT code, class_id, action_id, sort, uri, tmpl, is_hidden, uri_re FROM ws.page_data WHERE code='main';
+    (:'a_page_code', NULL, 2, 1, 0, :'a_page_code'||'$', 'app/index', 'API');
+  SELECT code, class_id, action_id, sort, uri, tmpl, is_hidden, uri_re FROM ws.page_data WHERE code = :'a_page_code';
 
 /* ------------------------------------------------------------------------- */
- DELETE FROM ws.page_data WHERE code='main';
+ DELETE FROM ws.page_data WHERE code=:'a_page_code';
  DROP function ws.test_func(ws.d_id32); 

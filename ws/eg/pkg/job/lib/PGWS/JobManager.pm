@@ -49,6 +49,7 @@ use constant AUTH_LOGIN     => ($ENV{'PGWS_JOB_AUTH_LOGIN' }    or '');
 use constant AUTH_PSW       => ($ENV{'PGWS_JOB_AUTH_PSW'   }    or '');
 
 use constant SOCKET         => ($ENV{'PGWS_FCGI_SOCKET'}        or 'back.test.local:9001');    # socket nginx forwards to
+use constant TIMEOUT        => ($ENV{'PGWS_FCGI_TIMEOUT'}       or 30);    # FCGI server response timeout
 
 use constant DB_STATUS_ERROR    => 12; # job.const_status_id_error()
 use constant DB_STATUS_SUCCESS  => 10; # job.const_status_id_success()
@@ -407,7 +408,7 @@ sub _api {
 print STDERR "API_CALL $$\n", Dumper($request) if(DEBUG);
 
   my $sock = IO::Socket::INET->new(PeerAddr => SOCKET) or die $!;
-  my $client = FCGI::Client::Connection->new( sock => $sock );
+  my $client = FCGI::Client::Connection->new( sock => $sock, timeout => TIMEOUT );
 
   $request->{'REQUEST_METHOD'} = 'JOB';
   my ($stdout, $stderr) = $client->request($request);
