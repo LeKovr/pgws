@@ -131,7 +131,7 @@ var api = function(mtd, formId, cb, vparams, cb_er, ena, options){
     data:         $.toJSON(req),
     processData:  false,
     async:        true,
-    timeout:      30000, // msec
+    timeout:      2400000, // msec
     contentType:  "application/json",
     dataType:     "json",
     success:      function(response){
