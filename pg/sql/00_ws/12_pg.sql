@@ -467,7 +467,7 @@ $_$
       WHEN a_type = 's' THEN 'SEQUENCE'
       ELSE NULL -- a_type = 'a'
     END;
-RAISE NOTICE 'COMMENT FOR % %: % (%)', v_name, v_code, a_text, a_anno;
+    RAISE DEBUG 'COMMENT FOR % %: % (%)', v_name, v_code, a_text, a_anno;
     IF v_name IS NULL THEN
       -- a(rgument)
       UPDATE ws.dt_part SET anno = a_text
@@ -479,7 +479,7 @@ RAISE NOTICE 'COMMENT FOR % %: % (%)', v_name, v_code, a_text, a_anno;
       FOR rec IN SELECT * FROM ws.pg_proc_info(split_part(v_code, '.', 1), split_part(v_code, '.', 2)) LOOP
         v_name := ws.sprintf(E'COMMENT ON FUNCTION %s(%s) IS \'%s\'', v_code, rec.args, a_text);
         EXECUTE v_name;
-        RAISE NOTICE '%', v_name;
+        RAISE DEBUG '%', v_name;
       END LOOP;
     ELSE
       EXECUTE ws.sprintf(E'COMMENT ON %s %s IS \'%s\'', v_name, v_code, a_text);
