@@ -320,6 +320,9 @@ sub process_get {
     $file_def->{'path'} = join '/', FILE_URI, CACHE_STORE, $req->server_name . $path;
     $req->header($resp->{'ctype'}.'; '.$meta->charset, "200 OK", $file_def);
     return;
+  } elsif ($status eq '302') {
+    $meta->debug('Redirect resp: '.$vars);
+    return $req->redirect($vars);
   }
   my $pages   = $dbc->config('fe.tmpl.pages');
   my $erfile  = $dbc->config('fe.tmpl.error');
@@ -479,7 +482,8 @@ sub response {
     # некорректный идентификатор сессии
     if ($sid_name and $session->{'sid_error'} eq 'sid') {
       # TODO: redirect на тот же url, но без sid
-      # my $u = PGWS::Utils::uri_mk($req->proto, $req->prefix, undef, $req->uri, $params);
+      my $u = PGWS::Utils::uri_mk($req->proto, $req->prefix, undef, $req->uri, $params);
+      return ('302', 'Found', $u);
     } else {
         return ('409', 'Conflict', $vars); #
     }
