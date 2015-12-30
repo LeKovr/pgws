@@ -140,7 +140,7 @@ sub AUTOLOAD {
  #   return SOAP::Data->value($x); #SOAP::Data->type('tns:loginResponse')->name('loginResponse')->root(1);
     } elsif ($method eq 'logout') {
       return SOAP::Data->name("Result")->value($x)->type('boolean');
-    } elsif ($method =~ /^get_/) {
+    } elsif ($method =~ /^get_/ and ref $x eq 'ARRAY') {
       my @a;
       foreach my $i (@$x) {
         my @b;
@@ -170,7 +170,6 @@ sub AUTOLOAD {
 #              SOAP::Data->name("someArrayItem" => @array)
 #                        ->type("SomeObject"))
 #                   )->type("ArrayOf_SomeObject") ))
-
     } else {
       return SOAP::Data->name( "Result" => $x );
     }
