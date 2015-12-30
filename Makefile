@@ -200,7 +200,7 @@ psw-conf:
 	pushd $(PGWS_ROOT) > /dev/null  ; \
 for f in upload job default ; do \
   if [ ! -e var/build/psw_$$f ] ; then \
-    < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c$${1:-16} > var/build/psw_$$f ; \
+    LC_ALL=C < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c$${1:-16} > var/build/psw_$$f ; \
   fi ; \
 done ; \
 popd > /dev/null
@@ -263,7 +263,7 @@ if [ ! -f config.json ] ; then \
     -e "s|=PACKAGES=|$(PACKAGES)|" \
     pgws/ws/eg/conf/config.json.inc > config.json ; \
 fi ; \
-[ -f pgws.sh ] || cp pgws/ws/eg/conf/pgws.sh.inc pgws.sh && chmod +x pgws.sh ; \
+[ -f pgws.sh ] || { cp pgws/ws/eg/conf/pgws.sh.inc pgws.sh && chmod +x pgws.sh ; } ; \
 popd > /dev/null
 
 # ------------------------------------------------------------------------------
